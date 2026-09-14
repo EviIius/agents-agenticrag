@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="description" content="Local-first control plane for inspectable RAG agents.">
+  <title>AgenticRAG Workbench</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Skip to workspace</a>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand" aria-label="AgenticRAG Workbench">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M5 4.5h9.5L19 9v10.5H5z"/><path d="M14 4.5V9h5M8.5 13h7M8.5 16h4.5"/></svg>
+        </span>
+        <span>AgenticRAG</span>
+        <span class="product-label">Workbench</span>
+      </div>
+      <div class="runtime-strip" aria-label="Runtime status">
+        <button class="runtime-chip" data-open-view="models" type="button">
+          <span class="status-dot" id="chat-status-dot" data-state="idle" aria-hidden="true"></span>
+          <span>Chat</span>
+          <strong id="chat-model-label">Not configured</strong>
+        </button>
+        <button class="runtime-chip" data-open-view="models" type="button">
+          <span class="status-dot" id="embedding-status-dot" data-state="idle" aria-hidden="true"></span>
+          <span>Embedding</span>
+          <strong id="embedding-model-label">Not configured</strong>
+        </button>
+      </div>
+      <div class="topbar-actions">
+        <span class="local-badge" id="boundary-badge"><span aria-hidden="true">●</span> Local boundary</span>
+        <button class="icon-button" id="theme-toggle" type="button" aria-label="Switch to light theme" title="Toggle theme">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.64 5.64l1.42 1.42M16.94 16.94l1.42 1.42M18.36 5.64l-1.42 1.42M7.06 16.94l-1.42 1.42"/><circle cx="12" cy="12" r="4"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <aside class="sidebar" aria-label="Workbench navigation">
+      <div class="environment-block">
+        <label for="collection-input">Collection</label>
+        <input id="collection-input" value="research" autocomplete="off" spellcheck="false">
+        <label for="scope-input">Access scope</label>
+        <div class="input-with-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V8a5 5 0 0 1 10 0v2M5 10h14v10H5z"/></svg>
+          <input id="scope-input" value="private" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
+
+      <nav class="primary-nav" aria-label="Primary">
+        <p class="nav-label">Workspace</p>
+        <button class="nav-item is-active" type="button" data-view="chat" aria-current="page">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v12H9l-5 4z"/><path d="M8 9h8M8 13h5"/></svg>
+          <span>Chat</span>
+          <kbd>1</kbd>
+        </button>
+        <button class="nav-item" type="button" data-view="models">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8M8 13h5M17 13h.01"/></svg>
+          <span>Models</span>
+          <kbd>2</kbd>
+        </button>
+        <button class="nav-item" type="button" data-view="corpus">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M16 4v4h3M8 12h8M8 16h6"/></svg>
+          <span>Corpus</span>
+          <kbd>3</kbd>
+        </button>
+        <button class="nav-item" type="button" data-view="capabilities">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg>
+          <span>Capabilities</span>
+          <span class="nav-count" id="capability-count">0</span>
+          <kbd>4</kbd>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="readiness-summary">
+          <div>
+            <span class="eyebrow">System readiness</span>
+            <strong id="readiness-label">Checking…</strong>
+          </div>
+          <span class="readiness-ring" id="readiness-ring" aria-hidden="true">0</span>
+        </div>
+        <button class="text-button" id="refresh-button" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.34 5.66M20 5v6h-6"/></svg>
+          Refresh state
+        </button>
+        <span class="version-label" id="version-label">AgenticRAG</span>
+      </div>
+    </aside>
+
+    <main class="workspace" id="workspace" tabindex="-1">
+      <section class="view is-active" id="view-chat" data-view-panel="chat" aria-labelledby="chat-title">
+        <div class="view-header chat-header">
+          <div>
+            <p class="eyebrow">Active session</p>
+            <h1 id="chat-title">Private research chat</h1>
+          </div>
+          <div class="workflow-control" role="group" aria-label="Workflow">
+            <button type="button" data-workflow="fixed">Fixed</button>
+            <button class="is-active" type="button" data-workflow="agent">Agentic</button>
+            <button type="button" data-workflow="supervisor">Supervisor</button>
+            <button type="button" data-workflow="direct">Direct</button>
+          </div>
+        </div>
+
+        <div class="conversation" id="conversation" aria-live="polite">
+          <div class="empty-conversation" id="chat-empty">
+            <div class="empty-glyph" aria-hidden="true">
+              <svg viewBox="0 0 40 40"><path d="M20 4l13 7.5v15L20 34 7 26.5v-15z"/><path d="M7 11.5l13 7.4 13-7.4M20 18.9V34"/></svg>
+            </div>
+            <h2>Ask your corpus, then inspect the work.</h2>
+            <p>Agentic mode decomposes the question, uses only enabled read-only tools, and sends the answer through an evidence critic before returning it.</p>
+            <div class="starter-prompts" aria-label="Example prompts">
+              <button type="button" data-prompt="Summarize the strongest claims in this collection and cite each one.">Summarize the strongest claims</button>
+              <button type="button" data-prompt="What evidence in this collection conflicts or remains uncertain?">Find conflicts and uncertainty</button>
+              <button type="button" data-prompt="Compare the methods described across the available sources.">Compare methods across sources</button>
+            </div>
+          </div>
+        </div>
+
+        <form class="composer" id="ask-form">
+          <div class="composer-context" id="selected-skills-summary">No skills selected</div>
+          <label class="sr-only" for="question-input">Ask a question</label>
+          <textarea id="question-input" rows="2" maxlength="12000" placeholder="Ask a grounded question…" required></textarea>
+          <div class="composer-toolbar">
+            <div class="composer-meta">
+              <button class="tool-button" id="skill-picker-button" type="button" aria-expanded="false" aria-controls="skill-picker">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5"/></svg>
+                Skills
+                <span id="selected-skill-count">0</span>
+              </button>
+              <label class="tool-button consent-toggle" id="web-search-control" title="Sends delegated queries to OpenAI when Supervisor mode uses the web researcher">
+                <input id="allow-web-input" type="checkbox" disabled>
+                Web search
+              </label>
+              <span class="context-label" id="chat-context-label">research · private</span>
+            </div>
+            <button class="send-button" id="send-button" type="submit">
+              <span>Run agent</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+          </div>
+          <div class="popover" id="skill-picker" hidden>
+            <div class="popover-header">
+              <strong>Session skills</strong>
+              <span>Trusted local instructions</span>
+            </div>
+            <div id="skill-picker-list"></div>
+          </div>
+        </form>
+      </section>
+
+      <section class="view" id="view-models" data-view-panel="models" aria-labelledby="models-title" hidden>
+        <div class="view-header">
+          <div>
+            <p class="eyebrow">Runtime connections</p>
+            <h1 id="models-title">Models</h1>
+            <p class="view-description">Connect a local OpenAI-compatible runtime or explicitly opt into hosted OpenAI. Keys stay in this process and are never saved to browser storage.</p>
+          </div>
+        </div>
+        <div class="model-workspace">
+          <div class="runtime-presets" id="runtime-presets" aria-label="Runtime presets"></div>
+          <div class="connection-stack">
+            <form class="connection-panel" data-provider-form="chat">
+              <div class="section-heading">
+                <div><span class="eyebrow">Generation</span><h2>Chat model</h2></div>
+                <span class="state-badge" data-form-status="chat">Not configured</span>
+              </div>
+              <div class="form-grid">
+                <label>Runtime<select name="runtime" data-runtime-select="chat"></select></label>
+                <label>Base URL<input name="base_url" type="url" required spellcheck="false"></label>
+                <label class="wide-field">Model identifier<input name="model" required spellcheck="false" placeholder="Select after probing or enter an ID"><datalist id="chat-models"></datalist></label>
+                <label>Structured output<select name="structured_output_mode"><option value="json_schema">JSON Schema · strongest</option><option value="json_object">JSON object · compatible</option><option value="prompt">Prompt only · broadest</option></select></label>
+                <label>API key <span class="optional">OpenAI requires it · memory only</span><input name="api_key" type="password" autocomplete="new-password"></label>
+              </div>
+              <div class="form-actions">
+                <button class="secondary-button" type="button" data-probe="chat">Probe models</button>
+                <button class="secondary-button" type="button" id="contract-check-button">Test agent contract</button>
+                <button class="primary-button" type="submit">Use connection</button>
+              </div>
+              <p class="form-message" data-form-message="chat" role="status"></p>
+            </form>
+
+            <form class="connection-panel" data-provider-form="embedding">
+              <div class="section-heading">
+                <div><span class="eyebrow">Retrieval</span><h2>Embedding model</h2></div>
+                <span class="state-badge" data-form-status="embedding">Not configured</span>
+              </div>
+              <div class="form-grid">
+                <label>Runtime<select name="runtime" data-runtime-select="embedding"></select></label>
+                <label>Base URL<input name="base_url" type="url" required spellcheck="false"></label>
+                <label class="wide-field">Model identifier<input name="model" required spellcheck="false" placeholder="Select after probing or enter an ID"><datalist id="embedding-models"></datalist></label>
+                <label>Structured output<select name="structured_output_mode" disabled><option value="json_schema">Not used for embeddings</option></select></label>
+                <label>API key <span class="optional">OpenAI requires it · memory only</span><input name="api_key" type="password" autocomplete="new-password"></label>
+              </div>
+              <div class="form-actions">
+                <button class="secondary-button" type="button" data-probe="embedding">Probe models</button>
+                <button class="primary-button" type="submit">Use connection</button>
+              </div>
+              <p class="form-message" data-form-message="embedding" role="status"></p>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-corpus" data-view-panel="corpus" aria-labelledby="corpus-title" hidden>
+        <div class="view-header">
+          <div>
+            <p class="eyebrow">Grounding library</p>
+            <h1 id="corpus-title">Corpus</h1>
+            <p class="view-description">Immutable source versions with access-scoped retrieval and stable citation anchors.</p>
+          </div>
+          <button class="secondary-button" id="reload-sources" type="button">Reload sources</button>
+        </div>
+        <div class="corpus-layout">
+          <form class="upload-panel" id="upload-form">
+            <div class="drop-zone" id="drop-zone">
+              <input id="file-input" type="file" accept=".txt,.md,.markdown,.docx,.pdf" required>
+              <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 27V10M13 17l7-7 7 7"/><path d="M8 28v4h24v-4"/></svg>
+              <strong>Drop a source here</strong>
+              <span>or choose PDF, DOCX, Markdown, or TXT</span>
+              <small id="selected-file-label">Up to 50 MiB · processed locally</small>
+            </div>
+            <div class="upload-options">
+              <label>PDF OCR<select id="ocr-select"><option value="auto">Auto when needed</option><option value="never">Text extraction only</option><option value="always">Always use local OCR</option></select></label>
+              <button class="primary-button" id="upload-button" type="submit">Ingest source</button>
+            </div>
+            <p class="form-message" id="upload-message" role="status"></p>
+          </form>
+          <div class="source-browser">
+            <div class="section-heading">
+              <div><span class="eyebrow">Current versions</span><h2>Sources</h2></div>
+              <span class="count-label" id="source-count">0 sources</span>
+            </div>
+            <div class="source-list" id="source-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-capabilities" data-view-panel="capabilities" aria-labelledby="capabilities-title" hidden>
+        <div class="view-header">
+          <div>
+            <p class="eyebrow">Agent boundary</p>
+            <h1 id="capabilities-title">Capabilities</h1>
+            <p class="view-description">The exact tools and trusted instruction bundles available to the active agent. The model cannot expand this list.</p>
+          </div>
+        </div>
+        <div class="capability-layout">
+          <div class="capability-nav" role="tablist" aria-label="Capability types">
+            <button class="is-active" type="button" role="tab" aria-selected="true" data-capability-tab="tools">Tools <span id="tool-count">0</span></button>
+            <button type="button" role="tab" aria-selected="false" data-capability-tab="agents">Agents <span id="agent-count">0</span></button>
+            <button type="button" role="tab" aria-selected="false" data-capability-tab="skills">Skills <span id="skill-count">0</span></button>
+            <button type="button" role="tab" aria-selected="false" data-capability-tab="plugins">Plugins <span id="plugin-count">0</span></button>
+            <button type="button" role="tab" aria-selected="false" data-capability-tab="agent">Agent policy</button>
+          </div>
+          <div class="capability-content" id="capability-content"></div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="inspector" aria-label="Run inspector">
+      <div class="inspector-header">
+        <div>
+          <span class="eyebrow">Inspector</span>
+          <strong id="inspector-title">Session readiness</strong>
+        </div>
+        <button class="icon-button inspector-close" id="inspector-close" type="button" aria-label="Close inspector">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="inspector-body" id="inspector-body">
+        <div class="readiness-list" id="readiness-list"></div>
+        <div class="inspector-note">
+          <span class="eyebrow">Trust boundary</span>
+          <p>Retrieved text is evidence, never executable instruction. The host validates every model-selected action.</p>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
