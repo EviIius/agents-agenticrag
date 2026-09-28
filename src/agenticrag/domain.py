@@ -62,6 +62,7 @@ class SourceVersion:
     provenance_sha256: str | None = None
     parser_id: str = "text-v1"
     byte_size: int | None = None
+    title: str | None = None
 
 
 @dataclass(frozen=True)
@@ -113,6 +114,7 @@ EventKind = Literal[
     "skill_loaded",
     "tool_called",
     "review_completed",
+    "validation_rejected",
     "budget_exhausted",
     "delegation_started",
     "delegation_completed",
@@ -125,6 +127,7 @@ EventKind = Literal[
 class RunEvent:
     kind: EventKind
     detail: dict[str, Any] = field(default_factory=dict)
+    at_ms: int | None = None
 
 
 @dataclass(frozen=True)

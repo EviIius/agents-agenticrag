@@ -134,6 +134,31 @@ class ExperimentJournalTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "line 1"):
                 JsonlRunJournal(path).read()
 
+    def test_repeated_run_keeps_failures_and_continues_to_next_case(self) -> None:
+        class FailingWorkflow:
+            name = "failing"
+            provider_label = "local:test@loopback"
+            embedding_provider_label = None
+            manifest = {"workflow_version": "test-v1"}
+
+            def run(self, question, *, scopes, collection):  # type: ignore[no-untyped-def]
+                del question, scopes, collection
+                raise RuntimeError("unexpected model failure")
+
+        cases = [
+            ExperimentCase("first", "First?", "private", ("owner",)),
+            ExperimentCase("second", "Second?", "private", ("owner",)),
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            journal = JsonlRunJournal(Path(directory) / "runs.jsonl")
+            records = ExperimentRunner(journal).run(cases, [FailingWorkflow()], repeat=2)
+            replayed = journal.latest_records()
+        self.assertEqual(len(records), 4)
+        self.assertEqual([record.case_id for record in records], ["first", "second", "first", "second"])
+        self.assertEqual([record.manifest["repeat_index"] for record in records], [1, 1, 2, 2])
+        self.assertTrue(all(record.status == "failed" for record in replayed))
+        self.assertTrue(all("RuntimeError" in (record.error_trace or "") for record in replayed))
+
 
 if __name__ == "__main__":
     unittest.main()

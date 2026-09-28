@@ -46,9 +46,15 @@ Experiment runner --> append-only JSONL manifests --> deterministic metric summa
 ```
 
 The workbench is a zero-build static client of `/api/v1`; it does not duplicate retrieval or agent
-logic. Runtime connections are held in process memory, non-secret preferences stay in browser
-storage, and the capability inspector is rendered from backend-reported tools, skills, plugin
-status, budgets, and agent policy. Source upload is bounded, base64-decoded by the local service,
+logic. Local runtime selections are saved beside the workbench database and restored on restart;
+hosted API keys remain in process memory. Collection, scope, and theme preferences stay in browser
+storage. Workbench transcripts are stored in a separate local SQLite database and recent turns
+are loaded by conversation ID for Direct replies. Projects assign a collection and scope to a set
+of chats and sources; transcript search is constrained to the selected project. Project sources
+are retrieved by grounded modes, while Direct history stays within its current conversation.
+The capability inspector is rendered from
+backend-reported tools, skills, plugin status, budgets, and agent policy. Source upload is bounded,
+base64-decoded by the local service,
 parsed through the same ingestion boundary as the CLI, and removed from temporary storage after
 immutable publication.
 
@@ -85,9 +91,10 @@ PDF fails with a remediation message when that local capability is absent.
 7. `local` provider profiles accept loopback URLs only, unless the operator supplies exact private
    hostnames through `AGENTICRAG_LOCAL_RUNTIME_HOSTS` for container networking. OpenAI requires an
    explicit role selection, model, and API key. Provider failure never causes fallback.
-8. The current release has no mutation tools, shell execution, durable generated memory, hosted
-   tracing, or background network activity. Hosted web search exists only behind OpenAI provider
-   configuration and explicit per-run consent; Responses requests use `store: false`.
+8. The current release has no mutation tools, shell execution, autonomous memory synthesis, hosted
+   tracing, or background web activity. Web search runs only with explicit per-question consent.
+   Local search sends a query to external search services and returns bounded snippets; hosted
+   OpenAI web search also requires an explicit hosted profile and uses `store: false`.
 9. Skill discovery is confined to explicit project and standard Agent Skills roots, rejects
    escaping paths and oversized or malformed bundles, records source plus hashes, and treats
    skill metadata as incapable of granting tools or permissions.

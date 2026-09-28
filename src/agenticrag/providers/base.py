@@ -8,6 +8,7 @@ from typing import Any, Protocol, Sequence
 class ChatMessage:
     role: str
     content: str
+    image_data_url: str | None = None
 
 
 class ChatProvider(Protocol):
@@ -29,4 +30,3 @@ class EmbeddingProvider(Protocol):
     def label(self) -> str: ...
 
     def embed(self, texts: Sequence[str]) -> list[list[float]]: ...
-

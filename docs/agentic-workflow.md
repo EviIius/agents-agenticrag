@@ -37,6 +37,22 @@ The workflow never persists or exposes private chain-of-thought. `purpose` field
 summaries. Critical behavior comes from decomposition, external evidence, explicit support status,
 critique, and deterministic host checks rather than requesting hidden reasoning text.
 
+For a single factual corpus question, the host starts with authorized retrieval and reduces the
+plan to one checkable obligation. Supervisor uses the fixed retrieval path for a single simple
+corpus assignment. Multi-part questions still use bounded model-directed actions or specialist
+delegations. This keeps routine questions responsive while preserving citation validation.
+
+The web workbench saves conversations in a local SQLite database beside the corpus. The most
+recent 20 completed turns, capped to 1,500 characters per message, are provided to Direct mode
+after a page reload or model change. New chat starts with no earlier turns, while older chats can
+be reopened or deleted. A question explicitly asking about earlier chat questions uses that
+conversation history even when a grounded mode is selected. Other grounded questions still use
+the current question and authorized corpus evidence. Project memory is a separate set of notes
+the user explicitly saves, edits, or removes. It is passed to later model calls in that project
+as context, never as citable corpus evidence, and omitted from web-enabled runs to avoid sending
+private notes into external search queries. The harness does not infer or write memories on its
+own.
+
 ## Skill format
 
 ```markdown
@@ -67,10 +83,11 @@ There is deliberately no shell, arbitrary code execution, URL fetch, filesystem 
 credential access, or write connector. Adding any state-changing tool requires a separate preview,
 approval, idempotency, and audit design.
 
-The capability inspector also lists hosted `web_search`. It is not part of the base gateway. The
-Supervisor may construct that specialist only for an OpenAI chat configuration and a run whose
-request contains explicit web consent. Returned URLs are displayed separately from immutable
-corpus citations.
+The capability inspector also lists `web_search`. It is not part of the base gateway. The
+Supervisor may construct that specialist only for a run with explicit web consent and an
+available local or hosted search provider. Local search reads a bounded set of snippets and up
+to two public HTTPS pages with private-address checks. Returned URLs are displayed separately
+from immutable corpus citations.
 
 ## Quality and evaluation
 

@@ -2,12 +2,23 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
   <meta name="color-scheme" content="dark light">
   <meta name="description" content="Local-first control plane for inspectable RAG agents.">
+  <meta name="theme-color" content="#0C0C0D">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="AgenticRAG">
   <title>AgenticRAG Workbench</title>
-  <link rel="stylesheet" href="/styles.css">
-  <script src="/app.js" defer></script>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png">
+  <link rel="stylesheet" href="/styles.css?v=design-v2-2">
+  <link rel="stylesheet" href="/tokens.css?v=2">
+  <link rel="stylesheet" href="/design-v2.css?v=13">
+  <script src="/vendor/marked.umd.js" defer></script>
+  <script src="/vendor/purify.min.js" defer></script>
+  <script src="/app.js?v=design-v2-13" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#workspace">Skip to workspace</a>
@@ -20,36 +31,56 @@
         <span>AgenticRAG</span>
         <span class="product-label">Workbench</span>
       </div>
+      <button class="icon-button mobile-menu-toggle" id="mobile-menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="app-sidebar">☰</button>
+      <div class="titlebar-breadcrumb" aria-live="polite"><span id="titlebar-project">My library</span><span class="breadcrumb-divider">/</span><strong id="titlebar-title">New chat</strong></div>
       <div class="runtime-strip" aria-label="Runtime status">
-        <button class="runtime-chip" data-open-view="models" type="button">
+        <button class="runtime-chip" data-open-view="models" type="button" aria-label="Chat model settings">
           <span class="status-dot" id="chat-status-dot" data-state="idle" aria-hidden="true"></span>
           <span>Chat</span>
           <strong id="chat-model-label">Not configured</strong>
         </button>
-        <button class="runtime-chip" data-open-view="models" type="button">
+        <button class="runtime-chip" data-open-view="models" type="button" aria-label="Embedding model settings">
           <span class="status-dot" id="embedding-status-dot" data-state="idle" aria-hidden="true"></span>
           <span>Embedding</span>
           <strong id="embedding-model-label">Not configured</strong>
         </button>
       </div>
+      <div class="mobile-context" id="mobile-context">
+        <button type="button" id="mobile-context-toggle" aria-label="Knowledge settings" aria-expanded="false" aria-controls="mobile-context-fields"><span id="mobile-context-summary">My library</span><span aria-hidden="true">⌄</span></button>
+        <div class="mobile-context-fields" id="mobile-context-fields" hidden>
+          <p>Projects group chats and the sources they can use.</p>
+          <label for="mobile-project-select">Project</label>
+          <select id="mobile-project-select" aria-label="Active project"></select>
+          <button class="secondary-button" id="mobile-new-project" type="button">+ New project</button>
+          <button class="secondary-button" data-open-memory type="button">Project memory</button>
+          <p class="advanced-note">Advanced source filters</p>
+          <label for="mobile-collection-input">Collection ID</label>
+          <input id="mobile-collection-input" value="research" autocomplete="off" spellcheck="false">
+          <label for="mobile-scope-input">Access label</label>
+          <input id="mobile-scope-input" value="private" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
       <div class="topbar-actions">
-        <span class="local-badge" id="boundary-badge"><span aria-hidden="true">●</span> Local boundary</span>
+        <span class="local-badge" id="boundary-badge"><span aria-hidden="true">●</span> On this Mac</span>
         <button class="icon-button" id="theme-toggle" type="button" aria-label="Switch to light theme" title="Toggle theme">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.64 5.64l1.42 1.42M16.94 16.94l1.42 1.42M18.36 5.64l-1.42 1.42M7.06 16.94l-1.42 1.42"/><circle cx="12" cy="12" r="4"/></svg>
         </button>
+        <button class="icon-button mobile-new-chat" id="mobile-new-chat" type="button" aria-label="New chat">+</button>
       </div>
     </header>
 
-    <aside class="sidebar" aria-label="Workbench navigation">
-      <div class="environment-block">
-        <label for="collection-input">Collection</label>
-        <input id="collection-input" value="research" autocomplete="off" spellcheck="false">
-        <label for="scope-input">Access scope</label>
-        <div class="input-with-icon">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V8a5 5 0 0 1 10 0v2M5 10h14v10H5z"/></svg>
-          <input id="scope-input" value="private" autocomplete="off" spellcheck="false">
-        </div>
+    <button class="sidebar-scrim" id="sidebar-scrim" type="button" hidden aria-label="Close navigation"></button>
+    <aside class="sidebar" id="app-sidebar" aria-label="Workbench navigation">
+      <div class="sidebar-brand-slot"></div>
+      <div class="workspace-identity">
+        <span class="eyebrow">YOUR WORKSPACE</span>
+        <select id="project-select" aria-label="Active project"></select>
+        <small>Chats and sources in one place</small>
+        <button id="new-project-button" type="button">+ New project</button>
+        <button id="project-settings-button" type="button">Project settings</button>
+        <button class="memory-link" data-open-memory type="button">Project memory</button>
       </div>
+      <div class="sidebar-quick-actions"><div id="sidebar-new-chat-slot"></div><button id="sidebar-search-toggle" type="button" aria-label="Search chats">⌕</button></div>
 
       <nav class="primary-nav" aria-label="Primary">
         <p class="nav-label">Workspace</p>
@@ -58,28 +89,48 @@
           <span>Chat</span>
           <kbd>1</kbd>
         </button>
+        <button class="nav-item" type="button" data-view="corpus">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M16 4v4h3M8 12h8M8 16h6"/></svg>
+          <span>Sources</span>
+          <span class="nav-count" id="sources-nav-count" hidden></span>
+          <kbd>2</kbd>
+        </button>
         <button class="nav-item" type="button" data-view="models">
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8M8 13h5M17 13h.01"/></svg>
           <span>Models</span>
-          <kbd>2</kbd>
-        </button>
-        <button class="nav-item" type="button" data-view="corpus">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M16 4v4h3M8 12h8M8 16h6"/></svg>
-          <span>Corpus</span>
+          <span class="nav-count" id="models-nav-count" hidden></span>
           <kbd>3</kbd>
         </button>
         <button class="nav-item" type="button" data-view="capabilities">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg>
-          <span>Capabilities</span>
+          <span>Tools &amp; agents</span>
           <span class="nav-count" id="capability-count">0</span>
           <kbd>4</kbd>
         </button>
+        <button class="nav-item memory-nav" type="button" data-open-memory>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v17l-6-4-6 4z"/></svg><span>Project memory</span><span class="nav-count" id="memory-count" hidden></span>
+        </button>
       </nav>
+
+      <section class="chat-history" aria-label="Saved conversations">
+        <div class="history-heading"><span class="eyebrow">Chats</span><button id="sidebar-new-chat" type="button" aria-label="New conversation" title="New conversation">+</button></div>
+        <input id="chat-search" type="search" placeholder="Search chats" aria-label="Search saved conversations">
+        <div class="history-list" id="history-list"><p>No conversations yet</p></div>
+      </section>
+
+      <details class="environment-block" id="knowledge-settings">
+        <summary><span>Knowledge settings</span><span aria-hidden="true">⌄</span></summary>
+        <p>Collection groups documents. Access label decides which indexed sources these grounded modes may read. It is not an account or password.</p>
+        <label for="collection-input">Collection ID</label>
+        <input id="collection-input" value="research" autocomplete="off" spellcheck="false">
+        <label for="scope-input">Access label</label>
+        <input id="scope-input" value="private" autocomplete="off" spellcheck="false">
+      </details>
 
       <div class="sidebar-footer">
         <div class="readiness-summary">
           <div>
-            <span class="eyebrow">System readiness</span>
+            <span class="eyebrow">Setup status</span>
             <strong id="readiness-label">Checking…</strong>
           </div>
           <span class="readiness-ring" id="readiness-ring" aria-hidden="true">0</span>
@@ -88,32 +139,55 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.34 5.66M20 5v6h-6"/></svg>
           Refresh state
         </button>
+        <span class="runtime-endpoint-label" id="runtime-endpoint-label"></span>
+        <span class="active-run-count" id="active-run-count" hidden>1 run active</span>
         <span class="version-label" id="version-label">AgenticRAG</span>
       </div>
     </aside>
 
     <main class="workspace" id="workspace" tabindex="-1">
       <section class="view is-active" id="view-chat" data-view-panel="chat" aria-labelledby="chat-title">
+        <div class="mobile-writing-bar" id="mobile-writing-bar">
+          <span id="mobile-writing-mode">Writing a question</span>
+          <button id="dismiss-keyboard" type="button">Done</button>
+        </div>
+        <div class="chat-scroll" id="chat-scroll">
         <div class="view-header chat-header">
           <div>
-            <p class="eyebrow">Active session</p>
-            <h1 id="chat-title">Private research chat</h1>
+            <p class="eyebrow">CONVERSATION</p>
+            <h1 id="chat-title">New conversation</h1>
+            <div class="chat-session-actions">
+              <span id="memory-status">Saved on this Mac · previous turns available to the model</span>
+              <button id="new-chat-button" type="button">+ New chat</button>
+              <button id="delete-chat-button" type="button" disabled aria-label="Delete this conversation" title="Delete this conversation">Delete</button>
+              <details class="mobile-chat-history" id="mobile-chat-history">
+                <summary>Chats <span aria-hidden="true">⌄</span></summary>
+                <div class="mobile-chat-history-panel">
+                  <input id="mobile-chat-search" type="search" placeholder="Search chats" aria-label="Search saved conversations">
+                  <select id="mobile-chat-select" aria-label="Open a saved conversation"><option value="">Recent chats</option></select>
+                </div>
+              </details>
+            </div>
           </div>
-          <div class="workflow-control" role="group" aria-label="Workflow">
+          <div class="workflow-control" id="workflow-options" role="menu" aria-label="Choose workflow" hidden>
+            <button type="button" data-workflow="direct" title="Plain conversation with saved chat history">Direct</button>
             <button type="button" data-workflow="fixed">Fixed</button>
             <button class="is-active" type="button" data-workflow="agent">Agentic</button>
             <button type="button" data-workflow="supervisor">Supervisor</button>
-            <button type="button" data-workflow="direct">Direct</button>
           </div>
         </div>
 
+        <div class="corpus-notice" id="corpus-notice" role="status" hidden>
+          <div><strong id="corpus-notice-title">No sources in this library</strong><span id="corpus-notice-detail">Add a document before asking a grounded question.</span></div>
+          <button type="button" data-open-view="corpus">Open Sources →</button>
+        </div>
         <div class="conversation" id="conversation" aria-live="polite">
           <div class="empty-conversation" id="chat-empty">
             <div class="empty-glyph" aria-hidden="true">
               <svg viewBox="0 0 40 40"><path d="M20 4l13 7.5v15L20 34 7 26.5v-15z"/><path d="M7 11.5l13 7.4 13-7.4M20 18.9V34"/></svg>
             </div>
-            <h2>Ask your corpus, then inspect the work.</h2>
-            <p>Agentic mode decomposes the question, uses only enabled read-only tools, and sends the answer through an evidence critic before returning it.</p>
+            <h2 id="chat-empty-title">Ask your sources.</h2>
+            <p id="chat-empty-description">Agentic mode plans evidence gathering, uses enabled read-only tools, and checks the answer against citations.</p>
             <div class="starter-prompts" aria-label="Example prompts">
               <button type="button" data-prompt="Summarize the strongest claims in this collection and cite each one.">Summarize the strongest claims</button>
               <button type="button" data-prompt="What evidence in this collection conflicts or remains uncertain?">Find conflicts and uncertainty</button>
@@ -121,28 +195,50 @@
             </div>
           </div>
         </div>
+        </div>
 
+        <div class="runtime-notice" id="runtime-notice" role="status" hidden><span id="runtime-notice-text"></span><button type="button" data-open-view="models">Open Models</button></div>
         <form class="composer" id="ask-form">
           <div class="composer-context" id="selected-skills-summary">No skills selected</div>
+          <div class="attachment-preview" id="attachment-preview" role="status" aria-live="polite" hidden>
+            <span class="attachment-preview-icon" aria-hidden="true">▧</span>
+            <span class="attachment-preview-copy"><strong id="attachment-label"></strong><small id="attachment-detail"></small></span>
+            <button id="remove-attachment" type="button" aria-label="Remove attached file" title="Remove attached file">×</button>
+          </div>
+          <button class="composer-route" id="composer-route" type="button" title="View models and comparison results">
+            <span id="composer-route-mode">Agentic</span><span aria-hidden="true">·</span><span id="composer-route-model">Choose a model</span>
+          </button>
           <label class="sr-only" for="question-input">Ask a question</label>
-          <textarea id="question-input" rows="2" maxlength="12000" placeholder="Ask a grounded question…" required></textarea>
+          <textarea id="question-input" rows="1" maxlength="12000" placeholder="Ask a grounded question…" required></textarea>
           <div class="composer-toolbar">
             <div class="composer-meta">
-              <button class="tool-button" id="skill-picker-button" type="button" aria-expanded="false" aria-controls="skill-picker">
+              <button class="tool-button mode-pill" id="mode-pill" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="workflow-options"><span aria-hidden="true">◇</span><strong id="mode-pill-label">Agentic</strong><span aria-hidden="true">⌄</span></button>
+              <button class="tool-button" id="skill-picker-button" type="button" aria-label="Choose skills" aria-expanded="false" aria-controls="skill-picker">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5"/></svg>
                 Skills
                 <span id="selected-skill-count">0</span>
               </button>
-              <label class="tool-button consent-toggle" id="web-search-control" title="Sends delegated queries to OpenAI when Supervisor mode uses the web researcher">
-                <input id="allow-web-input" type="checkbox" disabled>
-                Web search
+              <label class="tool-button consent-toggle" id="web-search-control" title="Searches the public web for this question when enabled">
+                <input id="allow-web-input" type="checkbox" aria-label="Search the public web" disabled>
+                <svg class="web-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 4 5.6 4 9s-1.5 6.4-4 9c-2.5-2.6-4-5.6-4-9s1.5-6.4 4-9z"/></svg>
+                <span class="web-search-label">Web search</span>
               </label>
-              <span class="context-label" id="chat-context-label">research · private</span>
+              <button class="tool-button attachment-button" id="chat-attachment-control" type="button" aria-label="Add a file, image, or dictate" aria-expanded="false" aria-controls="composer-add-menu" title="Add a file, image, or dictate"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 12.5 5.7-5.7a3.5 3.5 0 0 1 5 5L10.5 20a5 5 0 0 1-7-7L12 4.5"/></svg><span>Add</span></button>
+              <input id="chat-document-input" type="file" accept=".txt,.md,.markdown,.docx,.pdf,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+              <input id="chat-image-input" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+              <button class="tool-button" id="dictate-button" type="button" hidden aria-label="Dictate question">Dictate</button>
+              <button class="context-label" id="chat-context-label" type="button" title="Project and source settings">My library</button>
             </div>
-            <button class="send-button" id="send-button" type="submit">
+            <button class="send-button" id="send-button" type="submit" aria-label="Send question">
               <span>Run agent</span>
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </button>
+            <button class="send-button stop-button" id="stop-button" type="button" aria-label="Stop response" hidden><span>Stop</span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg></button>
+          </div>
+          <div class="composer-add-menu" id="composer-add-menu" hidden>
+            <button id="add-file-button" type="button">Add document <small>PDF, Word, Markdown, or text</small></button>
+            <button id="add-image-button" type="button">Add image <small>Use with a vision model</small></button>
+            <button id="add-dictate-button" type="button">Dictate a question</button>
           </div>
           <div class="popover" id="skill-picker" hidden>
             <div class="popover-header">
@@ -152,6 +248,7 @@
             <div id="skill-picker-list"></div>
           </div>
         </form>
+        <p class="composer-caption" id="composer-caption">Runs on this Mac · retrieved text is evidence, never instructions</p>
       </section>
 
       <section class="view" id="view-models" data-view-panel="models" aria-labelledby="models-title" hidden>
@@ -159,12 +256,36 @@
           <div>
             <p class="eyebrow">Runtime connections</p>
             <h1 id="models-title">Models</h1>
-            <p class="view-description">Connect a local OpenAI-compatible runtime or explicitly opt into hosted OpenAI. Keys stay in this process and are never saved to browser storage.</p>
+            <p class="view-description">Choose a model already on this Mac. Advanced connections remain available when you need another runtime.</p>
           </div>
         </div>
         <div class="model-workspace">
-          <div class="runtime-presets" id="runtime-presets" aria-label="Runtime presets"></div>
+          <section class="model-library" aria-labelledby="local-library-title">
+            <div class="library-heading">
+              <div><span class="eyebrow">This Mac</span><h2 id="local-library-title">Installed on this Mac</h2><p>Switch chat models without editing endpoints. Your embedding model powers document search.</p></div>
+              <button class="secondary-button" id="discover-models-button" type="button">Refresh installed models</button>
+            </div>
+            <div class="active-models">
+              <div class="active-model-card"><span class="eyebrow">Chat</span><strong id="active-chat-model">Not selected</strong><span id="active-chat-runtime">Connect a local model to begin</span><button class="secondary-button" id="active-contract-button" type="button">Test agent contract</button></div>
+              <div class="active-model-card"><span class="eyebrow">Document search</span><strong id="active-embedding-model">Not selected</strong><span id="active-embedding-runtime">Embeddings for your corpus</span><button class="secondary-button" id="active-embedding-change" type="button">Change</button></div>
+            </div>
+            <div class="library-subhead"><h3>Installed chat models</h3><span id="installed-model-count">Checking…</span></div>
+            <div class="installed-models" id="installed-chat-models" aria-live="polite"></div>
+            <p class="form-message" id="library-message" role="status"></p>
+          </section>
+          <section class="evaluation-panel" aria-labelledby="evaluation-title">
+            <div class="evaluation-heading">
+              <div><span class="eyebrow">Measured on this Mac</span><h2 id="evaluation-title">Mode timing &amp; connections</h2></div>
+              <button class="secondary-button" id="refresh-evaluation" type="button">Refresh results</button>
+            </div>
+            <p id="evaluation-description">Results will appear here after the same questions have been tested across models and modes.</p>
+            <div id="evaluation-results" class="evaluation-results" aria-live="polite"></div>
+            <p class="evaluation-note">Answer checks look for expected words; citation checks match IDs. Neither proves a claim is correct or supported. Loaded memory is a sample, not the peak.</p>
+          </section>
           <div class="connection-stack">
+            <details class="advanced-connections" id="advanced-connections">
+              <summary><span><strong>Advanced connections</strong><small>LM Studio, llama.cpp, vLLM, custom endpoints, and hosted OpenAI</small></span><span aria-hidden="true">⌄</span></summary>
+              <p class="advanced-note">Ollama is already connected on this Mac. Use these settings only when changing runtimes. Hosted OpenAI is optional and sends prompts off-device.</p>
             <form class="connection-panel" data-provider-form="chat">
               <div class="section-heading">
                 <div><span class="eyebrow">Generation</span><h2>Chat model</h2></div>
@@ -203,6 +324,7 @@
               </div>
               <p class="form-message" data-form-message="embedding" role="status"></p>
             </form>
+            </details>
           </div>
         </div>
       </section>
@@ -211,10 +333,10 @@
         <div class="view-header">
           <div>
             <p class="eyebrow">Grounding library</p>
-            <h1 id="corpus-title">Corpus</h1>
+            <h1 id="corpus-title">Sources</h1>
             <p class="view-description">Immutable source versions with access-scoped retrieval and stable citation anchors.</p>
           </div>
-          <button class="secondary-button" id="reload-sources" type="button">Reload sources</button>
+          <div class="source-header-actions"><input id="source-search" type="search" placeholder="Search sources" aria-label="Search sources"><button class="secondary-button" id="reload-sources" type="button">Refresh</button><button class="primary-button" id="add-source-button" type="button">Add source</button></div>
         </div>
         <div class="corpus-layout">
           <form class="upload-panel" id="upload-form">
@@ -222,22 +344,24 @@
               <input id="file-input" type="file" accept=".txt,.md,.markdown,.docx,.pdf" required>
               <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 27V10M13 17l7-7 7 7"/><path d="M8 28v4h24v-4"/></svg>
               <strong>Drop a source here</strong>
-              <span>or choose PDF, DOCX, Markdown, or TXT</span>
+              <span>PDF, DOCX, Markdown or TXT</span>
               <small id="selected-file-label">Up to 50 MiB · processed locally</small>
             </div>
             <div class="upload-options">
-              <label>PDF OCR<select id="ocr-select"><option value="auto">Auto when needed</option><option value="never">Text extraction only</option><option value="always">Always use local OCR</option></select></label>
-              <button class="primary-button" id="upload-button" type="submit">Ingest source</button>
+              <details class="upload-options-menu"><summary>Options</summary><label>PDF OCR<select id="ocr-select"><option value="auto">Auto when needed</option><option value="never">Text extraction only</option><option value="always">Always use local OCR</option></select></label></details>
+              <button class="primary-button" id="upload-button" type="submit">Add source</button>
             </div>
             <p class="form-message" id="upload-message" role="status"></p>
           </form>
           <div class="source-browser">
             <div class="section-heading">
-              <div><span class="eyebrow">Current versions</span><h2>Sources</h2></div>
+              <div><h2>Current versions</h2></div>
               <span class="count-label" id="source-count">0 sources</span>
             </div>
+            <div class="source-filters" id="source-filters" aria-label="Filter sources"></div>
             <div class="source-list" id="source-list"></div>
           </div>
+          <aside class="source-preview" id="source-preview" hidden aria-label="Source preview"></aside>
         </div>
       </section>
 
@@ -245,7 +369,7 @@
         <div class="view-header">
           <div>
             <p class="eyebrow">Agent boundary</p>
-            <h1 id="capabilities-title">Capabilities</h1>
+            <h1 id="capabilities-title">Tools &amp; agents</h1>
             <p class="view-description">The exact tools and trusted instruction bundles available to the active agent. The model cannot expand this list.</p>
           </div>
         </div>
@@ -260,9 +384,50 @@
           <div class="capability-content" id="capability-content"></div>
         </div>
       </section>
+      <button id="back-to-top" class="back-to-top" type="button" hidden aria-label="Back to top of this screen">↑ Back to top</button>
     </main>
 
-    <aside class="inspector" aria-label="Run inspector">
+    <dialog id="voice-dialog" class="project-dialog" aria-labelledby="voice-dialog-title">
+      <p class="eyebrow">VOICE INPUT</p>
+      <h2 id="voice-dialog-title">Dictate a question</h2>
+      <p>Your browser handles speech recognition and may send audio to its speech service. Use your keyboard microphone if you prefer. The transcript stays editable before you send it.</p>
+      <div class="dialog-actions"><button id="cancel-voice" class="secondary-button" type="button">Cancel</button><button id="start-voice" class="primary-button" type="button">Start dictation</button></div>
+    </dialog>
+
+    <dialog id="memory-dialog" class="project-dialog memory-dialog" aria-labelledby="memory-dialog-title">
+      <div class="memory-dialog-heading">
+        <div><p class="eyebrow">SAVED CONTEXT</p><h2 id="memory-dialog-title">Project memory</h2></div>
+        <button id="close-memory" class="secondary-button" type="button">Done</button>
+      </div>
+      <p>Notes you save here can guide future chats in this project. Check important facts against Sources.</p>
+      <div id="memory-list" class="memory-list" aria-live="polite"></div>
+      <form id="memory-form">
+        <label for="memory-content">Add a note</label>
+        <textarea id="memory-content" maxlength="1000" rows="3" required placeholder="A preference or fact to remember across chats"></textarea>
+        <input id="memory-source-chat" type="hidden">
+        <div class="dialog-actions"><button id="cancel-memory-edit" class="secondary-button" type="button" hidden>Cancel edit</button><button class="primary-button" id="save-memory" type="submit">Save note</button></div>
+      </form>
+      <details class="memory-activity"><summary>Recent memory changes</summary><div id="memory-activity-list"></div></details>
+    </dialog>
+
+    <dialog id="project-dialog" class="project-dialog" aria-labelledby="project-dialog-title">
+      <form id="project-form">
+        <p class="eyebrow">NEW WORKSPACE</p>
+        <h2 id="project-dialog-title">Create a project</h2>
+        <p>Chats and uploaded sources in this project stay together.</p>
+        <label for="project-name">Project name</label>
+        <input id="project-name" maxlength="64" required placeholder="e.g. Recipes and ideas">
+        <div class="dialog-actions"><button class="secondary-button" id="cancel-project" type="button">Cancel</button><button class="primary-button" type="submit">Create project</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="project-settings-dialog" class="project-dialog" aria-labelledby="project-settings-title">
+      <div class="memory-dialog-heading"><h2 id="project-settings-title">Project settings</h2><button id="close-project-settings" class="secondary-button" type="button">Done</button></div>
+      <div id="project-settings-content"></div>
+    </dialog>
+
+    <button class="inspector-backdrop" id="inspector-backdrop" type="button" aria-label="Close inspector" hidden></button>
+    <aside class="inspector" aria-label="Run inspector" aria-hidden="true">
       <div class="inspector-header">
         <div>
           <span class="eyebrow">Inspector</span>

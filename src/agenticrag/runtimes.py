@@ -128,6 +128,7 @@ class RuntimeSelection:
             api_key=self.api_key,
             timeout_seconds=self.timeout_seconds,
             structured_output_mode=self.structured_output_mode,
+            runtime=self.runtime,
         )
 
     def public_dict(self) -> dict[str, object]:
@@ -141,6 +142,25 @@ class RuntimeSelection:
             "credential_configured": bool(self.api_key),
             "timeout_seconds": self.timeout_seconds,
         }
+
+
+def ollama_supports_vision(config: ProviderConfig) -> bool:
+    """Ask the selected local Ollama runtime instead of guessing from a model name."""
+    if config.runtime != "ollama":
+        return False
+    request = Request(
+        f"{config.base_url.removesuffix('/v1')}/api/show",
+        data=json.dumps({"model": config.model}).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urlopen(request, timeout=10) as response:  # noqa: S310 - validated loopback runtime
+            details = json.load(response)
+    except (HTTPError, URLError, TimeoutError, OSError, ValueError) as exc:
+        raise ProviderError("Could not verify the selected model's image capability") from exc
+    capabilities = details.get("capabilities") if isinstance(details, dict) else None
+    return isinstance(capabilities, list) and "vision" in capabilities
 
 
 def discover_models(config: ProviderConfig) -> dict[str, object]:

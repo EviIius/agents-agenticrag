@@ -297,10 +297,21 @@ class SQLiteCorpusStore:
         tokens = re.findall(r"[\w-]+", query, flags=re.UNICODE)
         if not tokens or limit <= 0:
             return []
-        fts_query = " OR ".join(f'"{token.replace(chr(34), chr(34) * 2)}"' for token in tokens[:32])
+        tokens = tokens[:32]
+        fts_query = " OR ".join(f'"{token.replace(chr(34), chr(34) * 2)}"' for token in tokens)
+        stopwords = {
+            "a", "an", "and", "are", "as", "at", "by", "did", "do", "does", "for",
+            "from", "how", "in", "is", "it", "of", "on", "or", "the", "this", "to",
+            "was", "were", "what", "when", "where", "which", "who", "why", "with",
+            "according",
+        }
+        content_tokens = [token for token in tokens if token.casefold() not in stopwords]
+        phrase_query = " OR ".join(
+            f'"{left} {right}"'
+            for left, right in zip(content_tokens, content_tokens[1:])
+        )
         scope_marks = ",".join("?" for _ in allowed)
-        rows = self.connection.execute(
-            f"""SELECT {self._chunk_columns()}, bm25(chunk_fts) AS raw_score
+        sql = f"""SELECT {self._chunk_columns()}, bm25(chunk_fts) AS raw_score
                 FROM chunk_fts
                 JOIN chunks c ON c.id = chunk_fts.chunk_id
                 JOIN source_versions sv ON sv.id = c.source_version_id
@@ -313,12 +324,26 @@ class SQLiteCorpusStore:
                       WHERE ss.source_version_id = sv.id AND ss.scope IN ({scope_marks})
                   )
                 ORDER BY raw_score ASC, c.id ASC
-                LIMIT ?""",
-            (fts_query, collection, *allowed, limit),
-        ).fetchall()
+                LIMIT ?"""
+        rows = []
+        if phrase_query:
+            rows.extend(self.connection.execute(
+                sql, (phrase_query, collection, *allowed, min(limit, 8))
+            ).fetchall())
+        rows.extend(self.connection.execute(
+            sql, (fts_query, collection, *allowed, limit)
+        ).fetchall())
+        unique_rows = []
+        seen: set[str] = set()
+        for row in rows:
+            if row["id"] not in seen:
+                unique_rows.append(row)
+                seen.add(row["id"])
+            if len(unique_rows) >= limit:
+                break
         return [
             RankedChunk(chunk=self._row_to_chunk(row), score=-float(row["raw_score"]), lexical_rank=i)
-            for i, row in enumerate(rows, start=1)
+            for i, row in enumerate(unique_rows, start=1)
         ]
 
     def vector_search(
@@ -380,7 +405,7 @@ class SQLiteCorpusStore:
         allowed = _scopes(scopes)
         scope_marks = ",".join("?" for _ in allowed)
         row = self.connection.execute(
-            f"""SELECT sv.*, d.collection_id, d.logical_path
+            f"""SELECT sv.*, d.collection_id, d.logical_path, substr(sv.content, 1, 2048) AS title_sample
                 FROM source_versions sv
                 JOIN documents d ON d.id = sv.document_id
                 WHERE sv.id = ? AND EXISTS (
@@ -411,7 +436,7 @@ class SQLiteCorpusStore:
         if collection is not None:
             parameters += (collection,)
         rows = self.connection.execute(
-            f"""SELECT sv.*, d.collection_id, d.logical_path
+            f"""SELECT sv.*, d.collection_id, d.logical_path, substr(sv.content, 1, 2048) AS title_sample
                 FROM source_versions sv
                 JOIN documents d ON d.id = sv.document_id
                 WHERE d.current_version_id = sv.id
@@ -459,6 +484,7 @@ class SQLiteCorpusStore:
             provenance_sha256=row["provenance_sha256"],
             parser_id=row["parser_id"],
             byte_size=row["byte_size"],
+            title=_source_title(row["title_sample"] if "title_sample" in row.keys() else (row["content"] if include_text else ""), row["logical_path"]),
         )
 
     @staticmethod
@@ -544,6 +570,14 @@ def _identifier(value: str, name: str) -> str:
     if not normalized or len(normalized) > 128:
         raise IngestionError(f"{name} must contain 1 to 128 characters")
     return normalized
+
+
+def _source_title(sample: str | None, logical_path: str) -> str:
+    if sample:
+        heading = re.search(r"^\s*#\s+(.+?)\s*$", sample, re.MULTILINE)
+        if heading:
+            return heading.group(1)[:160]
+    return Path(logical_path).stem.replace("-", " ").replace("_", " ").strip()[:160]
 
 
 def _scopes(values: Sequence[str]) -> tuple[str, ...]:

@@ -6,6 +6,7 @@ from _bootstrap import SRC  # noqa: F401
 from agenticrag.domain import SourceDraft
 from agenticrag.errors import AuthorizationError, IngestionError
 from agenticrag.ingestion import Ingestor, TextChunker
+from agenticrag.retrieval import HybridRetriever, RetrievalConfig
 from agenticrag.store import SQLiteCorpusStore
 from fakes import DeterministicEmbedding
 
@@ -58,6 +59,29 @@ class SQLiteCorpusStoreTests(unittest.TestCase):
         )
         self.assertEqual(old_hits, [])
 
+    def test_adjacent_query_terms_prioritize_the_relevant_sentence(self) -> None:
+        self.ingestor.ingest_source(self._source("# Architecture\n" + "architecture source " * 12))
+        self.ingestor.ingest_source(
+            SourceDraft(
+                "private", "/corpus/scopes.md", "text/markdown",
+                "The authenticated application supplies scopes.", ("owner",),
+            )
+        )
+        hits = self.store.lexical_search(
+            "According to the architecture source, who supplies scopes?",
+            embedding_label=self.embedder.label,
+            scopes=("owner",), collection="private", limit=10,
+        )
+        self.assertIn("supplies scopes", hits[0].chunk.text)
+        packed = HybridRetriever(
+            self.store, self.embedder,
+            config=RetrievalConfig(max_chunks_per_document=1, result_limit=2),
+        ).retrieve(
+            "According to the architecture source, who supplies scopes?",
+            scopes=("owner",), collection="private",
+        )
+        self.assertIn("supplies scopes", packed[0].chunk.text)
+
     def test_scope_is_applied_before_lexical_vector_and_source_fetch(self) -> None:
         version = self.ingestor.ingest_source(self._source("Atlas has 64 GB of memory."))
         lexical = self.store.lexical_search(
@@ -88,6 +112,7 @@ class SQLiteCorpusStoreTests(unittest.TestCase):
         self.assertNotEqual(first.id, current.id)
         self.assertEqual(self.store.list_sources(scopes=("guest",), collection="private"), [])
         sources = self.store.list_sources(scopes=("owner",), collection="private")
+        self.assertTrue(all(source.title for source in sources))
         self.assertEqual([source.id for source in sources], [current.id])
         self.assertIsNone(sources[0].text)
 

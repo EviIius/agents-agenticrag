@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import os
 import sys
-from dataclasses import asdict
+import tempfile
+from dataclasses import asdict, replace
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -30,7 +33,7 @@ from .providers.openai_responses import OpenAIResponsesWebSearch
 from .providers.base import ChatMessage
 from .postgres_store import PostgresCorpusStore
 from .retrieval import HybridRetriever
-from .runtimes import discover_models
+from .runtimes import RuntimeSelection, discover_models
 from .skills import SkillRegistry
 from .store import SQLiteCorpusStore
 from .supervisor import SupervisorAgentWorkflow
@@ -127,6 +130,13 @@ def build_parser() -> argparse.ArgumentParser:
     compare.add_argument("dataset", type=Path)
     compare.add_argument("--runs", type=Path, default=Path(".data/runs.jsonl"))
     compare.add_argument("--include-agent", action="store_true")
+    compare.add_argument("--include-supervisor", action="store_true")
+    compare.add_argument("--all-modes", action="store_true", help="Include Agentic and Supervisor alongside Direct and Fixed")
+    compare.add_argument("--model", action="append", default=[], help="Repeat to compare installed chat models without changing the workbench selection")
+    compare.add_argument("--all-installed", action="store_true", help="Compare every locally installed chat model")
+    compare.add_argument("--exclude-model", action="append", default=[], help="Omit an installed model ID, such as an unbounded duplicate of a workbench variant")
+    compare.add_argument("--repeat", type=int, default=1, help="Run each case/model/mode this many times")
+    compare.add_argument("--report", type=Path, help="Write a Models-page summary; defaults beside the corpus database")
     compare.add_argument("--skill", action="append", default=[])
     compare.add_argument(
         "--skills-root",
@@ -178,7 +188,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 _emit(asdict(source))
                 return 0
 
-            embedding = build_embedding_provider(load_provider_config(ProviderRole.EMBEDDING))
+            embedding_config = (
+                _comparison_config(args.db, ProviderRole.EMBEDDING)
+                if args.command == "compare" else load_provider_config(ProviderRole.EMBEDDING)
+            )
+            embedding = build_embedding_provider(embedding_config)
             if args.command == "ingest":
                 ingestion = load_ingestion_config()
                 file_parser = FileParser(
@@ -198,7 +212,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 _emit({"status": "published", "embedding_provider": embedding.label, **asdict(version)})
                 return 0
 
-            chat = build_chat_provider(load_provider_config(ProviderRole.CHAT))
+            chat_config = (
+                _comparison_config(args.db, ProviderRole.CHAT)
+                if args.command == "compare" else load_provider_config(ProviderRole.CHAT)
+            )
+            chat = build_chat_provider(chat_config)
             retriever = HybridRetriever(store, embedding)
             fixed = FixedRAGWorkflow(retriever, chat)
             if args.command == "ask":
@@ -243,27 +261,66 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
                 return 0
             if args.command == "compare":
+                if args.repeat < 1 or args.repeat > 10:
+                    raise ValueError("--repeat must be between 1 and 10")
+                if args.all_installed and args.model:
+                    raise ValueError("Use --all-installed or --model, not both")
                 cases = _load_cases(args.dataset)
                 journal = JsonlRunJournal(args.runs)
-                workflows = [DirectWorkflow(chat), fixed]
-                if args.include_agent:
-                    workflows.append(
-                        BoundedAgenticRAGWorkflow(
-                            retriever,
-                            chat,
-                            store,
+                model_names = args.model or [chat_config.model]
+                if args.all_installed:
+                    if chat_config.runtime != "ollama":
+                        raise ConfigurationError("--all-installed requires the local Ollama runtime")
+                    model_names = [
+                        name for name in discover_models(chat_config)["models"]
+                        if not any(part in name.casefold() for part in ("embed", "embedding"))
+                    ]
+                    if not model_names:
+                        raise ConfigurationError("No installed chat models were found")
+                model_names = [name for name in model_names if name not in set(args.exclude_model)]
+                if not model_names:
+                    raise ValueError("No chat models remain after exclusions")
+                workflows = []
+                for model_name in model_names:
+                    candidate = build_chat_provider(replace(chat_config, model=model_name))
+                    workflows.extend([DirectWorkflow(candidate), FixedRAGWorkflow(retriever, candidate)])
+                    if args.include_agent or args.all_modes:
+                        workflows.append(
+                            BoundedAgenticRAGWorkflow(
+                                retriever, candidate, store,
+                                skill_registry=_skill_registry(args.skills_root),
+                                selected_skills=args.skill,
+                                config=AgentConfig(max_steps=args.agent_max_steps, max_seconds=args.agent_max_seconds),
+                            )
+                        )
+                    if args.include_supervisor or args.all_modes:
+                        workflows.append(SupervisorAgentWorkflow(
+                            retriever, candidate, store,
                             skill_registry=_skill_registry(args.skills_root),
                             selected_skills=args.skill,
-                            config=AgentConfig(
-                                max_steps=args.agent_max_steps,
-                                max_seconds=args.agent_max_seconds,
-                            ),
-                        )
-                    )
-                records = ExperimentRunner(journal).run(cases, workflows)
+                        ))
+                records = ExperimentRunner(journal).run(cases, workflows, repeat=args.repeat)
                 for record in records:
                     _emit(record.to_dict())
-                _emit({"type": "summary", "groups": summarize_experiments(records, cases)})
+                summaries = summarize_experiments(records, cases)
+                report = {
+                    "schema_version": 1,
+                    "created_at": datetime.now(UTC).isoformat(),
+                    "dataset_sha256": hashlib.sha256(args.dataset.read_bytes()).hexdigest(),
+                    "dataset_label": args.dataset.name,
+                    "case_count": len(cases),
+                    "repeat": args.repeat,
+                    "models": model_names,
+                    "structured_output_mode": chat_config.structured_output_mode,
+                    "runtime": chat_config.runtime,
+                    "groups": [
+                        {**group, "model": _model_from_label(str(group["provider"]))}
+                        for group in summaries
+                    ],
+                }
+                report_path = args.report or Path(args.db).expanduser().resolve().with_name("workbench-evaluation.json")
+                _write_json_atomic(report_path, report)
+                _emit({"type": "summary", "report_path": str(report_path), "groups": summaries})
                 return 0
     except (AgenticRAGError, OSError, ValueError, json.JSONDecodeError) as exc:
         _emit(
@@ -387,6 +444,50 @@ def _openai_check(web_query: str | None) -> int:
     return 0
 
 
+def _comparison_config(db_path: str, role: ProviderRole):
+    """Mirror the saved local workbench selection when comparing its corpus."""
+    db = Path(db_path).expanduser().resolve()
+    specific = db.with_suffix(".providers.json")
+    path = specific if specific.exists() else db.with_name("workbench-providers.json")
+    if not path.exists():
+        return load_provider_config(role)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    saved = payload.get("providers", {}).get(role.value)
+    if not isinstance(saved, dict):
+        return load_provider_config(role)
+    return RuntimeSelection(
+        runtime=str(saved["runtime"]),
+        role=role,
+        base_url=str(saved["base_url"]),
+        model=str(saved["model"]),
+        structured_output_mode=str(saved.get("structured_output_mode", "json_schema")),
+        timeout_seconds=float(saved.get("timeout_seconds", 90)),
+    ).provider_config()
+
+
+def _model_from_label(label: str) -> str:
+    return label.partition(":")[2].rsplit("@", 1)[0] or label
+
+
+def _write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
+    target = path.expanduser().resolve()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", dir=target.parent, delete=False
+        ) as temporary:
+            temporary_path = Path(temporary.name)
+            os.chmod(temporary_path, 0o600)
+            json.dump(payload, temporary, ensure_ascii=False, separators=(",", ":"))
+            temporary.flush()
+            os.fsync(temporary.fileno())
+        os.replace(temporary_path, target)
+    finally:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
+
+
 def _load_cases(path: Path) -> list[ExperimentCase]:
     cases: list[ExperimentCase] = []
     for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
@@ -419,12 +520,18 @@ def _load_cases(path: Path) -> list[ExperimentCase]:
                     expected_answer_contains=_optional_string_array(
                         value, "expected_answer_contains", line_number
                     ),
+                    forbidden_answer_contains=_optional_string_array(
+                        value, "forbidden_answer_contains", line_number
+                    ),
+                    category=str(value.get("category", "general")),
                 )
             )
         except (KeyError, TypeError) as exc:
             raise ValueError(f"Dataset line {line_number} has an invalid case schema") from exc
     if not cases:
         raise ValueError("Experiment dataset contains no cases")
+    if len({case.id for case in cases}) != len(cases):
+        raise ValueError("Experiment dataset contains duplicate case IDs")
     return cases
 
 

@@ -34,12 +34,26 @@ fallback.
 - Launch a zero-build local workbench for runtime setup, model probing, drag/drop ingestion,
   fixed/direct/agentic/supervisor chat, citations, source inspection, capability visibility, and
   delegation traces.
+- Save workbench conversations locally. Direct mode receives recent turns for follow-up questions;
+  grounded workflows still answer from authorized sources.
+- Group chats and sources into projects, search saved conversations by title or message text, and
+  add a source directly from the chat composer. Project sources are available to grounded modes;
+  conversation history stays within its own chat.
+- Save, edit, and delete project memory notes explicitly. Answers can be saved as notes with a
+  link back to their conversation. Notes guide later chats in the project but do not count as
+  citation evidence for grounded answers.
+- Attach PNG, JPEG, or WebP images to Direct questions when the selected Ollama model reports
+  vision support. The image is sent to the local model for that turn; only its filename is saved
+  with the conversation.
+- Opt in to public web search for a single Direct or Supervisor question. A local chat model can
+  use bounded search snippets and readable text from up to two public HTTPS pages; web queries
+  leave the Mac. Page fetches reject private addresses and fall back to snippets when unavailable.
 - Connect LM Studio, Ollama, llama.cpp, vLLM, or another loopback OpenAI-compatible server through
   strict JSON Schema, JSON-object, or schema-in-prompt compatibility modes.
 - Run a manager-style supervisor that can call corpus, quantitative, advertising, and explicitly
   enabled hosted-web specialists, then synthesize their reports through a final evidence critic.
-- Inspect the exact agent, tool, skill, and plugin inventory. Hosted web search is disabled unless
-  an OpenAI chat profile is configured and the user opts in for that individual supervisor run.
+- Inspect the exact agent, tool, skill, and plugin inventory. Hosted web search remains available
+  only with an explicitly configured OpenAI profile and per-question opt-in.
 
 SQLite remains the zero-service development adapter. PostgreSQL/pgvector is the production
 target; its runtime adapter and packaged migration are operational, with HNSW intentionally
@@ -65,9 +79,39 @@ The fastest workstation setup on Windows is:
 ```
 
 The browser opens at `http://127.0.0.1:8787`. Configure chat and embedding models from the Models
-view; those selections stay in process memory, while non-secret preferences stay in browser local
-storage. The Capabilities view reports the exact tools, skills, agent policy, and plugin status the
-backend exposes—never a frontend approximation.
+view. Local model selections are saved beside the workbench database and restored after a restart;
+hosted API keys remain only in process memory. Conversations are saved in a separate local SQLite
+database, and the last 20 turns can be included when chatting with the model. New chat starts a
+fresh conversation; earlier chats remain in Recent chats until deleted. The Tools view reports
+the exact tools, skills, agent policy, and plugin status the backend exposes.
+
+Use the project selector to keep a set of chats and documents together. **Search chats** finds
+matching titles and transcript text in the selected project. **Attach** accepts a text, Markdown,
+DOCX, or PDF document and adds it as a source to that project before the question runs in Fixed
+mode. Images are supported in Direct mode with a vision-capable Ollama model. **Web search** is
+an explicit per-question switch for Direct or Supervisor. Install `.[web]` to enable local-model
+web answers. Search sends the question to external search services and reads up to two public
+HTTPS pages when possible. The pages remain untrusted and claims are not independently verified.
+
+**Project memory** is in the project menu on a phone or the desktop sidebar. Notes are written
+only after you press Save. They are supplied to later model calls in that project, except when
+Web search is enabled, to avoid putting private notes into an external search query. The model
+receives them as context, not as source citations. Active questions show progress and a **Stop**
+button; Direct answers stream token by token, while grounded modes stream status and return the
+validated final answer. Stop closes a Direct model stream promptly and prevents later grounded
+model steps and saving a stopped answer; a grounded model call already in progress may need to
+finish first. **Dictate** appears in
+browsers with speech recognition support; the browser may use an external speech service and the
+app asks before starting it. The iPhone keyboard microphone remains available as a fallback.
+
+On iPhone, open the private Tailscale URL in Safari, tap Share, then **Add to Home Screen** and
+enable **Open as Web App**. The installed icon opens the workbench without the browser address
+and toolbar. Your iPhone still needs Tailscale connected to reach the Mac mini.
+
+To try grounded answers on a clean installation, start the workbench and run
+`python scripts/seed_sample_corpus.py`. This indexes three original example notes in the default
+`research` collection with the `private` access label. The user interface calls this **My library**;
+these labels filter indexed documents and are not login credentials.
 
 For an isolated container launch:
 
@@ -163,9 +207,9 @@ the planner may select additional skills from descriptions. Set `AGENTICRAG_SKIL
 
 The base agent is intentionally read-only. Its gateway exposes hybrid `search`, authorized
 bounded-span `lookup`, and an AST-validated arithmetic `calculate` tool. The fourth visible tool,
-hosted `web_search`, is available only to the supervisor's web specialist when an OpenAI key is
-already held in process memory and the user checks the per-run consent control. It uses the
-Responses API with `store: false`, bounded tool calls, and returned source URLs. No workflow
+`web_search`, is available only when a local or hosted search provider is configured and the user
+checks the per-run consent control. Hosted search uses the Responses API with `store: false`,
+bounded tool calls, and returned source URLs. No workflow
 exposes shell, filesystem writes, arbitrary Python, credentials, or mutation APIs.
 
 The workflow adds useful deliberation—a plan of checkable obligations, gap-directed tool use,
@@ -189,14 +233,16 @@ Then run:
 ```powershell
 python -m agenticrag --db .data/corpus.db compare cases.jsonl --runs .data/runs.jsonl
 python -m agenticrag --db .data/corpus.db compare cases.jsonl --runs .data/agent-runs.jsonl --include-agent --skill evidence-analysis
+python -m agenticrag --db .data/corpus.db compare examples/sample-eval.jsonl --runs .data/model-runs.jsonl --model gemma4:12b-mlx --model gpt-oss:20b --include-agent --include-supervisor
 python -m agenticrag summarize cases.jsonl --runs .data/runs.jsonl
 ```
 
 The journal writes a `started` record before inference and a terminal record afterward, so an
 interrupted run remains observable. Repeat the same frozen cases under different explicit provider
 environments; workflow versions, sanitized provider labels, retrieval/agent/tool budgets, selected
-skill names, results, and errors are preserved. `--include-agent` adds the bounded workflow to the
-same cases rather than replacing the fixed baseline. See
+skill names, results, and errors are preserved. `--include-agent` and `--include-supervisor` add
+those modes to the Direct and Fixed baselines; repeat `--model` to compare installed chat models
+without changing the model selected in the live workbench. See
 [`docs/evaluation.md`](./docs/evaluation.md) for metric definitions and limits.
 
 ## Optional OpenAI comparison profile

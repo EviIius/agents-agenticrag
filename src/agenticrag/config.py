@@ -49,6 +49,7 @@ class ProviderConfig:
     api_key: str | None
     timeout_seconds: float
     structured_output_mode: Literal["json_schema", "json_object", "prompt"] = "json_schema"
+    runtime: str | None = None
 
     @property
     def label(self) -> str:

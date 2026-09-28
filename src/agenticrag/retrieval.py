@@ -126,7 +126,13 @@ class HybridRetriever:
         selected: list[RankedChunk] = []
         per_document: dict[str, int] = defaultdict(int)
         used_tokens = 0
-        for item in candidates:
+        lexical = [item for item in candidates if item.lexical_rank is not None]
+        best_lexical = min(lexical, key=lambda item: item.lexical_rank or 0) if lexical else None
+        ordered = (
+            [best_lexical, *(item for item in candidates if item.chunk.id != best_lexical.chunk.id)]
+            if best_lexical else candidates
+        )
+        for item in ordered:
             if len(selected) >= self.config.result_limit:
                 break
             if per_document[item.chunk.document_id] >= self.config.max_chunks_per_document:

@@ -23,10 +23,21 @@ from fakes import DeterministicEmbedding
 class AgentChat:
     label = "test:agent-chat"
 
-    def __init__(self, *, accept_review: bool = True, fabricated_citation: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        accept_review: bool = True,
+        fabricated_citation: bool = False,
+        plan_id: str = "o1",
+        contradictory_review: bool = False,
+        finish_abstained: bool = False,
+    ) -> None:
         self.calls: list[dict[str, Any]] = []
         self.accept_review = accept_review
         self.fabricated_citation = fabricated_citation
+        self.plan_id = plan_id
+        self.contradictory_review = contradictory_review
+        self.finish_abstained = finish_abstained
 
     def complete(self, messages, **kwargs):  # type: ignore[no-untyped-def]
         self.calls.append({"messages": messages, "options": kwargs})
@@ -34,7 +45,7 @@ class AgentChat:
         if index == 1:
             return json.dumps(
                 {
-                    "obligations": [{"id": "o1", "question": "How much memory?"}],
+                    "obligations": [{"id": self.plan_id, "question": "How much memory?"}],
                     "skills": ["evidence-analysis"],
                 }
             )
@@ -46,7 +57,7 @@ class AgentChat:
                     "arguments": {"query": "Atlas memory"},
                 }
             )
-        if index == 3:
+        if index == 3 or (self.fabricated_citation and index > 3):
             content = messages[1].content
             match = re.search(r'"chunk_id":"([^"]+)"', content)
             if match is None:
@@ -59,7 +70,7 @@ class AgentChat:
                     "arguments": {
                         "answer": "Atlas has 64 GB of memory.",
                         "citations": [chunk_id],
-                        "abstained": False,
+                        "abstained": self.finish_abstained,
                         "obligations": [
                             {"id": "o1", "supported": True, "evidence_ids": [chunk_id]}
                         ],
@@ -70,7 +81,7 @@ class AgentChat:
             return json.dumps(
                 {
                     "accepted": self.accept_review,
-                    "unsupported_claims": [] if self.accept_review else ["memory amount"],
+                    "unsupported_claims": ["memory amount"] if self.contradictory_review or not self.accept_review else [],
                     "missing_obligations": [] if self.accept_review else ["o1"],
                     "feedback": "Supported." if self.accept_review else "Gather better evidence.",
                 }
@@ -132,13 +143,103 @@ class AgenticWorkflowTests(unittest.TestCase):
         self.assertIn("Search every obligation", action_messages[0].content)
         self.assertNotIn("Search every obligation", action_messages[1].content)
 
+    def test_host_assigns_stable_obligation_ids_when_model_uses_numbers(self) -> None:
+        chat = AgentChat(plan_id="1")
+        result = self._workflow(chat).run(
+            "How much memory does Atlas have?", scopes=("owner",), collection="private"
+        )
+        self.assertFalse(result.abstained)
+        self.assertIn('"id":"o1"', chat.calls[1]["messages"][1].content)
+
+    def test_complete_cited_answer_is_not_mislabelled_as_abstained(self) -> None:
+        result = self._workflow(AgentChat(finish_abstained=True)).run(
+            "How much memory does Atlas have?", scopes=("owner",), collection="private"
+        )
+        self.assertFalse(result.abstained)
+        self.assertEqual(len(result.citations), 1)
+
+    def test_simple_fact_question_is_not_overplanned(self) -> None:
+        class OverPlanChat(AgentChat):
+            def complete(self, messages, **kwargs):  # type: ignore[no-untyped-def]
+                if not self.calls:
+                    self.calls.append({"messages": messages, "options": kwargs})
+                    return json.dumps({
+                        "obligations": [
+                            {"id": f"o{i}", "question": f"Find Atlas fact {i}"}
+                            for i in range(1, 5)
+                        ],
+                        "skills": ["evidence-analysis"],
+                    })
+                return super().complete(messages, **kwargs)
+
+        result = self._workflow(OverPlanChat()).run(
+            "What is Atlas memory?", scopes=("owner",), collection="private"
+        )
+        self.assertFalse(result.abstained)
+        self.assertEqual(result.events[0].detail["obligation_count"], 1)
+        self.assertTrue(result.events[0].detail["host_simplified"])
+
+    def test_empty_authorized_corpus_abstains_before_model_call(self) -> None:
+        chat = AgentChat()
+        result = self._workflow(chat).run(
+            "Who is president?", scopes=("guest",), collection="private"
+        )
+        self.assertTrue(result.abstained)
+        self.assertIn("no authorized sources", result.answer)
+        self.assertEqual(chat.calls, [])
+
+    def test_repeated_action_returns_safe_abstention(self) -> None:
+        class LoopChat:
+            label = "test:loop"
+
+            def __init__(self) -> None:
+                self.calls = 0
+
+            def complete(self, messages, **kwargs):  # type: ignore[no-untyped-def]
+                del messages, kwargs
+                self.calls += 1
+                if self.calls == 1:
+                    return json.dumps({"obligations": [{"id": "1", "question": "How much memory?"}], "skills": []})
+                return json.dumps({"action": "search", "purpose": "Try again", "arguments": {"query": "Atlas memory"}})
+
+        chat = LoopChat()
+        result = self._workflow(chat).run(
+            "How much memory does Atlas have?", scopes=("owner",), collection="private"
+        )
+        self.assertTrue(result.abstained)
+        self.assertIn("stalled", [event.detail.get("kind") for event in result.events])
+
+    def test_invalid_decision_gets_one_bounded_repair_opportunity(self) -> None:
+        class RepairChat:
+            label = "test:repair"
+
+            def __init__(self) -> None:
+                self.inner = AgentChat()
+                self.calls = 0
+
+            def complete(self, messages, **kwargs):  # type: ignore[no-untyped-def]
+                self.calls += 1
+                if self.calls == 2:
+                    return json.dumps({"action": "search", "query": "Atlas memory"})
+                return self.inner.complete(messages, **kwargs)
+
+        chat = RepairChat()
+        result = self._workflow(chat, max_steps=4).run(
+            "How much memory does Atlas have?", scopes=("owner",), collection="private"
+        )
+        self.assertFalse(result.abstained)
+        self.assertEqual(chat.calls, 5)
+        self.assertIn("validation_rejected", [event.kind for event in result.events])
+
     def test_fabricated_agent_citation_is_rejected_before_review(self) -> None:
         chat = AgentChat(fabricated_citation=True)
-        with self.assertRaisesRegex(WorkflowError, "outside the authorized retrieval set"):
-            self._workflow(chat).run(
-                "How much memory does Atlas have?", scopes=("owner",), collection="private"
-            )
-        self.assertEqual(len(chat.calls), 3)
+        result = self._workflow(chat).run(
+            "How much memory does Atlas have?", scopes=("owner",), collection="private"
+        )
+        self.assertTrue(result.abstained)
+        self.assertEqual(result.citations, ())
+        self.assertIn("validation_rejected", [event.kind for event in result.events])
+        self.assertNotIn("review_completed", [event.kind for event in result.events])
 
     def test_rejected_review_abstains_at_hard_step_cap(self) -> None:
         chat = AgentChat(accept_review=False)
@@ -147,6 +248,15 @@ class AgenticWorkflowTests(unittest.TestCase):
         )
         self.assertTrue(result.abstained)
         self.assertIn("budget_exhausted", [event.kind for event in result.events])
+
+    def test_conflicting_review_fields_cannot_approve_an_answer(self) -> None:
+        chat = AgentChat(contradictory_review=True)
+        result = self._workflow(chat, max_steps=2).run(
+            "How much memory does Atlas have?", scopes=("owner",), collection="private"
+        )
+        self.assertTrue(result.abstained)
+        reviews = [event for event in result.events if event.kind == "review_completed"]
+        self.assertFalse(reviews[0].detail["accepted"])
 
     def test_agent_events_are_scored_in_experiment_summary(self) -> None:
         case = ExperimentCase(

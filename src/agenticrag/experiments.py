@@ -4,18 +4,19 @@ import json
 import math
 import os
 import threading
+import traceback
 import uuid
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from statistics import mean
 from typing import Any, Protocol, Sequence
+from urllib.request import urlopen
 
-from .errors import AgenticRAGError
 from .workflows import Workflow
 
 
-MANIFEST_VERSION = 1
+MANIFEST_VERSION = 2
 
 
 @dataclass(frozen=True)
@@ -27,6 +28,8 @@ class ExperimentCase:
     answerable: bool | None = None
     required_chunk_ids: tuple[str, ...] = ()
     expected_answer_contains: tuple[str, ...] = ()
+    forbidden_answer_contains: tuple[str, ...] = ()
+    category: str = "general"
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -47,6 +50,8 @@ class ExperimentRecord:
     result: dict[str, Any] | None
     error_type: str | None
     error: str | None
+    error_trace: str | None = None
+    resources: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -71,6 +76,8 @@ class ExperimentRecord:
             result=None if value.get("result") is None else dict(value["result"]),
             error_type=None if value.get("error_type") is None else str(value["error_type"]),
             error=None if value.get("error") is None else str(value["error"]),
+            error_trace=(None if value.get("error_trace") is None else str(value["error_trace"])),
+            resources=(None if value.get("resources") is None else dict(value["resources"])),
         )
 
 
@@ -110,7 +117,7 @@ class JsonlRunJournal:
                 record = ExperimentRecord.from_dict(value)
             except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
                 raise ValueError(f"Invalid run journal record on line {line_number}") from exc
-            if record.manifest_version != MANIFEST_VERSION:
+            if record.manifest_version not in {1, MANIFEST_VERSION}:
                 raise ValueError(
                     f"Unsupported run manifest version {record.manifest_version} on line {line_number}"
                 )
@@ -142,40 +149,56 @@ class ExperimentRunner:
         self,
         cases: Sequence[ExperimentCase],
         workflows: Sequence[Workflow],
+        *,
+        repeat: int = 1,
     ) -> list[ExperimentRecord]:
+        if repeat < 1:
+            raise ValueError("repeat must be at least 1")
         records: list[ExperimentRecord] = []
-        for case in cases:
-            for workflow in workflows:
-                run_id = uuid.uuid4().hex
-                started = self._record(run_id, case, workflow, status="started")
-                if self.journal:
-                    self.journal.append(started)
-                try:
-                    result = workflow.run(
-                        case.question,
-                        scopes=case.scopes,
-                        collection=case.collection,
-                    )
-                    terminal = self._record(
-                        run_id,
-                        case,
-                        workflow,
-                        status="completed",
-                        result=result.to_dict(),
-                    )
-                except AgenticRAGError as exc:
-                    terminal = self._record(
-                        run_id,
-                        case,
-                        workflow,
-                        status="failed",
-                        error_type=type(exc).__name__,
-                        error=str(exc),
-                    )
-                if self.journal:
-                    self.journal.append(terminal)
-                records.append(terminal)
+        for workflow in workflows:
+            for repeat_index in range(1, repeat + 1):
+                for case in cases:
+                    record = self._run_one(case, workflow, repeat_index)
+                    records.append(record)
         return records
+
+    def _run_one(
+        self, case: ExperimentCase, workflow: Workflow, repeat_index: int
+    ) -> ExperimentRecord:
+        run_id = uuid.uuid4().hex
+        started = self._record(run_id, case, workflow, status="started", repeat_index=repeat_index)
+        if self.journal:
+            self.journal.append(started)
+        try:
+            result = workflow.run(
+                case.question,
+                scopes=case.scopes,
+                collection=case.collection,
+            )
+            terminal = self._record(
+                run_id,
+                case,
+                workflow,
+                status="completed",
+                result=result.to_dict(),
+                repeat_index=repeat_index,
+                resources=_ollama_loaded_resources(workflow),
+            )
+        except Exception as exc:
+            terminal = self._record(
+                run_id,
+                case,
+                workflow,
+                status="failed",
+                error_type=type(exc).__name__,
+                error=str(exc),
+                error_trace=traceback.format_exc(limit=8),
+                repeat_index=repeat_index,
+                resources=_ollama_loaded_resources(workflow),
+            )
+        if self.journal:
+            self.journal.append(terminal)
+        return terminal
 
     @staticmethod
     def _record(
@@ -187,6 +210,9 @@ class ExperimentRunner:
         result: dict[str, Any] | None = None,
         error_type: str | None = None,
         error: str | None = None,
+        error_trace: str | None = None,
+        repeat_index: int = 1,
+        resources: dict[str, Any] | None = None,
     ) -> ExperimentRecord:
         return ExperimentRecord(
             manifest_version=MANIFEST_VERSION,
@@ -197,12 +223,30 @@ class ExperimentRunner:
             workflow=workflow.name,
             provider=workflow.provider_label,
             embedding_provider=workflow.embedding_provider_label,
-            manifest=workflow.manifest,
+            manifest={**workflow.manifest, "repeat_index": repeat_index},
             status=status,
             result=result,
             error_type=error_type,
             error=error,
+            error_trace=error_trace,
+            resources=resources,
         )
+
+
+def _ollama_loaded_resources(workflow: Workflow) -> dict[str, Any] | None:
+    """Best-effort loaded-model footprint, separate from process RSS or peak RAM."""
+    config = getattr(getattr(workflow, "chat_provider", None), "config", None)
+    if config is None or getattr(config, "runtime", None) != "ollama":
+        return None
+    try:
+        with urlopen(f"{config.base_url.removesuffix('/v1')}/api/ps", timeout=2) as response:  # noqa: S310 - validated runtime URL
+            payload = json.load(response)
+        for model in payload.get("models", []):
+            if model.get("name") == config.model:
+                return {"model_loaded_bytes": model.get("size"), "model_gpu_bytes": model.get("size_vram")}
+    except (OSError, ValueError, TypeError, KeyError):
+        pass
+    return None
 
 
 def summarize_experiments(
@@ -237,6 +281,7 @@ def summarize_experiments(
         review_rejections = 0
         budget_exhaustions = 0
         skill_loads = 0
+        loaded_bytes: list[int] = []
 
         for record in group:
             case = case_by_id.get(record.case_id)
@@ -246,7 +291,7 @@ def summarize_experiments(
             required_total += len(required)
             if len(required) > 1:
                 multi_hop_total += 1
-            if case.answerable is True and case.expected_answer_contains:
+            if case.answerable is True and (case.expected_answer_contains or case.forbidden_answer_contains):
                 answer_total += 1
             if case.answerable is False:
                 abstention_total += 1
@@ -254,6 +299,8 @@ def summarize_experiments(
             if record.status != "completed" or record.result is None:
                 continue
             result = record.result
+            if record.resources and isinstance(record.resources.get("model_loaded_bytes"), int):
+                loaded_bytes.append(record.resources["model_loaded_bytes"])
             evidence_ids = {
                 str(item["chunk"]["id"])
                 for item in result.get("evidence", [])
@@ -262,11 +309,12 @@ def summarize_experiments(
             required_found += len(required & evidence_ids)
             if len(required) > 1:
                 multi_hop_complete += int(required.issubset(evidence_ids))
-            if case.answerable is True and case.expected_answer_contains:
+            if case.answerable is True and (case.expected_answer_contains or case.forbidden_answer_contains):
                 answer = str(result.get("answer", "")).casefold()
                 answer_correct += int(
                     not bool(result.get("abstained"))
                     and all(value.casefold() in answer for value in case.expected_answer_contains)
+                    and not any(value.casefold() in answer for value in case.forbidden_answer_contains)
                 )
             if case.answerable is False:
                 abstention_correct += int(bool(result.get("abstained")))
@@ -304,6 +352,7 @@ def summarize_experiments(
                 "failure_rate": _ratio(len(group) - len(completed), len(group)),
                 "mean_latency_ms": None if not latencies else round(mean(latencies), 3),
                 "p95_latency_ms": _percentile(latencies, 0.95),
+                "mean_model_loaded_gb": None if not loaded_bytes else round(mean(loaded_bytes) / 1_000_000_000, 2),
                 "evidence_recall": _ratio(required_found, required_total),
                 "complete_multi_hop_evidence": _ratio(multi_hop_complete, multi_hop_total),
                 "answer_substring_accuracy": _ratio(answer_correct, answer_total),

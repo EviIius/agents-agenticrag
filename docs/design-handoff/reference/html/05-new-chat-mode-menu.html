@@ -1,0 +1,128 @@
+<!doctype html><html lang="en"><head><!-- Static reference render of the approved mockup (docs/design-handoff). Inline styles are for measurement only: the app must use classes (CSP style-src 'self'). Values that look like data are illustrative unless SPEC.md says otherwise. --><meta charset="utf-8"><meta name="viewport" content="width=1440"><title>NewChat · AgenticRAG reference</title><style>
+@font-face{font-family:'Geist';src:url('../../fonts/Geist-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal}
+@font-face{font-family:'Geist Mono';src:url('../../fonts/GeistMono-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal}
+@font-face{font-family:'Newsreader';src:url('../../fonts/Newsreader-Variable.woff2') format('woff2');font-weight:200 800;font-style:normal}
+</style>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0}
+.t{font-family:'Geist',ui-sans-serif,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+.theme-dark{--bg:#0C0C0D;--side:#111113;--surf:#161618;--raised:#1C1C1F;--hover:#222226;--line:#232327;--line2:#33333A;--ink:#EDEDEF;--ink2:#A8A8B0;--ink3:#85858D;--acc:#F0A43A;--acc-ink:#1B1204;--acc-text:#F5B962;--acc-soft:rgba(240,164,58,.12);--acc-line:rgba(240,164,58,.42);--ev:#7CCFE0;--ok:#62CF8F;--ok-soft:rgba(98,207,143,.11);--warn:#E9B949;--shadow:0 18px 50px rgba(0,0,0,.45);--pop:0 24px 60px rgba(0,0,0,.6);color-scheme:dark}
+.theme-light{--bg:#FAFAF8;--side:#F3F3F0;--surf:#FFFFFF;--raised:#FFFFFF;--hover:#ECECE8;--line:#E5E5E0;--line2:#D2D2CC;--ink:#17171A;--ink2:#52525A;--ink3:#6A6A72;--acc:#E8962A;--acc-ink:#1B1204;--acc-text:#935300;--acc-soft:rgba(232,150,42,.13);--acc-line:rgba(200,120,20,.45);--ev:#0B7285;--ok:#1E7F46;--ok-soft:rgba(30,127,70,.08);--warn:#8A5F00;--shadow:0 16px 40px rgba(24,24,28,.09);--pop:0 24px 60px rgba(24,24,28,.16);color-scheme:light}
+.acc-cobalt.theme-dark{--acc:#6E95FF;--acc-ink:#07102A;--acc-text:#9DB7FF;--acc-soft:rgba(110,149,255,.13);--acc-line:rgba(110,149,255,.45)}
+.acc-cobalt.theme-light{--acc:#2F5BEA;--acc-ink:#FFFFFF;--acc-text:#2448C4;--acc-soft:rgba(47,91,234,.09);--acc-line:rgba(47,91,234,.40)}
+.acc-mono.theme-dark{--acc:#EDEDEF;--acc-ink:#0C0C0D;--acc-text:#FFFFFF;--acc-soft:rgba(237,237,239,.08);--acc-line:rgba(237,237,239,.38)}
+.acc-mono.theme-light{--acc:#17171A;--acc-ink:#FFFFFF;--acc-text:#17171A;--acc-soft:rgba(23,23,26,.06);--acc-line:rgba(23,23,26,.35)}
+.mono{font-family:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace}
+.t button{font-family:inherit;cursor:pointer}
+.t textarea,.t input{font-family:inherit}
+.t textarea::placeholder,.t input::placeholder{color:var(--ink3)}
+.i{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;display:block;flex-shrink:0}
+.hov{transition:background .14s,color .14s,border-color .14s}
+.hov:hover{background:var(--hover) !important;color:var(--ink) !important}
+.mi{display:flex;align-items:flex-start;gap:12px;width:100%;padding:10px 12px;border:0;border-radius:10px;background:transparent;color:var(--ink);text-align:left;transition:background .14s}
+.mi:hover{background:var(--hover)}
+.mi.on{background:var(--acc-soft)}
+.pill{height:30px;display:flex;align-items:center;gap:6px;padding:0 8px 0 9px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--ink);font-size:12.5px;font-weight:500;transition:background .14s,border-color .14s}
+.pill:hover{background:var(--hover)}
+.pill.on{border-color:var(--acc-line);background:var(--acc-soft)}
+.comp:focus-within{border-color:var(--acc-line) !important}
+.t :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+</style>
+</head><body>
+<div class="t theme-dark acc-cobalt" style="width: 1440px; height: 900px; display: grid; grid-template-columns: 256px minmax(0, 1fr); background: var(--bg); color: var(--ink); overflow: hidden; font-size: 14px; line-height: 1.5">
+
+<aside style="display: flex; flex-direction: column; min-height: 0; background: var(--side); border-right: 1px solid var(--line)">
+<div style="height: 52px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 10px 0 16px">
+<span style="position: relative; width: 26px; height: 26px; border-radius: 7px; background: var(--ink); color: var(--bg); display: grid; place-items: center"><svg class="i" viewBox="0 0 24 24" style="width: 16px; height: 16px"><path d="M6.5 4h7l4 4v12h-11z"></path><path d="M13.5 4v4h4M9.5 12.5h5M9.5 15.5h3"></path></svg><span style="position: absolute; right: -3px; bottom: -3px; width: 10px; height: 10px; border-radius: 50%; background: var(--acc); border: 2px solid var(--side)"></span></span>
+<span style="font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em">AgenticRAG</span>
+<span style="flex-grow: 1"></span>
+<button class="hov" aria-label="Collapse sidebar" style="width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; color: var(--ink3); display: grid; place-items: center"><svg class="i" viewBox="0 0 24 24" style="width: 17px; height: 17px"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"></rect><path d="M9.5 4.5v15"></path></svg></button>
+</div>
+<div style="padding: 4px 10px 10px; display: flex; flex-direction: column; gap: 8px">
+<button class="hov" aria-label="Switch project" style="display: flex; align-items: center; gap: 10px; width: 100%; height: 46px; padding: 0 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surf); color: var(--ink); text-align: left"><span style="width: 24px; height: 24px; border-radius: 7px; background: var(--acc-soft); color: var(--acc-text); display: grid; place-items: center; font-size: 11px; font-weight: 600">ML</span><span style="flex-grow: 1; display: flex; flex-direction: column; line-height: 1.25"><span style="font-size: 13px; font-weight: 550">My library</span><span style="font-size: 11.5px; color: var(--ink3)">3 sources · research</span></span><svg class="i" viewBox="0 0 24 24" style="width: 14px; height: 14px; color: var(--ink3)"><path d="M8 10l4-4 4 4M8 14l4 4 4-4"></path></svg></button>
+<div style="display: flex; gap: 6px">
+<button style="flex-grow: 1; height: 34px; display: flex; align-items: center; gap: 8px; padding: 0 10px; border: 1px solid var(--line2); border-radius: 9px; background: var(--hover); color: var(--ink); font-size: 13px; font-weight: 500"><svg class="i" viewBox="0 0 24 24" style="width: 15px; height: 15px"><path d="M12 5v14M5 12h14"></path></svg>New chat<span style="flex-grow: 1"></span><span class="mono" style="font-size: 11px; color: var(--ink3)">⌘N</span></button>
+<button class="hov" aria-label="Search chats and commands" style="width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 9px; background: transparent; color: var(--ink2); display: grid; place-items: center"><svg class="i" viewBox="0 0 24 24" style="width: 15px; height: 15px"><circle cx="11" cy="11" r="6.5"></circle><path d="M20 20l-4.2-4.2"></path></svg></button>
+</div>
+</div>
+<nav aria-label="Workspace" style="padding: 2px 10px; display: flex; flex-direction: column; gap: 1px">
+<button class="hov" style="display: flex; align-items: center; gap: 10px; height: 32px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--ink2); font-size: 13px; text-align: left"><svg class="i" viewBox="0 0 24 24" style="width: 16px; height: 16px"><path d="M6.5 3.5h7l4 4v13h-11z"></path><path d="M13.5 3.5v4h4M9.5 12.5h5M9.5 16h3.5"></path></svg><span style="flex-grow: 1">Sources</span><span class="mono" style="font-size: 11px; color: var(--ink3)">3</span></button>
+<button class="hov" style="display: flex; align-items: center; gap: 10px; height: 32px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--ink2); font-size: 13px; text-align: left"><svg class="i" viewBox="0 0 24 24" style="width: 16px; height: 16px"><rect x="6" y="6" width="12" height="12" rx="2.5"></rect><path d="M10 10h4v4h-4zM9.5 3v3M14.5 3v3M9.5 18v3M14.5 18v3M3 9.5h3M3 14.5h3M18 9.5h3M18 14.5h3"></path></svg><span style="flex-grow: 1">Models</span><span class="mono" style="font-size: 11px; color: var(--ink3)">4</span></button>
+<button class="hov" style="display: flex; align-items: center; gap: 10px; height: 32px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--ink2); font-size: 13px; text-align: left"><svg class="i" viewBox="0 0 24 24" style="width: 16px; height: 16px"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"></path><path d="M4 7.5l8 4.5 8-4.5M12 12v9"></path></svg><span style="flex-grow: 1">Tools &amp; agents</span><span class="mono" style="font-size: 11px; color: var(--ink3)">10</span></button>
+<button class="hov" style="display: flex; align-items: center; gap: 10px; height: 32px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--ink2); font-size: 13px; text-align: left"><svg class="i" viewBox="0 0 24 24" style="width: 16px; height: 16px"><path d="M7 3.5h10v17l-5-3.5-5 3.5z"></path></svg><span style="flex-grow: 1">Project memory</span><span class="mono" style="font-size: 11px; color: var(--ink3)">2</span></button>
+</nav>
+<div style="height: 1px; background: var(--line); margin: 10px 16px 6px"></div>
+<div style="flex-grow: 1; min-height: 0; overflow: hidden; padding: 0 10px; display: flex; flex-direction: column; gap: 1px">
+<div style="padding: 8px 10px 4px; font-size: 12px; font-weight: 500; color: var(--ink3)">Today</div>
+<button class="hov" style="display: flex; align-items: center; height: 32px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--ink2); font-size: 13px; text-align: left">Least-cleanup recipe</button>
+<button class="hov" style="display: flex; align-items: center; height: 32px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--ink2); font-size: 13px; text-align: left">Why wet toppings go on last</button>
+<button class="hov" style="display: flex; align-items: center; height: 32px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--ink2); font-size: 13px; text-align: left">Rotisserie chicken shortcut</button>
+<div style="padding: 14px 10px 4px; font-size: 12px; font-weight: 500; color: var(--ink3)">Yesterday</div>
+<button class="hov" style="display: flex; align-items: center; height: 32px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--ink2); font-size: 13px; text-align: left">Compare the four modes</button>
+<button class="hov" style="display: flex; align-items: center; height: 32px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--ink2); font-size: 13px; text-align: left">What was my previous question?</button>
+</div>
+<div style="flex-shrink: 0; padding: 12px 16px 14px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 3px">
+<div style="display: flex; align-items: center; gap: 9px; font-size: 12.5px; color: var(--ink2)"><span style="width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px var(--ok-soft)"></span>Ready · 4 of 4 checks reachable</div>
+<div class="mono" style="font-size: 11px; color: var(--ink3); padding-left: 16px">ollama · 127.0.0.1:11434</div>
+</div>
+</aside>
+
+<main style="display: flex; flex-direction: column; min-width: 0; min-height: 0">
+<header style="height: 52px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 14px 0 28px; border-bottom: 1px solid var(--line)">
+<div style="display: flex; align-items: center; gap: 8px; font-size: 14px"><span style="color: var(--ink3)">My library</span><span style="color: var(--line2)">/</span><span style="font-weight: 550">New chat</span></div>
+<span style="flex-grow: 1"></span>
+<button class="hov" aria-label="Chat model: Gemma 4 12B, running on this Mac" style="height: 30px; display: flex; align-items: center; gap: 8px; padding: 0 11px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--ink2); font-size: 12.5px"><span style="width: 7px; height: 7px; border-radius: 50%; background: var(--ok)"></span><span style="color: var(--ink); font-weight: 500">Gemma 4 12B</span><span style="width: 1px; height: 12px; background: var(--line2)"></span><svg class="i" viewBox="0 0 24 24" style="width: 13px; height: 13px"><path d="M12 3l7 2.8v5.7c0 4.3-2.9 7.6-7 9.5-4.1-1.9-7-5.2-7-9.5V5.8z"></path></svg>On this Mac</button>
+<button class="hov" aria-label="Switch theme" style="width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: var(--ink3); display: grid; place-items: center"><svg class="i" viewBox="0 0 24 24" style="width: 17px; height: 17px"><circle cx="12" cy="12" r="3.8"></circle><path d="M12 3v1.8M12 19.2V21M3 12h1.8M19.2 12H21M5.6 5.6l1.3 1.3M17.1 17.1l1.3 1.3M18.4 5.6l-1.3 1.3M6.9 17.1l-1.3 1.3"></path></svg></button>
+</header>
+
+<div style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; padding: 104px 28px 36px">
+<h1 style="margin: 0; font-family: 'Newsreader', Georgia, serif; font-size: 46px; font-weight: 400; letter-spacing: -0.015em; line-height: 1.1">Ask your sources.</h1>
+<p style="margin: 12px 0 30px; max-width: 520px; text-align: center; font-size: 15px; color: var(--ink2)">Answers come from My library and are checked against their citations before you see them.</p>
+
+<div style="position: relative; width: 100%; max-width: 720px">
+<div class="comp" style="border: 1px solid var(--line2); border-radius: 18px; background: var(--surf); box-shadow: var(--shadow)">
+<textarea aria-label="Ask a question about My library" placeholder="Ask a question about My library…" rows="2" style="display: block; width: 100%; height: 74px; padding: 17px 18px 0; border: 0; background: transparent; color: var(--ink); font-size: 16px; resize: none; outline: none"></textarea>
+<div style="display: flex; align-items: center; gap: 6px; padding: 8px 8px 8px 12px">
+<button class="pill on" aria-haspopup="menu" aria-expanded="true" aria-label="Mode">
+
+
+<svg class="i" viewBox="0 0 24 24" style="width: 14px; height: 14px; color: var(--acc-text)"><circle cx="6" cy="6" r="2.2"></circle><circle cx="18" cy="18" r="2.2"></circle><path d="M8.2 6H15a3 3 0 010 6H9a3 3 0 000 6h6.8"></path></svg>
+
+Agentic<svg class="i" viewBox="0 0 24 24" style="width: 12px; height: 12px; color: var(--ink3)"><path d="M6 9l6 6 6-6"></path></svg></button>
+<button class="hov" aria-label="Sources in scope: My library" style="height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 9px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: var(--ink2); font-size: 12.5px"><svg class="i" viewBox="0 0 24 24" style="width: 14px; height: 14px"><path d="M12 4l8 4-8 4-8-4z"></path><path d="M4 12l8 4 8-4M4 16l8 4 8-4"></path></svg>My library<span style="color: var(--ink3)">· 3</span></button>
+<button class="hov" aria-label="Attach a file" style="width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; color: var(--ink3); display: grid; place-items: center"><svg class="i" viewBox="0 0 24 24" style="width: 16px; height: 16px"><path d="M20 11.5l-8 8a5 5 0 01-7-7l8.5-8.5a3.3 3.3 0 014.7 4.7L9.7 17.2a1.7 1.7 0 01-2.4-2.4l7.7-7.7"></path></svg></button>
+<button class="hov" aria-label="Skills, none selected" style="width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; color: var(--ink3); display: grid; place-items: center"><svg class="i" viewBox="0 0 24 24" style="width: 16px; height: 16px"><path d="M12 3.5l7.4 4.25v8.5L12 20.5l-7.4-4.25v-8.5z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></button>
+<span style="flex-grow: 1"></span>
+<button aria-label="Run agent" style="width: 36px; height: 36px; border: 0; border-radius: 11px; background: var(--acc); color: var(--acc-ink); display: grid; place-items: center"><svg class="i" viewBox="0 0 24 24" style="width: 17px; height: 17px; stroke-width: 2"><path d="M12 19V5M6 11l6-6 6 6"></path></svg></button>
+</div>
+</div>
+
+
+<div role="menu" aria-label="Choose a mode" style="position: absolute; left: 4px; top: 136px; z-index: 5; width: 480px; padding: 6px; border: 1px solid var(--line2); border-radius: 14px; background: var(--raised); box-shadow: var(--pop)">
+<button role="menuitemradio" aria-checked="false" class="mi"><span style="width: 30px; height: 30px; flex-shrink: 0; border-radius: 8px; border: 1px solid var(--line); display: grid; place-items: center; color: var(--ink2)"><svg class="i" viewBox="0 0 24 24" style="width: 15px; height: 15px"><path d="M4.5 5.5h15v10h-9l-4.5 3.5v-3.5h-1.5z"></path></svg></span><span style="flex-grow: 1; line-height: 1.35"><span style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 550">Direct<span style="font-size: 11px; font-weight: 400; color: var(--ink3); padding: 1px 6px; border: 1px solid var(--line); border-radius: 5px">No sources</span></span><span style="display: block; margin-top: 2px; font-size: 12.5px; color: var(--ink2)">Chat with the model and this conversation’s recent turns.</span></span><span class="mono" style="font-size: 11.5px; color: var(--ink3); padding-top: 2px; white-space: nowrap; flex-shrink: 0">2.0 s</span></button>
+<button role="menuitemradio" aria-checked="false" class="mi"><span style="width: 30px; height: 30px; flex-shrink: 0; border-radius: 8px; border: 1px solid var(--line); display: grid; place-items: center; color: var(--ink2)"><svg class="i" viewBox="0 0 24 24" style="width: 15px; height: 15px"><path d="M13.5 3.5h-7v17h11v-8"></path><circle cx="16" cy="7.5" r="3"></circle><path d="M18.2 9.7L20.5 12"></path></svg></span><span style="flex-grow: 1; line-height: 1.35"><span style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 550">Fixed<span style="font-size: 11px; font-weight: 400; color: var(--ink3); padding: 1px 6px; border: 1px solid var(--line); border-radius: 5px">Cites sources</span></span><span style="display: block; margin-top: 2px; font-size: 12.5px; color: var(--ink2)">Retrieve relevant passages, then answer from them with citations.</span></span><span class="mono" style="font-size: 11.5px; color: var(--ink3); padding-top: 2px; white-space: nowrap; flex-shrink: 0">4.4 s</span></button>
+<button role="menuitemradio" aria-checked="true" class="mi on"><span style="width: 30px; height: 30px; flex-shrink: 0; border-radius: 8px; border: 1px solid var(--line); display: grid; place-items: center; color: var(--ink2)"><svg class="i" viewBox="0 0 24 24" style="width: 15px; height: 15px"><circle cx="6" cy="6" r="2.2"></circle><circle cx="18" cy="18" r="2.2"></circle><path d="M8.2 6H15a3 3 0 010 6H9a3 3 0 000 6h6.8"></path></svg></span><span style="flex-grow: 1; line-height: 1.35"><span style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 550">Agentic<span style="font-size: 11px; font-weight: 400; color: var(--ink3); padding: 1px 6px; border: 1px solid var(--line); border-radius: 5px">Cites + reviews</span></span><span style="display: block; margin-top: 2px; font-size: 12.5px; color: var(--ink2)">Plans read-only searches and lookups, then reviews a cited answer.</span></span><span class="mono" style="font-size: 11.5px; color: var(--ink3); padding-top: 2px; white-space: nowrap; flex-shrink: 0">11.6 s</span></button>
+<button role="menuitemradio" aria-checked="false" class="mi"><span style="width: 30px; height: 30px; flex-shrink: 0; border-radius: 8px; border: 1px solid var(--line); display: grid; place-items: center; color: var(--ink2)"><svg class="i" viewBox="0 0 24 24" style="width: 15px; height: 15px"><circle cx="12" cy="5.5" r="2.2"></circle><circle cx="5.5" cy="18.5" r="2.2"></circle><circle cx="12" cy="18.5" r="2.2"></circle><circle cx="18.5" cy="18.5" r="2.2"></circle><path d="M12 7.7v8.6M12 11.5H5.5v4.8M12 11.5h6.5v4.8"></path></svg></span><span style="flex-grow: 1; line-height: 1.35"><span style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 550">Supervisor<span style="font-size: 11px; font-weight: 400; color: var(--ink3); padding: 1px 6px; border: 1px solid var(--line); border-radius: 5px">Usually cites</span></span><span style="display: block; margin-top: 2px; font-size: 12.5px; color: var(--ink2)">Delegates up to three specialists, then synthesizes their reports.</span></span><span class="mono" style="font-size: 11.5px; color: var(--ink3); padding-top: 2px; white-space: nowrap; flex-shrink: 0">19.3 s</span></button>
+<div style="margin: 6px 6px 2px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--ink3)">Times from one test question on Gemma 4 12B, 28 Sep. Web search is available in Direct and Supervisor.</div>
+</div>
+
+
+<div style="display: flex; justify-content: center; gap: 8px; margin-top: 18px">
+<button class="hov" style="height: 34px; padding: 0 13px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--ink2); font-size: 13px">Why use rotisserie chicken?</button>
+<button class="hov" style="height: 34px; padding: 0 13px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--ink2); font-size: 13px">Why add wet toppings after baking?</button>
+<button class="hov" style="height: 34px; padding: 0 13px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--ink2); font-size: 13px">Compare the four modes</button>
+</div>
+</div>
+
+<span style="flex-grow: 1"></span>
+<div style="display: flex; align-items: center; gap: 18px; font-size: 12px; color: var(--ink3)">
+<span style="display: flex; align-items: center; gap: 7px"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--ok)"></span>Gemma 4 12B reachable</span>
+<span style="display: flex; align-items: center; gap: 7px"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--ok)"></span>Qwen3 Embedding 0.6B reachable</span>
+<span style="display: flex; align-items: center; gap: 7px"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--ok)"></span>3 sources indexed</span>
+</div>
+</div>
+</main>
+</div>
+</body></html>

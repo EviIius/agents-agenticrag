@@ -1,9 +1,22 @@
 # Experiment records and deterministic metrics
 
-`agenticrag compare` runs every case through the direct and fixed-RAG workflows under the active
-provider configuration. `--include-agent` adds bounded agentic RAG to the same run matrix. Run the
-same frozen JSONL dataset again with a different explicit provider configuration to compare
-local/open-weight and hosted models.
+`agenticrag compare` runs every case through Direct and Fixed under the active provider
+configuration. `--all-modes` adds Agentic and Supervisor. `--all-installed` checks every
+installed Ollama chat model; `--model` selects specific models, `--exclude-model` skips one,
+and `--repeat` runs each case more than once. The command reads the workbench's saved
+runtime settings when available and writes an atomic JSON report with grouped results.
+
+Build the isolated sample corpus with `python scripts/build_evaluation_corpus.py`, then run:
+
+```bash
+PYTHONPATH=src python -m agenticrag --db .data/evaluation-corpus.db compare \
+  examples/evaluation-v1.jsonl --all-modes --all-installed --repeat 2 \
+  --runs .data/evaluation-runs.jsonl --report .data/workbench-evaluation.json
+```
+
+This full matrix includes slow 70B Agentic and Supervisor runs; budget for a long serial
+run. The Models page reads a report named `workbench-evaluation.json` beside its active
+corpus database. Use `--report` to publish a complete report to that location.
 
 Each run gets a random `run_id`. The append-only journal writes one `started` record before model
 execution and one `completed` or `failed` record afterward. A process crash therefore leaves a
@@ -26,6 +39,9 @@ deterministic annotations are:
 - `answerable`: `true`, `false`, or omitted;
 - `required_chunk_ids`: evidence units expected from this frozen corpus/index generation;
 - `expected_answer_contains`: case-insensitive substrings required in an answer.
+- `forbidden_answer_contains`: substrings that must be absent, useful for prompt-injection
+  and access-scope cases;
+- `category`: a label for later per-task routing analysis.
 
 Chunk annotations are index-generation-specific. Freeze the corpus, chunker, embedding model, and
 preprocessing before creating them.
@@ -45,13 +61,16 @@ preprocessing before creating them.
 - `review_count` and `review_rejection_rate`: evidence-critic decisions.
 - `budget_exhaustion_rate`: completed runs that terminated at an agent step/time cap.
 - `skill_load_count`: selected skill bundles loaded across runs; exact hashes remain in events.
+- `mean_model_loaded_gb`: sampled Ollama loaded-model footprint after each completed run.
 
 Every summary includes denominators and uses `null` where no cases were annotated for a metric.
 Failed and interrupted runs remain in annotated metric denominators and therefore count as misses;
 they are not silently dropped. Latency summaries use completed runs only.
 
-These are engineering checks, not substitutes for the PDF's release evaluation. Substring matching
-is not semantic correctness, and citation resolution is not entailment. Human/adjudicated answer
-correctness, claim-level citation precision/coverage, repeated runs, paired bootstrap confidence
-intervals, timeouts, resource measurements, and an independent calibrated judge still need to be
-added before release claims are made.
+These are engineering checks, not a model quality ranking. Direct is intentionally scored on
+the same sourced tasks as the grounded modes, so its low substring score is not a general
+measure of conversational ability. Substring matching is not semantic correctness, citation
+resolution is not entailment, and loaded-model footprint is not peak memory pressure.
+Human/adjudicated answer correctness, claim-level citation support, paired confidence
+intervals, timed cancellation cases, peak resources, web cases, and an independent calibrated
+judge are still needed before release claims or automatic model routing.

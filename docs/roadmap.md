@@ -1,5 +1,21 @@
 # PDF-aligned implementation roadmap
 
+For the current phone workbench and Supervisor priorities, see
+[the next product phase](next-phase-plan.md).
+
+## Current workbench rollout
+
+- Shipped: installable iPhone web app assets, keyboard-aware phone composer, project notes with
+  user-approved saves and an activity log, Direct token streaming, Stop/Retry, browser dictation
+  with a privacy prompt, bounded public-page reading for opt-in web research, and a first
+  three-model/four-mode comparison.
+- Next: test the Home Screen installation and microphone on a physical iPhone; expand the frozen
+  evaluation set and verify web citations against fetched text; add durable run checkpoints so
+  long Agentic and Supervisor work can survive a closed phone tab; add previewed, approved,
+  idempotent write actions with per-action audit records; evaluate an entirely local voice
+  transcription path. Owner authentication is required before any public exposure beyond the
+  private tailnet.
+
 ## Complete in the foundation slice
 
 - Local-first, role-specific provider configuration with loopback enforcement and no fallback.

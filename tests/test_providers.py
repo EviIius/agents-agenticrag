@@ -12,6 +12,49 @@ from agenticrag.providers.openai_compatible import OpenAICompatibleChat, OpenAIC
 
 
 class ProviderAdapterTests(unittest.TestCase):
+    def test_chat_records_token_counts_and_retry_attempts(self) -> None:
+        calls = 0
+
+        def transport(request: Request, timeout: float) -> bytes:
+            nonlocal calls
+            del request, timeout
+            calls += 1
+            if calls == 1:
+                return json.dumps({
+                    "choices": [{"message": {"content": ""}, "finish_reason": "length"}],
+                    "usage": {"prompt_tokens": 10, "completion_tokens": 4, "prompt_tokens_details": {"cached_tokens": 2}},
+                }).encode()
+            return json.dumps({
+                "choices": [{"message": {"content": "Ready"}}],
+                "usage": {"prompt_tokens": 12, "completion_tokens": 3, "prompt_tokens_details": {"cached_tokens": 4}},
+            }).encode()
+
+        config = ProviderConfig(
+            "local", ProviderRole.CHAT, "http://127.0.0.1:11434/v1", "gpt-oss:20b",
+            None, 12.0, runtime="ollama",
+        )
+        chat = OpenAICompatibleChat(config, transport)
+        self.assertEqual(chat.complete([ChatMessage("user", "Reply")]), "Ready")
+        self.assertEqual(chat.last_call_metrics()["request_attempts"], 2)
+        self.assertEqual(chat.last_call_metrics()["prompt_tokens"], 22)
+        self.assertEqual(chat.last_call_metrics()["completion_tokens"], 7)
+        self.assertEqual(chat.last_call_metrics()["cached_prompt_tokens"], 6)
+
+    def test_chat_sends_image_as_multimodal_user_content(self) -> None:
+        captured = {}
+
+        def transport(request: Request, timeout: float) -> bytes:
+            del timeout
+            captured.update(json.loads((request.data or b"").decode()))
+            return b'{"choices":[{"message":{"content":"A red dot."}}]}'
+
+        config = ProviderConfig("local", ProviderRole.CHAT, "http://127.0.0.1:11434/v1", "gemma4", None, 12.0)
+        answer = OpenAICompatibleChat(config, transport).complete([
+            ChatMessage("user", "Describe this", "data:image/png;base64,AAAA"),
+        ])
+        self.assertEqual(answer, "A red dot.")
+        self.assertEqual(captured["messages"][0]["content"][1]["type"], "image_url")
+
     def test_chat_sends_schema_and_local_request_has_no_authorization(self) -> None:
         captured: dict[str, object] = {}
 
@@ -96,6 +139,102 @@ class ProviderAdapterTests(unittest.TestCase):
         with self.assertRaises(ProviderError):
             OpenAICompatibleChat(config, transport).complete([ChatMessage("user", "hello")])
         self.assertEqual(calls, 1)
+
+    def test_ollama_requests_final_content_and_retries_an_empty_reply_once(self) -> None:
+        requests: list[dict[str, object]] = []
+
+        def transport(request: Request, timeout: float) -> bytes:
+            del timeout
+            requests.append(json.loads((request.data or b"").decode("utf-8")))
+            content = "" if len(requests) == 1 else "Ready."
+            return json.dumps({"choices": [{"message": {"content": content}, "finish_reason": "stop"}]}).encode()
+
+        config = ProviderConfig(
+            "local", ProviderRole.CHAT, "http://127.0.0.1:11434/v1", "gemma4:12b-mlx",
+            None, 12.0, runtime="ollama",
+        )
+        self.assertEqual(
+            OpenAICompatibleChat(config, transport).complete([ChatMessage("user", "hello")], max_tokens=128),
+            "Ready.",
+        )
+        self.assertEqual(len(requests), 2)
+        self.assertEqual(requests[0]["reasoning_effort"], "none")
+        self.assertEqual(requests[1]["max_tokens"], 256)
+
+    def test_empty_ollama_retry_reports_a_clear_bounded_error(self) -> None:
+        calls = 0
+
+        def transport(request: Request, timeout: float) -> bytes:
+            nonlocal calls
+            del request, timeout
+            calls += 1
+            return json.dumps({"choices": [{"message": {"content": ""}, "finish_reason": "length"}]}).encode()
+
+        config = ProviderConfig(
+            "local", ProviderRole.CHAT, "http://127.0.0.1:11434/v1", "gemma4:12b-mlx",
+            None, 12.0, runtime="ollama",
+        )
+        with self.assertRaisesRegex(ProviderError, "no final answer.*length"):
+            OpenAICompatibleChat(config, transport).complete([ChatMessage("user", "hello")])
+        self.assertEqual(calls, 2)
+
+    def test_ollama_tool_call_for_schema_falls_back_to_json_text(self) -> None:
+        requests: list[dict[str, object]] = []
+
+        def transport(request: Request, timeout: float) -> bytes:
+            del timeout
+            requests.append(json.loads((request.data or b"").decode("utf-8")))
+            if len(requests) == 1:
+                return json.dumps({"choices": [{"message": {"content": "", "tool_calls": [{"function": {"name": "browser.search"}}]}, "finish_reason": "tool_calls"}]}).encode()
+            return json.dumps({"choices": [{"message": {"content": '{"action":"search"}'}, "finish_reason": "stop"}]}).encode()
+
+        config = ProviderConfig(
+            "local", ProviderRole.CHAT, "http://127.0.0.1:11434/v1", "gpt-oss:20b",
+            None, 12.0, "json_schema", "ollama",
+        )
+        answer = OpenAICompatibleChat(config, transport).complete(
+            [ChatMessage("user", "Search my corpus")], response_schema={"type": "object"}
+        )
+        self.assertEqual(answer, '{"action":"search"}')
+        self.assertEqual(requests[1]["response_format"], {"type": "json_object"})
+        self.assertIn("Do not call tools", requests[1]["messages"][0]["content"])
+
+    def test_ollama_unrequested_tool_call_retries_as_final_text(self) -> None:
+        requests: list[dict[str, object]] = []
+
+        def transport(request: Request, timeout: float) -> bytes:
+            del timeout
+            requests.append(json.loads((request.data or b"").decode("utf-8")))
+            if len(requests) == 1:
+                return json.dumps({"choices": [{"message": {"content": "", "tool_calls": [{"function": {"name": "search"}}]}, "finish_reason": "tool_calls"}]}).encode()
+            return json.dumps({"choices": [{"message": {"content": "The answer is ready."}, "finish_reason": "stop"}]}).encode()
+
+        config = ProviderConfig(
+            "local", ProviderRole.CHAT, "http://127.0.0.1:11434/v1", "gpt-oss:20b",
+            None, 12.0, runtime="ollama",
+        )
+        answer = OpenAICompatibleChat(config, transport).complete([ChatMessage("user", "Answer directly")])
+        self.assertEqual(answer, "The answer is ready.")
+        self.assertIn("Do not call tools", requests[1]["messages"][0]["content"])
+
+    def test_ollama_malformed_schema_text_retries_as_json_object(self) -> None:
+        requests: list[dict[str, object]] = []
+
+        def transport(request: Request, timeout: float) -> bytes:
+            del timeout
+            requests.append(json.loads((request.data or b"").decode("utf-8")))
+            content = "Answer: scopes come from the app" if len(requests) == 1 else '{"answer":"app"}'
+            return json.dumps({"choices": [{"message": {"content": content}}]}).encode()
+
+        config = ProviderConfig(
+            "local", ProviderRole.CHAT, "http://127.0.0.1:11434/v1", "gemma4:12b-mlx",
+            None, 12.0, "json_schema", "ollama",
+        )
+        answer = OpenAICompatibleChat(config, transport).complete(
+            [ChatMessage("user", "Who supplies scopes?")], response_schema={"type": "object"}
+        )
+        self.assertEqual(answer, '{"answer":"app"}')
+        self.assertEqual(requests[1]["response_format"], {"type": "json_object"})
 
 
 if __name__ == "__main__":
