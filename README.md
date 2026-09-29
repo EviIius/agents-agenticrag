@@ -100,13 +100,30 @@ receives them as context, not as source citations. Active questions show progres
 button; Direct answers stream token by token, while grounded modes stream status and return the
 validated final answer. Stop closes a Direct model stream promptly and prevents later grounded
 model steps and saving a stopped answer; a grounded model call already in progress may need to
-finish first. **Dictate** appears in
-browsers with speech recognition support; the browser may use an external speech service and the
-app asks before starting it. The iPhone keyboard microphone remains available as a fallback.
+ finish first. **Dictate** uses browser speech recognition when available; the browser may use an
+ external speech service and the app asks before starting it. Otherwise the action focuses the
+ question field so you can use the iPhone keyboard microphone and review the transcript.
+
+The Models page has an **automatic model** switch. Its first routing rule uses the saved local
+comparison to select the highest measured answer quality for Fixed mode, from models currently
+installed in Ollama. Direct, Agentic, Supervisor, image, and hosted runs keep the selected model
+until comparable evidence and capability checks exist. The chosen model appears with the answer.
 
 On iPhone, open the private Tailscale URL in Safari, tap Share, then **Add to Home Screen** and
 enable **Open as Web App**. The installed icon opens the workbench without the browser address
 and toolbar. Your iPhone still needs Tailscale connected to reach the Mac mini.
+
+Questions now run on the Mac independently of the phone connection. Reopening the same Home
+Screen app resumes a queued or running question; completed answers remain in the saved chat.
+Only one local model run executes at a time; a question waiting for it shows as queued. If the
+server restarts mid-run, the run is marked interrupted and its question is ready to retry.
+
+For SQLite backups, stop the workbench and run
+`python scripts/backup_workbench.py --db .data/corpus.db --backup /path/to/new-backup`.
+To test recovery, restore into a fresh location with
+`python scripts/backup_workbench.py --db /path/to/restored/corpus.db --restore /path/to/new-backup`.
+The restore verifies checksums and refuses to overwrite existing databases. Local model
+selections are not included; reselect them in Models after recovery.
 
 To try grounded answers on a clean installation, start the workbench and run
 `python scripts/seed_sample_corpus.py`. This indexes three original example notes in the default
@@ -292,6 +309,7 @@ PostgreSQL/pgvector round trip is enabled only when `AGENTICRAG_TEST_POSTGRES_DS
 ## Architecture and next milestones
 
 See [`docs/architecture.md`](./docs/architecture.md) for contracts and trust boundaries and
-[`docs/roadmap.md`](./docs/roadmap.md) for the PDF-aligned implementation sequence. The next major
-slice is reranking, adjacent-section expansion, and empirical qualification of the fixed and
-bounded-agent baselines.
+[`docs/roadmap.md`](./docs/roadmap.md) for the PDF-aligned implementation sequence.
+[`docs/local-agent-optimization-plan.md`](./docs/local-agent-optimization-plan.md) records the
+current decision on model runtimes, evaluation, routing, and a proposed Gmail pilot. The next
+major slice is a realistic held-out evaluation set before reranking or new agents are enabled.

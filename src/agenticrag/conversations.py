@@ -282,12 +282,15 @@ class ConversationStore:
         answer = str(result["answer"])
         compact_result = {
             "workflow": result["workflow"],
+            "provider": result.get("provider"),
+            "routing": result.get("routing"),
             "abstained": result["abstained"],
             "elapsed_ms": result["elapsed_ms"],
             "citations": result["citations"],
             "external_sources": result.get("external_sources", []),
             "events": result.get("events", [])[:50],
             "retrieved_count": len(result.get("evidence", [])),
+            "delegations": result.get("delegations", [])[:3],
         }
         cited_ids = {
             item.get("chunk_id") for item in result.get("citations", [])

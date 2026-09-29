@@ -10,7 +10,7 @@ import threading
 import time
 import webbrowser
 from datetime import datetime, timezone
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from dataclasses import asdict, replace
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -32,11 +32,13 @@ from .config import (
 from .conversations import ConversationStore
 from .errors import AgenticRAGError, AuthorizationError, ConfigurationError, WorkflowError
 from .ingestion import FileParser, IngestionLimits, Ingestor, parser_capabilities
+from .model_routing import choose_model
 from .postgres_store import PostgresCorpusStore
 from .providers.openai_compatible import build_chat_provider, build_embedding_provider
 from .providers.openai_responses import OpenAIResponsesWebSearch
 from .providers.base import ChatMessage, ChatProvider
 from .retrieval import HybridRetriever
+from .run_store import WorkbenchRunStore
 from .runtimes import RUNTIME_PROFILES, RuntimeSelection, discover_models, ollama_supports_vision
 from .skills import SkillRegistry
 from .store import CorpusStore, SQLiteCorpusStore
@@ -184,6 +186,9 @@ class WorkbenchState:
         self.conversations = ConversationStore(
             ":memory:" if db_path == ":memory:" else str(Path(db_path).resolve().with_name("workbench-chats.db"))
         )
+        self.runs = WorkbenchRunStore(
+            ":memory:" if db_path == ":memory:" else str(Path(db_path).resolve().with_name("workbench-runs.db"))
+        )
         self.skills_root = skills_root.expanduser().resolve()
         default_skills_root = Path(".agenticrag/skills").resolve()
         self.agent_skills_root = (
@@ -193,6 +198,7 @@ class WorkbenchState:
         )
         self._lock = threading.RLock()
         self._active_runs: dict[str, threading.Event] = {}
+        self._model_slot = threading.Semaphore(1)
         self._runtime_status_cache: tuple[float, dict[str, object]] | None = None
         self._providers: dict[ProviderRole, RuntimeSelection] = {}
         for role in ProviderRole:
@@ -234,6 +240,11 @@ class WorkbenchState:
             if event is None:
                 return False
             event.set()
+            run = self.runs.get(run_id)
+            if run:
+                self.runs.update(run_id, cancel_requested=True,
+                                 status="stopped" if run["status"] == "queued" else None,
+                                 error="Run stopped" if run["status"] == "queued" else None)
             return True
 
     def finish_run(self, run_id: str) -> None:
@@ -522,6 +533,7 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
 
         def do_GET(self) -> None:  # noqa: N802
             try:
+                self._require_allowed_host()
                 parsed = urlsplit(self.path)
                 if parsed.path == "/healthz":
                     self._json(HTTPStatus.OK, {"status": "ok", "version": __version__})
@@ -537,6 +549,14 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
                     return
                 if parsed.path == "/api/v1/evaluation":
                     self._json(HTTPStatus.OK, state.evaluation_report())
+                    return
+                run = re.fullmatch(r"/api/v1/runs/([0-9a-f]{32})", parsed.path)
+                if run:
+                    record = state.runs.get(run[1])
+                    if record is None:
+                        self._json(HTTPStatus.NOT_FOUND, {"error": "Run not found"})
+                    else:
+                        self._json(HTTPStatus.OK, record)
                     return
                 if parsed.path == "/api/v1/projects":
                     self._json(HTTPStatus.OK, {"projects": state.conversations.list_projects()})
@@ -591,6 +611,7 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
 
         def do_POST(self) -> None:  # noqa: N802
             try:
+                self._require_allowed_host()
                 self._require_same_origin()
                 payload = self._read_json()
                 path = urlsplit(self.path).path
@@ -630,6 +651,9 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
                 if path == "/api/v1/ask-stream":
                     self._stream_ask(payload)
                     return
+                if path == "/api/v1/runs":
+                    self._start_durable_run(payload)
+                    return
                 cancel = re.fullmatch(r"/api/v1/runs/([0-9a-f]{32})/cancel", path)
                 if cancel:
                     self._json(HTTPStatus.OK, {"cancelled": state.cancel_run(cancel[1])})
@@ -657,6 +681,7 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
 
         def do_PUT(self) -> None:  # noqa: N802
             try:
+                self._require_allowed_host()
                 self._require_same_origin()
                 path = urlsplit(self.path).path
                 note = re.fullmatch(r"/api/v1/project-notes/([0-9a-f]{32})", path)
@@ -671,6 +696,7 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
 
         def do_DELETE(self) -> None:  # noqa: N802
             try:
+                self._require_allowed_host()
                 self._require_same_origin()
                 path = urlsplit(self.path).path
                 if path.startswith("/api/v1/chats/"):
@@ -768,6 +794,69 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
             finally:
                 state.finish_run(run_id)
 
+        def _start_durable_run(self, payload: dict[str, Any]) -> None:
+            run_id = payload.get("run_id")
+            chat_id = payload.get("chat_id")
+            if not isinstance(run_id, str) or not re.fullmatch(r"[0-9a-f]{32}", run_id):
+                raise ValueError("Invalid run identifier")
+            if not isinstance(chat_id, str) or not re.fullmatch(r"[0-9a-f]{32}", chat_id):
+                raise ValueError("A saved conversation is required for a durable run")
+            question = _bounded_string(payload.get("question"), "question", MAX_QUESTION_CHARS)
+            workflow = payload.get("workflow", "agent")
+            if workflow not in {"direct", "fixed", "agent", "supervisor"}:
+                raise ValueError("Invalid workflow")
+            if state.runs.get(run_id) is not None:
+                raise ValueError("Run identifier already exists")
+            # Validate conversation access before creating an observable run.
+            collection = _bounded_string(payload.get("collection"), "collection", 128)
+            scopes = _string_list(payload.get("scopes"), "scopes", max_items=16, max_chars=128)
+            state.conversations.history(chat_id, collection, list(scopes))
+            cancelled = state.start_run(run_id)
+            try:
+                state.runs.create(run_id, chat_id, question, workflow)
+            except Exception:
+                state.finish_run(run_id)
+                raise
+
+            def worker() -> None:
+                try:
+                    model_slot = (
+                        state._model_slot if state.provider(ProviderRole.CHAT).provider_kind == "local"
+                        else nullcontext()
+                    )
+                    with model_slot:
+                        if cancelled.is_set():
+                            state.runs.update(run_id, status="stopped", error="Run stopped")
+                            return
+                        state.runs.update(run_id, status="running")
+                        streamed = ""
+                        last_flush = time.monotonic()
+
+                        def token(text: str) -> None:
+                            nonlocal streamed, last_flush
+                            streamed += text
+                            if time.monotonic() - last_flush >= 0.25:
+                                state.runs.update(run_id, streamed_text=streamed)
+                                last_flush = time.monotonic()
+
+                        def event(item: Any) -> None:
+                            state.runs.update(run_id, event={"type": "event", "event": asdict(item)})
+
+                        def evidence(items: list[dict[str, str | None]]) -> None:
+                            state.runs.update(run_id, event={"type": "evidence", "items": items})
+
+                        result = self._ask(payload, cancelled=cancelled, on_token=token,
+                                           on_event=event, on_evidence=evidence)
+                        state.runs.update(run_id, status="completed", streamed_text=streamed, result=result)
+                except Exception as exc:
+                    state.runs.update(run_id, status="stopped" if cancelled.is_set() else "failed",
+                                      error="Run stopped" if cancelled.is_set() else str(exc)[:1000])
+                finally:
+                    state.finish_run(run_id)
+
+            threading.Thread(target=worker, name=f"workbench-run-{run_id[:8]}", daemon=True).start()
+            self._json(HTTPStatus.ACCEPTED, {"run_id": run_id, "status": "queued"})
+
         def _ask(
             self, payload: dict[str, Any], *, cancelled: threading.Event | None = None,
             on_token: Callable[[str], None] | None = None,
@@ -795,6 +884,19 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
                 raise ConfigurationError("Web search is unavailable; install agenticrag[web] or configure hosted search")
             chat_config = state.provider(ProviderRole.CHAT).provider_config()
             image_data_url, image_name = _validated_chat_image(payload.get("image"))
+            auto_route = payload.get("auto_route", False)
+            if not isinstance(auto_route, bool):
+                raise ValueError("auto_route must be boolean")
+            route_reason = "Selected model"
+            if auto_route and chat_config.kind == "local" and chat_config.runtime == "ollama" and not image_data_url:
+                try:
+                    installed = discover_models(chat_config)["models"]
+                    routed_model, route_reason = choose_model(
+                        workflow_name, chat_config.model, installed, state.evaluation_report()
+                    )
+                    chat_config = replace(chat_config, model=routed_model)
+                except (AgenticRAGError, OSError, ValueError, TypeError, KeyError):
+                    route_reason = "Model comparison unavailable; selected model retained"
             if image_data_url:
                 if workflow_name != "direct" or allow_web:
                     raise ValueError("Image questions currently require Direct mode with web search off")
@@ -866,6 +968,7 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
                                 skill_registry=registry,
                                 selected_skills=skills,
                                 web_search=web_search,
+                                prior_turns=history,
                             )
                         else:
                             workflow = BoundedAgenticRAGWorkflow(
@@ -879,6 +982,7 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
                     result = workflow.run(question, scopes=scopes, collection=collection,
                                           on_event=on_event, on_evidence=on_evidence)
             response = result.to_dict()
+            response["routing"] = {"automatic": auto_route, "model": chat_config.model, "reason": route_reason}
             if cancelled and cancelled.is_set():
                 raise WorkflowError("Run stopped")
             response["memory_notes_used"] = len(memory_notes)
@@ -959,6 +1063,23 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
             if parsed.scheme not in {"http", "https"} or parsed.netloc != self.headers.get("Host"):
                 raise AuthorizationError("Cross-origin write request rejected")
 
+        def _require_allowed_host(self) -> None:
+            host = self.headers.get("Host", "")
+            if not host or any(character in host for character in ("/", "@", ",", " ", "\t")):
+                raise AuthorizationError("Unrecognized request host")
+            try:
+                parsed = urlsplit("//" + host)
+                _ = parsed.port
+            except ValueError as exc:
+                raise AuthorizationError("Unrecognized request host") from exc
+            allowed = {"localhost", "127.0.0.1", "::1"}
+            allowed.update(
+                value.strip().lower().rstrip(".")
+                for value in os.environ.get("AGENTICRAG_ALLOWED_HOSTS", "").split(",") if value.strip()
+            )
+            if parsed.hostname is None or parsed.hostname.lower().rstrip(".") not in allowed:
+                raise AuthorizationError("Unrecognized request host")
+
         def _asset(self, name: str) -> None:
             try:
                 data = resources.files("agenticrag.ui").joinpath(name).read_bytes()
@@ -973,7 +1094,12 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
             if name.endswith(".woff2"):
                 content_type = "font/woff2"
             self.send_header("Content-Type", content_type if name.endswith((".png", ".woff2")) else f"{content_type}; charset=utf-8")
-            self.send_header("Cache-Control", "public, max-age=31536000, immutable" if name.endswith(".woff2") else "no-cache")
+            versioned_asset = bool(urlsplit(self.path).query) and name not in {"index.html"}
+            self.send_header(
+                "Cache-Control",
+                "public, max-age=31536000, immutable"
+                if name.endswith(".woff2") or versioned_asset else "no-cache",
+            )
             self.send_header("Content-Length", str(len(data)))
             self.end_headers()
             self.wfile.write(data)
@@ -1041,6 +1167,7 @@ def serve(
         pass
     finally:
         server.server_close()
+        state.runs.close()
         state.conversations.close()
 
 

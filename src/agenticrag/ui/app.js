@@ -5,6 +5,7 @@ const state = {
   workflow: "agent",
   selectedSkills: new Set(),
   allowWeb: false,
+  autoRoute: localStorage.getItem("agenticrag.autoRoute") === "1",
   capabilityTab: "tools",
   selectedFile: null,
   chats: [],
@@ -203,7 +204,7 @@ function resizeComposer() {
 function startVoiceDictation() {
   const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!Recognition) {
-    toast("Voice dictation is unavailable here. Use your keyboard microphone instead.", true);
+    focusKeyboardDictation();
     return;
   }
   const recognition = new Recognition();
@@ -221,7 +222,7 @@ function startVoiceDictation() {
   };
   recognition.onerror = (event) => {
     if (event.error !== "no-speech" && event.error !== "aborted") {
-      toast("Voice input stopped. You can use the keyboard microphone instead.", true);
+      focusKeyboardDictation();
     }
   };
   recognition.onend = () => {
@@ -237,8 +238,14 @@ function startVoiceDictation() {
     $("#dictate-button").textContent = "Stop listening";
     $("#dictate-button").classList.add("is-listening");
   } catch {
-    toast("Voice input could not start. Use your keyboard microphone instead.", true);
+    focusKeyboardDictation();
   }
+}
+
+function focusKeyboardDictation() {
+  const input = $("#question-input");
+  input.focus();
+  toast("Use the microphone on your keyboard to dictate. Review the text before sending.");
 }
 
 function el(tag, className, text) {
@@ -271,7 +278,11 @@ async function api(path, options = {}) {
   } catch {
     throw new Error(`Workbench returned HTTP ${response.status} without JSON`);
   }
-  if (!response.ok) throw new Error(payload.error || `Request failed with HTTP ${response.status}`);
+  if (!response.ok) {
+    const error = new Error(payload.error || `Request failed with HTTP ${response.status}`);
+    error.status = response.status;
+    throw error;
+  }
   return payload;
 }
 
@@ -279,41 +290,58 @@ function post(path, payload) {
   return api(path, { method: "POST", body: JSON.stringify(payload) });
 }
 
-async function streamQuestion(payload, onProgress, onReady, onToken, onEvent, onEvidence) {
-  const controller = new AbortController();
-  state.runController = controller;
-  const response = await fetch("/api/v1/ask-stream", {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload), signal: controller.signal,
-  });
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || `Run failed with HTTP ${response.status}`);
-  }
-  if (!response.body) throw new Error("This browser cannot read run progress");
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
+async function watchRun(runId, onProgress, onReady, onToken, onEvent, onEvidence) {
+  let eventCount = 0;
+  let textLength = 0;
+  let lastStatus = "";
+  let ready = false;
   while (true) {
-    const { value, done } = await reader.read();
-    buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
-    const frames = buffer.split("\n\n");
-    buffer = frames.pop() || "";
-    for (const frame of frames) {
-      const line = frame.split("\n").find((item) => item.startsWith("data: "));
-      if (!line) continue;
-      const event = JSON.parse(line.slice(6));
-      if (event.type === "started") onReady(event);
-      if (event.type === "progress") onProgress(event.message);
-      if (event.type === "token") onToken(event.text || "");
-      if (event.type === "event") onEvent(event.event);
-      if (event.type === "evidence") onEvidence(event.items || []);
-      if (event.type === "completed") return event.result;
-      if (event.type === "stopped") throw new Error("Run stopped");
-      if (event.type === "error") throw new Error(event.message || "Run failed");
+    let run;
+    try {
+      run = await api(`/api/v1/runs/${runId}`);
+    } catch (error) {
+      if (error.status === 404) throw new Error("Run record was not found after reconnecting");
+      onProgress("Connection lost. Reconnecting to the run…");
+      await new Promise((resolve) => window.setTimeout(resolve, 1500));
+      continue;
     }
-    if (done) throw new Error("Run ended before an answer arrived");
+    if (!ready) {
+      onReady({ limits: { max_steps: 8, max_seconds: run.workflow === "supervisor" ? 300 : 180 } });
+      ready = true;
+    }
+    if (run.status !== lastStatus) {
+      lastStatus = run.status;
+      onProgress(run.status === "queued" ? "Waiting for the local model…" : "Working with the selected model…");
+    }
+    const events = run.events || [];
+    for (const item of events.slice(eventCount)) {
+      if (item.type === "event") onEvent(item.event);
+      if (item.type === "evidence") onEvidence(item.items || []);
+    }
+    eventCount = events.length;
+    const streamed = run.streamed_text || "";
+    if (streamed.length > textLength) onToken(streamed.slice(textLength));
+    textLength = streamed.length;
+    if (run.status === "completed") return run.result;
+    if (run.status === "stopped") throw new Error("Run stopped");
+    if (run.status === "failed" || run.status === "interrupted") throw new Error(run.error || "Run failed");
+    await new Promise((resolve) => window.setTimeout(resolve, 750));
   }
+}
+
+async function streamQuestion(payload, onProgress, onReady, onToken, onEvent, onEvidence) {
+  localStorage.setItem("agenticrag.activeRun", JSON.stringify({ run_id: payload.run_id, chat_id: payload.chat_id }));
+  try {
+    await post("/api/v1/runs", payload);
+  } catch (error) {
+    if (error.status) {
+      localStorage.removeItem("agenticrag.activeRun");
+      throw error;
+    }
+    // The server may have accepted the job before the phone lost its response.
+    onProgress("Connection lost. Looking for your run…");
+  }
+  return watchRun(payload.run_id, onProgress, onReady, onToken, onEvent, onEvidence);
 }
 
 function currentContext() {
@@ -872,6 +900,7 @@ function updateComposerRoute() {
 }
 
 function renderModelLibrary() {
+  $("#auto-route-input").checked = state.autoRoute;
   const providers = state.bootstrap.providers;
   for (const role of ["chat", "embedding"]) {
     const provider = providers[role];
@@ -1387,6 +1416,12 @@ function renderMarkdown(container, markdown) {
   });
 }
 
+function displayAnswerCitations(answer, citations = []) {
+  const positions = new Map(citations.map((citation, index) => [citation.chunk_id, index + 1]));
+  return String(answer || "").replace(/\[(chunk_[A-Za-z0-9_-]+)\]/g, (_, id) =>
+    positions.has(id) ? `[${positions.get(id)}]` : "");
+}
+
 async function copyText(value, button) {
   try {
     await navigator.clipboard.writeText(value);
@@ -1399,6 +1434,7 @@ async function copyText(value, button) {
 }
 
 function renderResult(result, loading, stored = false) {
+  result.answer = displayAnswerCitations(result.answer, result.citations || []);
   loading.className = "message assistant";
   $(".steps-inline", loading)?.remove();
   $(".run-budget", loading)?.remove();
@@ -1408,7 +1444,7 @@ function renderResult(result, loading, stored = false) {
   const meta = $(".message-meta", loading);
   $(".verification-badge", meta)?.remove();
   const providerModel = typeof result.provider === "string" ? result.provider.match(/^(?:local|openai):(.+?)@/)?.[1] : null;
-  const modelPart = providerModel ? ` · ${modelDisplayName(providerModel)}` : "";
+  const modelPart = providerModel ? ` · ${modelDisplayName(providerModel)}${result.routing?.reason?.startsWith("Highest measured") ? " · Auto" : ""}` : "";
   $(".message-meta span", loading).textContent = result.abstained ? `${workflowName}${modelPart} · needs sources` : `${workflowName}${modelPart}${stored ? " · saved" : result.elapsed_ms ? ` · ${(result.elapsed_ms / 1000).toFixed(1)} s` : ""}`;
   const events = result.events || [];
   const review = events.findLast((event) => event.kind === "review_completed" && event.detail?.accepted === true);
@@ -1518,7 +1554,7 @@ function openResultPanel(result, tab = "evidence", selected = 0) {
     button.setAttribute("aria-pressed", String(tab === "evidence" && Number(button.dataset.citationIndex) === selected));
   });
   const title = $("#inspector-title");
-  title.textContent = "";
+  title.textContent = tab === "steps" ? "Run steps" : "Evidence & citations";
   const body = $("#inspector-body");
   body.replaceChildren();
   const tabs = el("div", "inspector-tabs");
@@ -1558,7 +1594,7 @@ function openResultPanel(result, tab = "evidence", selected = 0) {
       let versionLabel;
       if (index === selected) {
         const quote = el("blockquote", "evidence-passage");
-        if (passage) quote.append(el("mark", "", passage));
+        if (passage) quote.textContent = passage;
         else quote.textContent = "Open this source to read the saved passage.";
         card.append(quote);
         versionLabel = el("span", "", `v·${citation.source_version_id.replace(/^version_/, "").slice(0, 8)}`);
@@ -1613,7 +1649,7 @@ async function enrichEvidencePassage(citation, quote, versionLabel) {
     while (start > 0 && !/\s/.test(text[start - 1]) && citation.start_char - start < 60) start--;
     while (end < text.length && !/\s/.test(text[end]) && end - citation.end_char < 60) end++;
     const excerpt = plainPassage(text.slice(start, end));
-    if (excerpt) quote.replaceChildren(el("mark", "", `${start > 0 ? "… " : ""}${excerpt}${end < text.length ? " …" : ""}`));
+    if (excerpt) quote.textContent = `${start > 0 ? "… " : ""}${excerpt}${end < text.length ? " …" : ""}`;
     const type = source.media_type?.includes("markdown") ? "Markdown" : source.media_type?.includes("pdf") ? "PDF" : source.media_type?.split("/").at(-1)?.toUpperCase();
     versionLabel.textContent = [`v·${source.id.replace(/^version_/, "").slice(0, 8)}`, type, Number.isFinite(source.byte_size) ? formatBytes(source.byte_size) : ""].filter(Boolean).join(" · ");
   } catch { /* Keep the saved excerpt when the source is unavailable. */ }
@@ -1785,6 +1821,7 @@ async function runQuestion(question) {
       skills: [...state.selectedSkills],
       max_steps: 8,
       allow_web: ["direct", "supervisor"].includes(workflow) && state.allowWeb,
+      auto_route: state.autoRoute,
       ...(image ? { image } : {}),
       chat_id: state.activeChatId,
       run_id: state.runId,
@@ -1857,6 +1894,16 @@ async function runQuestion(question) {
     if (loading) {
       loading.className = "message assistant";
       $(".message-meta span", loading).textContent = "run failed safely";
+      const pending = $(".verification-badge", loading);
+      if (pending) {
+        pending.className = "verification-badge is-warning";
+        pending.textContent = "Run failed · review incomplete";
+      }
+      const trace = $(".steps-inline-list", loading);
+      if (trace) {
+        trace.replaceChildren();
+        appendTraceRows(trace, liveEvents, null, false);
+      }
       $(".message-content", loading).textContent = error.message;
       const retry = el("button", "", "Retry question");
       retry.type = "button";
@@ -1881,7 +1928,11 @@ async function runQuestion(question) {
     $("#stop-button").hidden = true;
     $("#stop-button").disabled = false;
     $("#stop-button").textContent = "Stop";
+    const finishedRunId = state.runId;
     state.runId = null;
+    try {
+      if (JSON.parse(localStorage.getItem("agenticrag.activeRun") || "null")?.run_id === finishedRunId) localStorage.removeItem("agenticrag.activeRun");
+    } catch { localStorage.removeItem("agenticrag.activeRun"); }
     $("#active-run-count").hidden = true;
     renderHistoryList();
     state.runController = null;
@@ -1892,6 +1943,70 @@ async function runQuestion(question) {
     $("#delete-chat-button").disabled = !state.activeChatId;
     resizeComposer();
     if (!phoneLayout()) $("#question-input").focus();
+  }
+}
+
+async function resumeSavedRun() {
+  let saved;
+  try { saved = JSON.parse(localStorage.getItem("agenticrag.activeRun") || "null"); }
+  catch { localStorage.removeItem("agenticrag.activeRun"); return; }
+  if (!saved?.run_id || !saved?.chat_id) return;
+  let run;
+  try { run = await api(`/api/v1/runs/${saved.run_id}`); }
+  catch (error) {
+    if (error.status === 404) localStorage.removeItem("agenticrag.activeRun");
+    return;
+  }
+  if (run.status === "completed") {
+    localStorage.removeItem("agenticrag.activeRun");
+    if (state.activeChatId === saved.chat_id) await loadChat(saved.chat_id);
+    return;
+  }
+  if (!["queued", "running"].includes(run.status)) {
+    localStorage.removeItem("agenticrag.activeRun");
+    $("#question-input").value = run.question;
+    resizeComposer();
+    toast(run.error || "The previous run did not finish. You can retry your question.", true);
+    return;
+  }
+  if (state.activeChatId !== saved.chat_id) await loadChat(saved.chat_id);
+  state.runId = saved.run_id;
+  state.stopRequested = false;
+  $("#send-button").hidden = true;
+  $("#stop-button").hidden = false;
+  $("#stop-button").disabled = false;
+  $("#active-run-count").hidden = false;
+  $$("[data-workflow]").forEach((button) => { button.disabled = true; });
+  $("#mode-pill").disabled = true;
+  $("#new-chat-button").disabled = true;
+  appendMessage("user", run.question, `You · ${run.workflow}`);
+  const loading = appendLoading();
+  const liveEvents = [];
+  let streamBuffer = "";
+  let limits = null;
+  try {
+    await watchRun(saved.run_id,
+      (message) => { const note = $(".waiting-note", loading); if (note) note.textContent = message; },
+      (started) => { limits = started.limits; },
+      (token) => { streamBuffer += token; renderMarkdown($(".message-content", loading), streamBuffer); },
+      (event) => { liveEvents.push(event); renderLiveSteps(loading, liveEvents, limits); },
+      () => {});
+    await loadChat(saved.chat_id);
+  } catch (error) {
+    loading.remove();
+    $("#question-input").value = run.question;
+    resizeComposer();
+    toast(error.message === "Run stopped" ? "Run stopped. Your question is ready to retry." : error.message, error.message !== "Run stopped");
+  } finally {
+    localStorage.removeItem("agenticrag.activeRun");
+    state.runId = null;
+    $("#send-button").hidden = false;
+    $("#stop-button").hidden = true;
+    $("#active-run-count").hidden = true;
+    $$("[data-workflow]").forEach((button) => { button.disabled = false; });
+    $("#mode-pill").disabled = false;
+    $("#new-chat-button").disabled = false;
+    renderHistoryList();
   }
 }
 
@@ -2084,6 +2199,10 @@ function toast(message, isError = false) {
 }
 
 function bindEvents() {
+  $("#auto-route-input").addEventListener("change", (event) => {
+    state.autoRoute = event.target.checked;
+    localStorage.setItem("agenticrag.autoRoute", state.autoRoute ? "1" : "0");
+  });
   for (const target of [$("#chat-scroll"), $("#conversation"), $(".model-workspace"), $(".corpus-layout"), $(".capability-layout")]) {
     target.addEventListener("scroll", updateBackToTop, { passive: true });
   }
@@ -2116,7 +2235,7 @@ function bindEvents() {
   $("#close-memory").addEventListener("click", () => $("#memory-dialog").close());
   const speechAvailable = Boolean(window.SpeechRecognition || window.webkitSpeechRecognition);
   $("#dictate-button").hidden = !speechAvailable;
-  $("#add-dictate-button").hidden = !speechAvailable;
+  $("#add-dictate-button").textContent = speechAvailable ? "Dictate a question" : "Use keyboard microphone";
   $("#chat-attachment-control").addEventListener("click", () => {
     toggleModeMenu(false);
     const menu = $("#composer-add-menu");
@@ -2137,7 +2256,8 @@ function bindEvents() {
   $("#add-dictate-button").addEventListener("click", () => {
     $("#composer-add-menu").hidden = true;
     $("#chat-attachment-control").setAttribute("aria-expanded", "false");
-    $("#dictate-button").click();
+    if (speechAvailable) $("#dictate-button").click();
+    else focusKeyboardDictation();
   });
   $("#dictate-button").addEventListener("click", () => {
     if (state.voiceListening) {
@@ -2232,8 +2352,7 @@ function bindEvents() {
     $("#stop-button").disabled = true;
     $("#stop-button").textContent = "Stopping…";
     try { await post(`/api/v1/runs/${state.runId}/cancel`, {}); }
-    catch { /* Aborting the response still stops this client run. */ }
-    state.runController?.abort();
+    catch { toast("Could not reach the server to stop this run. Reconnecting…", true); }
     $("#stop-button").textContent = "Stop";
   });
   $("#delete-chat-button").addEventListener("click", async () => {
@@ -2408,6 +2527,7 @@ async function initialize() {
     await refreshChats();
     const savedChatId = localStorage.getItem("agenticrag.activeChatId");
     if (savedChatId && state.chats.some((item) => item.id === savedChatId)) await loadChat(savedChatId);
+    void resumeSavedRun();
     void discoverLocalModels();
     void refreshRuntimeStatus();
   } catch (error) {

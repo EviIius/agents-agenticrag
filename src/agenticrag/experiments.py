@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import re
 import threading
 import traceback
 import uuid
@@ -30,6 +31,8 @@ class ExperimentCase:
     expected_answer_contains: tuple[str, ...] = ()
     forbidden_answer_contains: tuple[str, ...] = ()
     category: str = "general"
+    split: str = "dev"
+    required_quotes: tuple[dict[str, str], ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -275,6 +278,7 @@ def summarize_experiments(
         abstention_correct = 0
         citations_total = 0
         citations_resolved = 0
+        citations_marked = 0
         tool_calls = 0
         tool_failures = 0
         reviews = 0
@@ -282,6 +286,8 @@ def summarize_experiments(
         budget_exhaustions = 0
         skill_loads = 0
         loaded_bytes: list[int] = []
+        quotes_total = 0
+        quotes_found = 0
 
         for record in group:
             case = case_by_id.get(record.case_id)
@@ -289,6 +295,7 @@ def summarize_experiments(
                 continue
             required = set(case.required_chunk_ids)
             required_total += len(required)
+            quotes_total += len(case.required_quotes)
             if len(required) > 1:
                 multi_hop_total += 1
             if case.answerable is True and (case.expected_answer_contains or case.forbidden_answer_contains):
@@ -307,6 +314,16 @@ def summarize_experiments(
                 if isinstance(item, dict) and isinstance(item.get("chunk"), dict)
             }
             required_found += len(required & evidence_ids)
+            for annotation in case.required_quotes:
+                quote = " ".join(annotation["quote"].casefold().split())
+                path = annotation["logical_path"]
+                if any(
+                    isinstance(item, dict) and isinstance(item.get("chunk"), dict)
+                    and item["chunk"].get("logical_path") == path
+                    and quote in " ".join(str(item["chunk"].get("text", "")).casefold().split())
+                    for item in result.get("evidence", [])
+                ):
+                    quotes_found += 1
             if len(required) > 1:
                 multi_hop_complete += int(required.issubset(evidence_ids))
             if case.answerable is True and (case.expected_answer_contains or case.forbidden_answer_contains):
@@ -319,11 +336,13 @@ def summarize_experiments(
             if case.answerable is False:
                 abstention_correct += int(bool(result.get("abstained")))
 
-            for citation in result.get("citations", []):
+            answer_markers = set(re.findall(r"\[(\d+)\]", str(result.get("answer", ""))))
+            for position, citation in enumerate(result.get("citations", []), start=1):
                 if not isinstance(citation, dict):
                     continue
                 citations_total += 1
                 citations_resolved += int(str(citation.get("chunk_id")) in evidence_ids)
+                citations_marked += int(str(position) in answer_markers)
             for event in result.get("events", []):
                 if not isinstance(event, dict):
                     continue
@@ -354,10 +373,12 @@ def summarize_experiments(
                 "p95_latency_ms": _percentile(latencies, 0.95),
                 "mean_model_loaded_gb": None if not loaded_bytes else round(mean(loaded_bytes) / 1_000_000_000, 2),
                 "evidence_recall": _ratio(required_found, required_total),
+                "quote_evidence_recall": _ratio(quotes_found, quotes_total),
                 "complete_multi_hop_evidence": _ratio(multi_hop_complete, multi_hop_total),
                 "answer_substring_accuracy": _ratio(answer_correct, answer_total),
                 "appropriate_abstention": _ratio(abstention_correct, abstention_total),
                 "citation_resolution_rate": _ratio(citations_resolved, citations_total),
+                "inline_citation_coverage": _ratio(citations_marked, citations_total),
                 "tool_call_count": tool_calls,
                 "tool_failure_rate": _ratio(tool_failures, tool_calls),
                 "review_count": reviews,
@@ -366,6 +387,7 @@ def summarize_experiments(
                 "skill_load_count": skill_loads,
                 "metric_denominators": {
                     "required_evidence_units": required_total,
+                    "required_quotes": quotes_total,
                     "multi_hop_cases": multi_hop_total,
                     "answer_cases": answer_total,
                     "unanswerable_cases": abstention_total,

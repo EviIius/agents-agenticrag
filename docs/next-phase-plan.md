@@ -50,6 +50,12 @@ progress and the final answer reappear once, and Stop remains effective.
 
 ## 3. Make Supervisor earn its cost
 
+The current reliability pass normalizes a completed specialist's delegation ID,
+prunes unrelated specialists, and preserves prior chat context only for local
+runs. A nachos question with web enabled fell from three specialists and about
+79 seconds to one specialist and about 20 seconds in a local comparison. Repeat
+this on a broader set before treating it as a general speed improvement.
+
 Add a routing check that sends simple grounded questions to Fixed and simple
 ungrounded questions to Direct. Show why Supervisor was chosen and what each
 specialist contributed. Run at most two independent specialists concurrently only
@@ -65,8 +71,11 @@ per-category evaluation results and latency limits. The host records its choice,
 reason, alternatives, and final outcome so bad choices can be corrected. A model
 is an inference engine; a specialist agent is a bounded role with tools and a
 specific obligation. Route to specialists only when the task needs their work.
-Keep the current explicit workflow and model selections until the evaluation set
-has enough repeated cases to set useful thresholds. Future Claude or ChatGPT
+The first local routing pilot now selects a model only for Fixed mode when a saved
+comparison has enough answer, abstention, and citation cases. It stays within
+installed Ollama models and records the selected model with the answer. These
+one-pass scores are provisional; repeat and broaden the cases before routing
+Agentic, Supervisor, web research, or workflow choice. Future Claude or ChatGPT
 provider adapters can participate in the same route contract when API access is
 added; no hosted model API is part of this phase.
 
@@ -160,6 +169,27 @@ remote access has a documented recovery and security story.
 Implement milestones 1 and 2 in that order. A small evaluation set will reveal
 which agent failures deserve fixes; durable runs then make slow Supervisor work
 usable from a phone. Only expand tools after both are observable and recoverable.
+
+### Progress on this slice
+
+- Added a 24-question frozen local diagnostic set. Qwen3 30B A3B 32K completed
+  three Fixed repeats without a failed run; Gemma4 12B completed one pass.
+  See [the pilot and its manual-review caveats](evaluation-v2-pilot-2026-09-28.md).
+- Fixed now rejects numeric answers absent from their cited passages, makes one
+  bounded correction attempt, and checks that every listed citation appears in
+  the answer. The evaluation report separates citation-ID resolution from inline
+  marker coverage.
+- Workbench questions now use server-owned, persisted run records. The phone can
+  reconnect to a queued or running job after its tab closes. One local model job
+  runs at a time; a queued cancellation takes effect immediately. A server restart
+  marks unfinished work interrupted rather than silently losing it.
+- Added checksum-verified SQLite backup and restore into a fresh location, with
+  a round-trip test. Backups should be made while the workbench is stopped.
+
+Remaining before calling milestones 1 and 2 complete: claim-level support
+adjudication, frozen web cases, repeated Agentic/Supervisor comparisons,
+physical-iPhone reconnect testing, peak-memory measurement, and an operational
+restore drill on the installed workbench.
 
 Background: [local model baseline](local-model-baseline.md),
 [evaluation contract](evaluation.md), [agent boundary](agentic-workflow.md), and

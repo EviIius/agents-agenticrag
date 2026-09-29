@@ -41,6 +41,10 @@ tailscale serve status
 ```
 
 Open the HTTPS `.ts.net` address reported by `tailscale serve status` on your other device.
+Set `AGENTICRAG_ALLOWED_HOSTS` to that exact `.ts.net` hostname (without `https://`) in the
+workbench process environment, then restart the workbench. Loopback names are always accepted.
+Requests with any other Host header are rejected, including read requests. This protects the
+loopback service from a local DNS rebinding page; it does not authenticate individual users.
 Tailscale Serve keeps this endpoint inside the tailnet; do not use Funnel, which can make an
 endpoint public. The tailnet identity and access rules control who can reach this single-user
 workbench. Anyone allowed to open it can read all projects and transcripts, so restrict access
@@ -108,7 +112,7 @@ Use `http://127.0.0.1:1234/v1` for both roles. LM Studio documents OpenAI-compat
 ollama serve
 ```
 
-Use `http://127.0.0.1:11434/v1`. The Ollama compatibility layer supports chat, streaming, JSON mode, tools, and reasoning controls. AgenticRAG disables Ollama reasoning for final answers so a small token budget does not yield an empty answer. For structured actions, it retries an empty JSON Schema response in `JSON object` mode. `JSON object` is also the conservative preset for models that do not reliably honor JSON Schema mode; switch to `Prompt only` for older or minimal servers.
+Use `http://127.0.0.1:11434/v1`. The Ollama compatibility layer supports chat, streaming, JSON mode, tools, and reasoning controls. AgenticRAG disables Ollama reasoning for final answers so a small token budget does not yield an empty answer. For structured actions, it retries an empty JSON Schema response in `JSON object` mode. The current Qwen workbench model passed the JSON Schema contract and uses that mode; GPT-OSS on Ollama needs native tool calling for reliable tool turns. See the [local model contract](model-tool-contract-2026-09-29.md). `JSON object` remains available for models that do not reliably honor JSON Schema mode; switch to `Prompt only` for older or minimal servers.
 
 ### llama.cpp
 

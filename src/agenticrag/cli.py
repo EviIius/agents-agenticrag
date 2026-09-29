@@ -128,6 +128,7 @@ def build_parser() -> argparse.ArgumentParser:
         "compare", help="Run direct/fixed baselines and optionally bounded agentic RAG"
     )
     compare.add_argument("dataset", type=Path)
+    compare.add_argument("--split", choices=("dev", "locked"), help="Run only this evaluation split")
     compare.add_argument("--runs", type=Path, default=Path(".data/runs.jsonl"))
     compare.add_argument("--include-agent", action="store_true")
     compare.add_argument("--include-supervisor", action="store_true")
@@ -148,6 +149,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     summarize = commands.add_parser("summarize", help="Score terminal records in a run journal")
     summarize.add_argument("dataset", type=Path)
+    summarize.add_argument("--split", choices=("dev", "locked"), help="Summarize only this evaluation split")
     summarize.add_argument("--runs", type=Path, default=Path(".data/runs.jsonl"))
 
     return parser
@@ -174,6 +176,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 0
         if args.command == "summarize":
             cases = _load_cases(args.dataset)
+            if args.split:
+                cases = [case for case in cases if case.split == args.split]
+                if not cases:
+                    raise ValueError(f"No evaluation cases in split {args.split}")
             summaries = summarize_experiments(JsonlRunJournal(args.runs).latest_records(), cases)
             _emit({"type": "summary", "groups": summaries})
             return 0
@@ -266,6 +272,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 if args.all_installed and args.model:
                     raise ValueError("Use --all-installed or --model, not both")
                 cases = _load_cases(args.dataset)
+                if args.split:
+                    cases = [case for case in cases if case.split == args.split]
+                    if not cases:
+                        raise ValueError(f"No evaluation cases in split {args.split}")
                 journal = JsonlRunJournal(args.runs)
                 model_names = args.model or [chat_config.model]
                 if args.all_installed:
@@ -308,6 +318,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "created_at": datetime.now(UTC).isoformat(),
                     "dataset_sha256": hashlib.sha256(args.dataset.read_bytes()).hexdigest(),
                     "dataset_label": args.dataset.name,
+                    "split": args.split,
                     "case_count": len(cases),
                     "repeat": args.repeat,
                     "models": model_names,
@@ -524,6 +535,8 @@ def _load_cases(path: Path) -> list[ExperimentCase]:
                         value, "forbidden_answer_contains", line_number
                     ),
                     category=str(value.get("category", "general")),
+                    split=_case_split(value, line_number),
+                    required_quotes=_required_quotes(value, line_number),
                 )
             )
         except (KeyError, TypeError) as exc:
@@ -533,6 +546,26 @@ def _load_cases(path: Path) -> list[ExperimentCase]:
     if len({case.id for case in cases}) != len(cases):
         raise ValueError("Experiment dataset contains duplicate case IDs")
     return cases
+
+
+def _case_split(value: dict[str, Any], line_number: int) -> str:
+    split = value.get("split", "dev")
+    if split not in {"dev", "locked"}:
+        raise ValueError(f"Dataset line {line_number} split must be dev or locked")
+    return split
+
+
+def _required_quotes(value: dict[str, Any], line_number: int) -> tuple[dict[str, str], ...]:
+    annotations = value.get("required_quotes", [])
+    if not isinstance(annotations, list):
+        raise ValueError(f"Dataset line {line_number} required_quotes must be an array")
+    parsed: list[dict[str, str]] = []
+    for annotation in annotations:
+        if (not isinstance(annotation, dict) or set(annotation) != {"logical_path", "quote"}
+                or not all(isinstance(item, str) and item.strip() for item in annotation.values())):
+            raise ValueError(f"Dataset line {line_number} has an invalid required quote")
+        parsed.append({"logical_path": annotation["logical_path"], "quote": annotation["quote"]})
+    return tuple(parsed)
 
 
 def _optional_bool(value: dict[str, Any], key: str, line_number: int) -> bool | None:

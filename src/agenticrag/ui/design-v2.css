@@ -78,6 +78,16 @@
 .citation-button:hover { border-color: var(--evidence-line); color: var(--evidence); }
 .citation-number, .inline-citation { display: inline-flex; align-items: center; justify-content: center; min-width: 21px; height: 21px; margin-right: 5px; border: 1px solid var(--evidence-line); border-radius: 5px; background: var(--evidence-soft); color: var(--evidence); font: 11px var(--font-mono); }
 .inline-citation { vertical-align: baseline; margin: 0 2px; cursor: pointer; }
+.message.assistant .citation-strip { max-width: 75ch; align-items: center; }
+.citation-strip .citation-label { flex: 0 0 auto; align-self: center; margin-right: 5px; }
+.citation-strip .citation-button { display: inline-flex; align-items: center; min-height: 35px; max-width: 100%; gap: 4px; text-align: left; overflow-wrap: anywhere; }
+.citation-strip .citation-number { flex: none; margin-right: 1px; }
+.message-content .inline-citation { position: relative; top: -.08em; min-width: 1.55em; height: 1.55em; padding: 0 .25em; vertical-align: middle; margin: 0 .13em; font: 600 .58em/1 var(--font-ui); }
+.auto-route-setting { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin: 12px 0 18px; padding: 13px 15px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+.auto-route-setting span { display: grid; gap: 3px; min-width: 0; }
+.auto-route-setting strong { color: var(--ink); font: 600 13px var(--font-ui); }
+.auto-route-setting small { color: var(--ink-muted); font: 11px/1.4 var(--font-ui); }
+.auto-route-setting input { flex: none; width: 19px; height: 19px; accent-color: var(--primary); }
 .message-actions { margin-top: 15px; }
 .message-actions button { color: var(--ink-muted); }
 .message-actions button:hover { color: var(--primary-text); }
@@ -376,6 +386,7 @@ button, select { -webkit-tap-highlight-color: transparent; }
 .evidence-card-heading-copy strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); font: 550 12px var(--font-ui); }
 .evidence-card-heading-copy small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-muted); font: 11px var(--font-ui); }
 .evidence-passage { margin: 0 11px 11px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--ink-secondary); font: 15px/1.6 var(--font-read); white-space: pre-line; }
+.evidence-passage { max-height: min(44vh, 420px); overflow-y: auto; overscroll-behavior: contain; }
 .evidence-passage mark { background: var(--highlight); color: var(--ink); }
 .evidence-card-footer { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; padding: 0 11px 11px; }
 .evidence-card-footer span { margin-right: auto; color: var(--ink-muted); font: 10px var(--font-mono); }
@@ -388,6 +399,10 @@ button, select { -webkit-tap-highlight-color: transparent; }
 @keyframes message-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes skeleton-shimmer { to { background-position-x: -200%; } }
 @media (max-width: 600px) {
+ .message.assistant .citation-strip .citation-label { flex-basis: 100%; margin-right: 0; }
+ .message.assistant .citation-strip .citation-button { margin-left: 0; }
+ .evidence-card-footer span { flex-basis: 100%; margin-right: 0; }
+ .evidence-card-footer button { flex: 1; min-height: 38px; }
  #view-chat { padding-bottom: max(30px, env(safe-area-inset-bottom, 0px)); }
  body.is-composing #view-chat { padding-bottom: 6px; }
  .composer { width: calc(100% - 20px); margin-bottom: 4px; }

@@ -8,6 +8,7 @@ from unittest.mock import patch
 from _bootstrap import SRC  # noqa: F401
 from agenticrag.domain import ExternalSource, RAGResult, SourceDraft
 from agenticrag.ingestion import Ingestor
+from agenticrag.providers.base import ChatMessage
 from agenticrag.retrieval import HybridRetriever
 from agenticrag.store import SQLiteCorpusStore
 from agenticrag.supervisor import SupervisorAgentWorkflow
@@ -43,6 +44,7 @@ class ManagerChat:
                     "abstained": False,
                     "used_delegations": ["d1"],
                     "caveats": [],
+                    "quotes": {},
                 }
             )
         if self.calls == 3:
@@ -65,6 +67,62 @@ class FakeWebSearch:
 
 
 class SupervisorTests(unittest.TestCase):
+    def test_host_prunes_unneeded_specialists_for_simple_web_question(self) -> None:
+        store = SQLiteCorpusStore(":memory:")
+        store.initialize()
+        workflow = SupervisorAgentWorkflow(
+            HybridRetriever(store, DeterministicEmbedding()), ManagerChat(), store,
+            web_search=FakeWebSearch(),  # type: ignore[arg-type]
+        )
+        plan = [
+            {"id": "d1", "agent": "web_researcher", "task": "Check method", "skills": []},
+            {"id": "d2", "agent": "corpus_researcher", "task": "Search recipes", "skills": []},
+            {"id": "d3", "agent": "quantitative_analyst", "task": "Analyze crispness", "skills": []},
+        ]
+        try:
+            selected = workflow._select_assignments("Is this a good way to make nachos?", plan)
+        finally:
+            store.close()
+        self.assertEqual([item["agent"] for item in selected], ["web_researcher"])
+
+    def test_web_search_does_not_receive_private_prior_turns(self) -> None:
+        store = SQLiteCorpusStore(":memory:")
+        store.initialize()
+        workflow = SupervisorAgentWorkflow(
+            HybridRetriever(store, DeterministicEmbedding()), ManagerChat(), store,
+            web_search=FakeWebSearch(),  # type: ignore[arg-type]
+            prior_turns=(ChatMessage("assistant", "Layer chips and cheese, then bake."),),
+        )
+        try:
+            prior = workflow.prior_turns
+        finally:
+            store.close()
+        self.assertEqual(prior, ())
+
+    def test_synthesis_accepts_unique_specialist_name_as_delegation_reference(self) -> None:
+        class AgentNamedChat:
+            label = "test:agent-named"
+
+            def complete(self, messages, **kwargs):  # type: ignore[no-untyped-def]
+                del messages, kwargs
+                return json.dumps({
+                    "answer": "The source supports it.", "abstained": False,
+                    "used_delegations": ["web_researcher"], "caveats": [], "quotes": {},
+                })
+
+        store = SQLiteCorpusStore(":memory:")
+        store.initialize()
+        workflow = SupervisorAgentWorkflow(
+            HybridRetriever(store, DeterministicEmbedding()), AgentNamedChat(), store
+        )
+        try:
+            synthesis = workflow._synthesize("What is current?", [
+                {"id": "d1", "agent": "web_researcher", "answer": "The source supports it."}
+            ], ())
+        finally:
+            store.close()
+        self.assertEqual(synthesis["used_delegations"], ["d1"])
+
     def test_abstained_corpus_specialist_uses_validated_fixed_fallback(self) -> None:
         class FallbackChat:
             label = "test:fallback-manager"
@@ -84,10 +142,15 @@ class SupervisorTests(unittest.TestCase):
                     if match is None:
                         raise AssertionError("Fallback needs retrieved evidence")
                     return json.dumps({"answer": "The authenticated application supplies scopes.",
-                                       "citations": [match.group(1)], "abstained": False})
+                                       "citations": [match.group(1)],
+                                       "quotes": {match.group(1): ["The authenticated application supplies scopes."]},
+                                       "abstained": False})
                 if self.calls == 3:
+                    match = re.search(r'"chunk_id":"([^\"]+)"', messages[1].content)
+                    chunk_id = match.group(1) if match else ""
                     return json.dumps({"answer": "The authenticated application supplies scopes.",
-                                       "abstained": False, "used_delegations": ["d1"], "caveats": []})
+                                       "abstained": False, "used_delegations": ["d1"], "caveats": [],
+                                       "quotes": {chunk_id: ["The authenticated application supplies scopes."]}})
                 if self.calls == 4:
                     return json.dumps({"accepted": True, "unsupported_claims": [], "feedback": "Supported."})
                 raise AssertionError("Unexpected model call")
@@ -163,6 +226,9 @@ class SupervisorTests(unittest.TestCase):
         self.assertEqual(result.external_sources[0].url, "https://example.test/source")
         self.assertIn("delegation_completed", [event.kind for event in result.events])
         self.assertIn("review_completed", [event.kind for event in result.events])
+        gates = [event for event in result.events if event.kind == "gate_completed"]
+        self.assertEqual(len(gates), 1)
+        self.assertEqual(gates[0].detail["checks"]["numeric_grounding"], "external_unverified")
 
     def test_explicit_web_run_uses_web_when_manager_chooses_empty_corpus(self) -> None:
         class CorpusFirstChat(ManagerChat):

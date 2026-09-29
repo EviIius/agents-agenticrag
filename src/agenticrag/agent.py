@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import json
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from typing import Any, Callable, Sequence
 
 from .agent_tools import ReadOnlyToolGateway, ToolBudget, _evidence_payload
 from .domain import Citation, RAGResult, RankedChunk, RunEvent
 from .citation_markers import repair_markers
+from .answer_gate import check_answer
 from .run_events import EventLog, evidence_summary
 from .errors import WorkflowError
 from .providers.base import ChatMessage, ChatProvider
@@ -104,6 +105,9 @@ ACTION_SCHEMA: dict[str, Any] = {
                             "items": {"type": "string"},
                             "uniqueItems": True,
                         },
+                        "quotes": {"type": "object", "additionalProperties": {
+                            "type": "array", "items": {"type": "string"}, "minItems": 1,
+                        }},
                         "abstained": {"type": "boolean"},
                         "obligations": {
                             "type": "array",
@@ -123,7 +127,7 @@ ACTION_SCHEMA: dict[str, Any] = {
                             },
                         },
                     },
-                    "required": ["answer", "citations", "abstained", "obligations"],
+                    "required": ["answer", "citations", "quotes", "abstained", "obligations"],
                     "additionalProperties": False,
                 },
             },
@@ -215,7 +219,7 @@ class BoundedAgenticRAGWorkflow:
             "selected_skills": self.selected_skills,
             "specialist_instruction": self.specialist_instruction or None,
             "tool_allowlist": ReadOnlyToolGateway.ALLOWED_ACTIONS,
-            "answer_schema": "obligation-evidence-citations-v1",
+            "answer_schema": "obligation-evidence-citations-quotes-v2",
         }
 
     def run(self, question: str, *, scopes: Sequence[str], collection: str,
@@ -241,7 +245,20 @@ class BoundedAgenticRAGWorkflow:
                 elapsed_ms=_elapsed_ms(started),
             )
         available = () if self.skill_registry is None else self.skill_registry.metadata()
-        plan = self._plan(question, available)
+        single_fact = _is_single_fact_question(question)
+        fallback_reason = ""
+        if single_fact and not available and not self.selected_skills:
+            plan = {"obligations": [{"id": "o1", "question": question.strip()}], "skills": []}
+        else:
+            try:
+                plan = self._plan(question, available)
+                _validate_plan(plan)
+                if (not isinstance(plan.get("skills"), list)
+                        or not all(isinstance(name, str) for name in plan["skills"])):
+                    raise WorkflowError("Plan skills must be a string array")
+            except WorkflowError as exc:
+                fallback_reason = str(exc)
+                plan = {"obligations": [{"id": "o1", "question": question.strip()}], "skills": []}
         if time.perf_counter() - started > self.config.max_seconds:
             return self._budget_result(
                 question,
@@ -250,17 +267,23 @@ class BoundedAgenticRAGWorkflow:
                 started,
             )
         obligations = _validate_plan(plan)
-        single_fact = _is_single_fact_question(question)
         if single_fact:
             obligations = ({"id": "o1", "question": question.strip()},)
-        events: list[RunEvent] = EventLog(started, on_event, [
+        initial_events = ([RunEvent("plan_fallback", {"reason": fallback_reason})]
+                          if fallback_reason else [])
+        initial_events.append(
             RunEvent("plan_created", {
                 "obligation_count": len(obligations),
                 "obligations": [{"id": item["id"], "question": item["question"][:140]} for item in obligations],
                 "host_simplified": single_fact,
             })
-        ])
-        skills = self._load_skills(plan["skills"], events)
+        )
+        events: list[RunEvent] = EventLog(started, on_event, initial_events)
+        try:
+            skills = self._load_skills(plan["skills"], events)
+        except WorkflowError as exc:
+            events.append(RunEvent("plan_fallback", {"reason": str(exc)}))
+            skills = ()
         gateway = ReadOnlyToolGateway(
             self.retriever,
             self.store,
@@ -337,7 +360,12 @@ class BoundedAgenticRAGWorkflow:
                     critique = {"accepted": False, "feedback": str(exc)}
                     history.append({"step": step, "action": "finish", "error": str(exc)})
                     continue
-                review = self._review(question, obligations, answer, citations, gateway.evidence)
+                try:
+                    review = self._review(question, obligations, answer, citations, gateway.evidence)
+                except WorkflowError as exc:
+                    events.append(RunEvent("review_invalid", {"reason": str(exc), "step": step}))
+                    review = {"accepted": False, "unsupported_claims": [],
+                              "missing_obligations": [], "feedback": "The review was invalid; revise the answer."}
                 if time.perf_counter() - started > self.config.max_seconds:
                     events.append(
                         RunEvent("budget_exhausted", {"kind": "time", "phase": "review"})
@@ -354,7 +382,15 @@ class BoundedAgenticRAGWorkflow:
                     )
                 )
                 if review["accepted"]:
-                    answer, marker_repairs = repair_markers(answer, len(citations))
+                    try:
+                        gate = check_answer(answer, abstained, citations, gateway.evidence)
+                    except WorkflowError as exc:
+                        events.append(RunEvent("validation_rejected", {"step": step, "reason": str(exc)}))
+                        critique = {"accepted": False, "feedback": str(exc)}
+                        history.append({"step": step, "action": "finish", "error": str(exc)})
+                        continue
+                    answer, marker_repairs = gate.answer, gate.marker_repairs
+                    events.append(RunEvent("gate_completed", {"checks": gate.checks, "step": step}))
                     events.append(
                         RunEvent(
                             "abstained" if abstained else "answer_validated",
@@ -509,7 +545,9 @@ class BoundedAgenticRAGWorkflow:
             "the evidence, never source names or excerpts. If evidence already answers the question, "
             "finish promptly. In a finish answer, place [n] directly after every evidence-backed "
             "sentence or clause, where n is the 1-based position of that evidence ID in the "
-            "citations array. Never invent a marker. Return one JSON object with exactly action, purpose, and arguments. "
+            "citations array. Give quotes[chunk_id] as a short verbatim passage from each cited "
+            "chunk (at most 200 characters). Never invent a marker or quote. Return one JSON object "
+            "with exactly action, purpose, and arguments. "
             "'purpose' is a brief action summary, not private reasoning."
         )
         if self.specialist_instruction:
@@ -658,11 +696,12 @@ def _validate_finish(
     obligations: Sequence[dict[str, str]],
     evidence: Sequence[RankedChunk],
 ) -> tuple[str, bool, tuple[Citation, ...]]:
-    if set(arguments) != {"answer", "citations", "abstained", "obligations"}:
+    if set(arguments) != {"answer", "citations", "quotes", "abstained", "obligations"}:
         raise WorkflowError("Finish arguments have missing or unexpected fields")
-    answer, citation_ids, abstained, statuses = (
+    answer, citation_ids, quotes, abstained, statuses = (
         arguments["answer"],
         arguments["citations"],
+        arguments["quotes"],
         arguments["abstained"],
         arguments["obligations"],
     )
@@ -672,8 +711,17 @@ def _validate_finish(
         raise WorkflowError("Finish abstained must be boolean")
     if not isinstance(citation_ids, list) or not all(isinstance(item, str) for item in citation_ids):
         raise WorkflowError("Finish citations must be a string array")
-    if len(citation_ids) != len(set(citation_ids)):
-        raise WorkflowError("Finish citations must not contain duplicates")
+    if len(citation_ids) > 32:
+        raise WorkflowError("Finish has too many citation references")
+    # Models sometimes repeat the same retrieved ID in a structured array even
+    # when its schema says uniqueItems. One source still resolves to one host
+    # citation; deduplication adds no authority and avoids a retry loop.
+    citation_ids = list(dict.fromkeys(citation_ids))
+    if not isinstance(quotes, dict) or set(quotes) != set(citation_ids) or any(
+        not isinstance(value, list) or not value or not all(isinstance(item, str) for item in value)
+        for value in quotes.values()
+    ):
+        raise WorkflowError("Finish needs supporting quotes for every citation")
     evidence_by_id = {item.chunk.id: item.chunk for item in evidence}
     unknown = sorted(set(citation_ids) - set(evidence_by_id))
     if unknown:
@@ -704,7 +752,8 @@ def _validate_finish(
         abstained = False
     if not abstained and (not citation_ids or not all(status["supported"] for status in statuses)):
         raise WorkflowError("A complete answer needs citations and support for every obligation")
-    citations = tuple(_citation(evidence_by_id[chunk_id]) for chunk_id in citation_ids)
+    citations = tuple(replace(_citation(evidence_by_id[chunk_id]), quotes=tuple(quotes[chunk_id]))
+                      for chunk_id in citation_ids)
     return answer.strip(), abstained, citations
 
 

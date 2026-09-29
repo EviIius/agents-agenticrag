@@ -70,6 +70,7 @@ class AgentChat:
                     "arguments": {
                         "answer": "Atlas has 64 GB of memory.",
                         "citations": [chunk_id],
+                        "quotes": {chunk_id: ["Atlas has 64 GB of memory."]},
                         "abstained": self.finish_abstained,
                         "obligations": [
                             {"id": "o1", "supported": True, "evidence_ids": [chunk_id]}
@@ -131,7 +132,7 @@ class AgenticWorkflowTests(unittest.TestCase):
             "How much memory does Atlas have?", scopes=("owner",), collection="private"
         )
         self.assertFalse(result.abstained)
-        self.assertEqual(result.answer, "Atlas has 64 GB of memory.")
+        self.assertEqual(result.answer, "Atlas has 64 GB of memory. [1]")
         self.assertEqual(len(result.citations), 1)
         kinds = [event.kind for event in result.events]
         self.assertIn("skill_loaded", kinds)
@@ -158,6 +159,22 @@ class AgenticWorkflowTests(unittest.TestCase):
         self.assertFalse(result.abstained)
         self.assertEqual(len(result.citations), 1)
 
+    def test_duplicate_finish_citation_is_collapsed_to_one_host_citation(self) -> None:
+        class DuplicateCitationChat(AgentChat):
+            def complete(self, messages, **kwargs):  # type: ignore[no-untyped-def]
+                raw = super().complete(messages, **kwargs)
+                if len(self.calls) == 3:
+                    value = json.loads(raw)
+                    value["arguments"]["citations"] *= 2
+                    return json.dumps(value)
+                return raw
+
+        result = self._workflow(DuplicateCitationChat()).run(
+            "How much memory does Atlas have?", scopes=("owner",), collection="private")
+        self.assertFalse(result.abstained)
+        self.assertEqual(len(result.citations), 1)
+        self.assertEqual(result.citations[0].quotes, ("Atlas has 64 GB of memory.",))
+
     def test_simple_fact_question_is_not_overplanned(self) -> None:
         class OverPlanChat(AgentChat):
             def complete(self, messages, **kwargs):  # type: ignore[no-untyped-def]
@@ -178,6 +195,52 @@ class AgenticWorkflowTests(unittest.TestCase):
         self.assertFalse(result.abstained)
         self.assertEqual(result.events[0].detail["obligation_count"], 1)
         self.assertTrue(result.events[0].detail["host_simplified"])
+
+    def test_simple_fact_without_skills_skips_planning_call(self) -> None:
+        class OneStepChat:
+            label = "test:one-step"
+            def __init__(self):
+                self.calls = []
+            def complete(self, messages, **kwargs):  # type: ignore[no-untyped-def]
+                self.calls.append(kwargs)
+                return json.dumps({"action": "search", "purpose": "Check source",
+                                   "arguments": {"query": "Atlas memory"}})
+
+        chat = OneStepChat()
+        workflow = BoundedAgenticRAGWorkflow(
+            HybridRetriever(self.store, self.embedder), chat, self.store,
+            config=AgentConfig(max_steps=1),
+        )
+        workflow.run("What is Atlas memory?", scopes=("owner",), collection="private")
+        self.assertEqual(len(chat.calls), 1)
+        self.assertIn("anyOf", chat.calls[0]["response_schema"])
+
+    def test_malformed_plan_falls_back_without_crashing(self) -> None:
+        class BadPlan(AgentChat):
+            def complete(self, messages, **kwargs):  # type: ignore[no-untyped-def]
+                if not self.calls:
+                    self.calls.append({"messages": messages, "options": kwargs})
+                    return '{"obligations": "invalid", "skills": []}'
+                return super().complete(messages, **kwargs)
+
+        result = self._workflow(BadPlan(), max_steps=1).run(
+            "How much memory does Atlas have?", scopes=("owner",), collection="private"
+        )
+        self.assertIn("plan_fallback", [event.kind for event in result.events])
+
+    def test_malformed_review_is_rejected_without_crashing(self) -> None:
+        class BadReview(AgentChat):
+            def complete(self, messages, **kwargs):  # type: ignore[no-untyped-def]
+                if len(self.calls) == 3:
+                    self.calls.append({"messages": messages, "options": kwargs})
+                    return '{"accepted": "yes"}'
+                return super().complete(messages, **kwargs)
+
+        result = self._workflow(BadReview(), max_steps=2).run(
+            "How much memory does Atlas have?", scopes=("owner",), collection="private"
+        )
+        self.assertTrue(result.abstained)
+        self.assertIn("review_invalid", [event.kind for event in result.events])
 
     def test_empty_authorized_corpus_abstains_before_model_call(self) -> None:
         chat = AgentChat()
@@ -240,6 +303,23 @@ class AgenticWorkflowTests(unittest.TestCase):
         self.assertEqual(result.citations, ())
         self.assertIn("validation_rejected", [event.kind for event in result.events])
         self.assertNotIn("review_completed", [event.kind for event in result.events])
+
+    def test_review_cannot_approve_a_quote_absent_from_the_source(self) -> None:
+        class WrongQuoteChat(AgentChat):
+            def complete(self, messages, **kwargs):  # type: ignore[no-untyped-def]
+                raw = super().complete(messages, **kwargs)
+                if len(self.calls) == 3:
+                    value = json.loads(raw)
+                    chunk_id = value["arguments"]["citations"][0]
+                    value["arguments"]["quotes"][chunk_id] = ["Atlas has 600 GB of memory."]
+                    return json.dumps(value)
+                return raw
+
+        result = self._workflow(WrongQuoteChat(), max_steps=2).run(
+            "How much memory does Atlas have?", scopes=("owner",), collection="private")
+        self.assertTrue(result.abstained)
+        self.assertIn("review_completed", [event.kind for event in result.events])
+        self.assertIn("validation_rejected", [event.kind for event in result.events])
 
     def test_rejected_review_abstains_at_hard_step_cap(self) -> None:
         chat = AgentChat(accept_review=False)

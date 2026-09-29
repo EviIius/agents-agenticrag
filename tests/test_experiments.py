@@ -27,6 +27,7 @@ class CitingChat(StaticChat):
                 {
                     "answer": "Atlas has 64 GB of memory.",
                     "citations": [chunk_id],
+                    "quotes": {chunk_id: ["Atlas has 64 GB of memory."]},
                     "abstained": False,
                 }
             )
@@ -108,6 +109,7 @@ class ExperimentJournalTests(unittest.TestCase):
             ("owner",),
             answerable=True,
             required_chunk_ids=(self.chunk_id,),
+            required_quotes=({"logical_path": "/corpus/atlas.md", "quote": "64 GB of memory"},),
             expected_answer_contains=("64 GB",),
         )
         unanswerable = ExperimentCase(
@@ -122,9 +124,12 @@ class ExperimentJournalTests(unittest.TestCase):
         summary = summarize_experiments(records, [answerable, unanswerable])[0]
         self.assertEqual(summary["failure_rate"], 0.0)
         self.assertEqual(summary["evidence_recall"], 1.0)
+        self.assertEqual(summary["quote_evidence_recall"], 1.0)
+        self.assertEqual(summary["metric_denominators"]["required_quotes"], 1)
         self.assertEqual(summary["answer_substring_accuracy"], 1.0)
         self.assertEqual(summary["appropriate_abstention"], 1.0)
         self.assertEqual(summary["citation_resolution_rate"], 1.0)
+        self.assertEqual(summary["inline_citation_coverage"], 1.0)
         self.assertEqual(summary["metric_denominators"]["answer_cases"], 1)
 
     def test_corrupt_journal_is_rejected_with_line_number(self) -> None:

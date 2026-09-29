@@ -102,6 +102,7 @@ class Citation:
     page_end: int | None = None
     section_path: tuple[str, ...] = ()
     provenance: tuple[ProvenanceSpan, ...] = ()
+    quotes: tuple[str, ...] = ()
 
 
 EventKind = Literal[
@@ -120,6 +121,9 @@ EventKind = Literal[
     "delegation_completed",
     "web_search_completed",
     "synthesis_completed",
+    "gate_completed",
+    "plan_fallback",
+    "review_invalid",
 ]
 
 
