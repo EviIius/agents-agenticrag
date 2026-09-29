@@ -268,10 +268,16 @@ function conversationTitle(question) {
 }
 
 async function api(path, options = {}) {
-  const response = await fetch(path, {
-    ...options,
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
-  });
+  let response;
+  try {
+    response = await fetch(path, {
+      ...options,
+      headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+    });
+  } catch (error) {
+    if (!path.startsWith("/api/v1/health") && !path.startsWith("/api/v1/runtime-status")) void window.ragConnection?.check();
+    throw error;
+  }
   let payload;
   try {
     payload = await response.json();
@@ -295,6 +301,8 @@ async function watchRun(runId, onProgress, onReady, onToken, onEvent, onEvidence
   let textLength = 0;
   let lastStatus = "";
   let ready = false;
+  let reconnectDelay = 1000;
+  let reconnectNotice = null;
   while (true) {
     let run;
     try {
@@ -302,9 +310,13 @@ async function watchRun(runId, onProgress, onReady, onToken, onEvent, onEvidence
     } catch (error) {
       if (error.status === 404) throw new Error("Run record was not found after reconnecting");
       onProgress("Connection lost. Reconnecting to the run…");
-      await new Promise((resolve) => window.setTimeout(resolve, 1500));
+      if (!reconnectNotice) reconnectNotice = toast({ kind: "progress", title: "Reconnecting…", detail: "Your run keeps going on the Mac mini" });
+      await new Promise((resolve) => window.setTimeout(resolve, reconnectDelay));
+      reconnectDelay = Math.min(8000, reconnectDelay * 2);
       continue;
     }
+    if (reconnectNotice) { reconnectNotice.update({ kind: "success", title: "Back online", detail: "Your run is ready to continue" }); reconnectNotice = null; }
+    reconnectDelay = 1000;
     if (!ready) {
       onReady({ limits: { max_steps: 8, max_seconds: run.workflow === "supervisor" ? 300 : 180 } });
       ready = true;
@@ -507,10 +519,41 @@ function renderHistoryList() {
     const menu = el("details", "history-menu");
     const toggle = el("summary", "", "⋯");
     toggle.setAttribute("aria-label", `Actions for ${chat.title}`);
-    const remove = el("button", "", "Delete chat");
-    remove.type = "button";
-    remove.addEventListener("click", () => void deleteChat(chat.id));
-    menu.append(toggle, remove);
+    toggle.setAttribute("aria-haspopup", "menu");
+    const choices = el("div", "menu");
+    choices.setAttribute("role", "menu");
+    choices.setAttribute("aria-label", `Actions for ${chat.title}`);
+    const item = (label, run, danger = false) => {
+      const button = el("button", `menu-item${danger ? " is-danger" : ""}`, label);
+      button.type = "button";
+      button.setAttribute("role", "menuitem");
+      button.addEventListener("click", () => { menu.open = false; void run(); });
+      choices.append(button);
+    };
+    item("Rename", () => renameChat(chat));
+    item(chat.pinned ? "Unpin from top" : "Pin to top", () => pinChat(chat));
+    item("Move to project…", () => moveChat(chat));
+    item("Export as Markdown", () => exportChat(chat));
+    choices.append(el("div", "menu-sep"));
+    item("Delete chat", () => deleteChat(chat.id), true);
+    choices.addEventListener("keydown", (event) => {
+      const items = $$("[role=menuitem]", choices);
+      const index = items.indexOf(document.activeElement);
+      const next = event.key === "ArrowDown" ? (index + 1) % items.length : event.key === "ArrowUp" ? (index - 1 + items.length) % items.length : event.key === "Home" ? 0 : event.key === "End" ? items.length - 1 : -1;
+      if (next >= 0) { event.preventDefault(); items[next].focus(); }
+      if (event.key === "Escape") { menu.open = false; toggle.focus(); }
+    });
+    toggle.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowDown" || event.key === "Enter") { menu.open = true; event.preventDefault(); $("[role=menuitem]", choices).focus(); }
+    });
+    menu.addEventListener("toggle", () => {
+      if (!menu.open) return;
+      if (window.matchMedia("(max-width: 640px)").matches) { choices.style.removeProperty("left"); choices.style.removeProperty("top"); return; }
+      const box = toggle.getBoundingClientRect();
+      choices.style.setProperty("left", `${Math.max(8, Math.min(box.right - 220, window.innerWidth - 228))}px`);
+      choices.style.setProperty("top", `${box.bottom + 205 > window.innerHeight ? box.top - 205 : box.bottom + 4}px`);
+    });
+    menu.append(toggle, choices);
     row.append(button, menu);
     list.append(row);
   });
@@ -526,12 +569,52 @@ async function refreshChats() {
 }
 
 async function deleteChat(chatId) {
-  if (!window.confirm("Delete this conversation and all its messages? This cannot be undone.")) return;
+  const title = state.chats.find((chat) => chat.id === chatId)?.title || "This chat";
+  if (!await confirmDialog({ title: "Delete this chat?", body: `“${title}” and its answers will be removed from your Mac mini. Your sources aren't affected.`, confirmLabel: "Delete chat", danger: true })) return;
   try {
     await api(`/api/v1/chats/${encodeURIComponent(chatId)}`, { method: "DELETE" });
     if (chatId === state.activeChatId) clearChat();
     await refreshChats();
     toast("Conversation deleted.");
+  } catch (error) { toast(error.message, true); }
+}
+
+async function renameChat(chat) {
+  const dialog = $("#rename-chat-dialog");
+  $("#rename-chat-input").value = chat.title;
+  dialog.dataset.chatId = chat.id;
+  dialog.showModal();
+  $("#rename-chat-input").focus();
+}
+
+async function pinChat(chat) {
+  try {
+    await api(`/api/v1/chats/${chat.id}`, { method: "PUT", body: JSON.stringify({ action: "pin", pinned: !chat.pinned }) });
+    await refreshChats();
+    toast({ kind: "success", title: chat.pinned ? "Chat unpinned" : "Chat pinned to top" });
+  } catch (error) { toast(error.message, true); }
+}
+
+function moveChat(chat) {
+  const dialog = $("#move-chat-dialog");
+  const select = $("#move-chat-select");
+  select.replaceChildren(...state.projects.map((project) => { const option = el("option", "", project.name); option.value = project.id; return option; }));
+  dialog.dataset.chatId = chat.id;
+  dialog.showModal();
+  select.focus();
+}
+
+async function exportChat(chat) {
+  try {
+    const result = await api(`/api/v1/chats/${chat.id}`);
+    const content = [`# ${result.title}`, "", ...(result.messages || []).flatMap((message) => [`## ${message.role === "user" ? "You" : "AgenticRAG"}`, "", message.content, ""])].join("\n");
+    const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${chat.title.replace(/[^a-z0-9 -]/gi, "").trim().slice(0, 60) || "chat"}.md`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   } catch (error) { toast(error.message, true); }
 }
 
@@ -808,14 +891,6 @@ function setView(name) {
   $("#workspace").focus({ preventScroll: true });
 }
 
-function setTheme(theme) {
-  document.documentElement.dataset.theme = theme;
-  localStorage.setItem("agenticrag.theme", theme);
-  const toggle = $("#theme-toggle");
-  toggle.setAttribute("aria-label", `Switch to ${theme === "dark" ? "light" : "dark"} theme`);
-  $("meta[name='theme-color']").content = theme === "dark" ? "#0C0C0D" : "#FAFAF8";
-}
-
 function providerForm(role) {
   return $(`[data-provider-form="${role}"]`);
 }
@@ -1078,6 +1153,7 @@ async function refreshRuntimeStatus() {
       setProviderStatus(role, tone, !configured ? "Not configured" : tone === "ready" ? "Reachable" : "Needs attention", state.bootstrap.providers[role]?.model);
       $(`#${role}-status-dot`).closest("button").title = status?.error || (status?.model_present === false ? "Configured model is not installed" : tone === "ready" ? `Reachable in ${status.latency_ms} ms` : "Not configured");
     }
+    window.ragConnection?.apply(state.runtimeStatus);
     renderModelLibrary();
   } catch {
     state.runtimeStatus = null;
@@ -1455,7 +1531,11 @@ function renderResult(result, loading, stored = false) {
   else if (events.some((event) => event.kind === "budget_exhausted")) { badge = "Stopped at budget"; badgeTone = "is-warning"; }
   else if (review && validated && review.detail?.unsupported_claim_count === 0) { badge = "Review passed · no unsupported claims"; badgeTone = "is-success"; }
   else if (validated && result.citations?.length) { badge = `${result.citations.length} citation${result.citations.length === 1 ? "" : "s"} validated`; badgeTone = "is-success"; }
-  if (badge) meta.append(el("span", `verification-badge ${badgeTone}`, badge));
+  if (badge) {
+    const node = el("span", `verification-badge ${badgeTone}`, badge);
+    if (review && validated) { node.dataset.tooltip = "Checked by the review step · 0 unsupported claims"; node.setAttribute("aria-describedby", "rag-tooltip"); }
+    meta.append(node);
+  }
   if (events.length && result.workflow !== "direct") {
     const details = el("details", "steps-inline");
     const citedCount = result.citations?.length || 0;
@@ -1825,7 +1905,7 @@ async function runQuestion(question) {
       ...(image ? { image } : {}),
       chat_id: state.activeChatId,
       run_id: state.runId,
-    }, (message) => { if (!liveEvents.length) $(".waiting-note", loading).textContent = message; }, (started) => {
+    }, (message) => { const note = $(".waiting-note", loading); if (!liveEvents.length && note) note.textContent = message; }, (started) => {
       runLimits = started.limits;
       $("#stop-button").disabled = false;
     }, (token) => {
@@ -2192,13 +2272,73 @@ async function ingestSelectedFile() {
   }
 }
 
-function toast(message, isError = false) {
-  const node = el("div", `toast${isError ? " is-error" : ""}`, message);
-  $("#toast-region").append(node);
-  window.setTimeout(() => node.remove(), 4800);
+function toast(input, isError = false) {
+  const options = typeof input === "string" ? { kind: isError ? "error" : "info", title: input } : input;
+  const node = el("div", `toast is-${options.kind || "info"}`);
+  if (options.kind === "error") node.setAttribute("role", "alert");
+  const icon = el("span", "toast-icon", options.kind === "success" ? "✓" : options.kind === "error" ? "!" : "•");
+  const copy = el("span", "toast-text");
+  copy.append(el("strong", "toast-title", options.title || ""));
+  if (options.detail) copy.append(el("span", "toast-detail", options.detail));
+  node.append(icon, copy);
+  if (options.action) {
+    const action = el("button", "toast-action", options.action.label);
+    action.type = "button";
+    action.addEventListener("click", () => { options.action.run(); dismiss(); });
+    node.append(action);
+  }
+  const close = el("button", "toast-close", "×");
+  close.type = "button";
+  close.setAttribute("aria-label", "Dismiss notification");
+  close.addEventListener("click", () => dismiss());
+  node.append(close);
+  let timer;
+  const dismiss = () => { clearTimeout(timer); node.classList.add("is-leaving"); setTimeout(() => node.remove(), 150); };
+  const schedule = () => {
+    clearTimeout(timer);
+    if (options.kind !== "error" && options.kind !== "progress") timer = setTimeout(dismiss, options.duration || (options.action ? 8000 : 5000));
+  };
+  node.addEventListener("mouseenter", () => clearTimeout(timer));
+  node.addEventListener("mouseleave", schedule);
+  node.addEventListener("focusin", () => clearTimeout(timer));
+  node.addEventListener("focusout", schedule);
+  const show = () => {
+    $("#toast-region").append(node);
+    while ($$("#toast-region .toast").length > 3) $("#toast-region .toast")[0].remove();
+    schedule();
+  };
+  if (document.querySelector("dialog[open]")) {
+    const wait = setInterval(() => { if (!document.querySelector("dialog[open]")) { clearInterval(wait); show(); } }, 100);
+  } else show();
+  return { dismiss, update(patch) { const previousKind = options.kind; Object.assign(options, patch); if (options.kind !== previousKind) { node.classList.remove(`is-${previousKind}`); node.classList.add(`is-${options.kind}`); icon.textContent = options.kind === "success" ? "✓" : options.kind === "error" ? "!" : "•"; if (options.kind === "error") node.setAttribute("role", "alert"); else node.removeAttribute("role"); } copy.querySelector(".toast-title").textContent = options.title || ""; if (options.detail) { let detail = copy.querySelector(".toast-detail"); if (!detail) { detail = el("span", "toast-detail"); copy.append(detail); } detail.textContent = options.detail; } schedule(); } };
 }
 
 function bindEvents() {
+  $("#rename-chat-cancel").addEventListener("click", () => $("#rename-chat-dialog").close());
+  $("#rename-chat-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const dialog = $("#rename-chat-dialog");
+    try {
+      await api(`/api/v1/chats/${dialog.dataset.chatId}`, { method: "PUT", body: JSON.stringify({ action: "rename", title: $("#rename-chat-input").value }) });
+      dialog.close(); await refreshChats();
+      if (dialog.dataset.chatId === state.activeChatId) $("#titlebar-title").textContent = $("#rename-chat-input").value.trim();
+    } catch (error) { toast(error.message, true); }
+  });
+  $("#move-chat-cancel").addEventListener("click", () => $("#move-chat-dialog").close());
+  $("#move-chat-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const dialog = $("#move-chat-dialog");
+    try {
+      await api(`/api/v1/chats/${dialog.dataset.chatId}`, { method: "PUT", body: JSON.stringify({ action: "move", project_id: $("#move-chat-select").value }) });
+      dialog.close();
+      if (dialog.dataset.chatId === state.activeChatId) clearChat();
+      await refreshChats();
+      toast({ kind: "success", title: "Chat moved" });
+    } catch (error) { toast(error.message, true); }
+  });
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest(".history-menu")) $$(".history-menu[open]").forEach((menu) => { menu.open = false; });
+  });
   $("#auto-route-input").addEventListener("change", (event) => {
     state.autoRoute = event.target.checked;
     localStorage.setItem("agenticrag.autoRoute", state.autoRoute ? "1" : "0");
@@ -2441,7 +2581,6 @@ function bindEvents() {
     if (!event.target.closest("#mobile-context")) setMobileContextOpen(false);
     if (!event.target.closest("#mode-pill") && !event.target.closest("#workflow-options")) toggleModeMenu(false);
   });
-  $("#theme-toggle").addEventListener("click", () => setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark"));
   $("#collection-input").addEventListener("change", persistContext);
   $("#scope-input").addEventListener("change", persistContext);
   $("#collection-input").addEventListener("input", contextInputChanged);
@@ -2537,7 +2676,6 @@ async function initialize() {
 }
 
 prepareDesignShell();
-setTheme(localStorage.getItem("agenticrag.theme") || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"));
 bindEvents();
 document.addEventListener("visibilitychange", () => { if (!document.hidden) void refreshRuntimeStatus(); });
 window.setInterval(() => { if (!document.hidden) void refreshRuntimeStatus(); }, 60_000);

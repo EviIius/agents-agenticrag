@@ -18,6 +18,8 @@ from importlib import resources
 from pathlib import Path
 from typing import Any, Callable, Iterator, Sequence
 from urllib.parse import parse_qs, unquote, urlsplit
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 from . import __version__
 from .agent import AgentConfig, BoundedAgenticRAGWorkflow
@@ -149,8 +151,8 @@ class _CancellableChat:
 
 
 UI_FILES = {
-    "/": "index.html", "/index.html": "index.html", "/app.js": "app.js",
-    "/styles.css": "styles.css", "/tokens.css": "tokens.css", "/design-v2.css": "design-v2.css",
+    "/": "index.html", "/index.html": "index.html", "/app.js": "app.js", "/boot.js": "boot.js", "/v21.js": "v21.js", "/sw.js": "sw.js",
+    "/styles.css": "styles.css", "/tokens.css": "tokens.css", "/design-v2.css": "design-v2.css", "/components-v21.css": "components-v21.css",
     "/vendor/marked.umd.js": "vendor/marked.umd.js",
     "/vendor/purify.min.js": "vendor/purify.min.js",
     "/manifest.webmanifest": "manifest.webmanifest", "/icon-180.png": "icon-180.png",
@@ -160,8 +162,36 @@ UI_FILES = {
         "GeistMono-Variable.woff2", "GeistMono-Variable-LatinExt.woff2",
         "Newsreader-Variable.woff2", "Newsreader-Variable-LatinExt.woff2",
         "Newsreader-Variable-Italic.woff2",
+        "Literata-Variable.woff2", "Literata-Variable-LatinExt.woff2", "Literata-Variable-Italic.woff2",
+        "AtkinsonHyperlegibleNext-Variable.woff2", "AtkinsonHyperlegibleNext-Variable-LatinExt.woff2", "AtkinsonHyperlegibleNext-Variable-Italic.woff2",
     )},
 }
+
+
+def _loaded_model_state(selection: RuntimeSelection) -> bool | None:
+    """Best-effort memory state; unknown runtimes must not be reported as unloaded."""
+    if selection.runtime not in {"ollama", "lm-studio"}:
+        return None
+    parsed = urlsplit(selection.base_url)
+    if parsed.hostname not in {"127.0.0.1", "localhost", "::1"}:
+        return None
+    origin = f"{parsed.scheme}://{parsed.netloc}"
+    path = "/api/ps" if selection.runtime == "ollama" else "/api/v0/models"
+    try:
+        with urlopen(Request(origin + path, headers={"Accept": "application/json"}), timeout=1.5) as response:  # noqa: S310
+            payload = json.loads(response.read(256_000))
+        rows = payload.get("models", []) if selection.runtime == "ollama" else payload.get("data", [])
+        if not isinstance(rows, list):
+            return None
+        if selection.runtime == "ollama":
+            return any(row.get("name") == selection.model or row.get("model") == selection.model for row in rows if isinstance(row, dict))
+        for row in rows:
+            if isinstance(row, dict) and row.get("id") == selection.model:
+                state = row.get("state") or row.get("status")
+                return state in {"loaded", "ready"} if isinstance(state, str) else None
+    except (HTTPError, URLError, TimeoutError, OSError, ValueError, TypeError, json.JSONDecodeError):
+        pass
+    return None
 MODEL_CONTRACT_SCHEMA: dict[str, object] = {
     "type": "object",
     "properties": {
@@ -199,7 +229,10 @@ class WorkbenchState:
         self._lock = threading.RLock()
         self._active_runs: dict[str, threading.Event] = {}
         self._model_slot = threading.Semaphore(1)
+        self._warm_active = False
         self._runtime_status_cache: tuple[float, dict[str, object]] | None = None
+        self._last_fresh_runtime_probe = 0.0
+        self.started_at = datetime.now(timezone.utc).isoformat()
         self._providers: dict[ProviderRole, RuntimeSelection] = {}
         for role in ProviderRole:
             try:
@@ -333,30 +366,81 @@ class WorkbenchState:
             raise ValueError("Evaluation report has an unsupported format")
         return {"available": True, **payload}
 
-    def runtime_status(self) -> dict[str, object]:
+    def runtime_status(self, *, fresh: bool = False) -> dict[str, object]:
         now = time.monotonic()
         with self._lock:
             cached = self._runtime_status_cache
-            if cached and now - cached[0] < 15:
+            if fresh and now - self._last_fresh_runtime_probe >= 3:
+                self._last_fresh_runtime_probe = now
+            elif fresh and cached:
+                return cached[1]
+            elif cached and now - cached[0] < 15:
                 return cached[1]
             providers = dict(self._providers)
         result: dict[str, object] = {"checked_at": datetime.now(timezone.utc).isoformat()}
         for role in ProviderRole:
             selection = providers.get(role)
             if selection is None:
-                result[role.value] = {"configured": False, "reachable": False, "latency_ms": None, "model_present": None, "error": None}
+                result[role.value] = {"configured": False, "reachable": False, "latency_ms": None, "model_present": None, "error": None,
+                                      "runtime": None, "endpoint": None, "error_kind": None, "loaded": None}
                 continue
+            parsed_endpoint = urlsplit(selection.base_url)
+            endpoint = parsed_endpoint.hostname or ""
+            if parsed_endpoint.port:
+                endpoint += f":{parsed_endpoint.port}"
+            runtime = selection.runtime if selection.runtime in {"ollama", "lm-studio", "llama-cpp", "vllm", "openai"} else None
             try:
                 probe = discover_models(replace(selection.provider_config(), timeout_seconds=2.0))
                 result[role.value] = {
                     "configured": True, "reachable": True, "latency_ms": probe["latency_ms"],
                     "model_present": probe["configured_model_available"], "error": None,
+                    "runtime": runtime, "endpoint": endpoint,
+                    "error_kind": None if probe["configured_model_available"] else "model_missing",
+                    "loaded": _loaded_model_state(selection),
                 }
             except (AgenticRAGError, OSError, ValueError) as exc:
-                result[role.value] = {"configured": True, "reachable": False, "latency_ms": None, "model_present": None, "error": str(exc)[:240]}
+                message = str(exc)[:240]
+                kind = "timeout" if "timed out" in message.lower() or "timeout" in message.lower() else "refused" if "refused" in message.lower() or "could not reach" in message.lower() else "invalid" if "invalid" in message.lower() else "http"
+                result[role.value] = {"configured": True, "reachable": False, "latency_ms": None, "model_present": None, "error": message,
+                                      "runtime": runtime, "endpoint": endpoint, "error_kind": kind, "loaded": None}
         with self._lock:
             self._runtime_status_cache = (time.monotonic(), result)
         return result
+
+    def warm_chat_model(self) -> dict[str, bool]:
+        selection = self.provider(ProviderRole.CHAT)
+        if selection.provider_kind != "local" or selection.runtime not in {"ollama", "lm-studio"}:
+            raise ConfigurationError("Warm-up is available for local Ollama and LM Studio models")
+        with self._lock:
+            if self._warm_active or self._active_runs:
+                return {"started": False}
+            if not self._model_slot.acquire(blocking=False):
+                return {"started": False}
+            self._warm_active = True
+
+        def warm() -> None:
+            try:
+                parsed = urlsplit(selection.base_url)
+                origin = f"{parsed.scheme}://{parsed.netloc}"
+                if selection.runtime == "ollama":
+                    endpoint = origin + "/api/generate"
+                    payload = {"model": selection.model, "keep_alive": "30m", "stream": False}
+                else:
+                    endpoint = selection.base_url + "/chat/completions"
+                    payload = {"model": selection.model, "messages": [{"role": "user", "content": "Ready"}], "max_tokens": 1, "stream": False}
+                request = Request(endpoint, data=json.dumps(payload).encode(), headers={"Content-Type": "application/json"}, method="POST")
+                with urlopen(request, timeout=120) as response:  # noqa: S310
+                    response.read(1024)
+            except (HTTPError, URLError, TimeoutError, OSError, ValueError):
+                pass
+            finally:
+                with self._lock:
+                    self._warm_active = False
+                    self._runtime_status_cache = None
+                self._model_slot.release()
+
+        threading.Thread(target=warm, daemon=True, name="model-warm-up").start()
+        return {"started": True}
 
     def configure(self, payload: dict[str, Any]) -> dict[str, object]:
         role = _role(payload.get("role"))
@@ -538,6 +622,10 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
                 if parsed.path == "/healthz":
                     self._json(HTTPStatus.OK, {"status": "ok", "version": __version__})
                     return
+                if parsed.path == "/api/v1/health":
+                    self._json(HTTPStatus.OK, {"ok": True, "version": __version__, "asset_version": "21", "started_at": state.started_at,
+                                                "server_time": datetime.now(timezone.utc).isoformat()})
+                    return
                 if parsed.path in UI_FILES:
                     self._asset(UI_FILES[parsed.path])
                     return
@@ -545,7 +633,7 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
                     self._json(HTTPStatus.OK, state.bootstrap())
                     return
                 if parsed.path == "/api/v1/runtime-status":
-                    self._json(HTTPStatus.OK, state.runtime_status())
+                    self._json(HTTPStatus.OK, state.runtime_status(fresh=parse_qs(parsed.query).get("fresh") == ["1"]))
                     return
                 if parsed.path == "/api/v1/evaluation":
                     self._json(HTTPStatus.OK, state.evaluation_report())
@@ -618,6 +706,11 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
                 if path == "/api/v1/configure":
                     self._json(HTTPStatus.OK, {"provider": state.configure(payload)})
                     return
+                if path == "/api/v1/runtime/warm":
+                    if payload.get("role") != "chat":
+                        raise ValueError("Only the chat model can be warmed")
+                    self._json(HTTPStatus.ACCEPTED, state.warm_chat_model())
+                    return
                 if path == "/api/v1/probe":
                     role = _role(payload.get("role"))
                     if payload.get("base_url"):
@@ -684,6 +777,25 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
                 self._require_allowed_host()
                 self._require_same_origin()
                 path = urlsplit(self.path).path
+                chat = re.fullmatch(r"/api/v1/chats/([0-9a-f]{32})", path)
+                if chat:
+                    payload = self._read_json()
+                    action = payload.get("action")
+                    if action == "rename":
+                        result = state.conversations.rename(chat[1], _bounded_string(payload.get("title"), "title", 100))
+                    elif action == "pin":
+                        if not isinstance(payload.get("pinned"), bool):
+                            raise ValueError("pinned must be a boolean")
+                        result = state.conversations.set_pinned(chat[1], payload["pinned"])
+                    elif action == "move":
+                        project_id = payload.get("project_id")
+                        if not isinstance(project_id, str) or not re.fullmatch(r"default|[0-9a-f]{32}", project_id):
+                            raise ValueError("Invalid project identifier")
+                        result = state.conversations.move(chat[1], project_id)
+                    else:
+                        raise ValueError("Unknown chat action")
+                    self._json(HTTPStatus.OK, result)
+                    return
                 note = re.fullmatch(r"/api/v1/project-notes/([0-9a-f]{32})", path)
                 if note:
                     payload = self._read_json()
@@ -1098,7 +1210,7 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
             self.send_header(
                 "Cache-Control",
                 "public, max-age=31536000, immutable"
-                if name.endswith(".woff2") or versioned_asset else "no-cache",
+                if name.endswith(".woff2") or (versioned_asset and name not in {"boot.js", "sw.js"}) else "no-cache",
             )
             self.send_header("Content-Length", str(len(data)))
             self.end_headers()

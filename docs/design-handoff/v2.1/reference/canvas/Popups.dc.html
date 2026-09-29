@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Popups</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&amp;family=Geist+Mono:wght@400..600&amp;family=Newsreader:opsz,wght@6..72,400..600&amp;display=swap">
+<style>
+*{box-sizing:border-box}
+body{margin:0}
+.t{font-family:'Geist',ui-sans-serif,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+.theme-dark{--bg:#0C0C0D;--side:#111113;--surf:#161618;--raised:#1C1C1F;--hover:#222226;--line:#232327;--line2:#33333A;--ink:#EDEDEF;--ink2:#A8A8B0;--ink3:#85858D;--acc:#6E95FF;--acc-ink:#07102A;--acc-text:#9DB7FF;--acc-soft:rgba(110,149,255,.13);--acc-line:rgba(110,149,255,.45);--hl:rgba(110,149,255,.22);--ev:#7CCFE0;--ev-soft:rgba(124,207,224,.10);--ev-line:rgba(124,207,224,.34);--ok:#62CF8F;--ok-soft:rgba(98,207,143,.11);--warn:#E9B949;--warn-soft:rgba(233,185,73,.12);--err:#F2786D;--err-soft:rgba(242,120,109,.12);--err-line:rgba(242,120,109,.40);--scrim:rgba(5,5,6,.62);--shadow:0 18px 50px rgba(0,0,0,.45);--pop-shadow:0 24px 64px rgba(0,0,0,.55);color-scheme:dark}
+.theme-midnight{--bg:#000000;--side:#070708;--surf:#0E0E10;--raised:#141417;--hover:#1B1B1F;--line:#1C1C20;--line2:#2A2A30;--ink:#ECECEF;--ink2:#A3A3AB;--ink3:#82828A;--acc:#6E95FF;--acc-ink:#07102A;--acc-text:#9DB7FF;--acc-soft:rgba(110,149,255,.14);--acc-line:rgba(110,149,255,.48);--hl:rgba(110,149,255,.24);--ev:#7CCFE0;--ev-soft:rgba(124,207,224,.10);--ev-line:rgba(124,207,224,.34);--ok:#62CF8F;--ok-soft:rgba(98,207,143,.11);--warn:#E9B949;--warn-soft:rgba(233,185,73,.12);--err:#F2786D;--err-soft:rgba(242,120,109,.12);--err-line:rgba(242,120,109,.40);--scrim:rgba(0,0,0,.72);--shadow:0 18px 50px rgba(0,0,0,.8);--pop-shadow:0 24px 64px rgba(0,0,0,.85);color-scheme:dark}
+.theme-light{--bg:#FAFAF8;--side:#F3F3F0;--surf:#FFFFFF;--raised:#FFFFFF;--hover:#ECECE8;--line:#E5E5E0;--line2:#D2D2CC;--ink:#17171A;--ink2:#52525A;--ink3:#6A6A72;--acc:#2F5BEA;--acc-ink:#FFFFFF;--acc-text:#2448C4;--acc-soft:rgba(47,91,234,.09);--acc-line:rgba(47,91,234,.40);--hl:rgba(47,91,234,.14);--ev:#0B7285;--ev-soft:rgba(11,114,133,.07);--ev-line:rgba(11,114,133,.30);--ok:#1E7F46;--ok-soft:rgba(30,127,70,.08);--warn:#8A5F00;--warn-soft:rgba(138,95,0,.08);--err:#B83227;--err-soft:rgba(184,50,39,.07);--err-line:rgba(184,50,39,.35);--scrim:rgba(23,23,26,.32);--shadow:0 16px 40px rgba(24,24,28,.09);--pop-shadow:0 24px 60px rgba(24,24,28,.16);color-scheme:light}
+.theme-paper{--bg:#F5F0E6;--side:#EDE6D8;--surf:#FBF8F2;--raised:#FFFDF9;--hover:#E8E0CF;--line:#E2D8C6;--line2:#D0C3AC;--ink:#221E18;--ink2:#574F43;--ink3:#6B6253;--acc:#2F5BEA;--acc-ink:#FFFFFF;--acc-text:#2448C4;--acc-soft:rgba(47,91,234,.09);--acc-line:rgba(47,91,234,.40);--hl:rgba(47,91,234,.13);--ev:#0A6878;--ev-soft:rgba(10,104,120,.08);--ev-line:rgba(10,104,120,.30);--ok:#1E7443;--ok-soft:rgba(30,116,67,.08);--warn:#7F5700;--warn-soft:rgba(127,87,0,.08);--err:#A92E24;--err-soft:rgba(169,46,36,.07);--err-line:rgba(169,46,36,.35);--scrim:rgba(34,30,24,.30);--shadow:0 16px 40px rgba(60,45,20,.10);--pop-shadow:0 24px 60px rgba(60,45,20,.18);color-scheme:light}
+.fam-dark.acc-amber{--acc:#F0A43A;--acc-ink:#1B1204;--acc-text:#F5B962;--acc-soft:rgba(240,164,58,.12);--acc-line:rgba(240,164,58,.42);--hl:rgba(240,164,58,.22)}
+.fam-light.acc-amber{--acc:#BB6E0A;--acc-ink:#1B1204;--acc-text:#8A4E00;--acc-soft:rgba(232,150,42,.13);--acc-line:rgba(200,120,20,.45);--hl:rgba(232,150,42,.24)}
+.fam-dark.acc-mono{--acc:#EDEDEF;--acc-ink:#0C0C0D;--acc-text:#FFFFFF;--acc-soft:rgba(237,237,239,.08);--acc-line:rgba(237,237,239,.38);--hl:rgba(237,237,239,.14)}
+.fam-light.acc-mono{--acc:#17171A;--acc-ink:#FFFFFF;--acc-text:#17171A;--acc-soft:rgba(23,23,26,.06);--acc-line:rgba(23,23,26,.35);--hl:rgba(23,23,26,.10)}
+.fam-dark.hc{--ink2:#D4D4D9;--ink3:#B4B4BC;--line:#3A3A42;--line2:#55555E}
+.fam-light.hc{--ink2:#2E2E34;--ink3:#45454C;--line:#C9C9C2;--line2:#9E9E96}
+.read-serif{--read:'Newsreader',Georgia,serif;--read-size:17px;--read-lh:1.6}
+.read-sans{--read:'Geist',ui-sans-serif,system-ui,sans-serif;--read-size:15px;--read-lh:1.68}
+.read-literata{--read:'Literata',Georgia,serif;--read-size:16.5px;--read-lh:1.62}
+.read-atkinson{--read:'Atkinson Hyperlegible Next',ui-sans-serif,system-ui,sans-serif;--read-size:16px;--read-lh:1.62}
+.t.ui-atkinson{font-family:'Atkinson Hyperlegible Next',ui-sans-serif,system-ui,sans-serif}
+.t.ui-system{font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif}
+.t.size-s{--read-size:15px}
+.t.size-l{--read-size:19.5px}
+.mono{font-family:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace}
+.t button{font-family:inherit;cursor:pointer}
+.t textarea,.t input{font-family:inherit}
+.t textarea::placeholder,.t input::placeholder{color:var(--ink3)}
+.t a{color:var(--acc-text)}
+.i{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;display:block;flex-shrink:0}
+.hov{transition:background .14s,color .14s,border-color .14s}
+.hov:hover{background:var(--hover) !important;color:var(--ink) !important}
+.cite{display:inline-flex;align-items:center;justify-content:center;min-width:19px;height:18px;padding:0 5px;margin:0 1px 0 3px;border-radius:5px;border:1px solid var(--ev-line);background:var(--ev-soft);color:var(--ev);font:500 11px/1 'Geist Mono',ui-monospace,monospace;vertical-align:2px}
+.t mark{background:var(--hl);color:var(--ink);border-radius:3px;padding:0 1px}
+.t :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.btn{height:36px;padding:0 14px;border-radius:9px;font-size:13.5px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid transparent;white-space:nowrap;text-decoration:none;transition:background .14s,color .14s,border-color .14s,filter .14s}
+.btn-pri{background:var(--acc);color:var(--acc-ink) !important}
+.btn-pri:hover{filter:brightness(1.07)}
+.btn-sec{background:transparent;border-color:var(--line2);color:var(--ink) !important}
+.btn-ghost{background:transparent;color:var(--ink2) !important}
+.btn-sec:hover,.btn-ghost:hover{background:var(--hover);color:var(--ink) !important}
+.btn-danger{background:#C93A31;color:#FFFFFF !important}
+.btn-danger:hover{filter:brightness(1.08)}
+.btn-lg{height:48px;border-radius:12px;font-size:15px}
+.pop{background:var(--raised);border:1px solid var(--line2);border-radius:14px;box-shadow:var(--pop-shadow)}
+.lbl{font-size:12px;font-weight:500;color:var(--ink3)}
+.kbd{font:500 11px/1 'Geist Mono',ui-monospace,monospace;color:var(--ink3)}
+.mi{display:flex;align-items:center;gap:10px;width:100%;height:34px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:var(--ink);font-size:13.5px;text-align:left;transition:background .12s}
+.mi:hover{background:var(--hover)}
+.toast{display:flex;align-items:center;gap:11px;min-height:50px;padding:7px 7px 7px 14px;border-radius:12px;background:var(--raised);border:1px solid var(--line2);box-shadow:var(--pop-shadow);font-size:13.5px}
+.seg{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.seg-o{height:30px;padding:0 12px;border:0;border-radius:7px;background:transparent;color:var(--ink2);font-size:13px;font-weight:500;transition:background .12s,color .12s}
+.seg-o:hover{color:var(--ink)}
+.sw{position:relative;width:36px;height:22px;border-radius:999px;border:0;padding:0;flex-shrink:0;transition:background .16s}
+.sw-k{position:absolute;top:3px;width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .16s}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes draw{from{stroke-dashoffset:60}to{stroke-dashoffset:0}}
+@keyframes pop{0%{transform:scale(0);opacity:0}65%{transform:scale(1.22);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes rise{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+@keyframes leave{from{opacity:1;transform:none}to{opacity:0;transform:scale(1.03)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.a-spin{animation:spin .8s linear infinite;transform-origin:50% 50%}
+.a-draw{stroke-dasharray:60;animation:draw .7s cubic-bezier(.3,.7,.2,1) both}
+.a-pop{animation:pop .42s cubic-bezier(.3,.7,.2,1) both}
+.a-fadeup{animation:fadeUp .36s ease-out both}
+.a-fadein{animation:fadeIn .4s ease-out both}
+.a-rise{animation:rise .5s cubic-bezier(.3,.7,.2,1) both}
+.a-leave{animation:leave .32s ease-in both}
+.a-pulse{animation:pulse 1.6s ease-in-out infinite}
+.d1{animation-delay:.12s}
+.d2{animation-delay:.25s}
+.d3{animation-delay:.4s}
+.d4{animation-delay:.55s}
+.rm *{animation-duration:.01ms !important;animation-delay:0s !important;animation-iteration-count:1 !important;transition:none !important}
+@media (prefers-reduced-motion: reduce){.t *{animation-duration:.01ms !important;animation-delay:0s !important;animation-iteration-count:1 !important;transition:none !important}}
+</style>
+</helmet>
+<div class="{{rootCls}}" style="width: 1440px; height: 900px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 40px; padding: 44px 48px; background: var(--bg); color: var(--ink); overflow: hidden; font-size: 14px; line-height: 1.5">
+
+<div style="display: flex; flex-direction: column; gap: 12px; min-width: 0">
+<span class="lbl">Confirm dialog</span>
+<div class="pop" role="dialog" aria-label="Delete this chat?" style="padding: 20px; display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 16px; font-weight: 600">Delete this chat?</h2>
+<p style="margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--ink2)">“Least-cleanup recipe” and its answers will be removed from your Mac mini. Your sources aren’t affected.</p>
+<div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px">
+<button class="btn btn-sec">Cancel</button>
+<button class="btn btn-danger">Delete chat</button>
+</div>
+</div>
+
+<span class="lbl" style="margin-top: 22px">Tool approval</span>
+<div class="pop" role="dialog" aria-label="Allow a web fetch?" style="padding: 20px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; gap: 12px">
+<span style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 10px; background: var(--acc-soft); color: var(--acc-text); display: grid; place-items: center"><svg class="i" viewBox="0 0 24 24" style="width: 18px; height: 18px"><circle cx="12" cy="12" r="8.5"></circle><path d="M3.5 12h17M12 3.5c2.4 2.4 3.5 5.2 3.5 8.5s-1.1 6.1-3.5 8.5c-2.4-2.4-3.5-5.2-3.5-8.5s1.1-6.1 3.5-8.5z"></path></svg></span>
+<div style="display: flex; flex-direction: column; gap: 1px"><h2 style="margin: 0; font-size: 16px; font-weight: 600">Allow a web fetch?</h2><span style="font-size: 12.5px; color: var(--ink3)">Agentic run · step 3 of 8</span></div>
+</div>
+<p style="margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--ink2)">The agent wants to open one public page to check a cooking time.</p>
+<div class="mono" style="display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--surf); font-size: 12.5px"><span style="color: var(--acc-text)">web.fetch</span><span style="word-break: break-all">example-recipes.com/one-pot-alfredo</span></div>
+<div style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink3)"><svg class="i" viewBox="0 0 24 24" style="width: 14px; height: 14px"><rect x="5" y="10.5" width="14" height="10" rx="2.5"></rect><path d="M8 10.5V8a4 4 0 018 0v2.5"></path></svg>Only this address leaves your Mac mini. Sources and memory stay private.</div>
+<div style="display: flex; align-items: center; gap: 8px">
+<button class="btn btn-ghost">Deny</button>
+<span style="flex-grow: 1"></span>
+<button class="btn btn-sec">Always for this site</button>
+<button class="btn btn-pri">Allow once</button>
+</div>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 12px; min-width: 0">
+<span class="lbl">Agent question, in the conversation</span>
+<div style="padding: 16px; border: 1px solid var(--acc-line); border-radius: 14px; background: var(--surf); display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; gap: 9px; font-size: 12.5px; color: var(--ink3)">
+<span style="width: 22px; height: 22px; border-radius: 6px; background: var(--acc-soft); color: var(--acc-text); display: grid; place-items: center"><svg class="i" viewBox="0 0 24 24" style="width: 13px; height: 13px"><circle cx="6" cy="6" r="2.2"></circle><circle cx="18" cy="18" r="2.2"></circle><path d="M8.2 6H15a3 3 0 010 6H9a3 3 0 000 6h6.8"></path></svg></span>
+The agent has a question
+<span style="flex-grow: 1"></span>
+<span style="display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px; border-radius: 999px; background: var(--warn-soft); color: var(--warn); font-size: 11.5px; font-weight: 500"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--warn)"></span>Paused</span>
+</div>
+<p style="margin: 0; font-family: var(--read); font-size: 16.5px; line-height: 1.5">Do you mean the one-pot Alfredo in your notes, or Alfredo recipes in general?</p>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<button class="hov" style="display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px; border: 1px solid var(--line2); border-radius: 10px; background: transparent; color: var(--ink); font-size: 13.5px; text-align: left"><span class="mono" style="font-size: 11px; color: var(--ink3)">1</span>The one in my notes</button>
+<button class="hov" style="display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px; border: 1px solid var(--line2); border-radius: 10px; background: transparent; color: var(--ink); font-size: 13.5px; text-align: left"><span class="mono" style="font-size: 11px; color: var(--ink3)">2</span>Recipes in general<span style="flex-grow: 1"></span><span style="font-size: 12px; color: var(--ink3)">uses the web</span></button>
+</div>
+<div style="display: flex; gap: 6px">
+<label style="flex-grow: 1; display: flex"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Your answer</span><input placeholder="Or type an answer…" style="width: 100%; height: 38px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); font-size: 13.5px; outline: none"></label>
+<button aria-label="Send answer" style="width: 38px; height: 38px; border: 0; border-radius: 10px; background: var(--acc); color: var(--acc-ink); display: grid; place-items: center"><svg class="i" viewBox="0 0 24 24" style="width: 16px; height: 16px; stroke-width: 2"><path d="M12 19V5M6 11l6-6 6 6"></path></svg></button>
+</div>
+<span style="font-size: 12px; color: var(--ink3)">3 of 8 steps used. The run waits for your answer.</span>
+</div>
+
+<span class="lbl" style="margin-top: 22px">Toasts</span>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div class="toast" role="status"><svg class="i" viewBox="0 0 24 24" style="width: 16px; height: 16px; color: var(--ok); stroke-width: 2"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg><span style="display: flex; flex-direction: column; line-height: 1.3; min-width: 0"><span style="font-weight: 500">Source added</span><span class="mono" style="font-size: 11.5px; color: var(--ink3)">sheet-pan-nachos.md</span></span><span style="flex-grow: 1"></span><button class="btn btn-ghost" aria-label="Dismiss" style="width: 32px; height: 32px; padding: 0"><svg class="i" viewBox="0 0 24 24" style="width: 14px; height: 14px"><path d="M7 7l10 10M17 7L7 17"></path></svg></button></div>
+<div class="toast" role="status"><svg class="i" viewBox="0 0 24 24" style="width: 16px; height: 16px; color: var(--ink2)"><path d="M5 7h14M9.5 7V5h5v2M7 7l1 12h8l1-12"></path></svg><span style="font-weight: 500">Chat deleted</span><span style="flex-grow: 1"></span><button class="btn btn-ghost" style="height: 32px; color: var(--acc-text) !important">Undo</button></div>
+<div class="toast" role="status"><span style="width: 8px; height: 8px; margin: 0 4px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px var(--ok-soft)"></span><span style="display: flex; flex-direction: column; line-height: 1.3"><span style="font-weight: 500">Back online</span><span style="font-size: 12px; color: var(--ink3)">Mac mini reconnected after 4 min</span></span></div>
+<div class="toast" role="status"><svg class="i a-spin" viewBox="0 0 24 24" style="width: 16px; height: 16px; color: var(--acc-text); stroke-width: 2"><path d="M12 3a9 9 0 019 9"></path></svg><span style="display: flex; flex-direction: column; line-height: 1.3"><span style="font-weight: 500">Reconnecting…</span><span style="font-size: 12px; color: var(--ink3)">Your run keeps going on the Mac mini</span></span></div>
+<div class="toast" role="alert" style="border-color: var(--err-line)"><svg class="i" viewBox="0 0 24 24" style="width: 16px; height: 16px; color: var(--err)"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5v5.5M12 16.2v.3"></path></svg><span style="font-weight: 500">Couldn’t save the note</span><span style="flex-grow: 1"></span><button class="btn btn-ghost" style="height: 32px">Retry</button><button class="btn btn-ghost" aria-label="Dismiss" style="width: 32px; height: 32px; padding: 0"><svg class="i" viewBox="0 0 24 24" style="width: 14px; height: 14px"><path d="M7 7l10 10M17 7L7 17"></path></svg></button></div>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 12px; min-width: 0">
+<span class="lbl">Menu</span>
+<div style="position: relative; height: 262px">
+<div style="display: flex; align-items: center; height: 34px; padding: 0 6px 0 12px; border-radius: 8px; background: var(--hover); font-size: 13px">Least-cleanup recipe<span style="flex-grow: 1"></span><button aria-label="Chat actions" aria-expanded="true" style="width: 26px; height: 26px; border: 0; border-radius: 7px; background: var(--line2); color: var(--ink); display: grid; place-items: center"><svg class="i" viewBox="0 0 24 24" style="width: 15px; height: 15px"><circle cx="6" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="18" cy="12" r="1"></circle></svg></button></div>
+<div class="pop" role="menu" style="position: absolute; top: 40px; right: 0; width: 250px; padding: 6px">
+<button class="mi" role="menuitem"><svg class="i" viewBox="0 0 24 24" style="width: 15px; height: 15px; color: var(--ink2)"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 00-3-3L5 17z"></path></svg>Rename</button>
+<button class="mi" role="menuitem"><svg class="i" viewBox="0 0 24 24" style="width: 15px; height: 15px; color: var(--ink2)"><path d="M9 4h6l-1 5 3 3H7l3-3zM12 12v8"></path></svg>Pin to top</button>
+<button class="mi" role="menuitem"><svg class="i" viewBox="0 0 24 24" style="width: 15px; height: 15px; color: var(--ink2)"><path d="M3.5 7.5h6l2 2h9v9h-17z"></path></svg>Move to project…</button>
+<button class="mi" role="menuitem"><svg class="i" viewBox="0 0 24 24" style="width: 15px; height: 15px; color: var(--ink2)"><path d="M12 4v11M8 11l4 4 4-4M5 20h14"></path></svg>Export as Markdown</button>
+<div style="height: 1px; margin: 5px 4px; background: var(--line)"></div>
+<button class="mi" role="menuitem" style="color: var(--err)"><svg class="i" viewBox="0 0 24 24" style="width: 15px; height: 15px"><path d="M5 7h14M9.5 7V5h5v2M7 7l1 12h8l1-12"></path></svg>Delete chat<span style="flex-grow: 1"></span><span class="kbd">⌫</span></button>
+</div>
+</div>
+
+<span class="lbl" style="margin-top: 10px">Model picker</span>
+<div class="pop" role="listbox" aria-label="Chat model" style="padding: 6px">
+<button class="mi" role="option" aria-selected="false" style="height: 46px"><span style="display: flex; flex-direction: column; line-height: 1.3"><span style="font-weight: 500">Auto</span><span style="font-size: 12px; color: var(--ink3)">Picks a model for each question</span></span></button>
+<button class="mi" role="option" aria-selected="true" style="height: 46px; background: var(--hover)"><span style="width: 7px; height: 7px; border-radius: 50%; background: var(--ok)"></span><span style="display: flex; flex-direction: column; line-height: 1.3"><span style="font-weight: 500">Qwen3 30B A3B</span><span class="mono" style="font-size: 11.5px; color: var(--ink3)">2.1 s typical</span></span><span style="flex-grow: 1"></span><svg class="i" viewBox="0 0 24 24" style="width: 15px; height: 15px; color: var(--acc-text); stroke-width: 2"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></button>
+<button class="mi" role="option" aria-selected="false" style="height: 46px"><span style="width: 7px; height: 7px; border-radius: 50%; background: var(--ok)"></span><span style="display: flex; flex-direction: column; line-height: 1.3"><span style="font-weight: 500">Gemma 4 12B</span><span class="mono" style="font-size: 11.5px; color: var(--ink3)">2.9 s typical</span></span></button>
+<button class="mi" role="option" aria-selected="false" style="height: 46px"><span style="width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--ink3)"></span><span style="display: flex; flex-direction: column; line-height: 1.3"><span style="font-weight: 500">GPT-OSS 20B</span><span class="mono" style="font-size: 11.5px; color: var(--ink3)">5.8 s typical · not loaded</span></span></button>
+<button class="mi" role="option" aria-selected="false" style="height: 46px"><span style="width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--warn)"></span><span style="display: flex; flex-direction: column; line-height: 1.3"><span style="font-weight: 500">Llama 3.3 70B</span><span class="mono" style="font-size: 11.5px; color: var(--warn)">22.4 s typical · unloads others</span></span></button>
+<div style="margin: 4px 6px 2px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--ink3)">Times from your 28 Sep check: Fixed RAG, 8 questions.</div>
+</div>
+
+<span class="lbl" style="margin-top: 10px">Tooltip</span>
+<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px">
+<div role="tooltip" style="position: relative; padding: 7px 10px; border-radius: 8px; background: var(--ink); color: var(--bg); font-size: 12.5px; font-weight: 500">Checked by the review step · 0 unsupported claims<span style="position: absolute; left: 22px; bottom: -4px; width: 8px; height: 8px; background: var(--ink); transform: rotate(45deg)"></span></div>
+<span style="display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 999px; background: var(--ok-soft); color: var(--ok); font-size: 12px; font-weight: 500"><svg class="i" viewBox="0 0 24 24" style="width: 14px; height: 14px"><path d="M12 3l7 2.8v5.7c0 4.3-2.9 7.6-7 9.5-4.1-1.9-7-5.2-7-9.5V5.8z"></path><path d="M8.8 12l2.2 2.2 4.2-4.4"></path></svg>Review passed</span>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["dark","midnight","light","paper"],"default":"dark"},"accent":{"editor":"enum","options":["cobalt","amber","mono"],"default":"cobalt"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var theme = this.props.theme || 'dark';
+    var accent = this.props.accent || 'cobalt';
+    var fam = (theme === 'light' || theme === 'paper') ? 'fam-light' : 'fam-dark';
+    return { rootCls: 't theme-' + theme + ' ' + fam + ' acc-' + accent + ' read-serif' };
+  }
+}
+</script>
+</body>
+</html>

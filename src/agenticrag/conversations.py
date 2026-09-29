@@ -82,6 +82,9 @@ class ConversationStore:
                 "INSERT OR IGNORE INTO projects VALUES (?, ?, ?, ?, ?)",
                 ("default", "My library", "research", '["private"]', time.time()),
             )
+            columns = {row["name"] for row in self._db.execute("PRAGMA table_info(conversations)")}
+            if "pinned" not in columns:
+                self._db.execute("ALTER TABLE conversations ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0")
         if path != ":memory:" and os.name == "posix":
             # SQLite's WAL and shared-memory files can contain transcript text too.
             for suffix in ("", "-wal", "-shm"):
@@ -94,7 +97,7 @@ class ConversationStore:
         chat_id = uuid4().hex
         with self._lock, self._db:
             self._db.execute(
-                "INSERT INTO conversations VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO conversations(id, title, collection, scopes_json, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
                 (chat_id, "New conversation", collection, json.dumps(scopes), now, now),
             )
         return self.get(chat_id)
@@ -115,7 +118,7 @@ class ConversationStore:
             rows = self._db.execute(
                 f"""SELECT c.*, COUNT(m.id) AS message_count FROM conversations c
                    LEFT JOIN conversation_messages m ON m.conversation_id = c.id
-                   {where} GROUP BY c.id ORDER BY c.updated_at DESC LIMIT 100""",
+                   {where} GROUP BY c.id ORDER BY c.pinned DESC, c.updated_at DESC LIMIT 100""",
                 arguments,
             ).fetchall()
         return [self._summary(row) for row in rows]
@@ -345,12 +348,41 @@ class ConversationStore:
         if not deleted:
             raise ValueError("Conversation was not found")
 
+    def rename(self, chat_id: str, title: str) -> dict[str, object]:
+        clean = " ".join(title.split())
+        if not 1 <= len(clean) <= 100:
+            raise ValueError("Chat title must contain 1 to 100 characters")
+        with self._lock, self._db:
+            changed = self._db.execute("UPDATE conversations SET title = ? WHERE id = ?", (clean, chat_id)).rowcount
+        if not changed:
+            raise ValueError("Conversation was not found")
+        return self.get(chat_id)
+
+    def set_pinned(self, chat_id: str, pinned: bool) -> dict[str, object]:
+        with self._lock, self._db:
+            changed = self._db.execute("UPDATE conversations SET pinned = ? WHERE id = ?", (int(pinned), chat_id)).rowcount
+        if not changed:
+            raise ValueError("Conversation was not found")
+        return self.get(chat_id)
+
+    def move(self, chat_id: str, project_id: str) -> dict[str, object]:
+        project = self.get_project(project_id)
+        with self._lock, self._db:
+            changed = self._db.execute(
+                "UPDATE conversations SET collection = ?, scopes_json = ? WHERE id = ?",
+                (project["collection"], json.dumps(project["scopes"]), chat_id),
+            ).rowcount
+        if not changed:
+            raise ValueError("Conversation was not found")
+        return self.get(chat_id)
+
     @staticmethod
     def _summary(row: sqlite3.Row) -> dict[str, object]:
         return {
             "id": row["id"], "title": row["title"], "collection": row["collection"],
             "scopes": json.loads(row["scopes_json"]), "created_at": row["created_at"],
             "updated_at": row["updated_at"],
+            "pinned": bool(row["pinned"]) if "pinned" in row.keys() else False,
             "message_count": row["message_count"] if "message_count" in row.keys() else None,
         }
 

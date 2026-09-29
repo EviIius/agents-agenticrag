@@ -1,0 +1,194 @@
+/*
+ * AgenticRAG v2.1: reference CSS for the new components.
+ * It's CSP-safe: classes only, with values from tokens.css and tokens-themes.css. Merge it into design-v2.css
+ * (or a new ui/components-v21.css served like the others). Class names are suggestions; keep
+ * them if nothing in the codebase already covers the same component.
+ * Visual targets: reference/screens/20–37. Exact spacing: reference/canvas/*.dc.html.
+ */
+
+/* ---------- Buttons (additions) ---------- */
+.btn-danger { background: var(--danger-fill); color: var(--danger-fill-ink); border: 1px solid transparent; }
+.btn-danger:hover { filter: brightness(1.08); }
+.btn-lg { height: 48px; border-radius: var(--radius-md); font-size: var(--text-lg); }
+.btn-ghost-primary { background: transparent; color: var(--primary-text); }
+
+/* ---------- Segmented control and switch (Settings) ---------- */
+.seg { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.seg-option { height: 30px; padding: 0 12px; border: 0; border-radius: 7px; background: transparent; color: var(--ink-secondary); font: 500 var(--text-base) var(--font-ui); }
+.seg-option:hover { color: var(--ink); }
+.seg-option[aria-pressed="true"] { background: var(--surface-hover); color: var(--ink); }
+.switch { position: relative; width: 36px; height: 22px; flex-shrink: 0; border: 0; border-radius: var(--radius-pill); background: var(--line-strong); transition: background var(--fast) var(--ease); }
+.switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); transition: left var(--fast) var(--ease); }
+.switch[aria-checked="true"] { background: var(--primary); }
+.switch[aria-checked="true"]::after { left: 17px; }
+.setting-row { display: flex; align-items: center; gap: 14px; padding: 10px 0; border-top: 1px solid var(--line); }
+.setting-row:last-child { border-bottom: 1px solid var(--line); }
+.setting-row .setting-text { flex: 1; display: flex; flex-direction: column; line-height: 1.35; }
+.setting-row .setting-hint { font-size: var(--text-sm); color: var(--ink-muted); }
+
+/* ---------- Settings dialog and Appearance ---------- */
+.settings-dialog { width: min(820px, calc(100vw - 32px)); height: min(820px, calc(100dvh - 48px)); padding: 0; display: grid; grid-template-columns: 190px minmax(0, 1fr); border-radius: var(--radius-xl); overflow: hidden; }
+.settings-nav { display: flex; flex-direction: column; gap: 2px; padding: 18px 10px; background: var(--sidebar); border-right: 1px solid var(--line); }
+.settings-body { display: flex; flex-direction: column; min-height: 0; }
+.settings-head { height: 60px; flex-shrink: 0; display: flex; align-items: center; padding: 0 16px 0 28px; border-bottom: 1px solid var(--line); }
+.settings-scroll { flex: 1; min-height: 0; overflow: auto; padding: 20px 28px 26px; display: flex; flex-direction: column; gap: 20px; }
+.settings-section { display: flex; flex-direction: column; gap: 10px; }
+.settings-label { font-size: 12px; font-weight: 500; color: var(--ink-muted); }
+.theme-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.theme-card { display: flex; flex-direction: column; gap: 8px; padding: 6px 6px 8px; border: 1px solid var(--line); border-radius: var(--radius-md); background: transparent; color: var(--ink); text-align: left; }
+.theme-card[aria-pressed="true"] { border: 1.5px solid var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+/* The swatch carries its own data-theme + data-accent, so it paints with that theme's tokens. */
+.theme-swatch { display: flex; height: 62px; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; background: var(--bg); }
+.theme-swatch .sw-side { width: 18px; background: var(--sidebar); border-right: 1px solid var(--line); }
+.theme-swatch .sw-body { flex: 1; display: flex; flex-direction: column; gap: 5px; padding: 9px 8px; }
+.theme-swatch .sw-line { height: 5px; border-radius: 3px; background: var(--ink-muted); }
+.theme-swatch .sw-line.is-strong { width: 70%; background: var(--ink); }
+.theme-swatch .sw-cite { width: 11px; height: 8px; border-radius: 2px; background: var(--evidence-soft); border: 1px solid var(--evidence-line); }
+.theme-swatch .sw-button { margin-top: auto; align-self: flex-end; width: 14px; height: 10px; border-radius: 3px; background: var(--primary); }
+.theme-swatch.is-split { display: grid; grid-template-columns: 1fr 1fr; }
+.accent-option { display: inline-flex; align-items: center; gap: 9px; height: 40px; padding: 0 14px 0 9px; border: 1px solid var(--line); border-radius: 10px; background: transparent; color: var(--ink); font-weight: 500; }
+.accent-option[aria-pressed="true"] { border: 1.5px solid var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+.accent-dot { width: 22px; height: 22px; border-radius: 50%; background: var(--primary); box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.35); }
+.font-preview { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+.font-preview .read { font-family: var(--font-read); font-size: var(--text-read); line-height: var(--leading-read); }
+@media (max-width: 640px) {
+  .settings-dialog { grid-template-columns: 1fr; height: 100dvh; width: 100vw; border-radius: 0; }
+  .settings-nav { display: none; } /* phone: sections become a list screen, then a detail screen */
+  .theme-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* ---------- Dialogs and sheets (native <dialog> + showModal) ---------- */
+dialog.rag-dialog { padding: 20px; border: 1px solid var(--line-strong); border-radius: 14px; background: var(--surface-raised); color: var(--ink); box-shadow: var(--shadow-overlay); width: min(440px, calc(100vw - 32px)); }
+/* Older Safari doesn't let ::backdrop inherit custom properties, so set a literal first. */
+dialog::backdrop { background: rgba(0, 0, 0, 0.55); background: var(--scrim, rgba(0, 0, 0, 0.55)); }
+dialog.rag-dialog[open] { animation: dialog-in var(--medium) var(--ease) both; }
+.dialog-title { margin: 0; font-size: 16px; font-weight: 600; }
+.dialog-body { margin: 10px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--ink-secondary); }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.dialog-actions .spacer { flex: 1; }
+@keyframes dialog-in { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
+@media (max-width: 640px) {
+  dialog.rag-dialog.as-sheet { margin: auto 0 0; width: 100vw; max-width: 100vw; padding: 8px 20px calc(24px + env(safe-area-inset-bottom)); border-radius: 22px 22px 0 0; border-width: 1px 0 0; }
+  dialog.rag-dialog.as-sheet[open] { animation: sheet-in var(--slow) var(--ease) both; }
+  dialog.rag-dialog.as-sheet::before { content: ""; display: block; width: 38px; height: 5px; margin: 0 auto 14px; border-radius: 3px; background: var(--line-strong); }
+  dialog.rag-dialog.as-sheet .dialog-actions { flex-direction: column-reverse; align-items: stretch; }
+  dialog.rag-dialog.as-sheet .dialog-actions .btn { height: 48px; border-radius: var(--radius-md); }
+}
+@keyframes sheet-in { from { transform: translateY(100%); } to { transform: none; } }
+
+/* ---------- Tool approval ---------- */
+.approval-head { display: flex; gap: 12px; align-items: center; }
+.approval-icon { width: 34px; height: 34px; flex-shrink: 0; border-radius: 10px; background: var(--primary-soft); color: var(--primary-text); display: grid; place-items: center; }
+.approval-meta { font-size: var(--text-sm); color: var(--ink-muted); }
+.approval-call { display: flex; flex-direction: column; gap: 3px; margin-top: 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); font: 12.5px/1.45 var(--font-mono); word-break: break-all; }
+.approval-call .tool { color: var(--primary-text); }
+.approval-note { display: flex; gap: 8px; align-items: flex-start; margin-top: 12px; font-size: var(--text-sm); color: var(--ink-muted); }
+
+/* ---------- Agent question (inline card in the thread) ---------- */
+.agent-question { display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid var(--primary-line); border-radius: 14px; background: var(--surface); }
+.agent-question .q { margin: 0; font-family: var(--font-read); font-size: calc(var(--text-read) * 0.94); line-height: 1.5; }
+.agent-question .choice { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 10px; background: transparent; color: var(--ink); text-align: left; }
+.agent-question .choice:hover { background: var(--surface-hover); }
+.agent-question .choice .key { font: 500 11px/1 var(--font-mono); color: var(--ink-muted); }
+.chip-paused { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px; border-radius: var(--radius-pill); background: var(--warning-soft); color: var(--warning); font-size: 11.5px; font-weight: 500; }
+
+/* ---------- Toasts ---------- */
+.toast-region { position: fixed; z-index: var(--z-toast); left: calc(var(--sidebar-w) + 16px); bottom: 16px; width: min(380px, calc(100vw - 32px)); display: flex; flex-direction: column-reverse; gap: 10px; pointer-events: none; }
+.toast { pointer-events: auto; display: flex; align-items: center; gap: 11px; min-height: 50px; padding: 7px 7px 7px 14px; border: 1px solid var(--line-strong); border-radius: var(--radius-md); background: var(--surface-raised); color: var(--ink); box-shadow: var(--shadow-overlay); font-size: 13.5px; animation: toast-in var(--medium) var(--ease) both; }
+.toast .toast-text { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
+.toast .toast-title { font-weight: 500; }
+.toast .toast-detail { font-size: 12px; color: var(--ink-muted); }
+.toast.is-error { border-color: var(--danger-line); }
+.toast.is-error .toast-icon { color: var(--danger); }
+.toast.is-success .toast-icon { color: var(--success); }
+.toast.is-leaving { animation: toast-out var(--fast) ease-in both; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes toast-out { to { opacity: 0; transform: translateY(4px); } }
+@media (max-width: 900px) { .toast-region { left: 16px; } }
+@media (max-width: 640px) {
+  /* Above the composer, clear of the home indicator. --composer-h is set from JS with setProperty. */
+  .toast-region { left: 12px; right: 12px; width: auto; bottom: calc(var(--composer-h, 96px) + 8px + env(safe-area-inset-bottom)); }
+}
+
+/* ---------- Menus, popovers, tooltips ---------- */
+.menu { position: absolute; z-index: var(--z-popover); min-width: 220px; padding: 6px; border: 1px solid var(--line-strong); border-radius: var(--radius-md); background: var(--surface-raised); box-shadow: var(--shadow-overlay); }
+.menu-item { display: flex; align-items: center; gap: 10px; width: 100%; height: 34px; padding: 0 10px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--ink); font-size: 13.5px; text-align: left; }
+.menu-item:hover, .menu-item:focus-visible { background: var(--surface-hover); outline: none; }
+.menu-item .kbd { margin-left: auto; font: 500 11px/1 var(--font-mono); color: var(--ink-muted); }
+.menu-item.is-danger { color: var(--danger); }
+.menu-sep { height: 1px; margin: 5px 4px; background: var(--line); }
+.popover { position: absolute; z-index: var(--z-popover); padding: 16px; border: 1px solid var(--line-strong); border-radius: 14px; background: var(--surface-raised); box-shadow: var(--shadow-overlay); animation: toast-in var(--fast) var(--ease) both; }
+.tooltip { position: absolute; z-index: var(--z-tooltip); padding: 7px 10px; border-radius: var(--radius-sm); background: var(--ink); color: var(--bg); font-size: var(--text-sm); font-weight: 500; pointer-events: none; }
+
+/* ---------- Runtime status (pill, popover, composer strip) ---------- */
+.runtime-pill.is-down { border-color: var(--danger-line); background: var(--danger-soft); color: var(--danger); }
+.runtime-pill.is-down .dot { background: var(--danger); }
+.runtime-pill.is-offline .dot { background: transparent; border: 1.5px solid var(--danger); }
+.runtime-table { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.runtime-table .row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.runtime-table .state { margin-left: auto; font: 12px/1.3 var(--font-mono); }
+.runtime-table .state.is-bad { color: var(--danger); }
+.runtime-table .foot { display: flex; justify-content: space-between; padding: 8px 12px; background: var(--surface); font: 11.5px/1.3 var(--font-mono); color: var(--ink-muted); }
+.composer-status { display: flex; align-items: center; gap: 10px; padding: 9px 10px 9px 16px; background: var(--warning-soft); border-bottom: 1px solid var(--line); font-size: 13px; }
+.composer-status .icon { color: var(--warning); }
+
+/* ---------- Launch intro ---------- */
+.launch { position: fixed; inset: 0; z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 30px; padding: 0 20px 40px; background: var(--bg); }
+html[data-launch="on"] .launch { display: flex; }            /* set by boot.js before first paint */
+.launch.is-leaving { animation: launch-out var(--slow) ease-in both; }
+.launch-mark { position: relative; width: 68px; height: 68px; border-radius: 18px; background: var(--ink); color: var(--bg); display: grid; place-items: center; animation: launch-rise 500ms var(--ease) both; }
+.launch-mark svg path { stroke-dasharray: 60; animation: launch-draw 700ms var(--ease) 120ms both; }
+.launch-mark svg path + path { animation-delay: 400ms; }
+.launch-mark::after { content: ""; position: absolute; right: -6px; bottom: -6px; width: 22px; height: 22px; border-radius: 50%; background: var(--primary); border: 4px solid var(--bg); box-sizing: border-box; animation: launch-pop 420ms var(--ease) 550ms both; }
+.launch-word { font-size: 22px; font-weight: 600; letter-spacing: -0.015em; animation: launch-up 360ms ease-out 250ms both; }
+.launch-checks { width: min(380px, 100%); display: flex; flex-direction: column; gap: 2px; padding: 6px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); animation: launch-up 360ms ease-out 400ms both; }
+.launch-row { display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; }
+.launch-row .name { font-weight: 500; color: var(--ink-muted); }
+.launch-row .sub { font-size: var(--text-sm); color: var(--ink-muted); }
+.launch-row .detail { margin-left: auto; font: 12px/1 var(--font-mono); color: var(--ink-secondary); }
+.launch-row[data-state="run"] .name, .launch-row[data-state="ok"] .name, .launch-row[data-state="fail"] .name { color: var(--ink); }
+.launch-row[data-state="ok"] .detail { color: var(--ink-muted); }
+.launch-row[data-state="fail"] .detail { color: var(--danger); }
+.launch-row .state-icon { width: 18px; height: 18px; display: grid; place-items: center; }
+.launch-row[data-state="wait"] .state-icon::before { content: ""; width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--line-strong); }
+.launch-row[data-state="run"] .state-icon svg { color: var(--primary-text); animation: spin 800ms linear infinite; }
+.launch-row[data-state="ok"] .state-icon svg { color: var(--success); }
+.launch-row[data-state="fail"] .state-icon svg { color: var(--danger); }
+.launch-status { min-height: 20px; font-size: 13.5px; color: var(--ink-secondary); text-align: center; }
+.launch-actions { display: flex; gap: 10px; }
+@media (max-width: 640px) { .launch-actions { flex-direction: column; width: 100%; } .launch-actions .btn { height: 48px; } }
+@keyframes launch-rise { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: none; } }
+@keyframes launch-draw { from { stroke-dashoffset: 60; } to { stroke-dashoffset: 0; } }
+@keyframes launch-pop { 0% { transform: scale(0); } 65% { transform: scale(1.22); } 100% { transform: scale(1); } }
+@keyframes launch-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes launch-out { to { opacity: 0; transform: scale(1.03); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .launch *, .launch { animation: launch-fade 150ms ease-out both !important; }
+  .launch-row[data-state="run"] .state-icon svg { animation: none !important; }
+}
+[data-motion="reduce"] .launch *, [data-motion="reduce"] .launch { animation: launch-fade 150ms ease-out both !important; }
+@keyframes launch-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---------- Offline screen ---------- */
+.offline { width: min(560px, 100%); align-self: flex-start; padding: 72px 0 32px; display: flex; flex-direction: column; gap: 22px; }
+.offline-art { width: 240px; height: 64px; flex-shrink: 0; color: var(--ink-muted); }
+.offline-art .break { stroke: var(--danger); }
+.offline h1 { margin: 0; font-size: 27px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+.offline .lede { margin: 0; font-size: var(--text-lg); line-height: 1.6; color: var(--ink-secondary); }
+.offline-status { display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: var(--ink-secondary); }
+.offline-status .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--warning); animation: pulse 1.6s ease-in-out infinite; }
+.offline-details { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 8px 16px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); font: 12.5px/1.4 var(--font-mono); }
+.offline-details dt { color: var(--ink-muted); }
+.offline-details dd { margin: 0; }
+.offline-checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.offline-checks li { display: flex; gap: 14px; padding: 10px 0; }
+.offline-checks .n { width: 30px; height: 30px; flex-shrink: 0; border-radius: 9px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; font-size: 12.5px; font-weight: 600; color: var(--ink-secondary); }
+.composer.is-draft { border-style: dashed; box-shadow: none; }
+.nav-item[aria-disabled="true"] { color: var(--ink-muted); cursor: not-allowed; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+@media (max-width: 640px) {
+  .offline { padding: 28px 0 16px; gap: 18px; }
+  .offline-art { width: 200px; height: 54px; }
+  .offline h1 { font-size: 23px; }
+}

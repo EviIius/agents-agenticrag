@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Theme gallery</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&amp;family=Geist+Mono:wght@400..600&amp;family=Newsreader:opsz,wght@6..72,400..600&amp;family=Literata:opsz,wght@7..72,400..600&amp;family=Atkinson+Hyperlegible+Next:wght@400..700&amp;display=swap">
+<style>
+*{box-sizing:border-box}
+body{margin:0}
+.t{font-family:'Geist',ui-sans-serif,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+.theme-dark{--bg:#0C0C0D;--side:#111113;--surf:#161618;--raised:#1C1C1F;--hover:#222226;--line:#232327;--line2:#33333A;--ink:#EDEDEF;--ink2:#A8A8B0;--ink3:#85858D;--acc:#6E95FF;--acc-ink:#07102A;--acc-text:#9DB7FF;--acc-soft:rgba(110,149,255,.13);--acc-line:rgba(110,149,255,.45);--hl:rgba(110,149,255,.22);--ev:#7CCFE0;--ev-soft:rgba(124,207,224,.10);--ev-line:rgba(124,207,224,.34);--ok:#62CF8F;--ok-soft:rgba(98,207,143,.11);--warn:#E9B949;--warn-soft:rgba(233,185,73,.12);--err:#F2786D;--err-soft:rgba(242,120,109,.12);--err-line:rgba(242,120,109,.40);--scrim:rgba(5,5,6,.62);--shadow:0 18px 50px rgba(0,0,0,.45);--pop-shadow:0 24px 64px rgba(0,0,0,.55);color-scheme:dark}
+.theme-midnight{--bg:#000000;--side:#070708;--surf:#0E0E10;--raised:#141417;--hover:#1B1B1F;--line:#1C1C20;--line2:#2A2A30;--ink:#ECECEF;--ink2:#A3A3AB;--ink3:#82828A;--acc:#6E95FF;--acc-ink:#07102A;--acc-text:#9DB7FF;--acc-soft:rgba(110,149,255,.14);--acc-line:rgba(110,149,255,.48);--hl:rgba(110,149,255,.24);--ev:#7CCFE0;--ev-soft:rgba(124,207,224,.10);--ev-line:rgba(124,207,224,.34);--ok:#62CF8F;--ok-soft:rgba(98,207,143,.11);--warn:#E9B949;--warn-soft:rgba(233,185,73,.12);--err:#F2786D;--err-soft:rgba(242,120,109,.12);--err-line:rgba(242,120,109,.40);--scrim:rgba(0,0,0,.72);--shadow:0 18px 50px rgba(0,0,0,.8);--pop-shadow:0 24px 64px rgba(0,0,0,.85);color-scheme:dark}
+.theme-light{--bg:#FAFAF8;--side:#F3F3F0;--surf:#FFFFFF;--raised:#FFFFFF;--hover:#ECECE8;--line:#E5E5E0;--line2:#D2D2CC;--ink:#17171A;--ink2:#52525A;--ink3:#6A6A72;--acc:#2F5BEA;--acc-ink:#FFFFFF;--acc-text:#2448C4;--acc-soft:rgba(47,91,234,.09);--acc-line:rgba(47,91,234,.40);--hl:rgba(47,91,234,.14);--ev:#0B7285;--ev-soft:rgba(11,114,133,.07);--ev-line:rgba(11,114,133,.30);--ok:#1E7F46;--ok-soft:rgba(30,127,70,.08);--warn:#8A5F00;--warn-soft:rgba(138,95,0,.08);--err:#B83227;--err-soft:rgba(184,50,39,.07);--err-line:rgba(184,50,39,.35);--scrim:rgba(23,23,26,.32);--shadow:0 16px 40px rgba(24,24,28,.09);--pop-shadow:0 24px 60px rgba(24,24,28,.16);color-scheme:light}
+.theme-paper{--bg:#F5F0E6;--side:#EDE6D8;--surf:#FBF8F2;--raised:#FFFDF9;--hover:#E8E0CF;--line:#E2D8C6;--line2:#D0C3AC;--ink:#221E18;--ink2:#574F43;--ink3:#6B6253;--acc:#2F5BEA;--acc-ink:#FFFFFF;--acc-text:#2448C4;--acc-soft:rgba(47,91,234,.09);--acc-line:rgba(47,91,234,.40);--hl:rgba(47,91,234,.13);--ev:#0A6878;--ev-soft:rgba(10,104,120,.08);--ev-line:rgba(10,104,120,.30);--ok:#1E7443;--ok-soft:rgba(30,116,67,.08);--warn:#7F5700;--warn-soft:rgba(127,87,0,.08);--err:#A92E24;--err-soft:rgba(169,46,36,.07);--err-line:rgba(169,46,36,.35);--scrim:rgba(34,30,24,.30);--shadow:0 16px 40px rgba(60,45,20,.10);--pop-shadow:0 24px 60px rgba(60,45,20,.18);color-scheme:light}
+.fam-dark.acc-amber{--acc:#F0A43A;--acc-ink:#1B1204;--acc-text:#F5B962;--acc-soft:rgba(240,164,58,.12);--acc-line:rgba(240,164,58,.42);--hl:rgba(240,164,58,.22)}
+.fam-light.acc-amber{--acc:#BB6E0A;--acc-ink:#1B1204;--acc-text:#8A4E00;--acc-soft:rgba(232,150,42,.13);--acc-line:rgba(200,120,20,.45);--hl:rgba(232,150,42,.24)}
+.fam-dark.acc-mono{--acc:#EDEDEF;--acc-ink:#0C0C0D;--acc-text:#FFFFFF;--acc-soft:rgba(237,237,239,.08);--acc-line:rgba(237,237,239,.38);--hl:rgba(237,237,239,.14)}
+.fam-light.acc-mono{--acc:#17171A;--acc-ink:#FFFFFF;--acc-text:#17171A;--acc-soft:rgba(23,23,26,.06);--acc-line:rgba(23,23,26,.35);--hl:rgba(23,23,26,.10)}
+.fam-dark.hc{--ink2:#D4D4D9;--ink3:#B4B4BC;--line:#3A3A42;--line2:#55555E}
+.fam-light.hc{--ink2:#2E2E34;--ink3:#45454C;--line:#C9C9C2;--line2:#9E9E96}
+.read-serif{--read:'Newsreader',Georgia,serif;--read-size:17px;--read-lh:1.6}
+.read-sans{--read:'Geist',ui-sans-serif,system-ui,sans-serif;--read-size:15px;--read-lh:1.68}
+.read-literata{--read:'Literata',Georgia,serif;--read-size:16.5px;--read-lh:1.62}
+.read-atkinson{--read:'Atkinson Hyperlegible Next',ui-sans-serif,system-ui,sans-serif;--read-size:16px;--read-lh:1.62}
+.t.ui-atkinson{font-family:'Atkinson Hyperlegible Next',ui-sans-serif,system-ui,sans-serif}
+.t.ui-system{font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif}
+.t.size-s{--read-size:15px}
+.t.size-l{--read-size:19.5px}
+.mono{font-family:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace}
+.t button{font-family:inherit;cursor:pointer}
+.t textarea,.t input{font-family:inherit}
+.t textarea::placeholder,.t input::placeholder{color:var(--ink3)}
+.t a{color:var(--acc-text)}
+.i{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;display:block;flex-shrink:0}
+.hov{transition:background .14s,color .14s,border-color .14s}
+.hov:hover{background:var(--hover) !important;color:var(--ink) !important}
+.cite{display:inline-flex;align-items:center;justify-content:center;min-width:19px;height:18px;padding:0 5px;margin:0 1px 0 3px;border-radius:5px;border:1px solid var(--ev-line);background:var(--ev-soft);color:var(--ev);font:500 11px/1 'Geist Mono',ui-monospace,monospace;vertical-align:2px}
+.t mark{background:var(--hl);color:var(--ink);border-radius:3px;padding:0 1px}
+.t :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.btn{height:36px;padding:0 14px;border-radius:9px;font-size:13.5px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid transparent;white-space:nowrap;text-decoration:none;transition:background .14s,color .14s,border-color .14s,filter .14s}
+.btn-pri{background:var(--acc);color:var(--acc-ink) !important}
+.btn-pri:hover{filter:brightness(1.07)}
+.btn-sec{background:transparent;border-color:var(--line2);color:var(--ink) !important}
+.btn-ghost{background:transparent;color:var(--ink2) !important}
+.btn-sec:hover,.btn-ghost:hover{background:var(--hover);color:var(--ink) !important}
+.btn-danger{background:#C93A31;color:#FFFFFF !important}
+.btn-danger:hover{filter:brightness(1.08)}
+.btn-lg{height:48px;border-radius:12px;font-size:15px}
+.pop{background:var(--raised);border:1px solid var(--line2);border-radius:14px;box-shadow:var(--pop-shadow)}
+.lbl{font-size:12px;font-weight:500;color:var(--ink3)}
+.kbd{font:500 11px/1 'Geist Mono',ui-monospace,monospace;color:var(--ink3)}
+.mi{display:flex;align-items:center;gap:10px;width:100%;height:34px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:var(--ink);font-size:13.5px;text-align:left;transition:background .12s}
+.mi:hover{background:var(--hover)}
+.toast{display:flex;align-items:center;gap:11px;min-height:50px;padding:7px 7px 7px 14px;border-radius:12px;background:var(--raised);border:1px solid var(--line2);box-shadow:var(--pop-shadow);font-size:13.5px}
+.seg{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.seg-o{height:30px;padding:0 12px;border:0;border-radius:7px;background:transparent;color:var(--ink2);font-size:13px;font-weight:500;transition:background .12s,color .12s}
+.seg-o:hover{color:var(--ink)}
+.sw{position:relative;width:36px;height:22px;border-radius:999px;border:0;padding:0;flex-shrink:0;transition:background .16s}
+.sw-k{position:absolute;top:3px;width:16px;height:16px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .16s}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes draw{from{stroke-dashoffset:60}to{stroke-dashoffset:0}}
+@keyframes pop{0%{transform:scale(0);opacity:0}65%{transform:scale(1.22);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes rise{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+@keyframes leave{from{opacity:1;transform:none}to{opacity:0;transform:scale(1.03)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.a-spin{animation:spin .8s linear infinite;transform-origin:50% 50%}
+.a-draw{stroke-dasharray:60;animation:draw .7s cubic-bezier(.3,.7,.2,1) both}
+.a-pop{animation:pop .42s cubic-bezier(.3,.7,.2,1) both}
+.a-fadeup{animation:fadeUp .36s ease-out both}
+.a-fadein{animation:fadeIn .4s ease-out both}
+.a-rise{animation:rise .5s cubic-bezier(.3,.7,.2,1) both}
+.a-leave{animation:leave .32s ease-in both}
+.a-pulse{animation:pulse 1.6s ease-in-out infinite}
+.d1{animation-delay:.12s}
+.d2{animation-delay:.25s}
+.d3{animation-delay:.4s}
+.d4{animation-delay:.55s}
+.rm *{animation-duration:.01ms !important;animation-delay:0s !important;animation-iteration-count:1 !important;transition:none !important}
+@media (prefers-reduced-motion: reduce){.t *{animation-duration:.01ms !important;animation-delay:0s !important;animation-iteration-count:1 !important;transition:none !important}}
+</style>
+</helmet>
+<div class="t theme-dark fam-dark" style="width: 1440px; height: 900px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 32px 32px; padding: 40px 48px; background: #09090A; color: var(--ink); overflow: hidden; font-size: 14px; line-height: 1.5">
+<sc-for list="{{themes}}" as="th" hint-placeholder-count="4">
+<div style="display: flex; flex-direction: column; gap: 10px; min-width: 0; min-height: 0">
+<div style="display: flex; align-items: baseline; gap: 10px"><span style="font-size: 15px; font-weight: 600">{{th.name}}</span><span style="font-size: 13px; color: var(--ink3)">{{th.note}}</span></div>
+<div class="{{th.cls}}" style="flex-grow: 1; min-height: 0; display: grid; grid-template-columns: 170px minmax(0, 1fr); border: 1px solid var(--line2); border-radius: 14px; overflow: hidden; background: var(--bg); color: var(--ink); font-size: 12.5px; line-height: 1.45">
+<aside style="display: flex; flex-direction: column; gap: 8px; padding: 12px 10px; background: var(--side); border-right: 1px solid var(--line)">
+<div style="display: flex; align-items: center; gap: 8px; padding: 0 4px 4px">
+<span style="position: relative; width: 20px; height: 20px; border-radius: 6px; background: var(--ink); color: var(--bg); display: grid; place-items: center"><svg class="i" viewBox="0 0 24 24" style="width: 13px; height: 13px"><path d="M6.5 4h7l4 4v12h-11z"></path><path d="M13.5 4v4h4M9.5 12.5h5M9.5 15.5h3"></path></svg><span style="position: absolute; right: -3px; bottom: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--acc); border: 2px solid var(--side)"></span></span>
+<span style="font-size: 12.5px; font-weight: 600">AgenticRAG</span>
+</div>
+<div style="height: 28px; display: flex; align-items: center; gap: 6px; padding: 0 8px; border: 1px solid var(--line); border-radius: 8px; font-size: 12px; font-weight: 500"><svg class="i" viewBox="0 0 24 24" style="width: 12px; height: 12px"><path d="M12 5v14M5 12h14"></path></svg>New chat</div>
+<div style="display: flex; flex-direction: column; gap: 1px; color: var(--ink2)">
+<span style="display: flex; align-items: center; height: 26px; padding: 0 8px">Sources<span style="flex-grow: 1"></span><span class="mono" style="font-size: 10.5px; color: var(--ink3)">3</span></span>
+<span style="display: flex; align-items: center; height: 26px; padding: 0 8px">Models<span style="flex-grow: 1"></span><span class="mono" style="font-size: 10.5px; color: var(--ink3)">4</span></span>
+</div>
+<span style="padding: 4px 8px 0; font-size: 11px; font-weight: 500; color: var(--ink3)">Today</span>
+<span style="display: flex; align-items: center; height: 26px; padding: 0 8px; border-radius: 7px; background: var(--hover); color: var(--ink)">Least-cleanup recipe</span>
+<span style="display: flex; align-items: center; height: 26px; padding: 0 8px; color: var(--ink2)">Why wet toppings…</span>
+</aside>
+<div style="display: flex; flex-direction: column; min-width: 0">
+<div style="height: 40px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 0 12px 0 18px; border-bottom: 1px solid var(--line)">
+<span style="font-weight: 550">Least-cleanup recipe</span><span style="flex-grow: 1"></span>
+<span style="height: 24px; display: flex; align-items: center; gap: 6px; padding: 0 9px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink2); font-size: 11.5px"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--ok)"></span>Qwen3 30B</span>
+</div>
+<div style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; padding: 14px 18px 12px">
+<div style="display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: var(--ink3)"><span style="color: var(--ink2); font-weight: 500">Agentic</span><span>·</span><span class="mono">11.6 s</span><span style="flex-grow: 1"></span><span style="display: inline-flex; align-items: center; gap: 5px; height: 21px; padding: 0 8px; border-radius: 999px; background: var(--ok-soft); color: var(--ok); font-weight: 500">Review passed</span></div>
+<p style="margin: 0; font-family: var(--read); font-size: 15px; line-height: 1.55"><strong style="font-weight: 600">One-pot chicken Alfredo</strong> is the lower-cleanup choice. It cooks and serves in a single skillet<span class="cite">1</span>, and rotisserie chicken skips a raw-meat board<span class="cite">1</span>. <mark>Parchment makes the nachos pan easier to clean</mark><span class="cite">2</span>.</p>
+<span style="flex-grow: 1"></span>
+<div style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 6px 0 14px; border: 1px solid var(--line2); border-radius: 12px; background: var(--surf); color: var(--ink3)">Ask a follow-up…<span style="flex-grow: 1"></span><span style="width: 30px; height: 30px; border-radius: 9px; background: var(--acc); color: var(--acc-ink); display: grid; place-items: center"><svg class="i" viewBox="0 0 24 24" style="width: 14px; height: 14px; stroke-width: 2"><path d="M12 19V5M6 11l6-6 6 6"></path></svg></span></div>
+</div>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"enum","options":["cobalt","amber","mono"],"default":"cobalt"},"answerFont":{"editor":"enum","options":["serif","literata","sans","atkinson"],"default":"serif"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var accent = this.props.accent || 'cobalt';
+    var font = this.props.answerFont || 'serif';
+    function cls(theme, fam) { return 't theme-' + theme + ' ' + fam + ' acc-' + accent + ' read-' + font; }
+    return {
+      themes: [
+        { name: 'Graphite Dark', note: 'Default', cls: cls('dark', 'fam-dark') },
+        { name: 'Graphite Light', note: 'For bright rooms', cls: cls('light', 'fam-light') },
+        { name: 'Midnight', note: 'True black, for the iPhone’s OLED screen', cls: cls('midnight', 'fam-dark') },
+        { name: 'Paper', note: 'Warm, for long reading', cls: cls('paper', 'fam-light') }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

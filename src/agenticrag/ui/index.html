@@ -10,15 +10,18 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="AgenticRAG">
   <title>AgenticRAG Workbench</title>
-  <link rel="manifest" href="/manifest.webmanifest?v=2">
+  <script src="/boot.js"></script>
+  <link rel="manifest" href="/manifest.webmanifest?v=3">
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=2">
   <link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png?v=2">
   <link rel="stylesheet" href="/styles.css?v=17">
-  <link rel="stylesheet" href="/tokens.css?v=17">
-  <link rel="stylesheet" href="/design-v2.css?v=17">
+  <link rel="stylesheet" href="/tokens.css?v=21">
+  <link rel="stylesheet" href="/design-v2.css?v=21">
+  <link rel="stylesheet" href="/components-v21.css?v=22">
   <script src="/vendor/marked.umd.js" defer></script>
   <script src="/vendor/purify.min.js" defer></script>
-  <script src="/app.js?v=design-v2-18" defer></script>
+  <script src="/app.js?v=22" defer></script>
+  <script src="/v21.js?v=25" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#workspace">Skip to workspace</a>
@@ -62,7 +65,7 @@
       </div>
       <div class="topbar-actions">
         <span class="local-badge" id="boundary-badge"><span aria-hidden="true">●</span> On this Mac</span>
-        <button class="icon-button" id="theme-toggle" type="button" aria-label="Switch to light theme" title="Toggle theme">
+        <button class="icon-button" id="theme-toggle" type="button" aria-label="Appearance" title="Appearance">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.64 5.64l1.42 1.42M16.94 16.94l1.42 1.42M18.36 5.64l-1.42 1.42M7.06 16.94l-1.42 1.42"/><circle cx="12" cy="12" r="4"/></svg>
         </button>
         <button class="icon-button mobile-new-chat" id="mobile-new-chat" type="button" aria-label="New chat">+</button>
@@ -199,6 +202,7 @@
 
         <div class="runtime-notice" id="runtime-notice" role="status" hidden><span id="runtime-notice-text"></span><button type="button" data-open-view="models">Open Models</button></div>
         <form class="composer" id="ask-form">
+          <div class="composer-status" id="composer-status" role="status" hidden><span id="composer-status-text"></span><button id="composer-retry" type="button">Retry</button></div>
           <div class="composer-context" id="selected-skills-summary">No skills selected</div>
           <div class="attachment-preview" id="attachment-preview" role="status" aria-live="polite" hidden>
             <span class="attachment-preview-icon" aria-hidden="true">▧</span>
@@ -430,6 +434,34 @@
       <div id="project-settings-content"></div>
     </dialog>
 
+    <dialog id="settings-dialog" class="settings-dialog rag-dialog" aria-labelledby="settings-title">
+      <nav class="settings-nav" aria-label="Settings sections">
+        <strong>Settings</strong>
+        <button type="button" data-settings-section="general">General</button>
+        <button type="button" data-settings-section="appearance" aria-current="page">Appearance</button>
+        <button type="button" data-settings-section="models">Models</button>
+        <button type="button" data-settings-section="tools">Tools &amp; agents</button>
+        <button type="button" data-settings-section="privacy">Privacy</button>
+        <button type="button" data-settings-section="about">About</button>
+      </nav>
+      <div class="settings-body">
+        <div class="settings-head"><button id="settings-back" type="button">← Sections</button><h2 id="settings-title">Appearance</h2><button id="settings-close" class="secondary-button" type="button">Close</button></div>
+        <div class="settings-mobile-sections" id="settings-mobile-sections"></div>
+        <div class="settings-scroll" id="settings-content"></div>
+      </div>
+    </dialog>
+
+    <dialog id="confirm-dialog" class="rag-dialog as-sheet" aria-labelledby="confirm-title">
+      <h2 id="confirm-title" class="dialog-title"></h2><p id="confirm-body" class="dialog-body"></p>
+      <div class="dialog-actions"><button id="confirm-cancel" class="secondary-button" type="button">Cancel</button><button id="confirm-accept" class="btn-danger" type="button">Confirm</button></div>
+    </dialog>
+    <dialog id="rename-chat-dialog" class="rag-dialog as-sheet" aria-labelledby="rename-chat-title">
+      <form id="rename-chat-form"><h2 id="rename-chat-title" class="dialog-title">Rename chat</h2><label for="rename-chat-input">Chat name</label><input id="rename-chat-input" maxlength="100" required><div class="dialog-actions"><button id="rename-chat-cancel" class="secondary-button" type="button">Cancel</button><button class="primary-button" type="submit">Save name</button></div></form>
+    </dialog>
+    <dialog id="move-chat-dialog" class="rag-dialog as-sheet" aria-labelledby="move-chat-title">
+      <form id="move-chat-form"><h2 id="move-chat-title" class="dialog-title">Move chat to a project</h2><p>Earlier answers and their citations remain in this chat.</p><label for="move-chat-select">Project</label><select id="move-chat-select"></select><div class="dialog-actions"><button id="move-chat-cancel" class="secondary-button" type="button">Cancel</button><button class="primary-button" type="submit">Move chat</button></div></form>
+    </dialog>
+
     <button class="inspector-backdrop" id="inspector-backdrop" type="button" aria-label="Close inspector" hidden></button>
     <aside class="inspector" aria-label="Run inspector" aria-hidden="true">
       <div class="inspector-header">
@@ -451,6 +483,29 @@
     </aside>
   </div>
 
+  <div class="launch" id="launch" role="status" aria-live="polite">
+    <div class="launch-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4.5h9.5L19 9v10.5H5z"/><path d="M14 4.5V9h5M8.5 13h7M8.5 16h4.5"/></svg></div>
+    <strong class="launch-word">AgenticRAG</strong>
+    <div class="launch-checks">
+      <div class="launch-row" id="launch-mac" data-state="run"><span class="state-icon" aria-hidden="true">•</span><span class="name">Mac mini</span><span class="detail">connecting</span></div>
+      <div class="launch-row" id="launch-model" data-state="wait"><span class="state-icon" aria-hidden="true">•</span><span class="name">Chat model</span><span class="detail">checking</span></div>
+      <div class="launch-row" id="launch-library" data-state="wait"><span class="state-icon" aria-hidden="true">•</span><span class="name">Library</span><span class="detail">opening</span></div>
+    </div>
+    <p class="launch-status" id="launch-status">Connecting to your Mac mini…</p>
+    <div class="launch-actions" id="launch-actions" hidden><button id="launch-continue" type="button" class="secondary-button">Open anyway</button><button id="launch-retry" type="button" class="primary-button">Try again</button></div>
+  </div>
+  <div class="offline-screen" id="offline-screen" hidden role="status">
+    <svg class="offline-illustration" viewBox="0 0 240 64" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="26" width="76" height="24" rx="7"/><path d="M22 50v3M70 50v3M92 38h30" stroke-dasharray="3 4"/><path d="M142 38h44" stroke-dasharray="3 4"/><rect x="196" y="12" width="26" height="44" rx="6"/><path d="M205 50h8"/></g><circle class="offline-led" cx="74" cy="38" r="2"/><g class="break-server" stroke-width="2" stroke-linecap="round"><path d="M127 33l10 10M137 33l-10 10"/></g><g class="break-device" stroke-width="2" stroke-linecap="round"><path d="M164 33l10 10M174 33l-10 10"/></g></svg>
+    <h1 id="offline-title">Your Mac mini isn't answering</h1>
+    <p id="offline-description">Your chats saved on this device remain readable.</p>
+    <p id="offline-retry-label">Trying again in 8 s</p>
+    <button id="offline-try" type="button" class="primary-button">Try now</button>
+    <details><summary>Show details</summary><dl id="offline-details"></dl></details>
+    <details class="offline-checks"><summary>What to check</summary><ul id="offline-check-list"></ul></details>
+    <div class="offline-saved" id="offline-saved"><strong class="offline-brand">AgenticRAG</strong><p class="offline-project">My library <small>Saved on this device</small></p><p class="offline-new-chat">+ New chat <small>needs Mac mini</small></p><button id="offline-sources-toggle" type="button">Sources <small>list only</small></button><div id="offline-source-list" hidden></div><span class="offline-disabled">Models · needs Mac mini</span><span class="offline-disabled">Tools &amp; agents · needs Mac mini</span><h2>Readable offline</h2><div id="offline-chat-list"></div><div id="offline-chat-detail"></div></div>
+    <label class="offline-draft-label" for="offline-draft">Draft a question for later</label>
+    <textarea id="offline-draft" placeholder="Write a draft. You can send it when your Mac mini is back."></textarea>
+  </div>
   <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
 </body>
 </html>
