@@ -168,14 +168,14 @@ export function AppShell({ children }: { children?: ReactNode }) {
       {!wide &&
         (phone ? (
           <Drawer open={ui.panel} onOpenChange={(panel) => ui.set({ panel })}>
-            <DrawerContent className="overflow-y-auto">
-              <DrawerHeader>
+            <DrawerContent className="overflow-hidden">
+              <DrawerHeader className="shrink-0">
                 <DrawerTitle>Chat settings</DrawerTitle>
                 <DrawerDescription>
                   Fake runtime · preview controls
                 </DrawerDescription>
               </DrawerHeader>
-              {panel}
+              <div className="min-h-0 overflow-y-auto">{panel}</div>
             </DrawerContent>
           </Drawer>
         ) : (

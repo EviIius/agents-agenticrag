@@ -28,6 +28,8 @@ export function LiveChatSettings({
   onSave,
   onDefaults,
   onContext,
+  draftParams,
+  draftPrompt,
   defaultsOnly = false,
 }: {
   chat?: Chat;
@@ -36,12 +38,18 @@ export function LiveChatSettings({
   onDefaults: (params: Params) => void;
   onContext: (context: number) => void;
   defaultsOnly?: boolean;
+  draftParams?: Params;
+  draftPrompt?: string | null;
 }) {
   const [params, setParams] = useState<Params>(
-      defaultsOnly ? (model?.params_defaults ?? {}) : (chat?.params ?? {}),
+      defaultsOnly
+        ? (model?.params_defaults ?? {})
+        : (chat?.params ?? draftParams ?? {}),
     ),
-    [prompt, setPrompt] = useState(chat?.system_prompt ?? ""),
-    [useDefault, setDefault] = useState(chat?.system_prompt == null),
+    [prompt, setPrompt] = useState(chat?.system_prompt ?? draftPrompt ?? ""),
+    [useDefault, setDefault] = useState(
+      (chat?.system_prompt ?? draftPrompt) == null,
+    ),
     [context, setContext] = useState(model?.context_length ?? 8192);
   return (
     <section className="p-5" aria-label="Chat settings controls">

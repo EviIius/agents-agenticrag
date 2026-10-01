@@ -73,7 +73,8 @@ export function ChatSettingsPanel() {
         </IconButton>
       </header>
       <p className="mb-6 text-xs text-fg-2">
-        Fixture controls · nothing is sent to a model in Phase 0.
+        Design preview · open the main app to save settings and send them to a
+        model.
       </p>
       <label htmlFor="system-prompt" className="mb-2 block font-medium">
         System prompt

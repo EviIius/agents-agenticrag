@@ -8,3 +8,7 @@ if [ -d "$WORKBENCH_TOOLS_DIR/uv/bin" ]; then
   PATH="$WORKBENCH_TOOLS_DIR/uv/bin:$PATH"
 fi
 export PATH
+if [ -d /Applications/Docker.app/Contents/Resources/bin ]; then
+  PATH="/Applications/Docker.app/Contents/Resources/bin:$PATH"
+  export PATH
+fi

@@ -440,6 +440,30 @@ async def test_live_provider_parsers_and_specific_errors(
         assert (await service.request("brave", "fact", "day"))[0].provider == "Brave"
         assert brave.calls[-1].request.headers["X-Subscription-Token"] == "test-not-secret"
         assert all(s.reachable for s in await service.status())
+        searx.mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "results": [],
+                    "unresponsive_engines": [
+                        ["google cse", "too many requests"],
+                        ["yahoo", "HTTP error"],
+                    ],
+                },
+            )
+        )
+        with pytest.raises(ValueError, match="engines unavailable.*too many requests"):
+            await service.request("searxng", "fact", "any")
+        searx.mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "results": [{"url": "https://working.org", "title": "Available source"}],
+                    "unresponsive_engines": [["google cse", "too many requests"]],
+                },
+            )
+        )
+        assert (await service.request("searxng", "fact", "any"))[0].url == "https://working.org"
         searx.mock(return_value=httpx.Response(403))
         with pytest.raises(ValueError, match="JSON output is disabled"):
             await service.request("searxng", "fact", "any")

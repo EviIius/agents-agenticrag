@@ -4,6 +4,7 @@ import {
   useQuery,
   useQueryClient,
   useInfiniteQuery,
+  keepPreviousData,
 } from "@tanstack/react-query";
 import {
   ArrowDown,
@@ -116,6 +117,7 @@ export function LiveAppShell() {
   const history = useInfiniteQuery({
     queryKey: ["chats", debounced],
     initialPageParam: "",
+    placeholderData: keepPreviousData,
     queryFn: ({ pageParam }) =>
       api<components["schemas"]["ChatList"]>(
         "/chats?q=" +
@@ -449,6 +451,8 @@ export function LiveAppShell() {
     <LiveChatSettings
       key={`${chatId ?? "new"}:${current?.connection_id}:${current?.model_id}`}
       chat={detail.data?.chat}
+      draftParams={draftParams}
+      draftPrompt={draftPrompt}
       model={current}
       onSave={saveParams}
       onDefaults={(params) => {
@@ -730,14 +734,14 @@ export function LiveAppShell() {
       {!wide &&
         (phone ? (
           <Drawer open={ui.panel} onOpenChange={(panel) => ui.set({ panel })}>
-            <DrawerContent className="overflow-y-auto">
-              <DrawerHeader>
+            <DrawerContent className="overflow-hidden">
+              <DrawerHeader className="shrink-0">
                 <DrawerTitle>Chat settings</DrawerTitle>
                 <DrawerDescription>
                   Sampling and context for this conversation
                 </DrawerDescription>
               </DrawerHeader>
-              {panel}
+              <div className="min-h-0 overflow-y-auto">{panel}</div>
             </DrawerContent>
           </Drawer>
         ) : (

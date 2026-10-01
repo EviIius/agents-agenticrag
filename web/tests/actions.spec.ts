@@ -97,9 +97,21 @@ for (const width of [390, 1440]) {
     await expect(page.locator('[role="menu"]')).toHaveCount(0);
     await expect.poll(async () => (await detail()).chat.pinned).toBe(true);
     await actions.click();
+    await page.getByRole("menuitem", { name: "Unpin", exact: true }).click();
+    await expect(page.locator('[role="menu"]')).toHaveCount(0);
+    await expect.poll(async () => (await detail()).chat.pinned).toBe(false);
+    await actions.click();
+    const markdownReady = page.waitForEvent("download");
+    await page.getByRole("menuitem", { name: "Export Markdown" }).click();
+    const markdown = await markdownReady;
+    expect(await readFile((await markdown.path())!, "utf8")).toContain(
+      original,
+    );
+    await page.bringToFront();
+    await expect(page.locator('[role="menu"]')).toHaveCount(0);
+    await actions.click();
     const downloadReady = page.waitForEvent("download");
-    await page.getByRole("menuitem", { name: "Export JSON" }).focus();
-    await page.keyboard.press("Enter");
+    await page.getByRole("menuitem", { name: "Export JSON" }).click();
     const download = await downloadReady;
     await page.bringToFront();
     await expect(page.locator('[role="menu"]')).toHaveCount(0);
@@ -118,6 +130,18 @@ for (const width of [390, 1440]) {
     if (width < 640)
       await page.getByRole("button", { name: "Open sidebar" }).click();
     await page.getByRole("textbox", { name: "Search history" }).fill(renamed);
+    await history
+      .getByRole("button", { name: `Actions for ${renamed}` })
+      .click();
+    await page.getByRole("menuitem", { name: "Delete", exact: true }).click();
+    await page
+      .getByRole("alertdialog")
+      .getByRole("button", { name: "Cancel", exact: true })
+      .click();
+    await expect(page.getByRole("alertdialog")).toHaveCount(0);
+    expect((await request.get(`/api/chats/${id}`)).status()).toBe(200);
+    if (width < 640)
+      await page.getByRole("button", { name: "Open sidebar" }).click();
     await history
       .getByRole("button", { name: `Actions for ${renamed}` })
       .click();

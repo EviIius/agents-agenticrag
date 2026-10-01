@@ -117,6 +117,13 @@ class Providers:
                         if provider == "searxng"
                         else raw.get("web", {}).get("results", [])
                     )
+                    if provider == "searxng" and not rows and raw.get("unresponsive_engines"):
+                        reasons = "; ".join(
+                            str(engine[0]) + ": " + str(engine[1])
+                            for engine in raw["unresponsive_engines"]
+                            if isinstance(engine, list) and len(engine) >= 2
+                        )
+                        raise ValueError("SearXNG engines unavailable: " + reasons[:160])
                     out = [
                         SearchResult(
                             url=r["url"],

@@ -14,7 +14,7 @@ DEFAULTS: dict[str, Any] = {
     "auto_title": True,
     "utility_model": None,
     "user_name": "",
-    "web.provider_order": ["searxng", "ddgs", "brave"],
+    "web.provider_order": ["searxng", "ddgs"],
     "web.searxng_url": "http://127.0.0.1:8888",
     "web.brave_api_key": None,
     "web.default_on": False,

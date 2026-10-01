@@ -18,6 +18,14 @@ Jake authorized continuing Phases 1 and 2 together; record Checkpoint 1A and bot
 phase reports without pausing between them. Apply acceptance criteria to Ollama;
 LM Studio-specific checks are superseded. Future agents remain governed by Part F.
 
+**User approval — 1 October 2026:** Docker Desktop installation and local SearXNG
+are approved. Use free search providers by default (SearXNG, then DuckDuckGo);
+no paid Brave API setup is required. Qualify the instance's engines with live
+requests, retaining working free engines and recording failures. Verify the
+parameter controls and chat actions against actual API/runtime payloads. The six
+everyday questions supplied by Jake are supplemental eval cases, alongside E12's
+25-case suite. Production prompt changes still require before/after evidence.
+
 **How Jake uses this file**
 
 1. Save it in the repo as `docs/SPEC.md`.
@@ -2214,4 +2222,3 @@ Hard rules:
 ---
 
 *End of spec.*
-

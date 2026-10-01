@@ -49,7 +49,9 @@ export function TopBar() {
               <DropdownMenuItem
                 key={action}
                 onSelect={() =>
-                  toast("Fixture preview · chat actions arrive in Phase 1")
+                  toast(
+                    "Design preview · open the main app to manage saved chats",
+                  )
                 }
               >
                 {action}
