@@ -51,4 +51,3 @@ class StaticChat:
             )
         )
         return self.response
-

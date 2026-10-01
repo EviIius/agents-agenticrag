@@ -10,10 +10,8 @@ RUN groupadd --system agenticrag && useradd --system --gid agenticrag --home-dir
 
 COPY pyproject.toml README.md ./
 COPY src ./src
-COPY .agenticrag/skills ./.agenticrag/skills
-COPY .agents/skills ./.agents/skills
 
-RUN python -m pip install --no-cache-dir ".[documents]" \
+RUN python -m pip install --no-cache-dir ".[documents,web]" \
     && mkdir -p /app/.data \
     && chown -R agenticrag:agenticrag /app
 

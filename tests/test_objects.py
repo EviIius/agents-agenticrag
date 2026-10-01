@@ -11,6 +11,15 @@ from agenticrag.objects import LocalObjectStore
 
 
 class LocalObjectStoreTests(unittest.TestCase):
+    def test_delete_verifies_and_removes_only_the_requested_object(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            store = LocalObjectStore(directory)
+            first_path, first_hash = store.put_text("temporary web text")
+            second_path, second_hash = store.put_text("permanent library text")
+            store.delete(first_path, first_hash)
+            self.assertFalse(Path(directory, *first_path.split("/")).exists())
+            self.assertEqual(store.get_text(second_path, second_hash), "permanent library text")
+
     def test_put_is_content_addressed_idempotent_and_verified(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             store = LocalObjectStore(directory)

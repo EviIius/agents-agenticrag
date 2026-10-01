@@ -1,315 +1,66 @@
-# Local Agents and Agentic RAG
+# Chat & Web
 
-A local-first experimental workbench for comparing open-weight models with optional hosted
-models across direct generation, fixed RAG, and bounded agentic RAG.
+A local chat app with public web search, streamed answers, and inspectable source snapshots.
 
-The implementation follows [Local_Agents_and_Agentic_RAG.pdf](./Local_Agents_and_Agentic_RAG.pdf):
-application code owns authorization and validation, retrieved documents are treated as untrusted
-data, sources are immutable and cited by stable IDs, and cloud inference is never an implicit
-fallback.
+## What it does
 
-## What works now
+- One question box and your selected chat model.
+- A compact Web control: **Off**, **Ask**, or **On**, saved per project.
+- Web Off: normal conversation completion. Saved project preferences can be included.
+- Web Ask: shows the exact search query and waits for permission.
+- Web On: searches without another permission prompt.
+- One search, up to four public page reads in parallel, then one completion.
+- Numbered citations open the immutable text excerpt supplied to the model.
+- **Save to library** keeps a page beyond the project's retention period.
+- Chat history, projects, notes, local file storage, image input for supported models, and mobile installation.
 
-- Ingest local PDF, DOCX, Markdown, and TXT files into immutable source versions with canonical
-  offsets and parser-neutral page/section/table provenance.
-- Chunk and embed documents through a loopback OpenAI-compatible local server.
-- Store a durable development corpus in SQLite with FTS5, exact cosine search, and SQL-enforced
-  scope filtering.
-- Run the same corpus contract on PostgreSQL with pgvector exact cosine search, native full-text
-  search, transactional publication, and content-addressed immutable local originals.
-- Fuse lexical and vector results with reciprocal-rank fusion, diversify documents, and enforce an
-  evidence budget.
-- Generate a fixed-RAG answer using a local model and accept only citations that resolve to the
-  retrieved evidence set.
-- Select chat and embedding providers independently, so the same pipeline can compare local
-  models with an explicitly enabled OpenAI API profile.
-- Run the core workflow and security contracts without a model server by using deterministic test
-  doubles.
-- Append fsynced started/terminal run manifests and summarize failures, incomplete runs, latency,
-  evidence recall, multi-hop coverage, deterministic answer checks, abstention, and citation
-  resolution by workflow/provider combination.
-- Run an obligation-driven agent that can select local `SKILL.md` instruction bundles, invoke
-  allowlisted read-only search/lookup/calculator tools, detect stalled actions, enforce step/time/
-  tool/context budgets, and submit its answer to a separate evidence-review pass.
-- Launch a zero-build local workbench for runtime setup, model probing, drag/drop ingestion,
-  fixed/direct/agentic/supervisor chat, citations, source inspection, capability visibility, and
-  delegation traces.
-- Save workbench conversations locally. Direct mode receives recent turns for follow-up questions;
-  grounded workflows still answer from authorized sources.
-- Group chats and sources into projects, search saved conversations by title or message text, and
-  add a source directly from the chat composer. Project sources are available to grounded modes;
-  conversation history stays within its own chat.
-- Save, edit, and delete project memory notes explicitly. Answers can be saved as notes with a
-  link back to their conversation. Notes guide later chats in the project but do not count as
-  citation evidence for grounded answers.
-- Attach PNG, JPEG, or WebP images to Direct questions when the selected Ollama model reports
-  vision support. The image is sent to the local model for that turn; only its filename is saved
-  with the conversation.
-- Opt in to public web search for a single Direct or Supervisor question. A local chat model can
-  use bounded search snippets and readable text from up to two public HTTPS pages; web queries
-  leave the Mac. Page fetches reject private addresses and fall back to snippets when unavailable.
-- Connect LM Studio, Ollama, llama.cpp, vLLM, or another loopback OpenAI-compatible server through
-  strict JSON Schema, JSON-object, or schema-in-prompt compatibility modes.
-- Run a manager-style supervisor that can call corpus, quantitative, advertising, and explicitly
-  enabled hosted-web specialists, then synthesize their reports through a final evidence critic.
-- Inspect the exact agent, tool, skill, and plugin inventory. Hosted web search remains available
-  only with an explicitly configured OpenAI profile and per-question opt-in.
+Web answers do not search private files, load an embedding model, or include old assistant reports. Search snippets are used to discover pages; unreadable pages are excluded from answer context. A failed search is an error, not a fabricated web answer.
 
-SQLite remains the zero-service development adapter. PostgreSQL/pgvector is the production
-target; its runtime adapter and packaged migration are operational, with HNSW intentionally
-deferred until exact-search latency is measured.
+The Python package and existing data paths remain named `agenticrag` so existing installations and stored conversations continue to work.
 
-## Requirements
+## Run
 
-- Python 3.11+
-- A local OpenAI-compatible chat endpoint (llama.cpp is the primary target)
-- A local OpenAI-compatible embedding endpoint (Qwen3-Embedding-0.6B is the initial target from
-  the design report)
-
-The SQLite/local-provider core and TXT/Markdown/DOCX ingestion use only the Python standard
-library. Text-PDF parsing and local OCR are separate optional installs.
-
-## Open the workbench
-
-The fastest workstation setup on Windows is:
-
-```powershell
-.\scripts\setup.ps1
-.venv\Scripts\python -m agenticrag serve
+```sh
+./scripts/setup.sh
+.venv/bin/python -m agenticrag serve
 ```
 
-The browser opens at `http://127.0.0.1:8787`. Configure chat and embedding models from the Models
-view. Local model selections are saved beside the workbench database and restored after a restart;
-hosted API keys remain only in process memory. Conversations are saved in a separate local SQLite
-database, and the last 20 turns can be included when chatting with the model. New chat starts a
-fresh conversation; earlier chats remain in Recent chats until deleted. The Tools view reports
-the exact tools, skills, agent policy, and plugin status the backend exposes.
+On Windows, run `scripts/setup.ps1`. Select a model under **Models**. Ollama, LM Studio, llama.cpp, local OpenAI compatible servers, and OpenAI Responses are supported. Hosted credentials are explicit; no provider or model is switched automatically.
 
-Use the project selector to keep a set of chats and documents together. **Search chats** finds
-matching titles and transcript text in the selected project. **Attach** accepts a text, Markdown,
-DOCX, or PDF document and adds it as a source to that project before the question runs in Fixed
-mode. Images are supported in Direct mode with a vision-capable Ollama model. **Web search** is
-an explicit per-question switch for Direct or Supervisor. Install `.[web]` to enable local-model
-web answers. Search sends the question to external search services and reads up to two public
-HTTPS pages when possible. The pages remain untrusted and claims are not independently verified.
+Ollama requests use a bounded 16K context rather than the model's potentially very large default. A large model still needs time and memory to load. The header reports actual loaded state where the runtime exposes it.
 
-**Project memory** is in the project menu on a phone or the desktop sidebar. Notes are written
-only after you press Save. They are supplied to later model calls in that project, except when
-Web search is enabled, to avoid putting private notes into an external search query. The model
-receives them as context, not as source citations. Active questions show progress and a **Stop**
-button; Direct answers stream token by token, while grounded modes stream status and return the
-validated final answer. Stop closes a Direct model stream promptly and prevents later grounded
-model steps and saving a stopped answer; a grounded model call already in progress may need to
- finish first. **Dictate** uses browser speech recognition when available; the browser may use an
- external speech service and the app asks before starting it. Otherwise the action focuses the
- question field so you can use the iPhone keyboard microphone and review the transcript.
+## Search providers
 
-The Models page has an **automatic model** switch. Its first routing rule uses the saved local
-comparison to select the highest measured answer quality for Fixed mode, from models currently
-installed in Ollama. Direct, Agentic, Supervisor, image, and hosted runs keep the selected model
-until comparable evidence and capability checks exist. The chosen model appears with the answer.
+Search is independent of the chat model:
 
-On iPhone, open the private Tailscale URL in Safari, tap Share, then **Add to Home Screen** and
-enable **Open as Web App**. The installed icon opens the workbench without the browser address
-and toolbar. Your iPhone still needs Tailscale connected to reach the Mac mini.
-
-Questions now run on the Mac independently of the phone connection. Reopening the same Home
-Screen app resumes a queued or running question; completed answers remain in the saved chat.
-Only one local model run executes at a time; a question waiting for it shows as queued. If the
-server restarts mid-run, the run is marked interrupted and its question is ready to retry.
-
-For SQLite backups, stop the workbench and run
-`python scripts/backup_workbench.py --db .data/corpus.db --backup /path/to/new-backup`.
-To test recovery, restore into a fresh location with
-`python scripts/backup_workbench.py --db /path/to/restored/corpus.db --restore /path/to/new-backup`.
-The restore verifies checksums and refuses to overwrite existing databases. Local model
-selections are not included; reselect them in Models after recovery.
-
-To try grounded answers on a clean installation, start the workbench and run
-`python scripts/seed_sample_corpus.py`. This indexes three original example notes in the default
-`research` collection with the `private` access label. The user interface calls this **My library**;
-these labels filter indexed documents and are not login credentials.
-
-For an isolated container launch:
-
-```powershell
-docker compose up --build -d
+```sh
+AGENTICRAG_WEB_PROVIDER=duckduckgo
 ```
 
-See [workbench and model deployment](docs/deployment.md) for runtime-specific endpoints,
-container-to-host networking, structured-output compatibility, and security boundaries.
+The existing `duckduckgo` setting now uses the installed `ddgs` package to consult at most DuckDuckGo and Brave. It is labeled Public web search in the app. This is one host query with up to two search engines; their HTTP timeouts are not a guaranteed total wall-time limit. Alternatives:
 
-Create an environment and install the project in editable mode:
-
-```powershell
-python -m venv .venv
-.venv\Scripts\python -m pip install -e .
+```sh
+AGENTICRAG_WEB_PROVIDER=searxng
+AGENTICRAG_SEARXNG_URL=https://your-search.example
 ```
 
-For PostgreSQL, install the explicit storage extra:
-
-```powershell
-.venv\Scripts\python -m pip install -e ".[postgres]"
+```sh
+AGENTICRAG_WEB_PROVIDER=brave
+AGENTICRAG_BRAVE_API_KEY=your-key
 ```
 
-For text PDFs, install `.[documents]` (pypdf). For layout/table extraction and scanned-PDF OCR,
-install `.[docling]`, prefetch Docling's model artifacts, and set
-`AGENTICRAG_DOCLING_ARTIFACTS_PATH` to that local directory. The Docling adapter explicitly
-disables remote services and external plugins; it does not download artifacts as a fallback.
+A local SearXNG endpoint may use loopback HTTP. Public page reading uses HTTPS, checks and pins public DNS addresses, bounds response size, and rejects private addresses. JavaScript-only pages, access blocks, and unsupported document types are reported in **Search details**.
 
-## Configure local inference
+## Limits and accuracy
 
-Copy the names from [`.env.example`](./.env.example) into your shell environment. The application
-does not automatically load `.env` files and never searches for cloud credentials.
+Four pages and bounded excerpts are a latency limit, not a promise of exhaustive research. For large lists, specify the league and date range. The answer should disclose missing coverage. Models can still misinterpret evidence; citations let you inspect the text, and do not certify every claim. A model that omits citations is labeled explicitly.
 
-```powershell
-$env:AGENTICRAG_LOCAL_CHAT_MODEL = "your-chat-model-id"
-$env:AGENTICRAG_LOCAL_EMBEDDING_MODEL = "your-embedding-model-id"
-$env:AGENTICRAG_LOCAL_CHAT_BASE_URL = "http://127.0.0.1:8080/v1"
-$env:AGENTICRAG_LOCAL_EMBEDDING_BASE_URL = "http://127.0.0.1:8081/v1"
+The app has no autonomous tool selection, research planning, multi-model routing, source-count budgets, or background report generation. Normal requests retain durable progress so reloading the app can show a request already in progress.
+
+## Checks
+
+```sh
+.venv/bin/python -m unittest discover -s tests -p 'test_*.py'
 ```
 
-Local profiles reject non-loopback URLs. Run a configuration check without making a network call:
-
-```powershell
-python -m agenticrag doctor
-```
-
-## Choose a corpus store
-
-SQLite is the default and uses `--db`. To use PostgreSQL, first install pgvector in the target
-PostgreSQL server, then configure the connection and immutable-object directory:
-
-```powershell
-$env:AGENTICRAG_STORE = "postgres"
-$env:AGENTICRAG_POSTGRES_DSN = "postgresql://agenticrag@127.0.0.1/agenticrag"
-$env:AGENTICRAG_OBJECTS_PATH = "D:\agenticrag-data\objects"
-python -m agenticrag init-db
-```
-
-The DSN is read only from the environment and is never printed by `doctor`. `init-db` applies the
-idempotent packaged migration, including `CREATE EXTENSION IF NOT EXISTS vector`; the database
-role therefore needs the corresponding setup privilege on first use. Original source bytes stay
-in the configured content-addressed local object directory. Parsed text, separate parsed-text and
-provenance digests, parser identity/version, byte size, and chunk provenance are retained in the
-metadata store.
-
-## Ingest and ask
-
-```powershell
-python -m agenticrag --db .data/corpus.db init-db
-python -m agenticrag --db .data/corpus.db ingest docs/handbook.md --collection private --scope owner
-python -m agenticrag --db .data/corpus.db ingest scans/manual.pdf --collection private --scope owner --ocr auto
-python -m agenticrag --db .data/corpus.db ask "What does the handbook say?" --collection private --scope owner
-python -m agenticrag --db .data/corpus.db agent "Compare the documented limits" --collection private --scope owner --skill evidence-analysis
-python -m agenticrag --db .data/corpus.db supervisor "Develop evidence-aware ad concepts" --collection private --scope owner --skill ad-creative
-```
-
-`--ocr auto` performs text extraction first and invokes OCR only for low-text pages when the fully
-local Docling capability is installed and configured. `--ocr never` accepts text-only extraction;
-`--ocr always` requires Docling. DOCX has no reliable page map in OOXML, so citations preserve its
-section, element, table, and canonical offsets while leaving page fields null. `doctor` reports
-each parser capability without making a network request.
-
-## Skills, tools, and critical review
-
-Project-native skills live under `.agenticrag/skills/<name>/SKILL.md`. With that default root, the
-registry also discovers standard Agent Skills under `.agents/skills/<name>/SKILL.md`; every item is
-shown with its source and SHA-256 digest. The repository currently includes the MIT-licensed
-`ad-creative`, `ads`, and `copywriting` skills from `coreyhaines31/marketingskills`, alongside the
-project's evidence-analysis and quantitative-check skills. Standard `metadata` frontmatter is
-accepted but cannot grant tools or permissions. `--skill NAME` requires a particular skill, while
-the planner may select additional skills from descriptions. Set `AGENTICRAG_SKILLS_PATH` or
-`--skills-root` to replace the default roots with one explicit local root.
-
-The base agent is intentionally read-only. Its gateway exposes hybrid `search`, authorized
-bounded-span `lookup`, and an AST-validated arithmetic `calculate` tool. The fourth visible tool,
-`web_search`, is available only when a local or hosted search provider is configured and the user
-checks the per-run consent control. Hosted search uses the Responses API with `store: false`,
-bounded tool calls, and returned source URLs. No workflow
-exposes shell, filesystem writes, arbitrary Python, credentials, or mutation APIs.
-
-The workflow adds useful deliberation—a plan of checkable obligations, gap-directed tool use,
-stall detection, per-obligation evidence accounting, and a separate evidence critic—but the
-quality ceiling still comes from the selected model. A strong local reasoning model can use this
-harness in the same broad style as hosted coding/research agents; it should be evaluated rather
-than assumed to match any particular OpenAI or Claude model. See
-[`docs/agentic-workflow.md`](./docs/agentic-workflow.md).
-
-Commands emit JSON so experiment runs can capture exact source, model, workflow, latency, and
-failure information. Use `show-source SOURCE_VERSION_ID --scope owner` to resolve a citation.
-
-For paired direct-versus-fixed-RAG runs, create a JSONL dataset:
-
-```json
-{"id":"atlas-001","question":"How much memory does Atlas have?","collection":"private","scopes":["owner"],"answerable":true,"required_chunk_ids":["chunk_..."],"expected_answer_contains":["64 GB"]}
-```
-
-Then run:
-
-```powershell
-python -m agenticrag --db .data/corpus.db compare cases.jsonl --runs .data/runs.jsonl
-python -m agenticrag --db .data/corpus.db compare cases.jsonl --runs .data/agent-runs.jsonl --include-agent --skill evidence-analysis
-python -m agenticrag --db .data/corpus.db compare examples/sample-eval.jsonl --runs .data/model-runs.jsonl --model gemma4:12b-mlx --model gpt-oss:20b --include-agent --include-supervisor
-python -m agenticrag summarize cases.jsonl --runs .data/runs.jsonl
-```
-
-The journal writes a `started` record before inference and a terminal record afterward, so an
-interrupted run remains observable. Repeat the same frozen cases under different explicit provider
-environments; workflow versions, sanitized provider labels, retrieval/agent/tool budgets, selected
-skill names, results, and errors are preserved. `--include-agent` and `--include-supervisor` add
-those modes to the Direct and Fixed baselines; repeat `--model` to compare installed chat models
-without changing the model selected in the live workbench. See
-[`docs/evaluation.md`](./docs/evaluation.md) for metric definitions and limits.
-
-## Optional OpenAI comparison profile
-
-Hosted inference is opt-in per role. It is never selected because a local server is unavailable.
-For a cloud-chat/local-embedding comparison:
-
-```powershell
-$env:AGENTICRAG_CHAT_PROVIDER = "openai"
-$env:AGENTICRAG_OPENAI_API_KEY = "..."
-$env:AGENTICRAG_OPENAI_CHAT_MODEL = "an-explicit-model-id"
-```
-
-Embedding remains local unless `AGENTICRAG_EMBEDDING_PROVIDER=openai` is also set. Selecting an
-OpenAI role without both its key and explicit model is a configuration error. Do not commit keys;
-`.env` files are ignored.
-
-Do not paste a key into chat or source files. Either enter it in the workbench's password field
-(process memory only) or set it in the shell that launches the command. An explicit live check
-makes a small billable model request; `--web-query` adds one billable hosted web-search call:
-
-```powershell
-$env:AGENTICRAG_CHAT_PROVIDER = "openai"
-$env:AGENTICRAG_OPENAI_CHAT_MODEL = "your-enabled-model-id"
-# Set AGENTICRAG_OPENAI_API_KEY in this private shell through your secret manager.
-python -m agenticrag openai-check
-python -m agenticrag openai-check --web-query "OpenAI Responses API current web search documentation"
-```
-
-The application reads `AGENTICRAG_OPENAI_API_KEY` but never prints it. In the UI, **Probe models**
-validates authentication/model access and **Test agent contract** checks structured output,
-bounded reasoning, and tool selection.
-
-## Validate
-
-```powershell
-python -m unittest discover -s tests -v
-```
-
-The test suite covers immutable original/parsed versioning, multi-format validation and
-provenance, collection and scope isolation, hybrid fusion, skill validation, safe tool execution,
-bounded agent termination and evidence review,
-retrieved prompt-injection handling, citation validation, termination, provider no-fallback
-behavior, PostgreSQL SQL contracts, object integrity, durable manifests, and metrics. A live
-PostgreSQL/pgvector round trip is enabled only when `AGENTICRAG_TEST_POSTGRES_DSN` is set.
-
-## Architecture and next milestones
-
-See [`docs/architecture.md`](./docs/architecture.md) for contracts and trust boundaries and
-[`docs/roadmap.md`](./docs/roadmap.md) for the PDF-aligned implementation sequence.
-[`docs/local-agent-optimization-plan.md`](./docs/local-agent-optimization-plan.md) records the
-current decision on model runtimes, evaluation, routing, and a proposed Gmail pilot. The next
-major slice is a realistic held-out evaluation set before reranking or new agents are enabled.
+See [architecture](docs/architecture.md), [deployment](docs/deployment.md), and [the implementation review](docs/WEB-CHAT-REVIEW-2026-09-30.md).

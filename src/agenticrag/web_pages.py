@@ -6,58 +6,65 @@ import http.client
 import ipaddress
 import socket
 import ssl
+import re
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import urljoin, urlsplit, quote
 
 
 MAX_PAGE_BYTES = 2_000_000
-MAX_PAGE_CHARS = 5_000
+MAX_PAGE_CHARS = 100_000
 
 
 class _Text(HTMLParser):
-    def __init__(self) -> None:
+    """Keep meaningful table and emphasis structure, excluding navigation chrome."""
+    VOID = {"br", "hr", "img", "input", "meta", "link", "source", "wbr", "area", "embed", "param", "col", "track", "base"}
+    BLOCK = {"p", "h1", "h2", "h3", "h4", "li", "section", "article", "br", "tr", "table", "div"}
+    def __init__(self):
         super().__init__(convert_charrefs=True)
-        self.hidden = 0
-        self.parts: list[str] = []
-        self.main_depth = 0
-        self.main_parts: list[str] = []
-        self.content_depth = 0
-        self.content_parts: list[str] = []
+        self.stack = []
+        self.parts = []
+        self.main_parts = []
+        self.content_parts = []
 
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        attrs_map = dict(attrs)
-        classes = set((attrs_map.get("class") or "").split())
-        if tag == "div" and {"AppleTopic", "apd-topic"} <= classes:
-            self.content_parts.clear()
-        if tag == "article" or {"AppleTopic", "apd-topic"} <= classes or attrs_map.get("itemprop") == "articleBody":
-            self.content_depth += 1
-        if tag == "main":
-            self.main_depth += 1
-        if tag in {"script", "style", "nav", "footer", "header", "noscript", "svg"}:
-            self.hidden += 1
-        if tag in {"p", "h1", "h2", "h3", "li", "section", "article", "br"}:
-            self.parts.append("\n")
-            if self.main_depth:
-                self.main_parts.append("\n")
-            if self.content_depth:
-                self.content_parts.append("\n")
+    def _append(self, text):
+        if any(item[1] for item in self.stack):
+            return
+        self.parts.append(text)
+        if any(item[2] for item in self.stack):
+            self.main_parts.append(text)
 
-    def handle_endtag(self, tag: str) -> None:
-        if tag == "article" and self.content_depth:
-            self.content_depth -= 1
-        if tag == "main":
-            self.main_depth = max(0, self.main_depth - 1)
-        if tag in {"script", "style", "nav", "footer", "header", "noscript", "svg"}:
-            self.hidden = max(0, self.hidden - 1)
+    def handle_starttag(self, tag, attrs):
+        attributes = dict(attrs)
+        tokens = set(re.split(r"[\s_-]+", (attributes.get("id") or "")+" "+(attributes.get("class") or "")))
+        skip = tag in {"script", "style", "nav", "footer", "header", "noscript", "svg", "aside"} or (tag not in {"html", "body", "main", "article"} and bool(tokens & {
+            "footer", "navigation", "sidebar", "comments", "cookie", "advertisement", "ads", "toc", "navbox"}))
+        primary = tag in {"main", "article"} or attributes.get("role") == "main" or attributes.get("itemprop") == "articleBody" or bool(tokens & {"apd", "AppleTopic", "mw-content-text"})
+        if tag not in self.VOID:
+            self.stack.append((tag, skip, primary))
+        if tag in self.BLOCK:
+            self._append("\n")
+        if tag in {"b", "strong"}:
+            self._append("**")
 
-    def handle_data(self, data: str) -> None:
-        if not self.hidden and data.strip():
-            self.parts.append(data.strip() + " ")
-            if self.main_depth:
-                self.main_parts.append(data.strip() + " ")
-            if self.content_depth:
-                self.content_parts.append(data.strip() + " ")
+    def handle_endtag(self, tag):
+        if tag in {"td", "th"}:
+            self._append(" | ")
+        if tag in {"b", "strong"}:
+            for parts in (self.parts, self.main_parts):
+                if parts:
+                    parts[-1] = parts[-1].rstrip()
+            self._append("** ")
+        if tag in self.BLOCK:
+            self._append("\n")
+        for index in range(len(self.stack)-1, -1, -1):
+            if self.stack[index][0] == tag:
+                del self.stack[index:]
+                break
+
+    def handle_data(self, data):
+        if data.strip():
+            self._append(data.strip()+" ")
 
 
 class _PinnedHTTPS(http.client.HTTPSConnection):
@@ -82,16 +89,16 @@ def _public_address(url: str) -> tuple[str, str, str]:
         raise ValueError("Only public HTTPS pages can be read")
     if parsed.port not in (None, 443):
         raise ValueError("Nonstandard web ports are not allowed")
-    host = parsed.hostname.rstrip(".")
+    host = parsed.hostname.rstrip(".").encode("idna").decode("ascii")
     if len(host) > 253 or host.endswith((".local", ".localhost", ".internal")):
         raise ValueError("Private hosts are not allowed")
     addresses = socket.getaddrinfo(host, 443, type=socket.SOCK_STREAM)
     ips = {row[4][0] for row in addresses}
     if not ips or not all(ipaddress.ip_address(ip).is_global for ip in ips):
         raise ValueError("Private or unroutable addresses are not allowed")
-    path = parsed.path or "/"
+    path = quote(parsed.path or "/", safe="/%:@!$&'()*+,;=-._~")
     if parsed.query:
-        path += "?" + parsed.query
+        path += "?" + quote(parsed.query, safe="%=&?/:;+,@!$'()*-._~")
     return host, sorted(ips)[0], path
 
 
@@ -104,7 +111,7 @@ def fetch_public_page(url: str) -> tuple[str, str]:
         try:
             connection.request("GET", path, headers={
                 "Host": host, "Accept": "text/html,text/plain;q=0.8",
-                "Accept-Encoding": "identity", "User-Agent": "AgenticRAG/0.4 (+private research)",
+                "Accept-Encoding": "identity", "User-Agent": "ChatWeb/0.5",
             })
             response = connection.getresponse()
             if response.status in {301, 302, 303, 307, 308}:
@@ -114,7 +121,7 @@ def fetch_public_page(url: str) -> tuple[str, str]:
                 current = urljoin(current, location)
                 continue
             if response.status != 200:
-                raise ValueError("Page could not be read")
+                raise ValueError(f"HTTP {response.status}: page unavailable or access blocked")
             content_type = response.getheader("Content-Type", "").lower()
             if not (content_type.startswith("text/html") or content_type.startswith("text/plain")):
                 raise ValueError("Page is not text")
@@ -129,11 +136,11 @@ def fetch_public_page(url: str) -> tuple[str, str]:
         else:
             parser = _Text()
             parser.feed(decoded)
-            chosen = parser.content_parts if len("".join(parser.content_parts)) >= 80 else (
-                parser.main_parts if len("".join(parser.main_parts)) >= 80 else parser.parts
-            )
-            text = " ".join(" ".join(chosen).split())
-        if len(text) < 80:
+            chosen = parser.main_parts if len("".join(parser.main_parts)) >= 80 else parser.parts
+            text = "\n".join(re.sub(r"[ \t]+", " ", line).strip() for line in "".join(chosen).splitlines() if line.strip())
+        if len(text) < 80 or sum(c.isalpha() for c in text) < 60:
             raise ValueError("Page has too little readable text")
+        if len(text) < 500 and all(word in text.lower() for word in ("copyright", "privacy", "terms")):
+            raise ValueError("Page contains only site navigation and metadata")
         return current, text[:MAX_PAGE_CHARS]
     raise ValueError("Too many redirects")

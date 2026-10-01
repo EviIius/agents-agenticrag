@@ -408,7 +408,7 @@ class Ingestor:
     def __init__(
         self,
         store: CorpusStore,
-        embedding_provider: EmbeddingProvider,
+        embedding_provider: EmbeddingProvider | None = None,
         chunker: TextChunker | None = None,
         batch_size: int = 32,
         parser: FileParser | None = None,
@@ -426,23 +426,15 @@ class Ingestor:
 
     def ingest_source(self, source: SourceDraft) -> SourceVersion:
         chunks = self.chunker.split(source.text, source.provenance)
-        vectors: list[list[float]] = []
-        for start in range(0, len(chunks), self.batch_size):
-            batch = chunks[start : start + self.batch_size]
-            vectors.extend(self.embedding_provider.embed([chunk.text for chunk in batch]))
+        if self.embedding_provider is None:
+            return self.store.publish(source, chunks, [], embedding_label="lexical-only",
+                                      index_signature="lexical-only-v1")
+        vectors = self.embedding_provider.embed([chunk.text for chunk in chunks])
         if len(vectors) != len(chunks):
             raise IngestionError("Embedding provider returned the wrong number of vectors")
-        signature = (
-            f"{self.embedding_provider.label}|text-chunker-v1:"
-            f"{self.chunker.max_chars}:{self.chunker.overlap_chars}"
-        )
-        return self.store.publish(
-            source,
-            chunks,
-            vectors,
-            embedding_label=self.embedding_provider.label,
-            index_signature=signature,
-        )
+        return self.store.publish(source, chunks, vectors, embedding_label=self.embedding_provider.label,
+                                 index_signature=f"{self.embedding_provider.label}|text-chunker-v1:{self.chunker.max_chars}:{self.chunker.overlap_chars}")
+
 
 
 def parser_capabilities(docling_artifacts_path: str | Path | None = None) -> dict[str, object]:

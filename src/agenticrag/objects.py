@@ -61,6 +61,12 @@ class LocalObjectStore:
         self._verify(target, expected_sha256)
         return target.read_bytes()
 
+    def delete(self, relative_path: str, expected_sha256: str) -> None:
+        target = self._resolve(relative_path)
+        if target.exists():
+            self._verify(target, expected_sha256)
+            target.unlink()
+
     def _resolve(self, relative_path: str) -> Path:
         path = PurePosixPath(relative_path)
         if path.is_absolute() or ".." in path.parts:

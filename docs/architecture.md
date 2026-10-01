@@ -1,150 +1,43 @@
-# Architecture and trust boundaries
+# Chat and web architecture
 
-## Current vertical slice
+## Request path
 
-```text
-CLI / versioned local HTTP API / bundled web workbench
-        |
-        +-- provider factory -------------------------+
-        |       |                                     |
-        |       +-- local loopback (default)          +-- OpenAI (explicit opt-in)
-        |
-        +-- fixed RAG workflow
-                |
-                +-- hybrid retriever
-                |       +-- lexical search (SQLite FTS5 / PostgreSQL tsvector)
-                |       +-- exact cosine search (SQLite scan / pgvector)
-                |       +-- reciprocal-rank fusion + evidence budget
-                |
-                +-- validated answer/citation boundary
-                        |
-                        +-- immutable source version
-                                +-- original SHA-256 + parsed SHA-256 + parser identity
-                                +-- page / section / table / canonical offsets
-
-        +-- bounded agentic RAG
-                +-- obligation planner
-                +-- hashed local skill registry
-                +-- read-only tool gateway
-                |       +-- authorized hybrid search
-                |       +-- searched-source bounded lookup
-                |       +-- AST-safe arithmetic
-                +-- step / time / tool / context / stall budgets
-                +-- evidence allowlist + separate critic pass
-
-        +-- manager multi-agent supervisor
-                +-- schema-validated assignment plan (maximum 3)
-                +-- non-recursive specialist calls
-                |       +-- corpus researcher
-                |       +-- quantitative analyst
-                |       +-- advertising strategist + selected skills
-                |       +-- hosted web researcher (OpenAI + per-run consent only)
-                +-- specialist report synthesis + final evidence critic
-                +-- delegation and external-source trace returned to the UI
-
-Experiment runner --> append-only JSONL manifests --> deterministic metric summaries
+```mermaid
+flowchart LR
+  Q[Question] --> W{Web setting}
+  W -->|Off| C[One streamed completion]
+  W -->|Ask| A[Show query and request permission]
+  A -->|Declined| C
+  A -->|Allowed| S[One public search]
+  W -->|On| S
+  S --> R[Up to four parallel page reads]
+  R --> P[Immutable text snapshots and bounded excerpts]
+  P --> C
+  C --> H[Saved conversation and numbered source links]
 ```
 
-The workbench is a zero-build static client of `/api/v1`; it does not duplicate retrieval or agent
-logic. Local runtime selections are saved beside the workbench database and restored on restart;
-hosted API keys remain in process memory. Collection, scope, and theme preferences stay in browser
-storage. Workbench transcripts are stored in a separate local SQLite database and recent turns
-are loaded by conversation ID for Direct replies. Projects assign a collection and scope to a set
-of chats and sources; transcript search is constrained to the selected project. Project sources
-are retrieved by grounded modes, while Direct history stays within its current conversation.
-The capability inspector is rendered from
-backend-reported tools, skills, plugin status, budgets, and agent policy. Source upload is bounded,
-base64-decoded by the local service,
-parsed through the same ingestion boundary as the CLI, and removed from temporary storage after
-immutable publication.
+`web_chat.py` controls the entire sequence. The model receives ordinary messages and numbered page excerpts; it does not receive callable tools or an action schema. There are no planning, relevance-review, claim-review, repair, delegation, or escalation model calls.
 
-The SQLite store makes the slice runnable on a clean machine and is deliberately labeled a
-development adapter. It preserves the important contracts: current immutable versions, exact
-vector search, lexical search, collection constraints, and authorization filtering before content
-leaves the database. The PostgreSQL adapter implements the same contract using transactional
-publication, pgvector exact search, PostgreSQL full-text search, and a SHA-256-verified local object
-store for immutable originals.
+Public search uses DDGS metasearch, SearXNG, or Brave, independently of the completion provider. The query comes only from the user's question and, for short follow-ups, the previous user-authored topic. Project notes, private files, and assistant answers do not enter the query. Web Ask shows the full query before sending it.
 
-The ingestion boundary reads a bounded local file exactly once, validates its extension against
-its signature, hashes the original bytes, and produces deterministic canonical text plus
-`ProvenanceSpan` records. Built-in parsers cover UTF-8 text, Markdown, and safe OOXML traversal.
-Text PDFs use optional pypdf. Docling is the richer PDF/OCR adapter only when its artifacts path is
-explicitly configured; remote services and external plugins are disabled. A scanned or low-text
-PDF fails with a remediation message when that local capability is absent.
+Up to four distinct result URLs are read concurrently. A page failure is recorded and excluded; if no page is readable, the workflow abstains without asking the model to invent a sourced answer. There is no automatic provider retry loop.
 
-## Security invariants
+## Source storage
 
-1. The authenticated application supplies scopes. Model output never supplies identity, scopes,
-   collections, database credentials, or filesystem roots.
-2. Retrieval queries apply collection and scope predicates before chunks are returned. There is no
-   fetch-then-filter path.
-3. Retrieved text is delimited as untrusted evidence. Instructions inside a document have no tool
-   authority.
-4. A generated citation is accepted only when its chunk ID is in the authorized evidence set. The
-   application constructs source-version and offset metadata; the model cannot invent it.
-5. Original bytes, parsed text, parser identity, scope set, chunks, provenance, and embeddings are
-   immutable within a version. Re-ingesting changed content, parser output, parser identity, or
-   permissions publishes another version and atomically advances the current pointer.
-6. SQLite keeps one embedding index generation per database. PostgreSQL can retain generations
-   for different embedding-provider labels; reusing a label with a changed dimension or chunking
-   signature is rejected instead of silently mixing incompatible vectors.
-7. `local` provider profiles accept loopback URLs only, unless the operator supplies exact private
-   hostnames through `AGENTICRAG_LOCAL_RUNTIME_HOSTS` for container networking. OpenAI requires an
-   explicit role selection, model, and API key. Provider failure never causes fallback.
-8. The current release has no mutation tools, shell execution, autonomous memory synthesis, hosted
-   tracing, or background web activity. Web search runs only with explicit per-question consent.
-   Local search sends a query to external search services and returns bounded snippets; hosted
-   OpenAI web search also requires an explicit hosted profile and uses `store: false`.
-9. Skill discovery is confined to explicit project and standard Agent Skills roots, rejects
-   escaping paths and oversized or malformed bundles, records source plus hashes, and treats
-   skill metadata as incapable of granting tools or permissions.
-10. Agent actions are model proposals, not authority. The host owns the tool allowlist, validates
-    exact arguments, applies collection/scopes, limits source lookup to versions already observed
-    through authorized search, and rejects fabricated final citations.
-11. Browser writes require same-origin requests, assets use a restrictive Content Security Policy,
-    provider probes call only the explicitly selected `/v1/models` endpoint, and non-loopback UI
-    binding requires the operator to opt into `--allow-remote` for a trusted proxy deployment.
-12. Supervisor plans can name only the backend-reported specialist allowlist. Assignment IDs,
-    tasks, skills, delegation count, time, specialist steps, synthesis references, and final review
-    are validated by host code; specialists cannot recursively delegate.
+Canonical extracted text is immutable and content-addressed. HTML extraction preserves paragraph and table boundaries. Page excerpts have source-version IDs and exact character ranges; the source viewer highlights exactly what was supplied to the model. Invalid citation numbers are removed and grouped citations are normalized without another completion. A missing inline citation is disclosed.
 
-## Provider contract
+New snapshots and uploaded files use lexical publication without external embeddings. Existing vector generations and source versions remain readable. SQLite stores empty vectors for new lexical-only chunks; PostgreSQL retains its existing schema and isolates lexical-only publication in its own generation using placeholder vectors. New chat never performs vector retrieval.
 
-Chat and embedding are independent roles. Both use narrow protocols in
-`agenticrag.providers.base`; the current adapter speaks the OpenAI-compatible HTTP shape. A
-loopback llama.cpp, Ollama, LM Studio, vLLM, or MLX deployment can therefore be qualified without coupling the
-workflow to its runtime. The same workflow accepts an OpenAI comparison provider only when the
-operator selects it through environment configuration.
+## Completion providers
 
-For heterogeneous open-source models, structured agent responses have three explicit transport
-modes: provider-enforced JSON Schema, provider JSON-object mode with a trusted schema instruction,
-and schema-in-prompt mode for minimal compatible servers. All modes converge on the same strict
-Python validators. The workbench includes an opt-in model contract check covering structured JSON,
-a bounded arithmetic obligation, tool selection, and host validation before a model is trusted for
-agentic runs.
+Ollama uses `/api/chat`, NDJSON streaming, and `options.num_ctx=16384`. Other local servers use ordinary Chat Completions and SSE. OpenAI uses Responses output-text events with `store=false`. No provider receives a tools list. Streams that end prematurely or report failure are treated as incomplete.
 
-Provider labels are included in results and append-only run manifests. Credentials are not. Current
-manifests also capture workflow version, retrieval budgets, case inputs, results, typed failures,
-and interrupted `started` runs. Exact artifact revision, quantization, runtime build, token usage,
-and hardware measurements remain qualification work.
+Requests and approval states use `run_store.py`; the table is a normal chat progress record. Closing the browser does not cancel an in-flight request. A server restart marks unfinished requests interrupted. Provider selections, project settings, and conversation databases keep their existing paths.
 
-## Why the controllers do not require LangGraph yet
+## UI
 
-The fixed workflow has no adaptive loop. The bounded agent implements planning, gap-directed
-tools, review, and hard termination as inspectable plain Python. The supervisor adds cooperating
-agents through a bounded manager pattern while retaining the same host-owned contracts. LangGraph
-becomes useful when the project adds durable checkpoints, interrupts, or resumable distributed
-state; it is not required merely to call tools or bounded specialists. The workflow protocol lets
-that runtime be added later without changing provider, skill, tool, or evidence contracts.
+`index.html`, `chat.css`, and `app.js` implement one chat interface, Sources, Models, and Settings. Desktop has a navigation sidebar; mobile uses a dismissible drawer. The conversation scroll area and composer occupy separate flex rows. Wide tables scroll within their message. Theme and font tokens remain in `tokens.css`; bundled fonts are served locally.
 
-## Answer contract
+## Deliberate bounds
 
-The generator returns `{answer, citations, abstained}` under a JSON schema. The host validates
-field types, rejects unknown or duplicate citation IDs, and requires at least one citation for a
-non-abstaining fixed-RAG answer. An empty authorized retrieval set terminates without calling the
-generator and returns an explicit abstention.
-
-Citation objects are enriched by the host with canonical offsets, page bounds when the format can
-provide them, section paths, table IDs, OCR markers, and stable segment IDs. This proves citation
-resolution, not entailment. Claim-to-span entailment and per-obligation
-sufficiency validation are Phase 2/evaluation work.
+DDGS consults at most DuckDuckGo and Brave for one host query, with a 12-second request timeout; SDK scheduling and multiple HTTP exchanges can exceed that wall time. SearXNG and Brave API requests also have a 12-second socket timeout. Page socket timeout: 6 seconds, at most three redirect attempts. At most four pages, sharing a 24,000-character context budget with at most 12,000 characters from one page. History is bounded. Completion has its configured timeout and a 4,096-token output limit. This is not exhaustive research and does not promise semantic verification of every generated claim.

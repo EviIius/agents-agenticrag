@@ -47,6 +47,10 @@ class CorpusStore(Protocol):
 
     def get_source(self, source_version_id: str, *, scopes: Sequence[str]) -> SourceVersion: ...
 
+    def get_chunks(self, source_version_id: str, *, scopes: Sequence[str]) -> list[Chunk]: ...
+
+    def delete_web_source_version(self, source_version_id: str, *, scopes: Sequence[str]) -> None: ...
+
     def list_sources(
         self,
         *,
@@ -189,9 +193,9 @@ class SQLiteCorpusStore:
     ) -> SourceVersion:
         collection = _identifier(source.collection, "collection")
         scopes = _scopes(source.scopes)
-        if not chunks or len(chunks) != len(vectors):
+        if not chunks or (vectors and len(chunks) != len(vectors)):
             raise IngestionError("Publishing requires one embedding vector per non-empty chunk")
-        dimension = self._validate_vectors(vectors)
+        dimension = self._validate_vectors(vectors) if vectors else None
         original = source.original_bytes if source.original_bytes is not None else source.text.encode("utf-8")
         content_sha = hashlib.sha256(original).hexdigest()
         if source.original_sha256 is not None and source.original_sha256 != content_sha:
@@ -212,7 +216,8 @@ class SQLiteCorpusStore:
         )
 
         with self.connection:
-            self._require_index(dimension, embedding_label, index_signature)
+            if dimension is not None:
+                self._require_index(dimension, embedding_label, index_signature)
             self.connection.execute(
                 """INSERT INTO documents(id, collection_id, logical_path)
                    VALUES (?, ?, ?)
@@ -242,7 +247,7 @@ class SQLiteCorpusStore:
                     "INSERT INTO source_scopes(source_version_id, scope) VALUES (?, ?)",
                     [(version_id, scope) for scope in scopes],
                 )
-                for draft, vector in zip(chunks, vectors, strict=True):
+                for draft, vector in zip(chunks, vectors or [()] * len(chunks), strict=True):
                     chunk_id = _digest_id("chunk", version_id, str(draft.ordinal))
                     self.connection.execute(
                         """INSERT INTO chunks(
@@ -417,6 +422,48 @@ class SQLiteCorpusStore:
         if row is None:
             raise AuthorizationError("Source version does not exist or is not authorized")
         return self._row_to_source(row, include_text=True)
+
+    def get_chunks(self, source_version_id: str, *, scopes: Sequence[str]) -> list[Chunk]:
+        self.get_source(source_version_id, scopes=scopes)
+        rows = self.connection.execute(
+            f"SELECT {self._chunk_columns()} FROM chunks c "
+            "JOIN source_versions sv ON sv.id = c.source_version_id "
+            "JOIN documents d ON d.id = sv.document_id "
+            "WHERE c.source_version_id = ? ORDER BY c.ordinal",
+            (source_version_id,),
+        ).fetchall()
+        return [self._row_to_chunk(row) for row in rows]
+
+    def delete_web_source_version(self, source_version_id: str, *, scopes: Sequence[str]) -> None:
+        source = self.get_source(source_version_id, scopes=scopes)
+        if not source.collection.startswith("web-"):
+            raise AuthorizationError("Only temporary web source versions can be removed")
+        with self.connection:
+            previous = self.connection.execute(
+                """SELECT id FROM source_versions WHERE document_id = ? AND id <> ?
+                   ORDER BY created_at DESC, id DESC LIMIT 1""",
+                (source.document_id, source_version_id),
+            ).fetchone()
+            self.connection.execute(
+                """UPDATE documents SET current_version_id = ?
+                   WHERE id = ? AND current_version_id = ?""",
+                (previous["id"] if previous else None, source.document_id, source_version_id),
+            )
+            self.connection.execute(
+                "DELETE FROM chunk_fts WHERE chunk_id IN (SELECT id FROM chunks WHERE source_version_id = ?)",
+                (source_version_id,),
+            )
+            self.connection.execute("DELETE FROM source_versions WHERE id = ?", (source_version_id,))
+            self.connection.execute(
+                "DELETE FROM documents WHERE id = ? AND NOT EXISTS "
+                "(SELECT 1 FROM source_versions WHERE document_id = ?)",
+                (source.document_id, source.document_id),
+            )
+            self.connection.execute(
+                """DELETE FROM source_objects WHERE sha256 = ? AND NOT EXISTS
+                   (SELECT 1 FROM source_versions WHERE content_sha256 = ?)""",
+                (source.sha256, source.sha256),
+            )
 
     def list_sources(
         self,

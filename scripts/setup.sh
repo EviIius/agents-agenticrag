@@ -9,6 +9,6 @@ if [ ! -x "$VENV_PATH/bin/python" ]; then
 fi
 
 "$VENV_PATH/bin/python" -m pip install --upgrade pip
-"$VENV_PATH/bin/python" -m pip install -e "${PROJECT_ROOT}[documents]"
+"$VENV_PATH/bin/python" -m pip install -e "${PROJECT_ROOT}[documents,web]"
 
-printf '\nAgenticRAG is ready. Start the workbench with:\n  .venv/bin/python -m agenticrag serve\n'
+printf '\nChat & Web is ready. Start the workbench with:\n  .venv/bin/python -m agenticrag serve\n'

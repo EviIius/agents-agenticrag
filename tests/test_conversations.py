@@ -10,6 +10,56 @@ from agenticrag.conversations import ConversationStore, conversation_title
 
 
 class ConversationStoreTests(unittest.TestCase):
+    def test_web_page_reuse_retention_and_saved_record(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = str(Path(directory) / "chats.db")
+            store = ConversationStore(path)
+            project_id = "default"
+            self.assertEqual(store.get_project(project_id)["web_retention"], "30_days")
+            store.record_web_page(project_id, "version_a", "https://example.org/start",
+                                  "https://example.org/final", "Example", "a" * 64, "30_days", now=100_000)
+            self.assertEqual(store.web_page_info(project_id, "version_a")["expires_at"], 100_000 + 30 * 86400)
+            self.assertEqual(store.recent_web_page(project_id, "https://example.org/start", now=100_100)["source_version_id"], "version_a")
+            self.assertIsNone(store.recent_web_page(project_id, "https://example.org/start", now=100_000 + 86401))
+            self.assertEqual(store.update_project_web_retention(project_id, "dont_keep")["web_retention"], "dont_keep")
+            self.assertIsNone(store.recent_web_page(project_id, "https://example.org/start"))
+            self.assertIn((project_id, "version_a"), store.expired_web_sources())
+            store.mark_web_page_saved(project_id, "version_a", "version_library")
+            self.assertNotIn((project_id, "version_a"), store.expired_web_sources())
+            self.assertEqual(store.web_page_info(project_id, "version_a")["saved_library_version_id"], "version_library")
+            store.close()
+            reopened = ConversationStore(path)
+            self.assertEqual(reopened.get_project(project_id)["web_retention"], "dont_keep")
+            reopened.close()
+
+    def test_project_web_mode_persists_and_rejects_invalid_values(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = str(Path(directory) / "chats.db")
+            store = ConversationStore(path)
+            project = store.create_project("Web research")
+            self.assertEqual(project["web_mode"], "ask")
+            self.assertEqual(store.update_project_web_mode(project["id"], "off")["web_mode"], "off")
+            with self.assertRaisesRegex(ValueError, "Web mode"):
+                store.update_project_web_mode(project["id"], "sometimes")
+            store.close()
+            reopened = ConversationStore(path)
+            self.assertEqual(reopened.get_project(project["id"])["web_mode"], "off")
+            reopened.close()
+
+    def test_last_result_is_scoped_and_reads_latest_answer(self) -> None:
+        store = ConversationStore(":memory:")
+        chat = store.create("research", ["private"])
+        self.assertIsNone(store.last_result(chat["id"], "research", ["private"]))
+        for index in range(2):
+            store.record(chat["id"], f"Question {index}", {
+                "answer": f"Answer {index}", "workflow": "fixed", "abstained": False,
+                "elapsed_ms": 1, "events": [], "citations": [{"chunk_id": f"c{index}"}],
+            }, "fixed")
+        self.assertEqual(store.last_result(chat["id"], "research", ["private"])["citations"][0]["chunk_id"], "c1")
+        with self.assertRaisesRegex(ValueError, "another knowledge base"):
+            store.last_result(chat["id"], "research", ["public"])
+        store.close()
+
     def test_saved_evidence_keeps_retrieval_count_and_uncited_titles(self) -> None:
         store = ConversationStore(":memory:")
         chat = store.create("research", ["private"])

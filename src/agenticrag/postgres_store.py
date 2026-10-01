@@ -84,7 +84,7 @@ class PostgresCorpusStore:
     ) -> SourceVersion:
         collection = _identifier(source.collection, "collection")
         scopes = _scopes(source.scopes)
-        numeric_vectors, dimension = _validated_vectors(vectors, expected_count=len(chunks))
+        numeric_vectors, dimension = _validated_vectors(vectors or [[0.0]] * len(chunks), expected_count=len(chunks))
         original = source.original_bytes if source.original_bytes is not None else source.text.encode("utf-8")
         suffix = ".txt" if source.original_bytes is None else Path(source.logical_path).suffix.lower()
         suffix = suffix if suffix and suffix[1:].isalnum() else ".bin"
@@ -310,6 +310,54 @@ class PostgresCorpusStore:
         if row is None:
             raise AuthorizationError("Source version does not exist or is not authorized")
         return self._row_to_source(row, include_text=True)
+
+    @_postgres_operation("chunk lookup")
+    def get_chunks(self, source_version_id: str, *, scopes: Sequence[str]) -> list[Chunk]:
+        self.get_source(source_version_id, scopes=scopes)
+        rows = self.connection.execute(
+            f"SELECT {self._chunk_columns()} FROM chunks c "
+            "JOIN source_versions sv ON sv.id = c.source_version_id "
+            "JOIN documents d ON d.id = sv.document_id "
+            "WHERE c.source_version_id = %s ORDER BY c.ordinal",
+            (source_version_id,),
+        ).fetchall()
+        return [self._row_to_chunk(row) for row in rows]
+
+    @_postgres_operation("web source deletion")
+    def delete_web_source_version(self, source_version_id: str, *, scopes: Sequence[str]) -> None:
+        source = self.get_source(source_version_id, scopes=scopes)
+        if not source.collection.startswith("web-"):
+            raise AuthorizationError("Only temporary web source versions can be removed")
+        object_path: str | None = None
+        with self.connection.transaction():
+            row = self.connection.execute(
+                "SELECT object_path FROM source_versions WHERE id = %s", (source_version_id,)
+            ).fetchone()
+            previous = self.connection.execute(
+                """SELECT id FROM source_versions WHERE document_id = %s AND id <> %s
+                   ORDER BY ingested_at DESC, id DESC LIMIT 1""",
+                (source.document_id, source_version_id),
+            ).fetchone()
+            self.connection.execute(
+                """UPDATE documents SET current_version_id = %s
+                   WHERE id = %s AND current_version_id = %s""",
+                (previous["id"] if previous else None, source.document_id, source_version_id),
+            )
+            self.connection.execute("DELETE FROM source_versions WHERE id = %s", (source_version_id,))
+            self.connection.execute(
+                """DELETE FROM documents WHERE id = %s AND NOT EXISTS
+                   (SELECT 1 FROM source_versions WHERE document_id = %s)""",
+                (source.document_id, source.document_id),
+            )
+            if row is not None:
+                remaining = self.connection.execute(
+                    "SELECT 1 FROM source_versions WHERE object_path = %s LIMIT 1",
+                    (row["object_path"],),
+                ).fetchone()
+                if remaining is None:
+                    object_path = str(row["object_path"])
+        if object_path is not None:
+            self.objects.delete(object_path, source.sha256)
 
     @_postgres_operation("source listing")
     def list_sources(

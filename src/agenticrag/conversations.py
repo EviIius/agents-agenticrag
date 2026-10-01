@@ -79,12 +79,34 @@ class ConversationStore:
                 );
             """)
             self._db.execute(
-                "INSERT OR IGNORE INTO projects VALUES (?, ?, ?, ?, ?)",
+                "INSERT OR IGNORE INTO projects(id, name, collection, scopes_json, created_at) VALUES (?, ?, ?, ?, ?)",
                 ("default", "My library", "research", '["private"]', time.time()),
             )
             columns = {row["name"] for row in self._db.execute("PRAGMA table_info(conversations)")}
             if "pinned" not in columns:
                 self._db.execute("ALTER TABLE conversations ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0")
+            project_columns = {row["name"] for row in self._db.execute("PRAGMA table_info(projects)")}
+            if "web_mode" not in project_columns:
+                self._db.execute("ALTER TABLE projects ADD COLUMN web_mode TEXT NOT NULL DEFAULT 'ask'")
+            if "web_retention" not in project_columns:
+                self._db.execute("ALTER TABLE projects ADD COLUMN web_retention TEXT NOT NULL DEFAULT '30_days'")
+            self._db.executescript("""
+                CREATE TABLE IF NOT EXISTS web_pages (
+                    project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+                    source_version_id TEXT NOT NULL,
+                    requested_url TEXT NOT NULL,
+                    final_url TEXT NOT NULL,
+                    title TEXT NOT NULL,
+                    sha256 TEXT NOT NULL,
+                    fetched_at REAL NOT NULL,
+                    expires_at REAL,
+                    saved_library_version_id TEXT,
+                    PRIMARY KEY (project_id, source_version_id, requested_url)
+                );
+                CREATE INDEX IF NOT EXISTS web_pages_reuse
+                    ON web_pages(project_id, requested_url, fetched_at DESC);
+                CREATE INDEX IF NOT EXISTS web_pages_expiry ON web_pages(expires_at);
+            """)
         if path != ":memory:" and os.name == "posix":
             # SQLite's WAL and shared-memory files can contain transcript text too.
             for suffix in ("", "-wal", "-shm"):
@@ -131,7 +153,7 @@ class ConversationStore:
         collection = "project-" + project_id[:16]
         with self._lock, self._db:
             self._db.execute(
-                "INSERT INTO projects VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO projects(id, name, collection, scopes_json, created_at) VALUES (?, ?, ?, ?, ?)",
                 (project_id, clean, collection, '["private"]', time.time()),
             )
         return self.get_project(project_id)
@@ -149,6 +171,115 @@ class ConversationStore:
         if row is None:
             raise ValueError("Project was not found")
         return self._project(row)
+
+    def update_project_web_mode(self, project_id: str, web_mode: str) -> dict[str, object]:
+        if web_mode not in {"off", "ask", "on"}:
+            raise ValueError("Web mode must be off, ask, or on")
+        with self._lock, self._db:
+            changed = self._db.execute(
+                "UPDATE projects SET web_mode = ? WHERE id = ?", (web_mode, project_id)
+            ).rowcount
+        if not changed:
+            raise ValueError("Project was not found")
+        return self.get_project(project_id)
+
+    def update_project_web_retention(self, project_id: str, retention: str) -> dict[str, object]:
+        if retention not in {"30_days", "forever", "dont_keep"}:
+            raise ValueError("Web retention must be 30_days, forever, or dont_keep")
+        with self._lock, self._db:
+            changed = self._db.execute(
+                "UPDATE projects SET web_retention = ? WHERE id = ?", (retention, project_id)
+            ).rowcount
+            if changed:
+                if retention == "forever":
+                    self._db.execute(
+                        "UPDATE web_pages SET expires_at = NULL WHERE project_id = ?", (project_id,)
+                    )
+                elif retention == "30_days":
+                    self._db.execute(
+                        """UPDATE web_pages SET expires_at = fetched_at + ?
+                           WHERE project_id = ? AND saved_library_version_id IS NULL""",
+                        (30 * 86400, project_id),
+                    )
+                else:
+                    self._db.execute(
+                        """UPDATE web_pages SET expires_at = ?
+                           WHERE project_id = ? AND saved_library_version_id IS NULL""",
+                        (time.time(), project_id),
+                    )
+        if not changed:
+            raise ValueError("Project was not found")
+        return self.get_project(project_id)
+
+    def record_web_page(self, project_id: str, source_version_id: str, requested_url: str,
+                        final_url: str, title: str, sha256: str, retention: str,
+                        *, now: float | None = None) -> None:
+        if retention not in {"30_days", "forever", "dont_keep"}:
+            raise ValueError("Invalid web retention")
+        when = time.time() if now is None else now
+        expires = None if retention == "forever" else when + (30 * 86400 if retention == "30_days" else 0)
+        with self._lock, self._db:
+            self._db.execute(
+                """INSERT INTO web_pages(project_id, source_version_id, requested_url, final_url,
+                       title, sha256, fetched_at, expires_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                   ON CONFLICT(project_id, source_version_id, requested_url) DO UPDATE SET
+                       final_url = excluded.final_url, title = excluded.title,
+                       sha256 = excluded.sha256, fetched_at = excluded.fetched_at,
+                       expires_at = CASE WHEN web_pages.saved_library_version_id IS NOT NULL
+                                         THEN NULL ELSE excluded.expires_at END""",
+                (project_id, source_version_id, requested_url, final_url, title, sha256, when, expires),
+            )
+
+    def recent_web_page(self, project_id: str, requested_url: str,
+                        *, now: float | None = None) -> dict[str, object] | None:
+        when = time.time() if now is None else now
+        with self._lock:
+            row = self._db.execute(
+                """SELECT * FROM web_pages WHERE project_id = ? AND requested_url = ?
+                   AND fetched_at >= ? AND (expires_at IS NULL OR expires_at > ?)
+                   ORDER BY fetched_at DESC LIMIT 1""",
+                (project_id, requested_url, when - 86400, when),
+            ).fetchone()
+        return dict(row) if row is not None else None
+
+    def web_page_info(self, project_id: str, source_version_id: str) -> dict[str, object] | None:
+        with self._lock:
+            row = self._db.execute(
+                """SELECT * FROM web_pages WHERE project_id = ? AND source_version_id = ?
+                   ORDER BY fetched_at DESC LIMIT 1""",
+                (project_id, source_version_id),
+            ).fetchone()
+        return dict(row) if row is not None else None
+
+    def mark_web_page_saved(self, project_id: str, source_version_id: str,
+                            library_version_id: str) -> None:
+        with self._lock, self._db:
+            changed = self._db.execute(
+                """UPDATE web_pages SET saved_library_version_id = ?, expires_at = NULL
+                   WHERE project_id = ? AND source_version_id = ?""",
+                (library_version_id, project_id, source_version_id),
+            ).rowcount
+        if not changed:
+            raise ValueError("Web page was not found")
+
+    def expired_web_sources(self, *, now: float | None = None) -> list[tuple[str, str]]:
+        when = time.time() if now is None else now
+        with self._lock:
+            rows = self._db.execute(
+                """SELECT DISTINCT project_id, source_version_id FROM web_pages AS expired
+                   WHERE expires_at <= ? AND NOT EXISTS (
+                       SELECT 1 FROM web_pages AS retained
+                       WHERE retained.source_version_id = expired.source_version_id
+                         AND (retained.expires_at IS NULL OR retained.expires_at > ?)
+                   )""",
+                (when, when),
+            ).fetchall()
+        return [(str(row[0]), str(row[1])) for row in rows]
+
+    def forget_web_source(self, source_version_id: str) -> None:
+        with self._lock, self._db:
+            self._db.execute("DELETE FROM web_pages WHERE source_version_id = ?", (source_version_id,))
 
     def project_for_context(self, collection: str, scopes: list[str]) -> dict[str, object] | None:
         with self._lock:
@@ -271,6 +402,23 @@ class ConversationStore:
             raise ValueError("This conversation uses another knowledge base or access label")
         return [ChatMessage(item["role"], item["content"]) for item in reversed(messages)]
 
+    def last_result(self, chat_id: str, collection: str, scopes: list[str]) -> dict[str, object] | None:
+        """Read only the latest assistant result after enforcing chat access."""
+        with self._lock:
+            chat = self._db.execute(
+                "SELECT collection, scopes_json FROM conversations WHERE id = ?", (chat_id,)
+            ).fetchone()
+            if chat is None:
+                raise ValueError("Conversation was not found")
+            if chat["collection"] != collection or set(json.loads(chat["scopes_json"])) != set(scopes):
+                raise ValueError("This conversation uses another knowledge base or access label")
+            row = self._db.execute(
+                "SELECT result_json FROM conversation_messages "
+                "WHERE conversation_id = ? AND role = 'assistant' ORDER BY id DESC LIMIT 1",
+                (chat_id,),
+            ).fetchone()
+        return json.loads(row["result_json"]) if row and row["result_json"] else None
+
     def close(self) -> None:
         with self._lock:
             self._db.close()
@@ -286,14 +434,13 @@ class ConversationStore:
         compact_result = {
             "workflow": result["workflow"],
             "provider": result.get("provider"),
-            "routing": result.get("routing"),
             "abstained": result["abstained"],
+            "incomplete": bool(result.get("incomplete")),
             "elapsed_ms": result["elapsed_ms"],
             "citations": result["citations"],
             "external_sources": result.get("external_sources", []),
             "events": result.get("events", [])[:50],
             "retrieved_count": len(result.get("evidence", [])),
-            "delegations": result.get("delegations", [])[:3],
         }
         cited_ids = {
             item.get("chunk_id") for item in result.get("citations", [])
@@ -391,6 +538,8 @@ class ConversationStore:
         return {
             "id": row["id"], "name": row["name"], "collection": row["collection"],
             "scopes": json.loads(row["scopes_json"]), "created_at": row["created_at"],
+            "web_mode": row["web_mode"] if "web_mode" in row.keys() else "ask",
+            "web_retention": row["web_retention"] if "web_retention" in row.keys() else "30_days",
         }
 
     @staticmethod

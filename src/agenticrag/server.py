@@ -22,8 +22,6 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from . import __version__
-from .agent import AgentConfig, BoundedAgenticRAGWorkflow
-from .agent_tools import ReadOnlyToolGateway, ToolBudget
 from .config import (
     ProviderRole,
     StoreConfig,
@@ -32,22 +30,19 @@ from .config import (
     load_store_config,
 )
 from .conversations import ConversationStore
+from .domain import RunEvent, SourceDraft
 from .errors import AgenticRAGError, AuthorizationError, ConfigurationError, WorkflowError
+from .followup_query import build_retrieval_query
+from .web_chat import WebChat
 from .ingestion import FileParser, IngestionLimits, Ingestor, parser_capabilities
-from .model_routing import choose_model
 from .postgres_store import PostgresCorpusStore
 from .providers.openai_compatible import build_chat_provider, build_embedding_provider
-from .providers.openai_responses import OpenAIResponsesWebSearch
 from .providers.base import ChatMessage, ChatProvider
-from .retrieval import HybridRetriever
 from .run_store import WorkbenchRunStore
 from .runtimes import RUNTIME_PROFILES, RuntimeSelection, discover_models, ollama_supports_vision
-from .skills import SkillRegistry
 from .store import CorpusStore, SQLiteCorpusStore
-from .supervisor import AGENT_DESCRIPTIONS, SupervisorAgentWorkflow
-from .workflows import DirectWorkflow, FixedRAGWorkflow
-from .workflows import WebAnswerWorkflow
-from .web_search import LocalWebSearch, local_web_search_available
+from .web_search import (configured_search_label,
+                         configured_search_provider, local_web_search_available)
 
 
 MAX_JSON_BYTES = 70 * 1024 * 1024
@@ -64,6 +59,14 @@ class _ProjectMemoryChat:
     @property
     def label(self) -> str:
         return self._provider.label
+
+    @property
+    def config(self):
+        return getattr(self._provider, "config", None)
+
+    def last_call_metrics(self):
+        metrics = getattr(self._provider, "last_call_metrics", None)
+        return metrics() if callable(metrics) else None
 
     def complete(
         self, messages: Sequence[ChatMessage], *, response_schema: dict[str, Any] | None = None,
@@ -104,9 +107,10 @@ class _ProjectMemoryChat:
 
 
 class _CancellableChat:
-    def __init__(self, provider: ChatProvider, cancelled: threading.Event) -> None:
+    def __init__(self, provider: ChatProvider, cancelled: threading.Event, slot=None) -> None:
         self._provider = provider
         self._cancelled = cancelled
+        self._slot = slot
 
     @property
     def label(self) -> str:
@@ -116,43 +120,54 @@ class _CancellableChat:
         metrics = getattr(self._provider, "last_call_metrics", None)
         return metrics() if callable(metrics) else None
 
-    def complete(
-        self, messages: Sequence[ChatMessage], *, response_schema: dict[str, Any] | None = None,
-        max_tokens: int = 2048, temperature: float = 0.0,
-    ) -> str:
-        if self._cancelled.is_set():
-            raise WorkflowError("Run stopped")
-        answer = self._provider.complete(
-            messages, response_schema=response_schema, max_tokens=max_tokens, temperature=temperature,
-        )
-        if self._cancelled.is_set():
-            raise WorkflowError("Run stopped")
-        return answer
+    @property
+    def config(self):
+        return getattr(self._provider, "config", None)
 
-    def stream_complete(
-        self, messages: Sequence[ChatMessage], on_token: Callable[[str], None], *,
-        max_tokens: int = 2048, temperature: float = 0.0,
-    ) -> str:
-        def checked_token(token: str) -> None:
+    @contextmanager
+    def _completion(self):
+        acquired = False
+        try:
+            if self._slot is not None:
+                while not self._cancelled.is_set():
+                    if self._slot.acquire(timeout=0.25):
+                        acquired = True
+                        break
             if self._cancelled.is_set():
                 raise WorkflowError("Run stopped")
-            on_token(token)
-        if self._cancelled.is_set():
-            raise WorkflowError("Run stopped")
-        streamer = getattr(self._provider, "stream_complete", None)
-        if streamer is None:
-            answer = self.complete(messages, max_tokens=max_tokens, temperature=temperature)
-            checked_token(answer)
-        else:
-            answer = streamer(messages, checked_token, max_tokens=max_tokens, temperature=temperature)
-        if self._cancelled.is_set():
-            raise WorkflowError("Run stopped")
-        return answer
+            yield
+        finally:
+            if acquired:
+                self._slot.release()
+
+    def complete(self, messages, *, response_schema=None, max_tokens=2048, temperature=0.0):
+        with self._completion():
+            answer = self._provider.complete(messages, response_schema=response_schema,
+                                             max_tokens=max_tokens, temperature=temperature)
+            if self._cancelled.is_set():
+                raise WorkflowError("Run stopped")
+            return answer
+
+    def stream_complete(self, messages, on_token, *, max_tokens=2048, temperature=0.0):
+        def token(text):
+            if self._cancelled.is_set():
+                raise WorkflowError("Run stopped")
+            on_token(text)
+        with self._completion():
+            streamer = getattr(self._provider, "stream_complete", None)
+            if streamer:
+                answer = streamer(messages, token, max_tokens=max_tokens, temperature=temperature)
+            else:
+                answer = self._provider.complete(messages, max_tokens=max_tokens, temperature=temperature)
+                token(answer)
+            if self._cancelled.is_set():
+                raise WorkflowError("Run stopped")
+            return answer
 
 
 UI_FILES = {
-    "/": "index.html", "/index.html": "index.html", "/app.js": "app.js", "/boot.js": "boot.js", "/v21.js": "v21.js", "/sw.js": "sw.js",
-    "/styles.css": "styles.css", "/tokens.css": "tokens.css", "/design-v2.css": "design-v2.css", "/components-v21.css": "components-v21.css",
+    "/": "index.html", "/index.html": "index.html", "/app.js": "app.js", "/boot.js": "boot.js", "/sw.js": "sw.js",
+    "/tokens.css": "tokens.css", "/chat.css": "chat.css",
     "/vendor/marked.umd.js": "vendor/marked.umd.js",
     "/vendor/purify.min.js": "vendor/purify.min.js",
     "/manifest.webmanifest": "manifest.webmanifest", "/icon-180.png": "icon-180.png",
@@ -192,26 +207,11 @@ def _loaded_model_state(selection: RuntimeSelection) -> bool | None:
     except (HTTPError, URLError, TimeoutError, OSError, ValueError, TypeError, json.JSONDecodeError):
         pass
     return None
-MODEL_CONTRACT_SCHEMA: dict[str, object] = {
-    "type": "object",
-    "properties": {
-        "answer": {"type": "integer"},
-        "action": {"type": "string", "enum": ["calculate"]},
-        "assumptions": {"type": "array", "items": {"type": "string"}, "maxItems": 3},
-    },
-    "required": ["answer", "action", "assumptions"],
-    "additionalProperties": False,
-}
-
-
 class WorkbenchState:
-    def __init__(self, db_path: str, skills_root: Path) -> None:
+    def __init__(self, db_path: str) -> None:
         self.db_path = db_path
         self._selection_path = (
             None if db_path == ":memory:" else Path(db_path).resolve().with_name("workbench-providers.json")
-        )
-        self._evaluation_path = (
-            None if db_path == ":memory:" else Path(db_path).resolve().with_name("workbench-evaluation.json")
         )
         self.conversations = ConversationStore(
             ":memory:" if db_path == ":memory:" else str(Path(db_path).resolve().with_name("workbench-chats.db"))
@@ -219,15 +219,9 @@ class WorkbenchState:
         self.runs = WorkbenchRunStore(
             ":memory:" if db_path == ":memory:" else str(Path(db_path).resolve().with_name("workbench-runs.db"))
         )
-        self.skills_root = skills_root.expanduser().resolve()
-        default_skills_root = Path(".agenticrag/skills").resolve()
-        self.agent_skills_root = (
-            Path(".agents/skills").resolve()
-            if self.skills_root == default_skills_root
-            else None
-        )
         self._lock = threading.RLock()
         self._active_runs: dict[str, threading.Event] = {}
+        self._web_approvals: dict[str, tuple[threading.Event, bool | None]] = {}
         self._model_slot = threading.Semaphore(1)
         self._warm_active = False
         self._runtime_status_cache: tuple[float, dict[str, object]] | None = None
@@ -273,11 +267,44 @@ class WorkbenchState:
             if event is None:
                 return False
             event.set()
+            approval = self._web_approvals.get(run_id)
+            if approval:
+                approval[0].set()
             run = self.runs.get(run_id)
             if run:
                 self.runs.update(run_id, cancel_requested=True,
                                  status="stopped" if run["status"] == "queued" else None,
                                  error="Run stopped" if run["status"] == "queued" else None)
+            return True
+
+    def request_web_approval(self, run_id: str, cancelled: threading.Event,
+                             query: str, emit: Callable[[Any], None], timeout: int) -> bool:
+        approval = threading.Event()
+        with self._lock:
+            self._web_approvals[run_id] = (approval, None)
+        emit(RunEvent("web_approval_requested", {"run_id": run_id, "query": query}))
+        deadline = time.monotonic() + timeout
+        try:
+            while not cancelled.is_set() and time.monotonic() < deadline:
+                approval.wait(min(0.25, max(0, deadline - time.monotonic())))
+                with self._lock:
+                    decision = self._web_approvals.get(run_id, (approval, None))[1]
+                if decision is not None:
+                    emit(RunEvent("web_approval_resolved", {"allowed": decision}))
+                    return decision
+            emit(RunEvent("web_approval_resolved", {"allowed": False, "reason": "stopped_or_timed_out"}))
+            return False
+        finally:
+            with self._lock:
+                self._web_approvals.pop(run_id, None)
+
+    def decide_web_approval(self, run_id: str, allowed: bool) -> bool:
+        with self._lock:
+            pending = self._web_approvals.get(run_id)
+            if pending is None:
+                return False
+            self._web_approvals[run_id] = (pending[0], allowed)
+            pending[0].set()
             return True
 
     def finish_run(self, run_id: str) -> None:
@@ -342,10 +369,6 @@ class WorkbenchState:
             if temporary_path is not None:
                 temporary_path.unlink(missing_ok=True)
 
-    def skill_registry(self) -> SkillRegistry:
-        additional = () if self.agent_skills_root is None else (self.agent_skills_root,)
-        return SkillRegistry(self.skills_root, additional_roots=additional)
-
     def provider(self, role: ProviderRole) -> RuntimeSelection:
         with self._lock:
             try:
@@ -354,17 +377,6 @@ class WorkbenchState:
                 raise ConfigurationError(
                     f"Configure the {role.value} runtime in Models before using this action"
                 ) from exc
-
-    def evaluation_report(self) -> dict[str, object]:
-        path = self._evaluation_path
-        if path is None or not path.exists():
-            return {"available": False}
-        if path.stat().st_size > 2_000_000:
-            raise ValueError("Evaluation report is too large")
-        payload = json.loads(path.read_text(encoding="utf-8"))
-        if not isinstance(payload, dict) or payload.get("schema_version") != 1:
-            raise ValueError("Evaluation report has an unsupported format")
-        return {"available": True, **payload}
 
     def runtime_status(self, *, fresh: bool = False) -> dict[str, object]:
         now = time.monotonic()
@@ -378,7 +390,7 @@ class WorkbenchState:
                 return cached[1]
             providers = dict(self._providers)
         result: dict[str, object] = {"checked_at": datetime.now(timezone.utc).isoformat()}
-        for role in ProviderRole:
+        for role in (ProviderRole.CHAT,):
             selection = providers.get(role)
             if selection is None:
                 result[role.value] = {"configured": False, "reachable": False, "latency_ms": None, "model_present": None, "error": None,
@@ -424,7 +436,8 @@ class WorkbenchState:
                 origin = f"{parsed.scheme}://{parsed.netloc}"
                 if selection.runtime == "ollama":
                     endpoint = origin + "/api/generate"
-                    payload = {"model": selection.model, "keep_alive": "30m", "stream": False}
+                    payload = {"model": selection.model, "keep_alive": "30m", "stream": False,
+                               "options": {"num_ctx": 16384}}
                 else:
                     endpoint = selection.base_url + "/chat/completions"
                     payload = {"model": selection.model, "messages": [{"role": "user", "content": "Ready"}], "max_tokens": 1, "stream": False}
@@ -459,6 +472,8 @@ class WorkbenchState:
         )
         with self._lock:
             previous = self._providers.get(role)
+            if previous and previous.runtime == selection.runtime and previous.base_url == selection.base_url and not payload.get("api_key"):
+                selection = replace(selection, api_key=previous.api_key)
             self._providers[role] = selection
             self._runtime_status_cache = None
             try:
@@ -497,123 +512,39 @@ class WorkbenchState:
         finally:
             store.close()
 
+    def prune_web_pages(self) -> int:
+        expired = self.conversations.expired_web_sources()
+        if not expired:
+            return 0
+        removed = 0
+        with self.store() as store:
+            for project_id, source_id in expired:
+                try:
+                    project = self.conversations.get_project(project_id)
+                    store.delete_web_source_version(source_id, scopes=tuple(project["scopes"]))
+                except (AuthorizationError, ValueError):
+                    # A removed project or source can leave stale registry metadata.
+                    pass
+                self.conversations.forget_web_source(source_id)
+                removed += 1
+        return removed
+
     def bootstrap(self) -> dict[str, object]:
-        skills = self.skill_registry().metadata()
         ingestion = load_ingestion_config()
-        store_config = load_store_config(self.db_path)
-        return {
-            "version": __version__,
-            "local_web_search_available": local_web_search_available(),
-            "providers": self.public_providers(),
-            "runtimes": RUNTIME_PROFILES,
-            "store": store_config.public_dict(),
-            "capabilities": {
-                "tools": [
-                    {
-                        "id": "search",
-                        "name": "Corpus search",
-                        "description": "Hybrid lexical and vector retrieval inside the active collection and scopes.",
-                        "access": "read-only",
-                        "enabled": True,
-                    },
-                    {
-                        "id": "lookup",
-                        "name": "Source lookup",
-                        "description": "Bounded text lookup, restricted to source versions already returned by search.",
-                        "access": "read-only",
-                        "enabled": True,
-                    },
-                    {
-                        "id": "calculate",
-                        "name": "Safe calculator",
-                        "description": "Arithmetic expressions only; no functions, names, filesystem, shell, or network.",
-                        "access": "sandboxed",
-                        "enabled": True,
-                    },
-                    {
-                        "id": "web_search",
-                        "name": "Web search",
-                        "description": (
-                            "Opt-in public web search. Local models use a metasearch service; hosted OpenAI "
-                            "uses Responses web search. Search queries leave this Mac."
-                        ),
-                        "access": "external · per-run consent",
-                        "enabled": self._web_search_available(),
-                    },
-                ],
-                "skills": [{**item, "enabled": True} for item in skills],
-                "agents": [
-                    {
-                        "id": "supervisor",
-                        "name": "Supervisor coordinator",
-                        "description": "Plans up to three bounded assignments, calls specialists, synthesizes, and runs a final critic.",
-                        "access": "can delegate · no recursion",
-                        "enabled": True,
-                    },
-                    *[
-                        {
-                            "id": identifier,
-                            "name": identifier.replace("_", " ").title(),
-                            "description": description,
-                            "access": (
-                                "external · opt-in"
-                                if identifier == "web_researcher"
-                                else "bounded specialist"
-                            ),
-                            "enabled": (
-                                self._web_search_available()
-                                if identifier == "web_researcher"
-                                else True
-                            ),
-                        }
-                        for identifier, description in AGENT_DESCRIPTIONS.items()
-                    ],
-                    {
-                        "id": "evidence_critic",
-                        "name": "Evidence critic",
-                        "description": "Independently rejects unsupported or incomplete specialist and final answers.",
-                        "access": "internal review",
-                        "enabled": True,
-                    },
-                ],
-                "plugins": [],
-                "plugin_status": "Plugin adapters are not installed; the capability boundary is reserved.",
-                "agent": {
-                    "planning": "obligation decomposition",
-                    "review": "independent cited-evidence critic pass",
-                    "tool_allowlist": list(ReadOnlyToolGateway.ALLOWED_ACTIONS),
-                    "default_limits": asdict(AgentConfig()),
-                    "tool_budget": asdict(ToolBudget()),
-                },
-            },
-            "ingestion": {
-                "limits": {
-                    "max_file_bytes": ingestion.max_file_bytes,
-                    "max_pages": ingestion.max_pages,
-                    "max_segments": ingestion.max_segments,
-                },
-                "formats": parser_capabilities(ingestion.docling_artifacts_path),
-            },
-            "workflows": [
-                {"id": "fixed", "name": "Fixed RAG", "description": "One retrieval and evidence-grounded answer."},
-                {"id": "agent", "name": "Agentic RAG", "description": "Plan, use bounded tools and skills, then run a critic review."},
-                {"id": "supervisor", "name": "Supervisor", "description": "A manager calls bounded specialist agents, synthesizes their findings, and runs a final critic."},
-                {"id": "direct", "name": "Direct model", "description": "No retrieval; useful as an experimental baseline."},
-            ],
-        }
+        return {"version": __version__, "providers": self.public_providers(), "runtimes": RUNTIME_PROFILES,
+                "store": load_store_config(self.db_path).public_dict(),
+                "local_web_search_available": self._web_search_available(),
+                "web_search_provider": configured_search_label(),
+                "web": {"available": self._web_search_available(), "max_searches": 1, "max_pages": 4},
+                "ingestion": {"limits": asdict(ingestion), "formats": parser_capabilities(ingestion.docling_artifacts_path)}}
 
     def _web_search_available(self) -> bool:
-        with self._lock:
-            selection = self._providers.get(ProviderRole.CHAT)
-            return bool(selection and (
-                (selection.provider_kind == "openai" and selection.api_key)
-                or (selection.provider_kind == "local" and local_web_search_available())
-            ))
+        return local_web_search_available()
 
 
 def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
     class WorkbenchHandler(BaseHTTPRequestHandler):
-        server_version = "AgenticRAGWorkbench/0.3"
+        server_version = "ChatWeb/0.5"
 
         def do_GET(self) -> None:  # noqa: N802
             try:
@@ -623,7 +554,7 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
                     self._json(HTTPStatus.OK, {"status": "ok", "version": __version__})
                     return
                 if parsed.path == "/api/v1/health":
-                    self._json(HTTPStatus.OK, {"ok": True, "version": __version__, "asset_version": "21", "started_at": state.started_at,
+                    self._json(HTTPStatus.OK, {"ok": True, "version": __version__, "asset_version": "50", "started_at": state.started_at,
                                                 "server_time": datetime.now(timezone.utc).isoformat()})
                     return
                 if parsed.path in UI_FILES:
@@ -634,9 +565,6 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
                     return
                 if parsed.path == "/api/v1/runtime-status":
                     self._json(HTTPStatus.OK, state.runtime_status(fresh=parse_qs(parsed.query).get("fresh") == ["1"]))
-                    return
-                if parsed.path == "/api/v1/evaluation":
-                    self._json(HTTPStatus.OK, state.evaluation_report())
                     return
                 run = re.fullmatch(r"/api/v1/runs/([0-9a-f]{32})", parsed.path)
                 if run:
@@ -691,7 +619,14 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
                     query = parse_qs(parsed.query)
                     with state.store() as store:
                         source = store.get_source(source_id, scopes=_scopes_from_query(query))
-                    self._json(HTTPStatus.OK, asdict(source))
+                    response = asdict(source)
+                    if source.collection.startswith("web-"):
+                        project_id = source.collection.removeprefix("web-")
+                        response["web_page"] = state.conversations.web_page_info(project_id, source.id) or {
+                            "project_id": project_id, "final_url": source.logical_path,
+                            "source_version_id": source.id, "saved_library_version_id": None,
+                        }
+                    self._json(HTTPStatus.OK, response)
                     return
                 self._json(HTTPStatus.NOT_FOUND, {"error": "Route not found"})
             except (AgenticRAGError, OSError, ValueError) as exc:
@@ -738,6 +673,10 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
                 if path == "/api/v1/ingest":
                     self._json(HTTPStatus.CREATED, self._ingest(payload))
                     return
+                save_web = re.fullmatch(r"/api/v1/web-sources/(version_[0-9a-f]+)/save", path)
+                if save_web:
+                    self._json(HTTPStatus.OK, self._save_web_source(save_web[1], payload))
+                    return
                 if path == "/api/v1/ask":
                     self._json(HTTPStatus.OK, self._ask(payload))
                     return
@@ -750,6 +689,12 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
                 cancel = re.fullmatch(r"/api/v1/runs/([0-9a-f]{32})/cancel", path)
                 if cancel:
                     self._json(HTTPStatus.OK, {"cancelled": state.cancel_run(cancel[1])})
+                    return
+                approval = re.fullmatch(r"/api/v1/runs/([0-9a-f]{32})/web-approval", path)
+                if approval:
+                    if set(payload) != {"allow"} or type(payload["allow"]) is not bool:
+                        raise ValueError("Web approval requires one boolean allow field")
+                    self._json(HTTPStatus.OK, {"accepted": state.decide_web_approval(approval[1], payload["allow"])})
                     return
                 if path == "/api/v1/chats":
                     collection = _bounded_string(payload.get("collection"), "collection", 128)
@@ -801,6 +746,19 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
                     payload = self._read_json()
                     content = _bounded_string(payload.get("content"), "content", 1_000)
                     self._json(HTTPStatus.OK, state.conversations.update_project_note(note[1], content))
+                    return
+                project_settings = re.fullmatch(r"/api/v1/projects/(default|[0-9a-f]{32})/settings", path)
+                if project_settings:
+                    payload = self._read_json()
+                    if set(payload) == {"web_mode"}:
+                        project = state.conversations.update_project_web_mode(project_settings[1], payload["web_mode"])
+                    elif set(payload) == {"web_retention"}:
+                        project = state.conversations.update_project_web_retention(
+                            project_settings[1], payload["web_retention"]
+                        )
+                    else:
+                        raise ValueError("Project settings need exactly web_mode or web_retention")
+                    self._json(HTTPStatus.OK, project)
                     return
                 self._json(HTTPStatus.NOT_FOUND, {"error": "Route not found"})
             except (AgenticRAGError, OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
@@ -861,15 +819,37 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
                     temporary_path = Path(temporary.name)
                 draft = parser.parse(temporary_path, collection, scopes)
                 draft = replace(draft, logical_path=filename)
-                embedding = build_embedding_provider(
-                    state.provider(ProviderRole.EMBEDDING).provider_config()
-                )
                 with state.store() as store:
-                    version = Ingestor(store, embedding, parser=parser).ingest_source(draft)
-                return {"status": "published", "embedding_provider": embedding.label, **asdict(version)}
+                    version = Ingestor(store, parser=parser).ingest_source(draft)
+                return {"status": "published", "index": "lexical-only", **asdict(version)}
             finally:
                 if temporary_path is not None:
                     temporary_path.unlink(missing_ok=True)
+
+        def _save_web_source(self, source_id: str, payload: dict[str, Any]) -> dict[str, object]:
+            if set(payload) != {"project_id"}:
+                raise ValueError("Save request needs exactly project_id")
+            project_id = _bounded_string(payload["project_id"], "project_id", 32)
+            project = state.conversations.get_project(project_id)
+            scopes = tuple(str(scope) for scope in project["scopes"])
+            with state.store() as store:
+                source = store.get_source(source_id, scopes=scopes)
+                if source.collection != f"web-{project_id}" or source.text is None:
+                    raise AuthorizationError("Web source is outside this project")
+                record = state.conversations.web_page_info(project_id, source_id)
+                if record and record.get("saved_library_version_id"):
+                    saved = store.get_source(str(record["saved_library_version_id"]), scopes=scopes)
+                    return {"status": "already_saved", "source": asdict(saved)}
+                draft = SourceDraft(str(project["collection"]), source.logical_path, "text/plain",
+                                    source.text, scopes, original_bytes=source.text.encode("utf-8"),
+                                    parser_id="web-saved-v1")
+                saved = Ingestor(store).ingest_source(draft)
+                if record is None:
+                    state.conversations.record_web_page(project_id, source.id, source.logical_path,
+                                                        source.logical_path, source.title or source.logical_path,
+                                                        source.sha256, "forever")
+                state.conversations.mark_web_page_saved(project_id, source.id, saved.id)
+            return {"status": "saved", "source": asdict(saved)}
 
         def _stream_ask(self, payload: dict[str, Any]) -> None:
             run_id = payload.get("run_id")
@@ -889,7 +869,9 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
                 self.wfile.flush()
 
             try:
-                emit("started", {"run_id": run_id, "limits": {"max_steps": payload.get("max_steps", 8), "max_seconds": 180}})
+                effort = payload.get("effort", "standard")
+                limits = {"max_searches": 1, "max_pages": 4}
+                emit("started", {"run_id": run_id, "limits": limits})
                 emit("progress", {"message": "Working with the selected model…"})
                 result = self._ask(payload, cancelled=cancelled,
                                    on_token=lambda token: emit("token", {"text": token}),
@@ -914,15 +896,16 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
             if not isinstance(chat_id, str) or not re.fullmatch(r"[0-9a-f]{32}", chat_id):
                 raise ValueError("A saved conversation is required for a durable run")
             question = _bounded_string(payload.get("question"), "question", MAX_QUESTION_CHARS)
-            workflow = payload.get("workflow", "agent")
-            if workflow not in {"direct", "fixed", "agent", "supervisor"}:
-                raise ValueError("Invalid workflow")
+            workflow = payload.get("workflow", "chat")
+            if workflow != "chat":
+                raise ValueError("Only normal chat is supported. Reload the app to update its controls.")
             if state.runs.get(run_id) is not None:
                 raise ValueError("Run identifier already exists")
             # Validate conversation access before creating an observable run.
             collection = _bounded_string(payload.get("collection"), "collection", 128)
             scopes = _string_list(payload.get("scopes"), "scopes", max_items=16, max_chars=128)
             state.conversations.history(chat_id, collection, list(scopes))
+            chat_config = state.provider(ProviderRole.CHAT).provider_config()
             cancelled = state.start_run(run_id)
             try:
                 state.runs.create(run_id, chat_id, question, workflow)
@@ -931,227 +914,115 @@ def make_handler(state: WorkbenchState) -> type[BaseHTTPRequestHandler]:
                 raise
 
             def worker() -> None:
+                streamed = ""
+                last_flush = time.monotonic()
+                recorded_events = []
                 try:
-                    model_slot = (
-                        state._model_slot if state.provider(ProviderRole.CHAT).provider_kind == "local"
-                        else nullcontext()
-                    )
-                    with model_slot:
-                        if cancelled.is_set():
-                            state.runs.update(run_id, status="stopped", error="Run stopped")
-                            return
-                        state.runs.update(run_id, status="running")
-                        streamed = ""
-                        last_flush = time.monotonic()
-
-                        def token(text: str) -> None:
-                            nonlocal streamed, last_flush
-                            streamed += text
-                            if time.monotonic() - last_flush >= 0.25:
-                                state.runs.update(run_id, streamed_text=streamed)
-                                last_flush = time.monotonic()
-
-                        def event(item: Any) -> None:
-                            state.runs.update(run_id, event={"type": "event", "event": asdict(item)})
-
-                        def evidence(items: list[dict[str, str | None]]) -> None:
-                            state.runs.update(run_id, event={"type": "evidence", "items": items})
-
-                        result = self._ask(payload, cancelled=cancelled, on_token=token,
-                                           on_event=event, on_evidence=evidence)
-                        state.runs.update(run_id, status="completed", streamed_text=streamed, result=result)
+                    if cancelled.is_set():
+                        raise WorkflowError("Run stopped")
+                    state.runs.update(run_id, status="running")
+                    def token(text):
+                        nonlocal streamed, last_flush
+                        streamed += text
+                        if time.monotonic() - last_flush >= 0.25:
+                            state.runs.update(run_id, streamed_text=streamed)
+                            last_flush = time.monotonic()
+                    def event(item):
+                        recorded_events.append(asdict(item))
+                        state.runs.update(run_id, event={"type": "event", "event": asdict(item)})
+                    def evidence(items):
+                        state.runs.update(run_id, event={"type": "evidence", "items": items})
+                    result = self._ask(payload, cancelled=cancelled, on_token=token, on_event=event,
+                                       on_evidence=evidence, chat_config=chat_config)
+                    state.runs.update(run_id, status="completed", streamed_text=streamed, result=result)
                 except Exception as exc:
-                    state.runs.update(run_id, status="stopped" if cancelled.is_set() else "failed",
-                                      error="Run stopped" if cancelled.is_set() else str(exc)[:1000])
+                    error = "Run stopped" if cancelled.is_set() else str(exc)[:1000]
+                    status = "stopped" if cancelled.is_set() else "failed"
+                    # A stopped or interrupted answer remains visible in saved history.
+                    partial = {"workflow": "chat", "provider": chat_config.label,
+                               "question": question, "answer": (streamed.rstrip()+"\n\n" if streamed else "")+error,
+                               "abstained": True, "incomplete": True, "elapsed_ms": 0,
+                               "citations": [], "evidence": [], "events": recorded_events}
+                    try:
+                        state.conversations.record(chat_id, question, partial, "chat")
+                    except ValueError:
+                        pass  # The conversation may have been deleted in another window.
+                    state.runs.update(run_id, status=status, streamed_text=streamed, result=partial, error=error)
                 finally:
                     state.finish_run(run_id)
 
             threading.Thread(target=worker, name=f"workbench-run-{run_id[:8]}", daemon=True).start()
             self._json(HTTPStatus.ACCEPTED, {"run_id": run_id, "status": "queued"})
 
-        def _ask(
-            self, payload: dict[str, Any], *, cancelled: threading.Event | None = None,
-            on_token: Callable[[str], None] | None = None,
-            on_event: Callable[[Any], None] | None = None,
-            on_evidence: Callable[[list[dict[str, str | None]]], None] | None = None,
-        ) -> dict[str, object]:
-            if cancelled and cancelled.is_set():
-                raise WorkflowError("Run stopped")
+        def _ask(self, payload: dict[str, Any], *, cancelled=None, on_token=None, on_event=None,
+                 on_evidence=None, chat_config=None) -> dict[str, object]:
+            if payload.get("workflow", "chat") != "chat":
+                raise ValueError("Only normal chat is supported. Reload the app.")
+            if any(key in payload for key in ("skills", "effort", "deep_sources", "auto_route", "max_steps")):
+                raise ValueError("Unsupported chat settings. Reload the app.")
+            state.prune_web_pages()
             question = _bounded_string(payload.get("question"), "question", MAX_QUESTION_CHARS)
             collection = _bounded_string(payload.get("collection"), "collection", 128)
             scopes = _string_list(payload.get("scopes"), "scopes", max_items=16, max_chars=128)
-            workflow_name = payload.get("workflow", "agent")
-            if workflow_name not in {"agent", "supervisor", "fixed", "direct"}:
-                raise ValueError("workflow must be agent, supervisor, fixed, or direct")
             chat_id = payload.get("chat_id")
             if chat_id is not None and (not isinstance(chat_id, str) or not re.fullmatch(r"[0-9a-f]{32}", chat_id)):
                 raise ValueError("Invalid conversation identifier")
             history = state.conversations.history(chat_id, collection, list(scopes)) if chat_id else []
-            allow_web = payload.get("allow_web", False)
-            if not isinstance(allow_web, bool):
+            project = state.conversations.project_for_context(collection, list(scopes))
+            web_mode = str(project.get("web_mode", "ask")) if project else "off"
+            requested_web = payload.get("allow_web", False)
+            if type(requested_web) is not bool:
                 raise ValueError("allow_web must be boolean")
-            if allow_web and workflow_name not in {"direct", "supervisor"}:
-                raise ValueError("Web search is available in Direct and Supervisor modes")
-            if allow_web and not state._web_search_available():
-                raise ConfigurationError("Web search is unavailable; install agenticrag[web] or configure hosted search")
-            chat_config = state.provider(ProviderRole.CHAT).provider_config()
-            image_data_url, image_name = _validated_chat_image(payload.get("image"))
-            auto_route = payload.get("auto_route", False)
-            if not isinstance(auto_route, bool):
-                raise ValueError("auto_route must be boolean")
-            route_reason = "Selected model"
-            if auto_route and chat_config.kind == "local" and chat_config.runtime == "ollama" and not image_data_url:
-                try:
-                    installed = discover_models(chat_config)["models"]
-                    routed_model, route_reason = choose_model(
-                        workflow_name, chat_config.model, installed, state.evaluation_report()
-                    )
-                    chat_config = replace(chat_config, model=routed_model)
-                except (AgenticRAGError, OSError, ValueError, TypeError, KeyError):
-                    route_reason = "Model comparison unavailable; selected model retained"
-            if image_data_url:
-                if workflow_name != "direct" or allow_web:
-                    raise ValueError("Image questions currently require Direct mode with web search off")
-                if not ollama_supports_vision(chat_config):
-                    raise ValueError("Selected model cannot read images. Choose a vision model such as gemma4:12b-mlx")
-            chat = build_chat_provider(chat_config)
-            if cancelled:
-                chat = _CancellableChat(chat, cancelled)
-            memory_notes: list[dict[str, object]] = []
-            if not allow_web:
-                project = state.conversations.project_for_context(collection, list(scopes))
-                if project:
-                    memory_notes = state.conversations.list_project_notes(str(project["id"]))
-                    if memory_notes:
-                        chat = _ProjectMemoryChat(chat, memory_notes)
+            if web_mode == "off" and requested_web:
+                raise ValueError("Web is Off for this project")
+            search_enabled = web_mode == "on" or web_mode == "ask"
+            if search_enabled and not state._web_search_available():
+                raise ConfigurationError("Web search is unavailable. Configure DuckDuckGo, SearXNG or Brave Search, or set Web Off.")
+            image, image_name = _validated_chat_image(payload.get("image"))
+            config = chat_config or state.provider(ProviderRole.CHAT).provider_config()
+            if image and not ollama_supports_vision(config):
+                raise ValueError("The selected model cannot read images. Select a vision model.")
+            chat = build_chat_provider(config)
+            chat = _CancellableChat(chat, cancelled if cancelled is not None else threading.Event(),
+                                    state._model_slot if config.kind == "local" else None)
+            notes = state.conversations.list_project_notes(str(project["id"])) if project and not search_enabled else []
+            if notes:
+                chat = _ProjectMemoryChat(chat, notes)
+            decision = None
+            def permission(query):
+                nonlocal decision
+                if requested_web:
+                    decision = True
+                    return True
+                run_id = payload.get("run_id")
+                if not isinstance(run_id, str) or cancelled is None or on_event is None:
+                    raise WorkflowError("Web Ask requires a saved chat request for approval")
+                decision = state.request_web_approval(run_id, cancelled, query, on_event, 180)
+                return decision
+            # Only user-authored questions enter the public search query.
+            query = build_retrieval_query(question, [{"role": m.role, "content": m.content} for m in history])
             with state.store() as store:
-                if allow_web and workflow_name == "direct":
-                    result = WebAnswerWorkflow(chat, history=history).run(
-                        question, scopes=scopes, collection=collection
-                    )
-                elif workflow_name == "direct" or (history and _is_conversation_question(question)):
-                    if not chat_id:
-                        history_payload = payload.get("history", [])
-                        if not isinstance(history_payload, list):
-                            raise ValueError("Direct chat history must be an array")
-                        for item in history_payload:
-                            if (
-                                not isinstance(item, dict)
-                                or set(item) != {"role", "content"}
-                                or not isinstance(item["role"], str)
-                                or not isinstance(item["content"], str)
-                            ):
-                                raise ValueError("Direct chat history has an invalid message")
-                            history.append(ChatMessage(item["role"], item["content"]))
-                    direct = DirectWorkflow(
-                        chat, history=history, model_id=chat_config.model,
-                        image_data_url=image_data_url,
-                    )
-                    result = (
-                        direct.run_stream(question, on_token, scopes=scopes, collection=collection)
-                        if on_token else direct.run(question, scopes=scopes, collection=collection)
-                    )
-                else:
-                    embedding = build_embedding_provider(
-                        state.provider(ProviderRole.EMBEDDING).provider_config()
-                    )
-                    retriever = HybridRetriever(store, embedding)
-                    if workflow_name == "fixed":
-                        workflow = FixedRAGWorkflow(retriever, chat)
-                    else:
-                        skills = _string_list(
-                            payload.get("skills", []), "skills", max_items=16, max_chars=64, allow_empty=True
-                        )
-                        max_steps = payload.get("max_steps", 8)
-                        if type(max_steps) is not int or not 1 <= max_steps <= 20:
-                            raise ValueError("max_steps must be an integer from 1 to 20")
-                        registry = state.skill_registry()
-                        if workflow_name == "supervisor":
-                            web_search = None
-                            if allow_web:
-                                web_search = (
-                                    OpenAIResponsesWebSearch(chat_config)
-                                    if chat_config.kind == "openai" else LocalWebSearch()
-                                )
-                            workflow = SupervisorAgentWorkflow(
-                                retriever,
-                                chat,
-                                store,
-                                skill_registry=registry,
-                                selected_skills=skills,
-                                web_search=web_search,
-                                prior_turns=history,
-                            )
-                        else:
-                            workflow = BoundedAgenticRAGWorkflow(
-                                retriever,
-                                chat,
-                                store,
-                                skill_registry=registry,
-                                selected_skills=skills,
-                                config=AgentConfig(max_steps=max_steps),
-                            )
-                    result = workflow.run(question, scopes=scopes, collection=collection,
-                                          on_event=on_event, on_evidence=on_evidence)
+                result = WebChat(chat, store, search=configured_search_provider() if search_enabled else None,
+                                 registry=state.conversations, project=project).run(
+                    question, scopes=scopes, collection=collection, history=history, query=query, image=image,
+                    cancelled=cancelled, permission=permission if web_mode == "ask" else None,
+                    on_token=on_token, on_event=on_event, on_evidence=on_evidence)
             response = result.to_dict()
-            response["routing"] = {"automatic": auto_route, "model": chat_config.model, "reason": route_reason}
-            if cancelled and cancelled.is_set():
-                raise WorkflowError("Run stopped")
-            response["memory_notes_used"] = len(memory_notes)
+            if decision is False:
+                response["answer"] += "\n\nWeb access was declined. This answer uses no new web sources."
+            response["memory_notes_used"] = len(notes)
             if chat_id:
-                recorded_question = question + (f"\n[Attached image: {image_name}]" if image_name else "")
-                state.conversations.record(chat_id, recorded_question, response, workflow_name)
+                state.conversations.record(chat_id, question + (f"\n[Attached image: {image_name}]" if image_name else ""), response, "chat")
                 response["chat_id"] = chat_id
             return response
 
         def _check_model(self) -> dict[str, object]:
-            chat = build_chat_provider(state.provider(ProviderRole.CHAT).provider_config())
-            started = time.perf_counter()
-            raw = chat.complete(
-                [
-                    ChatMessage(
-                        "system",
-                        "Solve the bounded check and select the one allowlisted action that would "
-                        "verify the arithmetic. Return only the requested structured result.",
-                    ),
-                    ChatMessage(
-                        "user",
-                        "There are 3 trials with 8 cases each. Exactly 2 cases are excluded from "
-                        "each trial. How many cases remain? The available action is calculate.",
-                    ),
-                ],
-                response_schema=MODEL_CONTRACT_SCHEMA,
-                max_tokens=256,
-                temperature=0.0,
-            )
-            value = raw.strip()
-            if value.startswith("```") and value.endswith("```"):
-                lines = value.splitlines()
-                value = "\n".join(lines[1:-1])
-            try:
-                result = json.loads(value)
-            except json.JSONDecodeError as exc:
-                raise ValueError("Model returned invalid JSON for the agent contract check") from exc
-            if not isinstance(result, dict) or set(result) != {"answer", "action", "assumptions"}:
-                raise ValueError("Model response did not match the agent contract fields")
-            if result["answer"] != 18 or result["action"] != "calculate":
-                raise ValueError("Model did not solve the bounded reasoning/tool-selection check")
-            if not isinstance(result["assumptions"], list) or not all(
-                isinstance(item, str) for item in result["assumptions"]
-            ):
-                raise ValueError("Model assumptions did not match the agent contract")
-            return {
-                "compatible": True,
-                "model": chat.config.model,
-                "structured_output_mode": chat.config.structured_output_mode,
-                "latency_ms": max(0, round((time.perf_counter() - started) * 1_000)),
-                "checks": {
-                    "structured_json": True,
-                    "bounded_reasoning": True,
-                    "tool_selection": True,
-                    "host_validation": True,
-                },
-            }
+            with state._model_slot:
+                chat = build_chat_provider(state.provider(ProviderRole.CHAT).provider_config())
+                started = time.perf_counter()
+                text = chat.complete([ChatMessage("user", "Reply with the word Ready.")], max_tokens=32)
+            return {"compatible": bool(text.strip()), "model": chat.config.model,
+                    "answer": text, "latency_ms": round((time.perf_counter()-started)*1000)}
 
         def _read_json(self) -> dict[str, Any]:
             try:
@@ -1256,7 +1127,6 @@ def serve(
     host: str = "127.0.0.1",
     port: int = 8787,
     db_path: str = ".data/corpus.db",
-    skills_root: Path = Path(".agenticrag/skills"),
     open_browser: bool = True,
     allow_remote: bool = False,
 ) -> None:
@@ -1266,7 +1136,7 @@ def serve(
         raise ConfigurationError(
             "Non-loopback UI binding requires --allow-remote and a trusted reverse proxy"
         )
-    state = WorkbenchState(db_path, skills_root)
+    state = WorkbenchState(db_path)
     server = ThreadingHTTPServer((host, port), make_handler(state))
     url_host = "127.0.0.1" if host in {"0.0.0.0", "::"} else host
     url = f"http://{url_host}:{port}"
@@ -1373,15 +1243,3 @@ def _validated_chat_image(value: object) -> tuple[str | None, str | None]:
     if len(data) > 8 * 1024 * 1024 or not signatures[mime](data):
         raise ValueError("Image content does not match its type or exceeds 8 MiB")
     return f"data:{mime};base64,{encoded}", name
-
-
-def _is_conversation_question(question: str) -> bool:
-    text = question.casefold()
-    asks_recall = re.search(r"\b(repeat|remind|recap|list|what|which|summarize|tell)\b", text)
-    names_chat = re.search(
-        r"\b(?:my|our)\s+(?:(?:first|last|previous|earlier|prior|past)\s+)?(?:user\s+)?(?:questions?|messages?|prompts?)\b"
-        r"|\b(?:i|we)\s+ask(?:ed)?\b"
-        r"|\b(?:this|our|the)\s+(?:conversation|chat(?:\s+history)?)\b",
-        text,
-    )
-    return bool(asks_recall and names_chat)

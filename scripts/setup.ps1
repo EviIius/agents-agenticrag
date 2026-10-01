@@ -9,8 +9,8 @@ if (-not (Test-Path -LiteralPath $Python)) {
 }
 
 & $Python -m pip install --upgrade pip
-& $Python -m pip install -e "${ProjectRoot}[documents]"
+& $Python -m pip install -e "${ProjectRoot}[documents,web]"
 
 Write-Host ""
-Write-Host "AgenticRAG is ready. Start the workbench with:"
+Write-Host "Chat & Web is ready. Start the workbench with:"
 Write-Host "  .venv\Scripts\python -m agenticrag serve"

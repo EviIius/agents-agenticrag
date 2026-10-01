@@ -1,592 +1,76 @@
+"""Command line tools for chat, public search and source snapshots."""
 from __future__ import annotations
-
 import argparse
-import hashlib
-import importlib.util
 import json
-import os
 import sys
-import tempfile
-from dataclasses import asdict, replace
-from datetime import UTC, datetime
+from dataclasses import asdict
 from pathlib import Path
-from typing import Any, Sequence
-
-from .config import (
-    ProviderRole,
-    StoreConfig,
-    load_ingestion_config,
-    load_provider_config,
-    load_store_config,
-)
-from .agent import AgentConfig, BoundedAgenticRAGWorkflow
-from .errors import AgenticRAGError, ConfigurationError
-from .experiments import (
-    ExperimentCase,
-    ExperimentRunner,
-    JsonlRunJournal,
-    summarize_experiments,
-)
-from .ingestion import FileParser, IngestionLimits, Ingestor, parser_capabilities
-from .providers.openai_compatible import build_chat_provider, build_embedding_provider
-from .providers.openai_responses import OpenAIResponsesWebSearch
-from .providers.base import ChatMessage
+from .config import ProviderRole, load_provider_config, load_store_config
+from .errors import AgenticRAGError
+from .ingestion import Ingestor
+from .providers.openai_compatible import build_chat_provider
 from .postgres_store import PostgresCorpusStore
-from .retrieval import HybridRetriever
-from .runtimes import RuntimeSelection, discover_models
-from .skills import SkillRegistry
 from .store import SQLiteCorpusStore
-from .supervisor import SupervisorAgentWorkflow
-from .workflows import DirectWorkflow, FixedRAGWorkflow
+from .web_chat import WebChat
+from .web_search import configured_search_provider, configured_search_label, local_web_search_available
 
 
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="agenticrag")
-    parser.add_argument(
-        "--db", default=".data/corpus.db", help="SQLite corpus path; ignored by PostgreSQL"
-    )
-    commands = parser.add_subparsers(dest="command", required=True)
-
-    commands.add_parser("init-db", help="Initialize the development corpus")
-    commands.add_parser("doctor", help="Validate provider configuration without network access")
-    openai_check = commands.add_parser(
-        "openai-check",
-        help="Run an explicit live, billable OpenAI model contract check using environment credentials",
-    )
-    openai_check.add_argument(
-        "--web-query",
-        help="Also run one bounded hosted web-search request and report its source URLs",
-    )
-
-    serve = commands.add_parser("serve", help="Launch the local AgenticRAG workbench")
-    serve.add_argument("--host", default="127.0.0.1")
-    serve.add_argument("--port", type=int, default=8787)
-    serve.add_argument("--no-open", action="store_true", help="Do not open a browser window")
-    serve.add_argument(
-        "--allow-remote",
-        action="store_true",
-        help="Allow an explicit non-loopback bind; place it behind a trusted reverse proxy",
-    )
-    serve.add_argument(
-        "--skills-root",
-        type=Path,
-        default=Path(os.environ.get("AGENTICRAG_SKILLS_PATH", ".agenticrag/skills")),
-    )
-
-    ingest = commands.add_parser("ingest", help="Ingest a local PDF, DOCX, Markdown, or TXT source")
-    ingest.add_argument("path", type=Path)
-    ingest.add_argument("--collection", required=True)
-    ingest.add_argument("--scope", action="append", required=True)
-    ingest.add_argument(
-        "--ocr",
-        choices=("auto", "never", "always"),
-        default="auto",
-        help="Use local OCR for low-text PDFs when available (default: auto)",
-    )
-
-    ask = commands.add_parser("ask", help="Run the fixed hybrid-RAG workflow")
-    ask.add_argument("question")
-    ask.add_argument("--collection", required=True)
-    ask.add_argument("--scope", action="append", required=True)
-
-    agent = commands.add_parser("agent", help="Run bounded agentic RAG with local skills and tools")
-    agent.add_argument("question")
-    agent.add_argument("--collection", required=True)
-    agent.add_argument("--scope", action="append", required=True)
-    agent.add_argument("--skill", action="append", default=[])
-    agent.add_argument(
-        "--skills-root",
-        type=Path,
-        default=Path(os.environ.get("AGENTICRAG_SKILLS_PATH", ".agenticrag/skills")),
-    )
-    agent.add_argument("--max-steps", type=int, default=8)
-    agent.add_argument("--max-seconds", type=float, default=180.0)
-
-    supervisor = commands.add_parser(
-        "supervisor", help="Run the manager agent with bounded, non-recursive specialists"
-    )
-    supervisor.add_argument("question")
-    supervisor.add_argument("--collection", required=True)
-    supervisor.add_argument("--scope", action="append", required=True)
-    supervisor.add_argument("--skill", action="append", default=[])
-    supervisor.add_argument(
-        "--skills-root",
-        type=Path,
-        default=Path(os.environ.get("AGENTICRAG_SKILLS_PATH", ".agenticrag/skills")),
-    )
-    supervisor.add_argument(
-        "--allow-web",
-        action="store_true",
-        help="Permit the supervisor to send delegated web queries to hosted OpenAI",
-    )
-
-    source = commands.add_parser("show-source", help="Resolve an authorized immutable source version")
-    source.add_argument("source_version_id")
-    source.add_argument("--scope", action="append", required=True)
-
-    compare = commands.add_parser(
-        "compare", help="Run direct/fixed baselines and optionally bounded agentic RAG"
-    )
-    compare.add_argument("dataset", type=Path)
-    compare.add_argument("--split", choices=("dev", "locked"), help="Run only this evaluation split")
-    compare.add_argument("--runs", type=Path, default=Path(".data/runs.jsonl"))
-    compare.add_argument("--include-agent", action="store_true")
-    compare.add_argument("--include-supervisor", action="store_true")
-    compare.add_argument("--all-modes", action="store_true", help="Include Agentic and Supervisor alongside Direct and Fixed")
-    compare.add_argument("--model", action="append", default=[], help="Repeat to compare installed chat models without changing the workbench selection")
-    compare.add_argument("--all-installed", action="store_true", help="Compare every locally installed chat model")
-    compare.add_argument("--exclude-model", action="append", default=[], help="Omit an installed model ID, such as an unbounded duplicate of a workbench variant")
-    compare.add_argument("--repeat", type=int, default=1, help="Run each case/model/mode this many times")
-    compare.add_argument("--report", type=Path, help="Write a Models-page summary; defaults beside the corpus database")
-    compare.add_argument("--skill", action="append", default=[])
-    compare.add_argument(
-        "--skills-root",
-        type=Path,
-        default=Path(os.environ.get("AGENTICRAG_SKILLS_PATH", ".agenticrag/skills")),
-    )
-    compare.add_argument("--agent-max-steps", type=int, default=8)
-    compare.add_argument("--agent-max-seconds", type=float, default=180.0)
-
-    summarize = commands.add_parser("summarize", help="Score terminal records in a run journal")
-    summarize.add_argument("dataset", type=Path)
-    summarize.add_argument("--split", choices=("dev", "locked"), help="Summarize only this evaluation split")
-    summarize.add_argument("--runs", type=Path, default=Path(".data/runs.jsonl"))
-
+def build_parser():
+    parser = argparse.ArgumentParser(prog='agenticrag', description='Chat and web search')
+    parser.add_argument('--db', default='.data/corpus.db')
+    commands = parser.add_subparsers(dest='command', required=True)
+    commands.add_parser('init-db')
+    commands.add_parser('doctor')
+    server = commands.add_parser('serve', help='Start Chat & Web')
+    server.add_argument('--host', default='127.0.0.1')
+    server.add_argument('--port', type=int, default=8787)
+    server.add_argument('--no-open', action='store_true')
+    server.add_argument('--allow-remote', action='store_true')
+    ingest = commands.add_parser('ingest', help='Store a local source without loading an embedding model')
+    ingest.add_argument('path', type=Path)
+    ingest.add_argument('--collection', required=True)
+    ingest.add_argument('--scope', action='append', required=True)
+    source = commands.add_parser('show-source')
+    source.add_argument('source_version_id')
+    source.add_argument('--scope', action='append', required=True)
+    ask = commands.add_parser('ask', help='One normal completion, optionally with public web pages')
+    ask.add_argument('question')
+    ask.add_argument('--web', action='store_true', help='Authorize sending this question to the configured search provider')
+    ask.add_argument('--collection', default='default')
+    ask.add_argument('--scope', action='append', default=['private'])
     return parser
 
 
-def main(argv: Sequence[str] | None = None) -> int:
+def main(argv=None):
     args = build_parser().parse_args(argv)
     try:
-        if args.command == "doctor":
-            return _doctor()
-        if args.command == "openai-check":
-            return _openai_check(args.web_query)
-        if args.command == "serve":
+        if args.command == 'serve':
             from .server import serve
-
-            serve(
-                host=args.host,
-                port=args.port,
-                db_path=args.db,
-                skills_root=args.skills_root,
-                open_browser=not args.no_open,
-                allow_remote=args.allow_remote,
-            )
+            serve(host=args.host, port=args.port, db_path=args.db, open_browser=not args.no_open, allow_remote=args.allow_remote)
             return 0
-        if args.command == "summarize":
-            cases = _load_cases(args.dataset)
-            if args.split:
-                cases = [case for case in cases if case.split == args.split]
-                if not cases:
-                    raise ValueError(f"No evaluation cases in split {args.split}")
-            summaries = summarize_experiments(JsonlRunJournal(args.runs).latest_records(), cases)
-            _emit({"type": "summary", "groups": summaries})
+        if args.command == 'doctor':
+            chat = load_provider_config(ProviderRole.CHAT)
+            print(json.dumps({'chat': chat.public_dict(), 'web': {'provider': configured_search_label(), 'available': local_web_search_available()}}))
             return 0
-        store_config = load_store_config(args.db)
-        with _build_store(store_config) as store:
+        config = load_store_config(args.db)
+        store = SQLiteCorpusStore(config.sqlite_path) if config.backend == 'sqlite' else PostgresCorpusStore.connect(config.postgres_dsn, config.objects_root)
+        with store:
             store.initialize()
-            if args.command == "init-db":
-                _emit({"status": "initialized", "store": store_config.public_dict()})
-                return 0
-            if args.command == "show-source":
-                source = store.get_source(args.source_version_id, scopes=args.scope)
-                _emit(asdict(source))
-                return 0
-
-            embedding_config = (
-                _comparison_config(args.db, ProviderRole.EMBEDDING)
-                if args.command == "compare" else load_provider_config(ProviderRole.EMBEDDING)
-            )
-            embedding = build_embedding_provider(embedding_config)
-            if args.command == "ingest":
-                ingestion = load_ingestion_config()
-                file_parser = FileParser(
-                    limits=IngestionLimits(
-                        max_file_bytes=ingestion.max_file_bytes,
-                        max_pages=ingestion.max_pages,
-                        max_segments=ingestion.max_segments,
-                    ),
-                    ocr=args.ocr,
-                    docling_artifacts_path=ingestion.docling_artifacts_path,
-                )
-                version = Ingestor(store, embedding, parser=file_parser).ingest_file(
-                    args.path,
-                    collection=args.collection,
-                    scopes=args.scope,
-                )
-                _emit({"status": "published", "embedding_provider": embedding.label, **asdict(version)})
-                return 0
-
-            chat_config = (
-                _comparison_config(args.db, ProviderRole.CHAT)
-                if args.command == "compare" else load_provider_config(ProviderRole.CHAT)
-            )
-            chat = build_chat_provider(chat_config)
-            retriever = HybridRetriever(store, embedding)
-            fixed = FixedRAGWorkflow(retriever, chat)
-            if args.command == "ask":
-                _emit(fixed.run(args.question, scopes=args.scope, collection=args.collection).to_dict())
-                return 0
-            if args.command == "agent":
-                workflow = BoundedAgenticRAGWorkflow(
-                    retriever,
-                    chat,
-                    store,
-                    skill_registry=_skill_registry(args.skills_root),
-                    selected_skills=args.skill,
-                    config=AgentConfig(max_steps=args.max_steps, max_seconds=args.max_seconds),
-                )
-                _emit(
-                    workflow.run(
-                        args.question, scopes=args.scope, collection=args.collection
-                    ).to_dict()
-                )
-                return 0
-            if args.command == "supervisor":
-                web_search = None
-                if args.allow_web:
-                    chat_config = load_provider_config(ProviderRole.CHAT)
-                    if chat_config.kind != "openai":
-                        raise ConfigurationError(
-                            "--allow-web requires AGENTICRAG_CHAT_PROVIDER=openai"
-                        )
-                    web_search = OpenAIResponsesWebSearch(chat_config)
-                workflow = SupervisorAgentWorkflow(
-                    retriever,
-                    chat,
-                    store,
-                    skill_registry=_skill_registry(args.skills_root),
-                    selected_skills=args.skill,
-                    web_search=web_search,
-                )
-                _emit(
-                    workflow.run(
-                        args.question, scopes=args.scope, collection=args.collection
-                    ).to_dict()
-                )
-                return 0
-            if args.command == "compare":
-                if args.repeat < 1 or args.repeat > 10:
-                    raise ValueError("--repeat must be between 1 and 10")
-                if args.all_installed and args.model:
-                    raise ValueError("Use --all-installed or --model, not both")
-                cases = _load_cases(args.dataset)
-                if args.split:
-                    cases = [case for case in cases if case.split == args.split]
-                    if not cases:
-                        raise ValueError(f"No evaluation cases in split {args.split}")
-                journal = JsonlRunJournal(args.runs)
-                model_names = args.model or [chat_config.model]
-                if args.all_installed:
-                    if chat_config.runtime != "ollama":
-                        raise ConfigurationError("--all-installed requires the local Ollama runtime")
-                    model_names = [
-                        name for name in discover_models(chat_config)["models"]
-                        if not any(part in name.casefold() for part in ("embed", "embedding"))
-                    ]
-                    if not model_names:
-                        raise ConfigurationError("No installed chat models were found")
-                model_names = [name for name in model_names if name not in set(args.exclude_model)]
-                if not model_names:
-                    raise ValueError("No chat models remain after exclusions")
-                workflows = []
-                for model_name in model_names:
-                    candidate = build_chat_provider(replace(chat_config, model=model_name))
-                    workflows.extend([DirectWorkflow(candidate), FixedRAGWorkflow(retriever, candidate)])
-                    if args.include_agent or args.all_modes:
-                        workflows.append(
-                            BoundedAgenticRAGWorkflow(
-                                retriever, candidate, store,
-                                skill_registry=_skill_registry(args.skills_root),
-                                selected_skills=args.skill,
-                                config=AgentConfig(max_steps=args.agent_max_steps, max_seconds=args.agent_max_seconds),
-                            )
-                        )
-                    if args.include_supervisor or args.all_modes:
-                        workflows.append(SupervisorAgentWorkflow(
-                            retriever, candidate, store,
-                            skill_registry=_skill_registry(args.skills_root),
-                            selected_skills=args.skill,
-                        ))
-                records = ExperimentRunner(journal).run(cases, workflows, repeat=args.repeat)
-                for record in records:
-                    _emit(record.to_dict())
-                summaries = summarize_experiments(records, cases)
-                report = {
-                    "schema_version": 1,
-                    "created_at": datetime.now(UTC).isoformat(),
-                    "dataset_sha256": hashlib.sha256(args.dataset.read_bytes()).hexdigest(),
-                    "dataset_label": args.dataset.name,
-                    "split": args.split,
-                    "case_count": len(cases),
-                    "repeat": args.repeat,
-                    "models": model_names,
-                    "structured_output_mode": chat_config.structured_output_mode,
-                    "runtime": chat_config.runtime,
-                    "groups": [
-                        {**group, "model": _model_from_label(str(group["provider"]))}
-                        for group in summaries
-                    ],
-                }
-                report_path = args.report or Path(args.db).expanduser().resolve().with_name("workbench-evaluation.json")
-                _write_json_atomic(report_path, report)
-                _emit({"type": "summary", "report_path": str(report_path), "groups": summaries})
-                return 0
-    except (AgenticRAGError, OSError, ValueError, json.JSONDecodeError) as exc:
-        _emit(
-            {"status": "failed", "error_type": type(exc).__name__, "error": str(exc)},
-            stream=sys.stderr,
-        )
+            if args.command == 'init-db':
+                result = {'status': 'initialized'}
+            elif args.command == 'ingest':
+                result = asdict(Ingestor(store).ingest_file(args.path, args.collection, args.scope))
+            elif args.command == 'show-source':
+                result = asdict(store.get_source(args.source_version_id, scopes=args.scope))
+            else:
+                chat = build_chat_provider(load_provider_config(ProviderRole.CHAT))
+                result = WebChat(chat, store, search=configured_search_provider() if args.web else None).run(
+                    args.question, scopes=args.scope, collection=args.collection).to_dict()
+            print(json.dumps(result, ensure_ascii=False))
+        return 0
+    except (AgenticRAGError, OSError, ValueError) as exc:
+        print(json.dumps({'error': str(exc)}), file=sys.stderr)
         return 2
-    return 2
 
-
-def _doctor() -> int:
-    result: dict[str, Any] = {"status": "ready", "providers": {}}
-    try:
-        store_config = load_store_config()
-        if store_config.backend == "postgres" and importlib.util.find_spec("psycopg") is None:
-            raise ConfigurationError(
-                "PostgreSQL is configured but psycopg is unavailable; install the 'postgres' extra"
-            )
-        result["store"] = {"status": "configured", **store_config.public_dict()}
-    except ConfigurationError as exc:
-        result["store"] = {"status": "invalid", "error": str(exc)}
-        result["status"] = "invalid"
-    try:
-        skills_root = Path(os.environ.get("AGENTICRAG_SKILLS_PATH", ".agenticrag/skills"))
-        skill_metadata = _skill_registry(skills_root).metadata()
-        result["skills"] = {
-            "status": "configured",
-            "root": str(skills_root.expanduser().resolve()),
-            "count": len(skill_metadata),
-            "skills": list(skill_metadata),
-        }
-    except ConfigurationError as exc:
-        result["skills"] = {"status": "invalid", "error": str(exc)}
-        result["status"] = "invalid"
-    for role in ProviderRole:
-        try:
-            config = load_provider_config(role)
-            result["providers"][role.value] = {"status": "configured", **config.public_dict()}
-        except ConfigurationError as exc:
-            result["providers"][role.value] = {"status": "invalid", "error": str(exc)}
-            result["status"] = "invalid"
-    try:
-        ingestion = load_ingestion_config()
-        result["ingestion"] = {
-            "status": "configured",
-            "limits": {
-                "max_file_bytes": ingestion.max_file_bytes,
-                "max_pages": ingestion.max_pages,
-                "max_segments": ingestion.max_segments,
-            },
-            "formats": parser_capabilities(ingestion.docling_artifacts_path),
-        }
-    except ConfigurationError as exc:
-        result["ingestion"] = {"status": "invalid", "error": str(exc)}
-        result["status"] = "invalid"
-    _emit(result)
-    return 0 if result["status"] == "ready" else 2
-
-
-def _build_store(config: StoreConfig) -> SQLiteCorpusStore | PostgresCorpusStore:
-    if config.backend == "sqlite":
-        return SQLiteCorpusStore(config.sqlite_path)
-    assert config.postgres_dsn is not None
-    return PostgresCorpusStore.connect(config.postgres_dsn, config.objects_root)
-
-
-def _skill_registry(root: Path) -> SkillRegistry:
-    resolved = root.expanduser().resolve()
-    standard = Path(".agents/skills").resolve()
-    additional = (standard,) if resolved == Path(".agenticrag/skills").resolve() else ()
-    return SkillRegistry(resolved, additional_roots=additional)
-
-
-def _openai_check(web_query: str | None) -> int:
-    config = load_provider_config(ProviderRole.CHAT)
-    if config.kind != "openai":
-        raise ConfigurationError(
-            "openai-check requires AGENTICRAG_CHAT_PROVIDER=openai"
-        )
-    discovery = discover_models(config)
-    chat = build_chat_provider(config)
-    schema: dict[str, Any] = {
-        "type": "object",
-        "properties": {
-            "answer": {"type": "integer"},
-            "action": {"type": "string", "enum": ["calculate"]},
-        },
-        "required": ["answer", "action"],
-        "additionalProperties": False,
-    }
-    raw = chat.complete(
-        [
-            ChatMessage("system", "Return the requested structured check only."),
-            ChatMessage("user", "Compute 3 * 6 and choose the calculate action."),
-        ],
-        response_schema=schema,
-        max_tokens=128,
-        temperature=0.0,
-    )
-    try:
-        contract = json.loads(raw)
-    except json.JSONDecodeError as exc:
-        raise ConfigurationError("OpenAI model returned invalid JSON for the contract check") from exc
-    if contract != {"answer": 18, "action": "calculate"}:
-        raise ConfigurationError("OpenAI model did not pass the bounded contract check")
-    output: dict[str, Any] = {
-        "status": "passed",
-        "provider": config.public_dict(),
-        "model_discovery": discovery,
-        "checks": {"authentication": True, "model_access": True, "structured_output": True},
-    }
-    if web_query:
-        result = OpenAIResponsesWebSearch(config, max_tool_calls=1).search(web_query)
-        output["web_search"] = {
-            "status": "passed",
-            "source_count": len(result.sources),
-            "sources": [asdict(source) for source in result.sources],
-            "elapsed_ms": result.elapsed_ms,
-        }
-    _emit(output)
-    return 0
-
-
-def _comparison_config(db_path: str, role: ProviderRole):
-    """Mirror the saved local workbench selection when comparing its corpus."""
-    db = Path(db_path).expanduser().resolve()
-    specific = db.with_suffix(".providers.json")
-    path = specific if specific.exists() else db.with_name("workbench-providers.json")
-    if not path.exists():
-        return load_provider_config(role)
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    saved = payload.get("providers", {}).get(role.value)
-    if not isinstance(saved, dict):
-        return load_provider_config(role)
-    return RuntimeSelection(
-        runtime=str(saved["runtime"]),
-        role=role,
-        base_url=str(saved["base_url"]),
-        model=str(saved["model"]),
-        structured_output_mode=str(saved.get("structured_output_mode", "json_schema")),
-        timeout_seconds=float(saved.get("timeout_seconds", 90)),
-    ).provider_config()
-
-
-def _model_from_label(label: str) -> str:
-    return label.partition(":")[2].rsplit("@", 1)[0] or label
-
-
-def _write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
-    target = path.expanduser().resolve()
-    target.parent.mkdir(parents=True, exist_ok=True)
-    temporary_path: Path | None = None
-    try:
-        with tempfile.NamedTemporaryFile(
-            mode="w", encoding="utf-8", dir=target.parent, delete=False
-        ) as temporary:
-            temporary_path = Path(temporary.name)
-            os.chmod(temporary_path, 0o600)
-            json.dump(payload, temporary, ensure_ascii=False, separators=(",", ":"))
-            temporary.flush()
-            os.fsync(temporary.fileno())
-        os.replace(temporary_path, target)
-    finally:
-        if temporary_path is not None:
-            temporary_path.unlink(missing_ok=True)
-
-
-def _load_cases(path: Path) -> list[ExperimentCase]:
-    cases: list[ExperimentCase] = []
-    for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-        if not line.strip():
-            continue
-        value = json.loads(line)
-        if not isinstance(value, dict):
-            raise ValueError(f"Dataset line {line_number} must be a JSON object")
-        try:
-            raw_scopes = value["scopes"]
-            if not isinstance(raw_scopes, list) or not raw_scopes or not all(
-                isinstance(item, str) and item.strip() for item in raw_scopes
-            ):
-                raise TypeError("scopes must be a non-empty string array")
-            case_id = value["id"]
-            question = value["question"]
-            collection = value["collection"]
-            if not all(isinstance(item, str) and item.strip() for item in (case_id, question, collection)):
-                raise TypeError("id, question, and collection must be non-empty strings")
-            cases.append(
-                ExperimentCase(
-                    id=case_id,
-                    question=question,
-                    collection=collection,
-                    scopes=tuple(raw_scopes),
-                    answerable=_optional_bool(value, "answerable", line_number),
-                    required_chunk_ids=_optional_string_array(
-                        value, "required_chunk_ids", line_number
-                    ),
-                    expected_answer_contains=_optional_string_array(
-                        value, "expected_answer_contains", line_number
-                    ),
-                    forbidden_answer_contains=_optional_string_array(
-                        value, "forbidden_answer_contains", line_number
-                    ),
-                    category=str(value.get("category", "general")),
-                    split=_case_split(value, line_number),
-                    required_quotes=_required_quotes(value, line_number),
-                )
-            )
-        except (KeyError, TypeError) as exc:
-            raise ValueError(f"Dataset line {line_number} has an invalid case schema") from exc
-    if not cases:
-        raise ValueError("Experiment dataset contains no cases")
-    if len({case.id for case in cases}) != len(cases):
-        raise ValueError("Experiment dataset contains duplicate case IDs")
-    return cases
-
-
-def _case_split(value: dict[str, Any], line_number: int) -> str:
-    split = value.get("split", "dev")
-    if split not in {"dev", "locked"}:
-        raise ValueError(f"Dataset line {line_number} split must be dev or locked")
-    return split
-
-
-def _required_quotes(value: dict[str, Any], line_number: int) -> tuple[dict[str, str], ...]:
-    annotations = value.get("required_quotes", [])
-    if not isinstance(annotations, list):
-        raise ValueError(f"Dataset line {line_number} required_quotes must be an array")
-    parsed: list[dict[str, str]] = []
-    for annotation in annotations:
-        if (not isinstance(annotation, dict) or set(annotation) != {"logical_path", "quote"}
-                or not all(isinstance(item, str) and item.strip() for item in annotation.values())):
-            raise ValueError(f"Dataset line {line_number} has an invalid required quote")
-        parsed.append({"logical_path": annotation["logical_path"], "quote": annotation["quote"]})
-    return tuple(parsed)
-
-
-def _optional_bool(value: dict[str, Any], key: str, line_number: int) -> bool | None:
-    item = value.get(key)
-    if item is None:
-        return None
-    if not isinstance(item, bool):
-        raise ValueError(f"Dataset line {line_number} field {key} must be boolean or null")
-    return item
-
-
-def _optional_string_array(
-    value: dict[str, Any], key: str, line_number: int
-) -> tuple[str, ...]:
-    items = value.get(key, [])
-    if not isinstance(items, list) or not all(
-        isinstance(item, str) and item.strip() for item in items
-    ):
-        raise ValueError(f"Dataset line {line_number} field {key} must be a string array")
-    return tuple(items)
-
-
-def _emit(value: Any, *, stream: Any = sys.stdout) -> None:
-    print(json.dumps(value, ensure_ascii=False, sort_keys=True), file=stream)
+if __name__ == '__main__':
+    raise SystemExit(main())

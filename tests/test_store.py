@@ -6,7 +6,6 @@ from _bootstrap import SRC  # noqa: F401
 from agenticrag.domain import SourceDraft
 from agenticrag.errors import AuthorizationError, IngestionError
 from agenticrag.ingestion import Ingestor, TextChunker
-from agenticrag.retrieval import HybridRetriever, RetrievalConfig
 from agenticrag.store import SQLiteCorpusStore
 from fakes import DeterministicEmbedding
 
@@ -73,14 +72,6 @@ class SQLiteCorpusStoreTests(unittest.TestCase):
             scopes=("owner",), collection="private", limit=10,
         )
         self.assertIn("supplies scopes", hits[0].chunk.text)
-        packed = HybridRetriever(
-            self.store, self.embedder,
-            config=RetrievalConfig(max_chunks_per_document=1, result_limit=2),
-        ).retrieve(
-            "According to the architecture source, who supplies scopes?",
-            scopes=("owner",), collection="private",
-        )
-        self.assertIn("supplies scopes", packed[0].chunk.text)
 
     def test_scope_is_applied_before_lexical_vector_and_source_fetch(self) -> None:
         version = self.ingestor.ingest_source(self._source("Atlas has 64 GB of memory."))

@@ -105,27 +105,7 @@ class Citation:
     quotes: tuple[str, ...] = ()
 
 
-EventKind = Literal[
-    "retrieval_completed",
-    "generation_completed",
-    "answer_validated",
-    "abstained",
-    "failed",
-    "plan_created",
-    "skill_loaded",
-    "tool_called",
-    "review_completed",
-    "validation_rejected",
-    "budget_exhausted",
-    "delegation_started",
-    "delegation_completed",
-    "web_search_completed",
-    "synthesis_completed",
-    "gate_completed",
-    "plan_fallback",
-    "review_invalid",
-]
-
+EventKind = str
 
 @dataclass(frozen=True)
 class RunEvent:
@@ -142,18 +122,6 @@ class ExternalSource:
 
 
 @dataclass(frozen=True)
-class DelegationTrace:
-    id: str
-    agent: str
-    task: str
-    status: str
-    summary: str
-    elapsed_ms: int
-    citation_count: int = 0
-    external_source_count: int = 0
-
-
-@dataclass(frozen=True)
 class RAGResult:
     workflow: str
     provider: str
@@ -166,7 +134,6 @@ class RAGResult:
     events: tuple[RunEvent, ...]
     elapsed_ms: int
     external_sources: tuple[ExternalSource, ...] = ()
-    delegations: tuple[DelegationTrace, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

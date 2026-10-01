@@ -1,9 +1,10 @@
 /* App shell and explicitly limited read-only offline data. */
-const VERSION = "v21-7";
+const VERSION = "chat-web-50";
 const SHELL = `rag-shell-${VERSION}`;
 const DATA = `rag-offline-data-${VERSION}`;
 const PREF = "rag-offline-preferences";
-const ASSETS = ["/", "/index.html", "/styles.css?v=17", "/tokens.css?v=21", "/design-v2.css?v=21", "/components-v21.css?v=22", "/boot.js", "/app.js?v=22", "/v21.js?v=25", "/vendor/marked.umd.js", "/vendor/purify.min.js", "/manifest.webmanifest?v=3", "/icon-180.png?v=2", "/icon-192.png?v=2", "/icon-512.png?v=2", "/fonts/Geist-Variable.woff2", "/fonts/Geist-Variable-LatinExt.woff2", "/fonts/Newsreader-Variable.woff2", "/fonts/Newsreader-Variable-LatinExt.woff2", "/fonts/Newsreader-Variable-Italic.woff2", "/fonts/GeistMono-Variable.woff2", "/fonts/GeistMono-Variable-LatinExt.woff2"];
+const ASSETS = ["/", "/index.html", "/tokens.css?v=22", "/chat.css?v=1", "/boot.js", "/app.js?v=50", "/vendor/marked.umd.js", "/vendor/purify.min.js", "/manifest.webmanifest?v=5", "/icon-180.png?v=2", "/icon-192.png?v=2", "/icon-512.png?v=2", "/fonts/Geist-Variable.woff2", "/fonts/Newsreader-Variable.woff2"];
+
 let cacheChats = true;
 
 self.addEventListener("install", (event) => {
@@ -29,7 +30,11 @@ const allowedData = (path) => path === "/api/v1/chats" || /^\/api\/v1\/chats\/[0
 const withTimestamp = async (response) => {
   const headers = new Headers(response.headers);
   headers.set("X-AgenticRAG-Cached-At", new Date().toISOString());
-  return new Response(await response.clone().blob(), { status: response.status, statusText: response.statusText, headers });
+  return new Response(await response.clone().blob(), {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  });
 };
 self.addEventListener("fetch", (event) => {
   const request = event.request;
@@ -42,11 +47,17 @@ self.addEventListener("fetch", (event) => {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 4000);
         try {
-          const response = await fetch(request, { signal: controller.signal });
-          if (response.ok) (await caches.open(SHELL)).put("/index.html", response.clone());
+          const response = await fetch(request, {
+            signal: controller.signal
+          });
+          if (response.ok)(await caches.open(SHELL)).put("/index.html", response.clone());
           return response;
-        } finally { clearTimeout(timeout); }
-      } catch { return await caches.match("/index.html") || Response.error(); }
+        } finally {
+          clearTimeout(timeout);
+        }
+      } catch {
+        return await caches.match("/index.html") || Response.error();
+      }
     })());
     return;
   }
@@ -56,9 +67,11 @@ self.addEventListener("fetch", (event) => {
       if (preference && await preference.text() === "0") return fetch(request);
       try {
         const response = await fetch(request);
-        if (response.ok && (response.headers.get("content-type") || "").includes("application/json")) (await caches.open(DATA)).put(request, await withTimestamp(response));
+        if (response.ok && (response.headers.get("content-type") || "").includes("application/json"))(await caches.open(DATA)).put(request, await withTimestamp(response));
         return response;
-      } catch { return await caches.match(request) || Response.error(); }
+      } catch {
+        return await caches.match(request) || Response.error();
+      }
     })());
     return;
   }
