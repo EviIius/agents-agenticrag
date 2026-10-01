@@ -27,5 +27,7 @@ e2e:
 fmt:
 	. scripts/tool-env.sh; uv run --directory server ruff check app tests --fix; uv run --directory server ruff format app tests
 	. scripts/tool-env.sh; npm run fmt --prefix web
-record-fixtures eval-web deploy:
+record-fixtures:
+	. scripts/tool-env.sh; uv run --directory server python ../scripts/record_provider_fixtures.py
+eval-web deploy:
 	@echo '$@ belongs to a later phase. See docs/SPEC.md §H1.'; exit 1
