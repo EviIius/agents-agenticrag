@@ -25,6 +25,9 @@ def main() -> None:
     for name, theme in zip(("light", "dark"), themes, strict=True):
         surfaces = ("bg", "bg-sidebar", "surface", "surface-2", "user-bubble", "code-bg")
         pairs = [(foreground, background, threshold) for background in surfaces for foreground, threshold in (("text", 11.8), ("text-2", 6.4), ("text-3", 4.5), ("brand", 4.7))]
+        # G2's exact dark text/surface-3 pair is 10.52:1, below its stated body target.
+        # Preserve the locked palette; pressed-row labels must meet AA (4.5:1).
+        # This spec discrepancy is documented in docs/PHASE-0-REPORT.md.
         pairs += [("text", "surface-3", 4.5), ("on-brand", "brand", 5.5)]
         pairs += [("line-input", surface, 3.2) for surface in ("bg", "surface")]
         for foreground, background, threshold in pairs:

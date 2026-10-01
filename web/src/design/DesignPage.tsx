@@ -61,10 +61,15 @@ export function DesignPage() {
         </p>
         <p className="meta mt-2">Metadata · 12 / 16 · tabular numbers</p>
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {["bg", "surface", "surface-2", "surface-3"].map((surface) => (
+          {Object.entries({
+            bg: "bg-bg",
+            surface: "bg-surface",
+            "surface-2": "bg-surface-2",
+            "surface-3": "bg-surface-3",
+          }).map(([surface, surfaceClass]) => (
             <div
               key={surface}
-              className={`rounded-md border border-line p-4 bg-${surface}`}
+              className={`rounded-md border border-line p-4 ${surfaceClass}`}
             >
               <span className="text-fg">{surface}</span>
             </div>
