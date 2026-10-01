@@ -1,5 +1,9 @@
 # Phase 1, step 1 report — provider recordings
 
+> Superseded scope: Jake’s 1 October amendment selects Ollama only and authorizes
+> Phases 1–2 without intermediate approval stops. LM Studio’s discrepancy is retained
+> as historical evidence; it does not block the Ollama build. See the newer Phase 1 report.
+
 ## Summary
 
 Recorded real Ollama and LM Studio wire responses before starting adapter code.
