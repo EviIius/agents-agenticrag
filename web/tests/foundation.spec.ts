@@ -28,7 +28,7 @@ for (const theme of ["light", "dark"] as const) {
       page.on("console", (message) => {
         if (message.type() === "error") errors.push(message.text());
       });
-      await page.goto("/c/fixture");
+      await page.goto("/design/chat/fixture");
       await expect(
         page.getByText("Start with a clear question", { exact: true }),
       ).toBeVisible();
@@ -77,7 +77,7 @@ for (const theme of ["light", "dark"] as const) {
   });
   test(`settings keyboard and theme ${theme}`, async ({ page }) => {
     await setTheme(page, theme);
-    await page.goto("/c/fixture");
+    await page.goto("/design/chat/fixture");
     await page.keyboard.press("Control+,");
     await expect(
       page.getByRole("dialog", { name: "Settings", exact: true }),
@@ -100,7 +100,7 @@ for (const theme of ["light", "dark"] as const) {
 }
 test("320px reflow and mobile navigation", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });
-  await page.goto("/c/fixture");
+  await page.goto("/design/chat/fixture");
   await noOverflow(page);
   await page.getByLabel("Open sidebar", { exact: true }).click();
   await expect(
@@ -116,13 +116,13 @@ test("320px reflow and mobile navigation", async ({ page }) => {
   await noOverflow(page);
 });
 test("new chat and editable fixture", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/design/chat");
   await expect(page.getByRole("heading", { name: /Good/ })).toBeVisible();
   await page.getByRole("button", { name: "Explain", exact: true }).click();
   await expect(page.getByLabel("Message fake-chat")).toHaveValue("Explain ");
   await page.getByLabel("Message fake-chat").fill("Explain a simple process.");
   await page.getByLabel("Send message", { exact: true }).click();
-  await expect(page).toHaveURL(/\/c\/fixture/);
+  await expect(page).toHaveURL(/\/design\/chat\/fixture/);
   await expect(
     page.getByText("Explain a simple process.", { exact: true }),
   ).toBeVisible();
@@ -163,7 +163,7 @@ test("screenshots at all review sizes and themes (fake runtime)", async ({
       await page.setViewportSize({ width, height });
       for (const [route, name] of [
         ["/design", "design"],
-        ["/c/fixture", "chat"],
+        ["/design/chat/fixture", "chat"],
       ]) {
         await page.goto(route);
         await page.evaluate((value) => {
@@ -222,7 +222,7 @@ test("keyboard-only fixture walkthrough", async ({ page }, testInfo) => {
     }
     throw new Error(`Could not reach ${label} with the keyboard.`);
   }
-  await page.goto("/");
+  await page.goto("/design/chat");
   await tabTo("Message fake-chat");
   await page.keyboard.type("Explain a small experiment.");
   await page.keyboard.press("Control+Enter");

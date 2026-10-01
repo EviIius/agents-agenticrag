@@ -5,13 +5,14 @@ and LM Studio (`127.0.0.1:1234`). Each `.request.json` sidecar records the exact
 HTTP status, content type, UTC timestamp, raw filename, and SHA-256 checksum.
 The image input is a synthetic red PNG. No personal conversation or library content was sent.
 
-Run `make record-fixtures` from the repository root to refresh both runtimes.
+The active rebuild uses Ollama only. LM Studio captures are retained as historical evidence, not an active provider or test requirement.
+
+Run `make record-fixtures` from the repository root to refresh Ollama.
 For a targeted capture, use the tool environment and run:
 
 ```sh
 . scripts/tool-env.sh
 uv run --directory server python ../scripts/record_provider_fixtures.py --only ollama
-uv run --directory server python ../scripts/record_provider_fixtures.py --only lmstudio
 uv run --directory server python ../scripts/record_provider_fixtures.py --only vision
 ```
 
@@ -36,6 +37,6 @@ the initial captures predate that instrumentation and have no timing fields.
   identifies the endpoint's expected protocol, not the actual error content type.
 - LM Studio vision: unavailable. Neither installed chat model reports vision.
 
-**The model-routing discrepancy requires review under SPEC.md before adapter work.**
+**The LM Studio routing discrepancy is historical; the user removed LM Studio from scope.**
 The regression tests preserve the observed wire behavior; they do not assert that
 this behavior is acceptable in the rebuilt application.

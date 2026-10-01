@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +16,7 @@ import {
 import { useUI } from "@/stores/ui";
 import type { ThemePreference } from "@/lib/theme";
 import { toast } from "sonner";
-const panes = [
+const basePanes = [
   "Connections",
   "Models",
   "Appearance",
@@ -25,9 +24,19 @@ const panes = [
   "Shortcuts",
   "About",
 ] as const;
-export function SettingsDialog() {
+export function SettingsDialog({
+  renderPane,
+  searchEnabled = false,
+}: {
+  renderPane?: (pane: string) => import("react").ReactNode;
+  searchEnabled?: boolean;
+}) {
+  const panes: string[] = searchEnabled
+    ? [...basePanes.slice(0, 2), "Search", ...basePanes.slice(2)]
+    : [...basePanes];
   const ui = useUI();
-  const [pane, setPane] = useState<(typeof panes)[number]>("Appearance");
+  const pane = ui.settingsPane;
+  const setPane = (settingsPane: string) => ui.set({ settingsPane });
   return (
     <Dialog
       open={ui.settings}
@@ -35,7 +44,11 @@ export function SettingsDialog() {
     >
       <DialogContent className="settings-dialog flex max-h-[min(640px,90dvh)] max-w-[920px] sm:max-w-[920px] flex-col overflow-y-auto p-6 sm:w-[calc(100vw-48px)]">
         <DialogTitle>Settings</DialogTitle>
-        <DialogDescription>Workbench · foundation preview</DialogDescription>
+        <DialogDescription>
+          {renderPane
+            ? "Local models · your preferences"
+            : "Workbench · foundation preview"}
+        </DialogDescription>
         <div className="mt-4 flex min-h-0 flex-1 flex-col gap-6 sm:flex-row">
           <nav
             aria-label="Settings sections"
@@ -58,7 +71,9 @@ export function SettingsDialog() {
             className="min-w-0 flex-1 space-y-5 overflow-y-auto pb-6"
           >
             <h2 className="text-lg font-medium">{pane}</h2>
-            {pane === "Appearance" ? (
+            {pane !== "Appearance" && renderPane ? (
+              renderPane(pane)
+            ) : pane === "Appearance" ? (
               <>
                 <fieldset>
                   <legend className="mb-2 font-medium">Theme</legend>
@@ -152,7 +167,7 @@ export function SettingsDialog() {
               <>
                 <p className="text-fg-2">Fake runtime · fixture connection</p>
                 <p className="text-fg-2">
-                  Connect Ollama and LM Studio in Phase 1.
+                  Connect Ollama in Settings › Connections.
                 </p>
               </>
             ) : pane === "Models" ? (

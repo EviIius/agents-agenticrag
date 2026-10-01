@@ -7,10 +7,52 @@ import {
 } from "@/components/chat/AssistantMessage";
 import { UserMessage } from "@/components/chat/UserMessage";
 import { Composer } from "@/components/chat/Composer";
+import { Welcome } from "@/components/app/Welcome";
 import { Sidebar, type SidebarState } from "@/components/app/Sidebar";
 import { ModelPicker, type PickerState } from "@/components/app/ModelPicker";
 import { ChatSettingsPanel } from "@/components/settings/ChatSettingsPanel";
+import { SearchActivity } from "@/components/chat/SearchActivity";
+import { SourcesSheet } from "@/components/chat/SourcesSheet";
+import type { Source, Message } from "@/lib/api";
+import { errorCopy } from "@/lib/errors";
 import { useUI } from "@/stores/ui";
+import { DataPane } from "@/components/settings/LiveSettings";
+const webSource: Source = {
+  n: 1,
+  url: "https://example.org",
+  title: "Synthetic design source",
+  site_name: "Example",
+  domain: "example.org",
+  published_at: "2026-10-01",
+  fetched_at: "2026-10-01",
+  kind: "page",
+  cited: true,
+  passages: [
+    {
+      source_url: "https://example.org",
+      heading: "Example",
+      ord: 0,
+      text: "This is a synthetic source passage used to review the interface. It is not real research.",
+    },
+  ],
+};
+const webMessage: Message = {
+  id: "design-web",
+  chat_id: "design",
+  role: "assistant",
+  content: "A sample cited claim [1].",
+  status: "complete",
+  created_at: "2026-10-01",
+  web: {
+    status: "used",
+    queries: ["Synthetic design query"],
+    providers: ["Fake search provider"],
+    timings: { plan: 150, search: 400, fetch: 500, rank: 10 },
+    source_count: 1,
+    plan_fallback: false,
+    ranking: "keyword",
+  },
+};
 const Markdown = lazy(() => import("@/components/chat/Markdown"));
 export function DesignPage() {
   const ui = useUI();
@@ -42,13 +84,120 @@ export function DesignPage() {
             System
           </Button>
           <Button asChild variant="outline">
-            <Link to="/c/fixture">Fixture chat</Link>
+            <Link to="/design/chat/fixture">Fixture chat</Link>
           </Button>
           <Button variant="outline" onClick={() => ui.set({ settings: true })}>
             Appearance
           </Button>
         </div>
       </header>
+      <section className="design-card mb-8" aria-label="First run states">
+        <h2 className="mb-5 text-lg font-medium">
+          First run · synthetic runtime detection
+        </h2>
+        {[
+          undefined,
+          [],
+          [
+            {
+              kind: "ollama" as const,
+              base_url: "http://127.0.0.1:18080",
+              reachable: true,
+              model_count: 3,
+            },
+          ],
+        ].map((detections, index) => (
+          <Welcome
+            key={index}
+            detections={detections}
+            onAdd={() => {}}
+            onRetry={() => {}}
+            onSettings={() => {}}
+          />
+        ))}
+      </section>
+      <section className="design-card mb-8" aria-label="Web search states">
+        <h2 className="mb-5 text-lg font-medium">
+          Web search · synthetic fixtures
+        </h2>
+        <SearchActivity
+          message={webMessage}
+          sources={[webSource]}
+          onRetry={() => {}}
+        />
+        <Suspense fallback={<p>Loading preview…</p>}>
+          <Markdown text={webMessage.content} sources={[webSource]} />
+        </Suspense>
+        <SourcesSheet
+          message={webMessage}
+          sources={[webSource]}
+          reads={[
+            {
+              url: "https://example.net",
+              title: "Synthetic failed page",
+              status: "failed",
+              reason: "HTTP 403",
+            },
+          ]}
+        />
+        {["search_failed", "search_no_results", "pages_unreadable"].map(
+          (code) => (
+            <SearchActivity
+              key={code}
+              message={{
+                ...webMessage,
+                web: {
+                  ...webMessage.web!,
+                  status: "failed",
+                  notice: { code, message: "Synthetic test failure" },
+                },
+              }}
+              sources={[]}
+              onRetry={() => {}}
+            />
+          ),
+        )}
+        <SearchActivity
+          message={{
+            ...webMessage,
+            web: { ...webMessage.web!, status: "skipped" },
+          }}
+          sources={[]}
+          onRetry={() => {}}
+        />
+        <SearchActivity
+          message={{ ...webMessage, status: "streaming" }}
+          sources={[webSource]}
+          steps={[
+            { label: "reading", detail: "https://example.org", status: "ok" },
+          ]}
+          onRetry={() => {}}
+        />
+        <p className="text-xs text-fg-3">
+          This answer doesn't cite specific sources.
+        </p>
+      </section>
+      <section className="design-card mb-8" aria-label="Runtime error copy">
+        <h2 className="mb-5 text-lg font-medium">
+          Runtime errors · synthetic fixtures
+        </h2>
+        {[
+          "runtime_unreachable",
+          "model_not_found",
+          "model_load_failed",
+          "context_overflow",
+          "idle_timeout",
+          "provider_error",
+          "interrupted",
+        ].map((code) => (
+          <p
+            key={code}
+            className="mb-3 rounded-lg border border-line p-3 text-sm text-danger"
+          >
+            {errorCopy(code, "Synthetic runtime error")}
+          </p>
+        ))}
+      </section>
       <section aria-labelledby="typography" className="design-card mb-8">
         <h2 id="typography" className="mb-5 text-lg font-medium">
           Typography & surfaces
@@ -81,6 +230,12 @@ export function DesignPage() {
           <Button variant="ghost">Ghost</Button>
           <Button disabled>Disabled</Button>
         </div>
+      </section>
+      <section className="design-card mb-8" aria-label="Data controls preview">
+        <h2 className="mb-5 text-lg font-medium">
+          Data controls · safe preview
+        </h2>
+        <DataPane preview />
       </section>
       <section aria-labelledby="models" className="mb-8">
         <h2 id="models" className="mb-4 text-lg font-medium">
@@ -171,7 +326,7 @@ export function DesignPage() {
           Composer
         </h2>
         <div className="space-y-4">
-          <Composer />
+          <Composer suggestions onWebChange={() => {}} />
           <Composer starter="An editable fixture message" attached reasoning />
           <Composer starter="A fixture message in progress" running />
         </div>
@@ -208,7 +363,7 @@ export function DesignPage() {
             <Link to="/">New chat</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link to="/c/fixture">Completed chat</Link>
+            <Link to="/design/chat/fixture">Completed chat</Link>
           </Button>
           <Button variant="outline" onClick={() => ui.set({ settings: true })}>
             Settings dialog
@@ -218,9 +373,9 @@ export function DesignPage() {
           </Button>
         </div>
         <p className="mt-5 text-fg-2">
-          Live chat and connections arrive in Phase 1. Web search and citations
-          arrive in Phase 2. This foundation does not connect to your library or
-          perform web searches.
+          Component fixtures are synthetic. Open New chat to use your configured
+          Ollama connection and web search. This guide does not read your chats
+          or perform searches.
         </p>
       </section>
     </div>

@@ -8,10 +8,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
+from .api import attachments, chats, connections, messages, models, runs, search
+from .api import settings as settings_api
 from .api.health import router as health_router
 from .config import APP_NAME, VERSION, Settings
-from .db.core import connect
+from .db.core import Store, connect
 from .errors import AppError, register_handlers
+from .providers.registry import Registry
+from .runs.manager import RunManager
+from .search.pipeline import Pipeline
 from .security import SecurityMiddleware
 
 
@@ -24,7 +29,19 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
         logging.basicConfig(level=config.log_level, format="%(levelname)s %(name)s: %(message)s")
         async with connect(config.data_dir) as db:
             app.state.db = db
-            yield
+            app.state.store = Store(db)
+            app.state.config = config
+            app.state.registry = Registry(app.state.store)
+            app.state.runs = RunManager(app.state.store, app.state.registry, config.data_dir)
+            app.state.search = Pipeline(app.state.runs, config.web_fixtures)
+            app.state.runs.web_hook = app.state.search
+            app.state.runs.web_finalize = app.state.search.finalize
+            await app.state.runs.recover()
+            try:
+                yield
+            finally:
+                await app.state.runs.close()
+                await app.state.registry.close()
 
     app = FastAPI(
         title=APP_NAME,
@@ -45,6 +62,17 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
     app.add_middleware(SecurityMiddleware, settings=config)
 
     app.include_router(health_router)
+    for router in (
+        attachments.router,
+        chats.router,
+        connections.router,
+        messages.router,
+        models.router,
+        runs.router,
+        settings_api.router,
+        search.router,
+    ):
+        app.include_router(router)
 
     @app.get("/{path:path}", include_in_schema=False)
     async def asset(path: str) -> FileResponse:

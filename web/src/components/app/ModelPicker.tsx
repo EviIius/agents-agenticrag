@@ -1,5 +1,12 @@
-import { useState } from "react";
-import { Brain, Check, ChevronDown, Eye, LoaderCircle } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import {
+  Brain,
+  Check,
+  ChevronDown,
+  Eye,
+  LoaderCircle,
+  Wrench,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -25,9 +32,35 @@ import {
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 export type PickerState =
   "ready" | "loading" | "offline" | "empty" | "loading-model";
-export function ModelPicker({ state = "ready" }: { state?: PickerState }) {
+export function ModelPicker({
+  state = "ready",
+  models,
+  current,
+  onChoose,
+  connections,
+  onModelAction,
+}: {
+  state?: PickerState;
+  models?: import("@/lib/api").Model[];
+  current?: import("@/lib/api").Model;
+  connections?: import("@/lib/api").Bootstrap["connections"];
+  onChoose?: (model: import("@/lib/api").Model) => void;
+  onModelAction?: (model: import("@/lib/api").Model) => Promise<void>;
+}) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState("fake-chat");
+  const [busy, setBusy] = useState<string | null>(null),
+    [elapsed, setElapsed] = useState(0);
+  const started = useRef(0);
+  useEffect(() => {
+    if (!busy) return;
+    setElapsed(0);
+    const timer = setInterval(
+      () => setElapsed(Math.floor((Date.now() - started.current) / 1000)),
+      1000,
+    );
+    return () => clearInterval(timer);
+  }, [busy]);
   const phone = useMediaQuery("(max-width: 639px)");
   const trigger = (
     <Button
@@ -37,10 +70,20 @@ export function ModelPicker({ state = "ready" }: { state?: PickerState }) {
       onClick={() => setOpen(true)}
     >
       <span className="text-success" aria-hidden>
-        ●
+        {models
+          ? current?.loaded == null
+            ? ""
+            : current.loaded
+              ? "●"
+              : "○"
+          : "●"}
       </span>
-      <span className="truncate font-medium">{selected}</span>
-      <span className="hidden text-xs text-fg-3 sm:block">Fake runtime</span>
+      <span className="truncate font-medium">
+        {models ? (current?.display_name ?? "Choose model") : selected}
+      </span>
+      <span className="hidden text-xs text-fg-3 sm:block">
+        {models ? "Ollama" : "Fake runtime"}
+      </span>
       <ChevronDown className="size-3 shrink-0" />
     </Button>
   );
@@ -49,8 +92,115 @@ export function ModelPicker({ state = "ready" }: { state?: PickerState }) {
       <CommandInput placeholder="Search models…" aria-label="Search models" />
       <CommandList className="max-h-[50dvh]">
         <CommandEmpty>No matching models.</CommandEmpty>
-        <CommandGroup heading="Fake runtime · fixture connection">
-          {state === "loading" ? (
+        <CommandGroup
+          heading={models ? undefined : "Fake runtime · fixture connection"}
+        >
+          {models && state !== "loading" ? (
+            Array.from(new Set(models.map((model) => model.connection_id))).map(
+              (id) => (
+                <CommandGroup
+                  key={id}
+                  heading={
+                    connections?.find((connection) => connection.id === id)
+                      ?.name ?? "Ollama"
+                  }
+                >
+                  {models
+                    .filter((model) => model.connection_id === id)
+                    .map((model) => (
+                      <CommandItem
+                        key={model.connection_id + model.model_id}
+                        value={model.display_name + " " + model.connection_id}
+                        onSelect={() => {
+                          onChoose?.(model);
+                          setOpen(false);
+                        }}
+                        className="group min-h-16 gap-3"
+                      >
+                        <span
+                          aria-hidden
+                          className={
+                            model.loaded ? "text-success" : "text-fg-2"
+                          }
+                        >
+                          {model.loaded == null ? "" : model.loaded ? "●" : "○"}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <span className="flex items-center gap-2 break-all">
+                            {model.display_name}
+                            {model.reasoning && (
+                              <Brain
+                                aria-label="Supports reasoning"
+                                className="size-4 shrink-0"
+                              />
+                            )}
+                            {model.vision && (
+                              <Eye
+                                aria-label="Accepts images"
+                                className="size-4 shrink-0"
+                              />
+                            )}
+                            {model.tools && (
+                              <Wrench
+                                aria-label="Supports tools"
+                                className="size-4 shrink-0"
+                              />
+                            )}
+                          </span>
+                          <p className="meta">
+                            {[
+                              model.params,
+                              model.quant,
+                              model.context_length
+                                ? `${(model.context_length / 1024).toFixed(0)}K context`
+                                : null,
+                              model.loaded == null
+                                ? "Status unknown"
+                                : model.loaded
+                                  ? "Loaded"
+                                  : "Not loaded",
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </p>
+                        </div>
+                        {onModelAction && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="min-h-11 shrink-0 opacity-0 group-hover:opacity-100 focus:opacity-100 [@media(pointer:coarse)]:hidden"
+                            disabled={busy !== null}
+                            aria-label={`${model.loaded ? "Eject" : "Load"} ${model.display_name}`}
+                            onKeyDown={(event) => event.stopPropagation()}
+                            onClick={async (event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              started.current = Date.now();
+                              setBusy(model.connection_id + model.model_id);
+                              try {
+                                await onModelAction(model);
+                              } finally {
+                                setBusy(null);
+                              }
+                            }}
+                          >
+                            {busy === model.connection_id + model.model_id
+                              ? `${elapsed}s`
+                              : model.loaded
+                                ? "Eject"
+                                : "Load"}
+                          </Button>
+                        )}
+                        {current?.model_id === model.model_id &&
+                          current?.connection_id === model.connection_id && (
+                            <Check className="size-4 shrink-0" />
+                          )}
+                      </CommandItem>
+                    ))}
+                </CommandGroup>
+              ),
+            )
+          ) : state === "loading" ? (
             <div aria-label="Loading models" className="space-y-3 p-4">
               <div className="skeleton h-10" />
               <div className="skeleton h-10" />
@@ -105,6 +255,19 @@ export function ModelPicker({ state = "ready" }: { state?: PickerState }) {
               ),
             )
           )}
+          {models &&
+            connections
+              ?.filter(
+                (connection) =>
+                  connection.enabled && connection.reachable === false,
+              )
+              .map((connection) => (
+                <CommandGroup key={connection.id} heading={connection.name}>
+                  <p className="p-3 text-sm text-fg-3">
+                    Offline · Check the connection in Settings
+                  </p>
+                </CommandGroup>
+              ))}
           {state === "loading-model" && (
             <p className="flex items-center gap-2 p-4 text-fg-2">
               <LoaderCircle className="size-4 animate-spin" />
@@ -114,7 +277,9 @@ export function ModelPicker({ state = "ready" }: { state?: PickerState }) {
         </CommandGroup>
       </CommandList>
       <p className="border-t border-line p-3 text-xs text-fg-2">
-        Fixture models only · connections arrive in Phase 1
+        {models
+          ? `${models.length} models · capabilities reported by Ollama`
+          : "Fixture models only · connections arrive in Phase 1"}
       </p>
     </Command>
   );
@@ -126,7 +291,11 @@ export function ModelPicker({ state = "ready" }: { state?: PickerState }) {
           <DrawerContent>
             <DrawerHeader>
               <DrawerTitle>Choose model</DrawerTitle>
-              <DrawerDescription>Fake runtime · UI fixtures</DrawerDescription>
+              <DrawerDescription>
+                {models
+                  ? "Local models on your Mac"
+                  : "Fake runtime · UI fixtures"}
+              </DrawerDescription>
             </DrawerHeader>
             {content}
             <DrawerClose asChild>

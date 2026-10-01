@@ -11,6 +11,13 @@
 
 > **Codex: this file is the single source of truth.** Build exactly what it says, in phase order. Stop at the end of each phase and hand in the report in §H4. If something here is wrong for a runtime you can actually observe, record the evidence and stop to ask. Don't improvise around it, add scope or "improve" the plan.
 
+**User amendment — 1 October 2026:** Use Ollama only for this rebuild. LM Studio and
+generic OpenAI connections are outside the current scope. Detect Ollama only; retain
+the five approved chat variants, excluding the standard Llama as a stored preference.
+Jake authorized continuing Phases 1 and 2 together; record Checkpoint 1A and both
+phase reports without pausing between them. Apply acceptance criteria to Ollama;
+LM Studio-specific checks are superseded. Future agents remain governed by Part F.
+
 **How Jake uses this file**
 
 1. Save it in the repo as `docs/SPEC.md`.

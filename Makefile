@@ -18,7 +18,7 @@ check:
 	. scripts/tool-env.sh; uv run --directory server ruff check app tests
 	. scripts/tool-env.sh; uv run --directory server ruff format --check app tests
 	. scripts/tool-env.sh; uv run --directory server mypy app tests
-	. scripts/tool-env.sh; uv run --directory server pytest -q
+	. scripts/tool-env.sh; uv run --directory server python ../scripts/check_coverage.py
 	. scripts/tool-env.sh; uv run --directory server python ../scripts/check_contrast.py
 	. scripts/tool-env.sh; uv run --directory server python ../scripts/generate_api_types.py --check
 	. scripts/tool-env.sh; npm run check --prefix web
@@ -29,5 +29,9 @@ fmt:
 	. scripts/tool-env.sh; npm run fmt --prefix web
 record-fixtures:
 	. scripts/tool-env.sh; uv run --directory server python ../scripts/record_provider_fixtures.py
-eval-web deploy:
+eval-web:
+	. scripts/tool-env.sh; uv run --directory server python evals/web/run_eval.py $(if $(CASE),--case $(CASE),) $(if $(MODEL),--model $(MODEL),) $(if $(LIVE),--live,) $(if $(RANKING),--ranking $(RANKING),)
+eval-web-record:
+	. scripts/tool-env.sh; uv run --directory server python evals/web/run_eval.py --record $(if $(CASE),--case $(CASE),) $(if $(MODEL),--model $(MODEL),)
+deploy:
 	@echo '$@ belongs to a later phase. See docs/SPEC.md §H1.'; exit 1

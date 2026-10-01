@@ -20,3 +20,7 @@ Hard rules:
 User clarification (1 Oct 2026): exclude `llama3.3:70b-instruct-q4_K_M` from the new app's picker;
 keep `llama3.3:70b-workbench-16k` and the other four local chat model variants. Apply this as a
 stored user preference, never as a model-name capability heuristic.
+
+User amendment (1 Oct 2026): use Ollama only, and continue Phase 1 and Phase 2 in
+sequence without intermediate approval stops; retain checkpoint/phase evidence and
+reports. LM Studio and generic OpenAI adapters are outside the current build scope.

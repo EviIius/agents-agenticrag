@@ -1,4 +1,5 @@
 import { createBrowserRouter } from "react-router";
+import { LiveAppShell } from "@/components/app/LiveAppShell";
 import App from "./App";
 import { AppShell } from "@/components/app/AppShell";
 export const router = createBrowserRouter([
@@ -10,8 +11,9 @@ export const router = createBrowserRouter([
       </p>
     ),
     children: [
-      { path: "/", element: <AppShell /> },
-      { path: "/c/:chatId", element: <AppShell /> },
+      { path: "/", element: <LiveAppShell /> },
+      { path: "/c/:chatId", element: <LiveAppShell /> },
+      { path: "/design/chat/:chatId?", element: <AppShell /> },
       {
         path: "/design",
         lazy: async () => {

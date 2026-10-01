@@ -6,5 +6,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
   build: { outDir: "../server/app/static", emptyOutDir: true },
-  server: { proxy: { "/api": "http://127.0.0.1:8787" } },
+  server: {
+    proxy: { "/api": { target: "http://127.0.0.1:8787", changeOrigin: false } },
+  },
 });

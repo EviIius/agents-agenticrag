@@ -38,7 +38,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const scroll = useRef<HTMLDivElement>(null);
-  const empty = location.pathname === "/";
+  const empty = location.pathname === "/design/chat";
   const [message, setMessage] = useState<string | undefined>();
   const [starter, setStarter] = useState("");
   const [aboveBottom, setAboveBottom] = useState(false);
@@ -53,7 +53,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
         ui.set({ settings: true });
       } else if (event.shiftKey && event.key.toLowerCase() === "o") {
         event.preventDefault();
-        navigate("/");
+        navigate("/design/chat");
       }
     };
     window.addEventListener("keydown", keys);
@@ -66,7 +66,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
       starter={starter}
       onSend={(text) => {
         setMessage(text);
-        navigate("/c/fixture");
+        navigate("/design/chat/fixture");
         requestAnimationFrame(() =>
           document
             .querySelector<HTMLTextAreaElement>(".composer textarea")
@@ -206,7 +206,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
             <CommandItem
               key={title}
               onSelect={() => {
-                navigate("/c/fixture");
+                navigate("/design/chat/fixture");
                 ui.set({ command: false });
               }}
             >

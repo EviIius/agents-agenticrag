@@ -18,10 +18,12 @@ export function Sidebar({
   collapsed = false,
   state = "ready",
   close,
+  history,
 }: {
   collapsed?: boolean;
   state?: SidebarState;
   close?: () => void;
+  history?: import("react").ReactNode;
 }) {
   const { set } = useUI();
   return (
@@ -38,7 +40,10 @@ export function Sidebar({
         )}
         {!collapsed && (
           <IconButton label="New chat" asChild>
-            <Link to="/" onClick={close}>
+            <Link
+              to={history !== undefined ? "/" : "/design/chat"}
+              onClick={close}
+            >
               <SquarePen />
             </Link>
           </IconButton>
@@ -46,7 +51,7 @@ export function Sidebar({
       </header>
       {collapsed ? (
         <IconButton label="New chat" asChild>
-          <Link to="/">
+          <Link to={history !== undefined ? "/" : "/design/chat"}>
             <SquarePen />
           </Link>
         </IconButton>
@@ -73,7 +78,9 @@ export function Sidebar({
       <nav aria-label="Chat history" className="min-h-0 flex-1 overflow-y-auto">
         {!collapsed && (
           <>
-            {state === "loading" ? (
+            {history !== undefined ? (
+              history
+            ) : state === "loading" ? (
               <div
                 className="space-y-3 p-2"
                 role="status"
@@ -99,7 +106,7 @@ export function Sidebar({
                     className={`group flex min-h-11 items-center rounded-md ${index === 0 ? "border-l-2 border-brand bg-surface-3" : "hover:bg-surface-2"}`}
                   >
                     <Link
-                      to="/c/fixture"
+                      to="/design/chat/fixture"
                       onClick={close}
                       className="min-w-0 flex-1 truncate px-3 py-2 text-sm"
                     >
@@ -123,7 +130,7 @@ export function Sidebar({
                   YESTERDAY
                 </p>
                 <Link
-                  to="/c/fixture"
+                  to="/design/chat/fixture"
                   className="flex min-h-11 items-center gap-3 rounded-md px-3 hover:bg-surface-2"
                   onClick={close}
                 >

@@ -6,6 +6,7 @@ type UI = {
   collapsed: boolean;
   panel: boolean;
   settings: boolean;
+  settingsPane: string;
   command: boolean;
   answerFont: "serif" | "sans";
   textSize: "S" | "M" | "L";
@@ -19,6 +20,7 @@ export const useUI = create<UI>((set) => ({
   collapsed: false,
   panel: false,
   settings: false,
+  settingsPane: "Appearance",
   command: false,
   answerFont: "serif",
   textSize: "M",

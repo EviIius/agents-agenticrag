@@ -1,3 +1,7 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: true } },
+});
 import { Outlet } from "react-router";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,14 +10,16 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 export default function App() {
   const phone = useMediaQuery("(max-width: 639px)");
   return (
-    <ThemeProvider>
-      <TooltipProvider>
-        <Outlet />
-        <Toaster
-          position={phone ? "bottom-center" : "bottom-right"}
-          toastOptions={{ className: "font-sans" }}
-        />
-      </TooltipProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <TooltipProvider>
+          <Outlet />
+          <Toaster
+            position={phone ? "bottom-center" : "bottom-right"}
+            toastOptions={{ className: "font-sans" }}
+          />
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }

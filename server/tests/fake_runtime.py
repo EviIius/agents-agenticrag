@@ -3,6 +3,7 @@
 import asyncio
 import json
 import re
+import time
 from collections.abc import AsyncIterator
 from typing import Any
 
@@ -21,6 +22,8 @@ def create_fake_runtime() -> FastAPI:
     app = FastAPI(title="Fake runtime")
     app.state.captures = []
     app.state.disconnected = 0
+    app.state.first_tokens = []
+    app.state.loaded = {"fake-chat": 16384}
 
     @app.get("/api/tags")
     async def tags() -> dict[str, Any]:
@@ -49,6 +52,23 @@ def create_fake_runtime() -> FastAPI:
             "parameters": "num_ctx 16384",
         }
 
+    @app.get("/api/ps")
+    async def ps() -> dict[str, Any]:
+        return {
+            "models": [
+                {"name": model, "size_vram": 1024, "context_length": context}
+                for model, context in app.state.loaded.items()
+            ]
+        }
+
+    @app.get("/tests/state")
+    async def state() -> dict[str, Any]:
+        return {
+            "captures": app.state.captures,
+            "disconnected": app.state.disconnected,
+            "first_tokens": app.state.first_tokens,
+        }
+
     @app.get("/v1/models")
     async def models() -> dict[str, Any]:
         return {
@@ -74,8 +94,28 @@ def create_fake_runtime() -> FastAPI:
         error = re.match(r"#error:(\d+)", prompt)
         if error:
             return JSONResponse({"error": "Fake runtime scripted error"}, status_code=int(error[1]))
+        if ollama and not messages:
+            if body.get("keep_alive") == 0:
+                app.state.loaded.pop(body.get("model"), None)
+            else:
+                app.state.loaded[body.get("model")] = body.get("options", {}).get("num_ctx", 16384)
+            return JSONResponse({"done": True, "message": {"content": ""}})
+        if body.get("model", "fake-chat") not in MODELS:
+            return JSONResponse({"error": "model not found"}, status_code=404)
+        if ollama:
+            app.state.loaded[body.get("model")] = body.get("options", {}).get("num_ctx", 16384)
         text = MARKDOWN
-        if prompt.startswith("#planner:"):
+        if isinstance(body.get("format"), dict):
+            latest = prompt.split("Latest user message:\n")[-1]
+            search = latest.strip().lower() not in {"thanks!", "hello", "rewrite shorter"}
+            text = json.dumps(
+                {"search": search, "queries": [latest[:120]] if search else [], "freshness": "any"}
+            )
+        elif "<search_results" in prompt and "#uncited" in prompt:
+            text = MARKDOWN
+        elif "<search_results" in prompt:
+            text = "Synthetic web answer: Milwaukee Bucks defeated Phoenix Suns 4–2 in 2021 [1][2]."
+        elif prompt.startswith("#planner:"):
             text = prompt.removeprefix("#planner:")
         elif prompt.startswith("#cite"):
             text = "Fake citations [1][2], 【3†L1】, [4, 5], and [9]."
@@ -89,12 +129,12 @@ def create_fake_runtime() -> FastAPI:
                 for message in messages
             )
             text = f"Fake runtime received an image: {has_image}"
-        long = re.match(r"#long:(\d+)", prompt)
+        long = re.search(r"#long:(\d+)", prompt)
         if long:
             text = " ".join(f"token{index}" for index in range(min(int(long[1]), 10000)))
-        slow = re.match(r"#slow:(\d+)", prompt)
+        slow = re.search(r"#slow:(\d+)", prompt)
         delay = 1 / max(int(slow[1]), 1) if slow else 0.005
-        stall = re.match(r"#stall:(\d+)", prompt)
+        stall = re.search(r"#stall:(\d+)", prompt)
         reason = prompt.startswith("#think")
         finish = "length" if prompt.startswith("#length") else "stop"
         if not body.get("stream", True):
@@ -164,6 +204,10 @@ def create_fake_runtime() -> FastAPI:
                             + ("\n" if ollama else "\n\n")
                         )
                         return
+                    if index == 0:
+                        app.state.first_tokens.append(
+                            {"prompt": prompt, "at_ms": time.time() * 1000}
+                        )
                     yield packet({"content": piece})
                     await asyncio.sleep(delay)
                 yield packet({}, True)
