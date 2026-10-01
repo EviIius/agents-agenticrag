@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<meta name='robots' content='index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>HTTP Status 204 (No Content)</title>
+	<meta name="description" content="HTTP 204 No Content explained from RFC 9110 and 9112: DELETE and PUT, ETag, no-body rules, client parsing errors, and testing." />
+	<link rel="canonical" href="https://restfulapi.net/http-status-204-no-content/" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="og:title" content="HTTP Status 204 (No Content)" />
+	<meta property="og:description" content="HTTP 204 No Content explained from RFC 9110 and 9112: DELETE and PUT, ETag, no-body rules, client parsing errors, and testing." />
+	<meta property="og:url" content="https://restfulapi.net/http-status-204-no-content/" />
+	<meta property="og:site_name" content="REST API Tutorial" />
+	<meta property="article:published_time" content="2018-04-07T08:25:52+00:00" />
+	<meta property="article:modified_time" content="2026-10-01T06:58:25+00:00" />
+	<meta property="og:image" content="https://restfulapi.net/wp-content/uploads/http-204-put-etag.png" />
+	<meta property="og:image:width" content="1440" />
+	<meta property="og:image:height" content="1260" />
+	<meta property="og:image:type" content="image/png" />
+	<meta name="author" content="Lokesh Gupta" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:creator" content="@howtodoinjava" />
+	<script type="application/ld+json" class="yoast-schema-graph">{"@context":"https:\/\/schema.org","@graph":[{"@type":["Article","BlogPosting"],"@id":"https:\/\/restfulapi.net\/http-status-204-no-content\/#article","isPartOf":{"@id":"https:\/\/restfulapi.net\/http-status-204-no-content\/"},"author":{"name":"Lokesh Gupta","@id":"https:\/\/restfulapi.net\/#\/schema\/person\/bd34c790c93e887954206ad0b7e14dfa"},"headline":"HTTP Status 204 (No Content)","datePublished":"2018-04-07T08:25:52+00:00","dateModified":"2026-10-01T06:58:25+00:00","mainEntityOfPage":{"@id":"https:\/\/restfulapi.net\/http-status-204-no-content\/"},"wordCount":1222,"commentCount":6,"image":{"@id":"https:\/\/restfulapi.net\/http-status-204-no-content\/#primaryimage"},"thumbnailUrl":"https:\/\/restfulapi.net\/wp-content\/uploads\/http-204-put-etag.png","articleSection":["HTTP Status"],"inLanguage":"en-US","potentialAction":[{"@type":"CommentAction","name":"Comment","target":["https:\/\/restfulapi.net\/http-status-204-no-content\/#respond"]}]},{"@type":"WebPage","@id":"https:\/\/restfulapi.net\/http-status-204-no-content\/","url":"https:\/\/restfulapi.net\/http-status-204-no-content\/","name":"HTTP Status 204 (No Content)","isPartOf":{"@id":"https:\/\/restfulapi.net\/#website"},"primaryImageOfPage":{"@id":"https:\/\/restfulapi.net\/http-status-204-no-content\/#primaryimage"},"image":{"@id":"https:\/\/restfulapi.net\/http-status-204-no-content\/#primaryimage"},"thumbnailUrl":"https:\/\/restfulapi.net\/wp-content\/uploads\/http-204-put-etag.png","datePublished":"2018-04-07T08:25:52+00:00","dateModified":"2026-10-01T06:58:25+00:00","author":{"@id":"https:\/\/restfulapi.net\/#\/schema\/person\/bd34c790c93e887954206ad0b7e14dfa"},"description":"HTTP 204 No Content explained from RFC 9110 and 9112: DELETE and PUT, ETag, no-body rules, client parsing errors, and testing.","breadcrumb":{"@id":"https:\/\/restfulapi.net\/http-status-204-no-content\/#breadcrumb"},"inLanguage":"en-US","potentialAction":[{"@type":"ReadAction","target":["https:\/\/restfulapi.net\/http-status-204-no-content\/"]}]},{"@type":"ImageObject","inLanguage":"en-US","@id":"https:\/\/restfulapi.net\/http-status-204-no-content\/#primaryimage","url":"https:\/\/restfulapi.net\/wp-content\/uploads\/http-204-put-etag.png","contentUrl":"https:\/\/restfulapi.net\/wp-content\/uploads\/http-204-put-etag.png","width":1440,"height":1260,"caption":"A 204 response can carry the new ETag without any body."},{"@type":"BreadcrumbList","@id":"https:\/\/restfulapi.net\/http-status-204-no-content\/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https:\/\/restfulapi.net\/"},{"@type":"ListItem","position":2,"name":"HTTP Status","item":"https:\/\/restfulapi.net\/http-status\/"},{"@type":"ListItem","position":3,"name":"HTTP Status 204 (No Content)"}]},{"@type":"WebSite","@id":"https:\/\/restfulapi.net\/#website","url":"https:\/\/restfulapi.net\/","name":"REST API Tutorial","description":"","potentialAction":[{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https:\/\/restfulapi.net\/?s={search_term_string}"},"query-input":{"@type":"PropertyValueSpecification","valueRequired":true,"valueName":"search_term_string"}}],"inLanguage":"en-US"},{"@type":"Person","@id":"https:\/\/restfulapi.net\/#\/schema\/person\/bd34c790c93e887954206ad0b7e14dfa","name":"Lokesh Gupta","image":{"@type":"ImageObject","inLanguage":"en-US","@id":"https:\/\/secure.gravatar.com\/avatar\/440b2ffa86b0f8f14d2d1e64cc0ddc8b9a2ffa2ad0fefcbe431460638bd88883?s=96&d=robohash&r=g","url":"https:\/\/secure.gravatar.com\/avatar\/440b2ffa86b0f8f14d2d1e64cc0ddc8b9a2ffa2ad0fefcbe431460638bd88883?s=96&d=robohash&r=g","contentUrl":"https:\/\/secure.gravatar.com\/avatar\/440b2ffa86b0f8f14d2d1e64cc0ddc8b9a2ffa2ad0fefcbe431460638bd88883?s=96&d=robohash&r=g","caption":"Lokesh Gupta"},"description":"A fun-loving family man, passionate about computers and problem-solving, with over 15 years of experience in Java and related technologies. An avid Sci-Fi movie enthusiast and a fan of Christopher Nolan and Quentin Tarantino.","sameAs":["https:\/\/howtodoinjava.com","https:\/\/x.com\/howtodoinjava"]}]}</script>
+
+
+<link rel='dns-prefetch' href='//scripts.mediavine.com' />
+<link rel='dns-prefetch' href='//www.google.com' />
+<style id="wp-img-auto-sizes-contain-inline-css">
+img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
+/*# sourceURL=wp-img-auto-sizes-contain-inline-css */
+</style>
+<style id="wp-block-library-inline-css">
+:root{--wp-block-synced-color:#7a00df;--wp-block-synced-color--rgb:122,0,223;--wp-bound-block-color:var(--wp-block-synced-color);--wp-editor-canvas-background:#ddd;--wp-admin-theme-color:#007cba;--wp-admin-theme-color--rgb:0,124,186;--wp-admin-theme-color-darker-10:#006ba1;--wp-admin-theme-color-darker-10--rgb:0,107,160.5;--wp-admin-theme-color-darker-20:#005a87;--wp-admin-theme-color-darker-20--rgb:0,90,135;--wp-admin-border-width-focus:2px}@media (min-resolution:192dpi){:root{--wp-admin-border-width-focus:1.5px}}.wp-element-button{cursor:pointer}:root .has-very-light-gray-background-color{background-color:#eee}:root .has-very-dark-gray-background-color{background-color:#313131}:root .has-very-light-gray-color{color:#eee}:root .has-very-dark-gray-color{color:#313131}:root .has-vivid-green-cyan-to-vivid-cyan-blue-gradient-background{background:linear-gradient(135deg,#00d084,#0693e3)}:root .has-purple-crush-gradient-background{background:linear-gradient(135deg,#34e2e4,#4721fb 50%,#ab1dfe)}:root .has-hazy-dawn-gradient-background{background:linear-gradient(135deg,#faaca8,#dad0ec)}:root .has-subdued-olive-gradient-background{background:linear-gradient(135deg,#fafae1,#67a671)}:root .has-atomic-cream-gradient-background{background:linear-gradient(135deg,#fdd79a,#004a59)}:root .has-nightshade-gradient-background{background:linear-gradient(135deg,#330968,#31cdcf)}:root .has-midnight-gradient-background{background:linear-gradient(135deg,#020381,#2874fc)}:root{--wp--preset--font-size--normal:16px;--wp--preset--font-size--huge:42px}.has-regular-font-size{font-size:1em}.has-larger-font-size{font-size:2.625em}.has-normal-font-size{font-size:var(--wp--preset--font-size--normal)}.has-huge-font-size{font-size:var(--wp--preset--font-size--huge)}:root .has-text-align-center{text-align:center}:root .has-text-align-left{text-align:left}:root .has-text-align-right{text-align:right}.has-fit-text{white-space:nowrap!important}#end-resizable-editor-section{display:none}.aligncenter{clear:both}.items-justified-left{justify-content:flex-start}.items-justified-center{justify-content:center}.items-justified-right{justify-content:flex-end}.items-justified-space-between{justify-content:space-between}.screen-reader-text{word-wrap:normal!important;border:0;clip-path:inset(50%);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px;word-break:normal!important}.screen-reader-text:focus{background-color:#ddd;clip-path:none;color:#444;display:block;font-size:1em;height:auto;left:5px;line-height:normal;padding:15px 23px 14px;text-decoration:none;top:5px;width:auto;z-index:100000}html :where(.has-border-color){border-style:solid}html :where([style^=border-color],[style*=";border-color"],[style*="; border-color"]){border-style:solid}html :where([style^=border-top-color],[style*=";border-top-color"],[style*="; border-top-color"]){border-top-style:solid}html :where([style^=border-right-color],[style*=";border-right-color"],[style*="; border-right-color"]){border-right-style:solid}html :where([style^=border-bottom-color],[style*=";border-bottom-color"],[style*="; border-bottom-color"]){border-bottom-style:solid}html :where([style^=border-left-color],[style*=";border-left-color"],[style*="; border-left-color"]){border-left-style:solid}html :where([style^=border-width],[style*=";border-width"],[style*="; border-width"]){border-style:solid}html :where([style^=border-top-width],[style*=";border-top-width"],[style*="; border-top-width"]){border-top-style:solid}html :where([style^=border-right-width],[style*=";border-right-width"],[style*="; border-right-width"]){border-right-style:solid}html :where([style^=border-bottom-width],[style*=";border-bottom-width"],[style*="; border-bottom-width"]){border-bottom-style:solid}html :where([style^=border-left-width],[style*=";border-left-width"],[style*="; border-left-width"]){border-left-style:solid}html :where(img[class*=wp-image-]){height:auto;max-width:100%}:where(figure){margin:0 0 1em}html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:var(--wp-admin--admin-bar--height,0px)}@media screen and (max-width:600px){html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:0px}}
+
+/*# sourceURL=/wp-includes/css/dist/block-library/common.min.css */
+</style>
+<style id="wp-block-heading-inline-css">
+h1:where(.wp-block-heading).has-background,h2:where(.wp-block-heading).has-background,h3:where(.wp-block-heading).has-background,h4:where(.wp-block-heading).has-background,h5:where(.wp-block-heading).has-background,h6:where(.wp-block-heading).has-background{padding:1.25em 2.375em}h1.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h1.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h2.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h2.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h3.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h3.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h4.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h4.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h5.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h5.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h6.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h6.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]){rotate:180deg}
+/*# sourceURL=https://restfulapi.net/wp-includes/blocks/heading/style.min.css */
+</style>
+<style id="wp-block-image-inline-css">
+.wp-block-image>a,.wp-block-image>figure>a{display:inline-block}.wp-block-image img{box-sizing:border-box;height:auto;max-width:100%;vertical-align:bottom}@media not (prefers-reduced-motion){.wp-block-image img.hide{visibility:hidden}.wp-block-image img.show{animation:show-content-image .4s}}.wp-block-image[style*=border-radius] img,.wp-block-image[style*=border-radius]>a{border-radius:inherit}.wp-block-image.has-custom-border img{box-sizing:border-box}.wp-block-image.aligncenter{text-align:center}.wp-block-image.alignfull>a,.wp-block-image.alignwide>a{width:100%}.wp-block-image.alignfull img,.wp-block-image.alignwide img{height:auto;width:100%}.wp-block-image .aligncenter,.wp-block-image .alignleft,.wp-block-image .alignright,.wp-block-image.aligncenter,.wp-block-image.alignleft,.wp-block-image.alignright{display:table}.wp-block-image .aligncenter>figcaption,.wp-block-image .alignleft>figcaption,.wp-block-image .alignright>figcaption,.wp-block-image.aligncenter>figcaption,.wp-block-image.alignleft>figcaption,.wp-block-image.alignright>figcaption{caption-side:bottom;display:table-caption}.wp-block-image .alignleft{float:left;margin:.5em 1em .5em 0}.wp-block-image .alignright{float:right;margin:.5em 0 .5em 1em}.wp-block-image .aligncenter{margin-left:auto;margin-right:auto}.wp-block-image :where(figcaption){margin-bottom:1em;margin-top:.5em}.wp-block-image.is-style-circle-mask img{border-radius:9999px}@supports ((-webkit-mask-image:none) or (mask-image:none)) or (-webkit-mask-image:none){.wp-block-image.is-style-circle-mask img{border-radius:0;-webkit-mask-image:url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="50"/></svg>');mask-image:url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="50"/></svg>');mask-mode:alpha;-webkit-mask-position:center;mask-position:center;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:contain;mask-size:contain}}:root :where(.wp-block-image.is-style-rounded img,.wp-block-image .is-style-rounded img){border-radius:9999px}.wp-block-image figure{margin:0}.wp-lightbox-container{display:flex;flex-direction:column;position:relative}.wp-lightbox-container img{cursor:zoom-in}.wp-lightbox-container img:hover+button{opacity:1}.wp-lightbox-container button{align-items:center;backdrop-filter:blur(16px) saturate(180%);background-color:rgba(90,90,90,.25);border:none;border-radius:4px;cursor:zoom-in;display:flex;height:20px;justify-content:center;opacity:0;padding:0;position:absolute;right:16px;text-align:center;top:16px;width:20px;z-index:100}@media not (prefers-reduced-motion){.wp-lightbox-container button{transition:opacity .2s ease}}.wp-lightbox-container button:focus-visible{outline:3px auto rgba(90,90,90,.25);outline:3px auto -webkit-focus-ring-color;outline-offset:3px}.wp-lightbox-container button:hover{cursor:pointer;opacity:1}.wp-lightbox-container button:focus{opacity:1}.wp-lightbox-container button:focus,.wp-lightbox-container button:hover,.wp-lightbox-container button:not(:hover):not(:active):not(.has-background){background-color:rgba(90,90,90,.25);border:none}.wp-lightbox-overlay{box-sizing:border-box;cursor:zoom-out;height:100vh;left:0;overflow:hidden;position:fixed;top:0;visibility:hidden;width:100%;z-index:100000}.wp-lightbox-overlay .wp-lightbox-close-button{align-items:center;cursor:pointer;display:flex;font-family:inherit;gap:8px;justify-content:center;line-height:1;min-height:40px;min-width:40px;padding:0 4px;position:absolute;right:calc(env(safe-area-inset-right) + 16px);top:calc(env(safe-area-inset-top) + 16px);z-index:5000000}.wp-lightbox-overlay .wp-lightbox-close-button:focus,.wp-lightbox-overlay .wp-lightbox-close-button:hover,.wp-lightbox-overlay .wp-lightbox-close-button:not(:hover):not(:active):not(.has-background){background:none;border:none}.wp-lightbox-overlay .wp-lightbox-close-button:has(.wp-lightbox-close-text:not([hidden])) .wp-lightbox-close-icon svg{height:1em;width:1em}.wp-lightbox-overlay .wp-lightbox-close-icon svg{display:block}.wp-lightbox-overlay .wp-lightbox-navigation-button-next,.wp-lightbox-overlay .wp-lightbox-navigation-button-prev{align-items:center;bottom:16px;cursor:pointer;display:flex;font-family:inherit;gap:4px;justify-content:center;line-height:1;min-height:40px;min-width:40px;padding:0 8px;position:absolute;z-index:2000002}.wp-lightbox-overlay .wp-lightbox-navigation-button-next[hidden],.wp-lightbox-overlay .wp-lightbox-navigation-button-prev[hidden]{display:none}@media (min-width:960px){.wp-lightbox-overlay .wp-lightbox-navigation-button-next,.wp-lightbox-overlay .wp-lightbox-navigation-button-prev{bottom:50%;transform:translateY(-50%)}}.wp-lightbox-overlay .wp-lightbox-navigation-button-next:focus,.wp-lightbox-overlay .wp-lightbox-navigation-button-next:hover,.wp-lightbox-overlay .wp-lightbox-navigation-button-next:not(:hover):not(:active):not(.has-background),.wp-lightbox-overlay .wp-lightbox-navigation-button-prev:focus,.wp-lightbox-overlay .wp-lightbox-navigation-button-prev:hover,.wp-lightbox-overlay .wp-lightbox-navigation-button-prev:not(:hover):not(:active):not(.has-background){background:none;border:none;padding:0 8px}.wp-lightbox-overlay .wp-lightbox-navigation-button-next:has(.wp-lightbox-navigation-text:not([hidden])) .wp-lightbox-navigation-icon svg,.wp-lightbox-overlay .wp-lightbox-navigation-button-prev:has(.wp-lightbox-navigation-text:not([hidden])) .wp-lightbox-navigation-icon svg{display:block;height:1.5em;width:1.5em}.wp-lightbox-overlay .wp-lightbox-navigation-button-prev{left:calc(env(safe-area-inset-left) + 16px)}.wp-lightbox-overlay .wp-lightbox-navigation-button-next{right:calc(env(safe-area-inset-right) + 16px)}.wp-lightbox-overlay .wp-lightbox-navigation-icon svg{vertical-align:middle}.wp-lightbox-overlay .lightbox-image-container{height:var(--wp--lightbox-container-height);left:50%;overflow:hidden;position:absolute;top:50%;transform:translate(-50%,-50%);transform-origin:top left;width:var(--wp--lightbox-container-width);z-index:2000001}.wp-lightbox-overlay .wp-block-image{align-items:center;box-sizing:border-box;display:flex;height:100%;justify-content:center;margin:0;position:relative;transform-origin:0 0;width:100%;z-index:3000000}.wp-lightbox-overlay .wp-block-image img{height:var(--wp--lightbox-image-height);min-height:var(--wp--lightbox-image-height);min-width:var(--wp--lightbox-image-width);width:var(--wp--lightbox-image-width)}.wp-lightbox-overlay .wp-block-image figcaption{display:none}.wp-lightbox-overlay button{background:none;border:none}.wp-lightbox-overlay .scrim{background-color:#fff;height:100%;opacity:.9;position:absolute;width:100%;z-index:2000000}.wp-lightbox-overlay.active{visibility:visible}@media not (prefers-reduced-motion){.wp-lightbox-overlay.active{animation:turn-on-visibility .25s both}.wp-lightbox-overlay.active img{animation:turn-on-visibility .35s both}.wp-lightbox-overlay.show-closing-animation:not(.active){animation:turn-off-visibility .35s both}.wp-lightbox-overlay.show-closing-animation:not(.active) img{animation:turn-off-visibility .25s both}.wp-lightbox-overlay.zoom.active{animation:none;opacity:1;visibility:visible}.wp-lightbox-overlay.zoom.active .lightbox-image-container{animation:lightbox-zoom-in .4s}.wp-lightbox-overlay.zoom.active .lightbox-image-container img{animation:none}.wp-lightbox-overlay.zoom.active .scrim{animation:turn-on-visibility .4s forwards}.wp-lightbox-overlay.zoom.show-closing-animation:not(.active){animation:none}.wp-lightbox-overlay.zoom.show-closing-animation:not(.active) .lightbox-image-container{animation:lightbox-zoom-out .4s}.wp-lightbox-overlay.zoom.show-closing-animation:not(.active) .lightbox-image-container img{animation:none}.wp-lightbox-overlay.zoom.show-closing-animation:not(.active) .scrim{animation:turn-off-visibility .4s forwards}}@keyframes show-content-image{0%{visibility:hidden}99%{visibility:hidden}to{visibility:visible}}@keyframes turn-on-visibility{0%{opacity:0}to{opacity:1}}@keyframes turn-off-visibility{0%{opacity:1;visibility:visible}99%{opacity:0;visibility:visible}to{opacity:0;visibility:hidden}}@keyframes lightbox-zoom-in{0%{transform:translate(calc((-100vw + var(--wp--lightbox-scrollbar-width))/2 + var(--wp--lightbox-initial-left-position)),calc(-50vh + var(--wp--lightbox-initial-top-position))) scale(var(--wp--lightbox-scale))}to{transform:translate(-50%,-50%) scale(1)}}@keyframes lightbox-zoom-out{0%{transform:translate(-50%,-50%) scale(1);visibility:visible}99%{visibility:visible}to{transform:translate(calc((-100vw + var(--wp--lightbox-scrollbar-width))/2 + var(--wp--lightbox-initial-left-position)),calc(-50vh + var(--wp--lightbox-initial-top-position))) scale(var(--wp--lightbox-scale));visibility:hidden}}
+/*# sourceURL=https://restfulapi.net/wp-includes/blocks/image/style.min.css */
+</style>
+<style id="wp-block-list-inline-css">
+ol,ul{box-sizing:border-box}:root :where(.wp-block-list.has-background){padding:1.25em 2.375em}
+/*# sourceURL=https://restfulapi.net/wp-includes/blocks/list/style.min.css */
+</style>
+<style id="wp-block-paragraph-inline-css">
+.is-small-text{font-size:.875em}.is-regular-text{font-size:1em}.is-large-text{font-size:2.25em}.is-larger-text{font-size:3em}.has-drop-cap:not(:focus):first-letter{float:left;font-size:8.4em;font-style:normal;font-weight:100;line-height:.68;margin:.05em .1em 0 0;text-transform:uppercase}body.rtl .has-drop-cap:not(:focus):first-letter{float:none;margin-left:.1em}p.has-drop-cap.has-background{overflow:hidden}:root :where(p.has-background){padding:1.25em 2.375em}:where(p.has-text-color:not(.has-link-color)) a{color:inherit}p.has-text-align-left[style*="writing-mode:vertical-lr"],p.has-text-align-right[style*="writing-mode:vertical-rl"]{rotate:180deg}
+/*# sourceURL=https://restfulapi.net/wp-includes/blocks/paragraph/style.min.css */
+</style>
+<style id="wp-block-code-inline-css">
+.wp-block-code{box-sizing:border-box}.wp-block-code code{direction:ltr;display:block;font-family:inherit;overflow-wrap:break-word;text-align:initial;white-space:break-spaces}
+/*# sourceURL=https://restfulapi.net/wp-includes/blocks/code/style.min.css */
+</style>
+<style id="wp-block-table-inline-css">
+.wp-block-table{overflow-x:auto}.wp-block-table table{border-collapse:collapse;width:100%}.wp-block-table thead{border-bottom:3px solid}.wp-block-table tfoot{border-top:3px solid}.wp-block-table td,.wp-block-table th{border:1px solid;padding:.5em}.wp-block-table .has-fixed-layout{table-layout:fixed;width:100%}.wp-block-table .has-fixed-layout td,.wp-block-table .has-fixed-layout th{word-break:break-word}.wp-block-table.aligncenter,.wp-block-table.alignleft,.wp-block-table.alignright{display:table;width:auto}.wp-block-table.aligncenter td,.wp-block-table.aligncenter th,.wp-block-table.alignleft td,.wp-block-table.alignleft th,.wp-block-table.alignright td,.wp-block-table.alignright th{word-break:break-word}.wp-block-table .has-subtle-light-gray-background-color{background-color:#f3f4f5}.wp-block-table .has-subtle-pale-green-background-color{background-color:#e9fbe5}.wp-block-table .has-subtle-pale-blue-background-color{background-color:#e7f5fe}.wp-block-table .has-subtle-pale-pink-background-color{background-color:#fcf0ef}.wp-block-table.is-style-stripes{background-color:transparent;border-collapse:inherit;border-spacing:0}.wp-block-table.is-style-stripes tbody tr:nth-child(odd){background-color:#f0f0f0}.wp-block-table.is-style-stripes.has-subtle-light-gray-background-color tbody tr:nth-child(odd){background-color:#f3f4f5}.wp-block-table.is-style-stripes.has-subtle-pale-green-background-color tbody tr:nth-child(odd){background-color:#e9fbe5}.wp-block-table.is-style-stripes.has-subtle-pale-blue-background-color tbody tr:nth-child(odd){background-color:#e7f5fe}.wp-block-table.is-style-stripes.has-subtle-pale-pink-background-color tbody tr:nth-child(odd){background-color:#fcf0ef}.wp-block-table.is-style-stripes td,.wp-block-table.is-style-stripes th{border-color:transparent}.wp-block-table.is-style-stripes{border-bottom:1px solid #f0f0f0}.wp-block-table .has-border-color td,.wp-block-table .has-border-color th,.wp-block-table .has-border-color tr,.wp-block-table .has-border-color>*{border-color:inherit}.wp-block-table table[style*=border-top-color] tr:first-child,.wp-block-table table[style*=border-top-color] tr:first-child td,.wp-block-table table[style*=border-top-color] tr:first-child th,.wp-block-table table[style*=border-top-color]>*,.wp-block-table table[style*=border-top-color]>* td,.wp-block-table table[style*=border-top-color]>* th{border-top-color:inherit}.wp-block-table table[style*=border-top-color] tr:not(:first-child){border-top-color:currentColor}.wp-block-table table[style*=border-right-color] td:last-child,.wp-block-table table[style*=border-right-color] th,.wp-block-table table[style*=border-right-color] tr,.wp-block-table table[style*=border-right-color]>*{border-right-color:inherit}.wp-block-table table[style*=border-bottom-color] tr:last-child,.wp-block-table table[style*=border-bottom-color] tr:last-child td,.wp-block-table table[style*=border-bottom-color] tr:last-child th,.wp-block-table table[style*=border-bottom-color]>*,.wp-block-table table[style*=border-bottom-color]>* td,.wp-block-table table[style*=border-bottom-color]>* th{border-bottom-color:inherit}.wp-block-table table[style*=border-bottom-color] tr:not(:last-child){border-bottom-color:currentColor}.wp-block-table table[style*=border-left-color] td:first-child,.wp-block-table table[style*=border-left-color] th,.wp-block-table table[style*=border-left-color] tr,.wp-block-table table[style*=border-left-color]>*{border-left-color:inherit}.wp-block-table table[style*=border-style] td,.wp-block-table table[style*=border-style] th,.wp-block-table table[style*=border-style] tr,.wp-block-table table[style*=border-style]>*{border-style:inherit}.wp-block-table table[style*=border-width] td,.wp-block-table table[style*=border-width] th,.wp-block-table table[style*=border-width] tr,.wp-block-table table[style*=border-width]>*{border-style:inherit;border-width:inherit}
+/*# sourceURL=https://restfulapi.net/wp-includes/blocks/table/style.min.css */
+</style>
+
+<style id="classic-theme-styles-inline-css">
+/*! This file is auto-generated */
+.wp-block-button__link{color:#fff;background-color:#32373c;border-radius:9999px;box-shadow:none;text-decoration:none;padding:calc(.667em + 2px) calc(1.333em + 2px);font-size:1.125em}.wp-block-file__button{background:#32373c;color:#fff;text-decoration:none}
+/*# sourceURL=/wp-includes/css/classic-themes.min.css */
+</style>
+
+<style id="global-styles-inline-css">
+:root{--wp--preset--aspect-ratio--square: 1;--wp--preset--aspect-ratio--4-3: 4/3;--wp--preset--aspect-ratio--3-4: 3/4;--wp--preset--aspect-ratio--3-2: 3/2;--wp--preset--aspect-ratio--2-3: 2/3;--wp--preset--aspect-ratio--16-9: 16/9;--wp--preset--aspect-ratio--9-16: 9/16;--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--color--contrast: var(--contrast);--wp--preset--color--contrast-2: var(--contrast-2);--wp--preset--color--contrast-3: var(--contrast-3);--wp--preset--color--base: var(--base);--wp--preset--color--base-2: var(--base-2);--wp--preset--color--base-3: var(--base-3);--wp--preset--color--accent: var(--accent);--wp--preset--color--global-color-8: var(--global-color-8);--wp--preset--color--global-color-9: var(--global-color-9);--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgb(6,147,227) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgb(252,185,0) 0%,rgb(255,105,0) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgb(255,105,0) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 36px;--wp--preset--font-size--x-large: 42px;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgb(255, 255, 255), 6px 6px rgb(0, 0, 0);--wp--preset--shadow--crisp: 6px 6px 0px rgb(0, 0, 0);}.wp-block-button{--wp--preset--dimension--25: 25%;--wp--preset--dimension--50: 50%;--wp--preset--dimension--75: 75%;--wp--preset--dimension--100: 100%;}:where(body) { margin: 0; }:where(.is-layout-flex){gap: 0.5em;}:where(.is-layout-grid){gap: 0.5em;}body .is-layout-flex{display: flex;}.is-layout-flex{flex-wrap: wrap;align-items: center;}.is-layout-flex > :is(*, div){margin: 0;}body .is-layout-grid{display: grid;}.is-layout-grid > :is(*, div){margin: 0;}body{padding-top: 0px;padding-right: 0px;padding-bottom: 0px;padding-left: 0px;}:root :where(.wp-element-button, .wp-block-button__link){background-color: #32373c;border-width: 0;color: #fff;font-family: inherit;font-size: inherit;font-style: inherit;font-weight: inherit;letter-spacing: inherit;line-height: inherit;padding-top: calc(0.667em + 2px);padding-right: calc(1.333em + 2px);padding-bottom: calc(0.667em + 2px);padding-left: calc(1.333em + 2px);text-decoration: none;text-transform: inherit;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-contrast-color{color: var(--wp--preset--color--contrast) !important;}.has-contrast-2-color{color: var(--wp--preset--color--contrast-2) !important;}.has-contrast-3-color{color: var(--wp--preset--color--contrast-3) !important;}.has-base-color{color: var(--wp--preset--color--base) !important;}.has-base-2-color{color: var(--wp--preset--color--base-2) !important;}.has-base-3-color{color: var(--wp--preset--color--base-3) !important;}.has-accent-color{color: var(--wp--preset--color--accent) !important;}.has-global-color-8-color{color: var(--wp--preset--color--global-color-8) !important;}.has-global-color-9-color{color: var(--wp--preset--color--global-color-9) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-contrast-background-color{background-color: var(--wp--preset--color--contrast) !important;}.has-contrast-2-background-color{background-color: var(--wp--preset--color--contrast-2) !important;}.has-contrast-3-background-color{background-color: var(--wp--preset--color--contrast-3) !important;}.has-base-background-color{background-color: var(--wp--preset--color--base) !important;}.has-base-2-background-color{background-color: var(--wp--preset--color--base-2) !important;}.has-base-3-background-color{background-color: var(--wp--preset--color--base-3) !important;}.has-accent-background-color{background-color: var(--wp--preset--color--accent) !important;}.has-global-color-8-background-color{background-color: var(--wp--preset--color--global-color-8) !important;}.has-global-color-9-background-color{background-color: var(--wp--preset--color--global-color-9) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-contrast-border-color{border-color: var(--wp--preset--color--contrast) !important;}.has-contrast-2-border-color{border-color: var(--wp--preset--color--contrast-2) !important;}.has-contrast-3-border-color{border-color: var(--wp--preset--color--contrast-3) !important;}.has-base-border-color{border-color: var(--wp--preset--color--base) !important;}.has-base-2-border-color{border-color: var(--wp--preset--color--base-2) !important;}.has-base-3-border-color{border-color: var(--wp--preset--color--base-3) !important;}.has-accent-border-color{border-color: var(--wp--preset--color--accent) !important;}.has-global-color-8-border-color{border-color: var(--wp--preset--color--global-color-8) !important;}.has-global-color-9-border-color{border-color: var(--wp--preset--color--global-color-9) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}
+/*# sourceURL=global-styles-inline-css */
+</style>
+
+<link rel='stylesheet' id='mkaz-code-syntax-prism-css-css' href='https://restfulapi.net/wp-content/plugins/code-syntax-block/assets/prism-onedark.css' media='all' />
+<link rel='stylesheet' id='generate-comments-css' href='https://restfulapi.net/wp-content/themes/generatepress/assets/css/components/comments.min.css' media='all' />
+<link rel='stylesheet' id='generate-widget-areas-css' href='https://restfulapi.net/wp-content/themes/generatepress/assets/css/components/widget-areas.min.css' media='all' />
+<link rel='stylesheet' id='generate-style-css' href='https://restfulapi.net/wp-content/themes/generatepress/assets/css/main.min.css' media='all' />
+<style id="generate-style-inline-css">
+@media (max-width:768px){}
+body{background-color:var(--base-3);color:var(--contrast);}a{color:var(--global-color-8);}a:hover, a:focus, a:active{color:var(--global-color-9);}.grid-container{max-width:2000px;}.wp-block-group__inner-container{max-width:2000px;margin-left:auto;margin-right:auto;}.generate-back-to-top{font-size:20px;border-radius:3px;position:fixed;bottom:30px;right:30px;line-height:40px;width:40px;text-align:center;z-index:10;transition:opacity 300ms ease-in-out;opacity:0.1;transform:translateY(1000px);}.generate-back-to-top__show{opacity:1;transform:translateY(0);}.navigation-search{position:absolute;left:-99999px;pointer-events:none;visibility:hidden;z-index:20;width:100%;top:0;transition:opacity 100ms ease-in-out;opacity:0;}.navigation-search.nav-search-active{left:0;right:0;pointer-events:auto;visibility:visible;opacity:1;}.navigation-search input[type="search"]{outline:0;border:0;vertical-align:bottom;line-height:1;opacity:0.9;width:100%;z-index:20;border-radius:0;-webkit-appearance:none;height:60px;}.navigation-search input::-ms-clear{display:none;width:0;height:0;}.navigation-search input::-ms-reveal{display:none;width:0;height:0;}.navigation-search input::-webkit-search-decoration, .navigation-search input::-webkit-search-cancel-button, .navigation-search input::-webkit-search-results-button, .navigation-search input::-webkit-search-results-decoration{display:none;}.gen-sidebar-nav .navigation-search{top:auto;bottom:0;}:root{--contrast:#0b0521;--contrast-2:#383f49;--contrast-3:#62707c;--base:#526e7c;--base-2:#f7f8f9;--base-3:#ffffff;--accent:rgba(0,0,0,0.98);--global-color-8:#5060cc;--global-color-9:#5847f0;}:root .has-contrast-color{color:var(--contrast);}:root .has-contrast-background-color{background-color:var(--contrast);}:root .has-contrast-2-color{color:var(--contrast-2);}:root .has-contrast-2-background-color{background-color:var(--contrast-2);}:root .has-contrast-3-color{color:var(--contrast-3);}:root .has-contrast-3-background-color{background-color:var(--contrast-3);}:root .has-base-color{color:var(--base);}:root .has-base-background-color{background-color:var(--base);}:root .has-base-2-color{color:var(--base-2);}:root .has-base-2-background-color{background-color:var(--base-2);}:root .has-base-3-color{color:var(--base-3);}:root .has-base-3-background-color{background-color:var(--base-3);}:root .has-accent-color{color:var(--accent);}:root .has-accent-background-color{background-color:var(--accent);}:root .has-global-color-8-color{color:var(--global-color-8);}:root .has-global-color-8-background-color{background-color:var(--global-color-8);}:root .has-global-color-9-color{color:var(--global-color-9);}:root .has-global-color-9-background-color{background-color:var(--global-color-9);}body, button, input, select, textarea{font-family:-apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";font-weight:normal;font-size:18px;}body{line-height:1.7;}.main-title{font-size:34px;}@media (max-width:768px){.main-title{font-size:24px;}}.site-description{font-size:12px;}.main-navigation a, .main-navigation .menu-toggle, .main-navigation .menu-bar-items{font-weight:400;text-transform:uppercase;font-size:17px;letter-spacing:0.36px;}.widget-title{font-size:16px;}button:not(.menu-toggle),html input[type="button"],input[type="reset"],input[type="submit"],.button,.wp-block-button .wp-block-button__link{font-weight:600;}h2.entry-title{font-size:20px;line-height:1.2;}.site-info{font-size:15px;}h1{font-weight:700;font-size:52px;line-height:1.2;}h2{font-weight:700;font-size:32px;line-height:1.5;margin-bottom:30px;}@media (max-width:768px){h2{line-height:1.3;}}h3{font-weight:700;font-size:24px;line-height:1.7em;}h4{font-weight:600;font-size:20px;line-height:1.7em;}h5{font-size:20px;}h6{font-size:20px;}.top-bar{background-color:#b11919;color:#ffffff;}.top-bar a{color:#ffffff;}.top-bar a:hover{color:#303030;}.site-header{background-color:var(--base-3);color:var(--contrast);}.site-header a{color:var(--contrast);}.site-header a:hover{color:var(--contrast-3);}.main-title a,.main-title a:hover{color:var(--contrast);}.site-description{color:var(--contrast);}.mobile-menu-control-wrapper .menu-toggle,.mobile-menu-control-wrapper .menu-toggle:hover,.mobile-menu-control-wrapper .menu-toggle:focus,.has-inline-mobile-toggle #site-navigation.toggled{background-color:rgba(0, 0, 0, 0.02);}.main-navigation,.main-navigation ul ul{background-color:var(--base-3);}.main-navigation .main-nav ul li a, .main-navigation .menu-toggle, .main-navigation .menu-bar-items{color:var(--contrast);}.main-navigation .main-nav ul li:not([class*="current-menu-"]):hover > a, .main-navigation .main-nav ul li:not([class*="current-menu-"]):focus > a, .main-navigation .main-nav ul li.sfHover:not([class*="current-menu-"]) > a, .main-navigation .menu-bar-item:hover > a, .main-navigation .menu-bar-item.sfHover > a{color:var(--contrast-3);background-color:rgba(63,63,63,0);}button.menu-toggle:hover,button.menu-toggle:focus{color:var(--contrast);}.main-navigation .main-nav ul li[class*="current-menu-"] > a{color:var(--contrast-3);background-color:rgba(63,63,63,0);}.navigation-search input[type="search"],.navigation-search input[type="search"]:active, .navigation-search input[type="search"]:focus, .main-navigation .main-nav ul li.search-item.active > a, .main-navigation .menu-bar-items .search-item.active > a{color:var(--contrast-2);background-color:var(--base-3);opacity:1;}.main-navigation ul ul{background-color:var(--contrast-2);}.main-navigation .main-nav ul ul li a{color:var(--base-3);}.main-navigation .main-nav ul ul li:not([class*="current-menu-"]):hover > a,.main-navigation .main-nav ul ul li:not([class*="current-menu-"]):focus > a, .main-navigation .main-nav ul ul li.sfHover:not([class*="current-menu-"]) > a{color:var(--base-3);background-color:var(--contrast-2);}.main-navigation .main-nav ul ul li[class*="current-menu-"] > a{color:var(--contrast-3);background-color:var(--contrast-2);}.separate-containers .inside-article, .separate-containers .comments-area, .separate-containers .page-header, .one-container .container, .separate-containers .paging-navigation, .inside-page-header{background-color:var(--base-3);}.inside-article a,.paging-navigation a,.comments-area a,.page-header a{color:var(--global-color-9);}.inside-article a:hover,.paging-navigation a:hover,.comments-area a:hover,.page-header a:hover{color:var(--global-color-8);}.entry-title a{color:var(--contrast);}.entry-title a:hover{color:var(--contrast);}.entry-meta{color:var(--contrast);}.entry-meta a{color:var(--contrast-3);}.entry-meta a:hover{color:var(--accent);}h2{color:var(--contrast);}.sidebar .widget{background-color:#ffffff;}.sidebar .widget .widget-title{color:#000000;}.footer-widgets{color:var(--base-3);background-color:var(--accent);}.footer-widgets a{color:var(--base-3);}.footer-widgets .widget-title{color:var(--base-3);}.site-info{color:var(--base-3);background-color:var(--contrast);}.site-info a{color:var(--base-3);}.site-info a:hover{color:var(--contrast-3);}.footer-bar .widget_nav_menu .current-menu-item a{color:var(--contrast-3);}input[type="text"],input[type="email"],input[type="url"],input[type="password"],input[type="search"],input[type="tel"],input[type="number"],textarea,select{color:#666666;background-color:#fafafa;border-color:#cccccc;}input[type="text"]:focus,input[type="email"]:focus,input[type="url"]:focus,input[type="password"]:focus,input[type="search"]:focus,input[type="tel"]:focus,input[type="number"]:focus,textarea:focus,select:focus{color:#666666;background-color:#ffffff;border-color:#bfbfbf;}button,html input[type="button"],input[type="reset"],input[type="submit"],a.button,a.wp-block-button__link:not(.has-background){color:var(--base-3);background-color:var(--contrast);}button:hover,html input[type="button"]:hover,input[type="reset"]:hover,input[type="submit"]:hover,a.button:hover,button:focus,html input[type="button"]:focus,input[type="reset"]:focus,input[type="submit"]:focus,a.button:focus,a.wp-block-button__link:not(.has-background):active,a.wp-block-button__link:not(.has-background):focus,a.wp-block-button__link:not(.has-background):hover{color:var(--base-3);background-color:var(--contrast-3);}a.generate-back-to-top{background-color:rgba( 0,0,0,0.4 );color:#ffffff;}a.generate-back-to-top:hover,a.generate-back-to-top:focus{background-color:rgba( 0,0,0,0.6 );color:#ffffff;}:root{--gp-search-modal-bg-color:var(--base-3);--gp-search-modal-text-color:var(--contrast);--gp-search-modal-overlay-bg-color:rgba(0,0,0,0.2);}@media (max-width: 768px){.main-navigation .menu-bar-item:hover > a, .main-navigation .menu-bar-item.sfHover > a{background:none;color:var(--contrast);}}.nav-below-header .main-navigation .inside-navigation.grid-container, .nav-above-header .main-navigation .inside-navigation.grid-container{padding:0px 20px 0px 20px;}.site-main .wp-block-group__inner-container{padding:40px;}.separate-containers .paging-navigation{padding-top:20px;padding-bottom:20px;}.entry-content .alignwide, body:not(.no-sidebar) .entry-content .alignfull{margin-left:-40px;width:calc(100% + 80px);max-width:calc(100% + 80px);}.sidebar .widget, .page-header, .widget-area .main-navigation, .site-main > *{margin-bottom:40px;}.separate-containers .site-main{margin:40px;}.both-right .inside-left-sidebar,.both-left .inside-left-sidebar{margin-right:20px;}.both-right .inside-right-sidebar,.both-left .inside-right-sidebar{margin-left:20px;}.separate-containers .featured-image{margin-top:40px;}.separate-containers .inside-right-sidebar, .separate-containers .inside-left-sidebar{margin-top:40px;margin-bottom:40px;}.rtl .menu-item-has-children .dropdown-menu-toggle{padding-left:20px;}.rtl .main-navigation .main-nav ul li.menu-item-has-children > a{padding-right:20px;}.widget-area .widget{padding:10px 20px 25px 20px;}.footer-widgets-container{padding:60px 40px 60px 40px;}.inside-site-info{padding:40px 20px 40px 20px;}@media (max-width:768px){.separate-containers .inside-article, .separate-containers .comments-area, .separate-containers .page-header, .separate-containers .paging-navigation, .one-container .site-content, .inside-page-header{padding:50px 20px 50px 20px;}.site-main .wp-block-group__inner-container{padding:50px 20px 50px 20px;}.inside-header{padding-right:25px;padding-left:25px;}.footer-widgets-container{padding-right:25px;padding-left:25px;}.inside-site-info{padding-right:10px;padding-left:10px;}.entry-content .alignwide, body:not(.no-sidebar) .entry-content .alignfull{margin-left:-20px;width:calc(100% + 40px);max-width:calc(100% + 40px);}.one-container .site-main .paging-navigation{margin-bottom:40px;}}/* End cached CSS */.is-right-sidebar{width:25%;}.is-left-sidebar{width:15%;}.site-content .content-area{width:60%;}@media (max-width: 768px){.main-navigation .menu-toggle,.sidebar-nav-mobile:not(#sticky-placeholder){display:block;}.main-navigation ul,.gen-sidebar-nav,.main-navigation:not(.slideout-navigation):not(.toggled) .main-nav > ul,.has-inline-mobile-toggle #site-navigation .inside-navigation > *:not(.navigation-search):not(.main-nav){display:none;}.nav-align-right .inside-navigation,.nav-align-center .inside-navigation{justify-content:space-between;}.has-inline-mobile-toggle .mobile-menu-control-wrapper{display:flex;flex-wrap:wrap;}.has-inline-mobile-toggle .inside-header{flex-direction:row;text-align:left;flex-wrap:wrap;}.has-inline-mobile-toggle .header-widget,.has-inline-mobile-toggle #site-navigation{flex-basis:100%;}.nav-float-left .has-inline-mobile-toggle #site-navigation{order:10;}}
+.dynamic-author-image-rounded{border-radius:100%;}.dynamic-featured-image, .dynamic-author-image{vertical-align:middle;}.one-container.blog .dynamic-content-template:not(:last-child), .one-container.archive .dynamic-content-template:not(:last-child){padding-bottom:0px;}.dynamic-entry-excerpt > p:last-child{margin-bottom:0px;}
+.page-hero{background-color:rgba(34,34,34,0.5);color:#ffffff;}.page-hero .inside-page-hero.grid-container{max-width:calc(2000px - 0px - 0px);}.page-hero h1, .page-hero h2, .page-hero h3, .page-hero h4, .page-hero h5, .page-hero h6{color:#ffffff;}.inside-page-hero > *:last-child{margin-bottom:0px;}.page-hero a, .page-hero a:visited{color:#ffffff;}.page-hero a:hover{color:#ffffff;}.header-wrap{position:absolute;left:0px;right:0px;z-index:10;}.header-wrap .site-header{background:#ffffff;}.header-wrap .main-title a, .header-wrap .main-title a:hover, .header-wrap .main-title a:visited{color:#0a0a0a;}.header-wrap .mobile-header-navigation:not(.navigation-stick):not(.toggled) .main-title a, .header-wrap .mobile-header-navigation:not(.navigation-stick):not(.toggled) .main-title a:hover, .header-wrap .mobile-header-navigation:not(.navigation-stick):not(.toggled) .main-title a:visited{color:#0a0a0a;}.header-wrap .site-description{color:#0a0a0a;}
+/*# sourceURL=generate-style-inline-css */
+</style>
+<link rel='stylesheet' id='generate-child-css' href='https://restfulapi.net/wp-content/themes/generatepress_child/style.css' media='all' />
+<link rel='stylesheet' id='wpdiscuz-frontend-css-css' href='https://restfulapi.net/wp-content/plugins/wpdiscuz/themes/default/style.css' media='all' />
+<style id="wpdiscuz-frontend-css-inline-css">
+ #wpdcom .wpd-blog-administrator .wpd-comment-label{color:#ffffff;background-color:#00B38F;border:none}#wpdcom .wpd-blog-administrator .wpd-comment-author, #wpdcom .wpd-blog-administrator .wpd-comment-author a{color:#00B38F}#wpdcom.wpd-layout-1 .wpd-comment .wpd-blog-administrator .wpd-avatar img{border-color:#00B38F}#wpdcom.wpd-layout-2 .wpd-comment.wpd-reply .wpd-comment-wrap.wpd-blog-administrator{border-left:3px solid #00B38F}#wpdcom.wpd-layout-2 .wpd-comment .wpd-blog-administrator .wpd-avatar img{border-bottom-color:#00B38F}#wpdcom.wpd-layout-3 .wpd-blog-administrator .wpd-comment-subheader{border-top:1px dashed #00B38F}#wpdcom.wpd-layout-3 .wpd-reply .wpd-blog-administrator .wpd-comment-right{border-left:1px solid #00B38F}#wpdcom .wpd-blog-editor .wpd-comment-label{color:#ffffff;background-color:#00B38F;border:none}#wpdcom .wpd-blog-editor .wpd-comment-author, #wpdcom .wpd-blog-editor .wpd-comment-author a{color:#00B38F}#wpdcom.wpd-layout-1 .wpd-comment .wpd-blog-editor .wpd-avatar img{border-color:#00B38F}#wpdcom.wpd-layout-2 .wpd-comment.wpd-reply .wpd-comment-wrap.wpd-blog-editor{border-left:3px solid #00B38F}#wpdcom.wpd-layout-2 .wpd-comment .wpd-blog-editor .wpd-avatar img{border-bottom-color:#00B38F}#wpdcom.wpd-layout-3 .wpd-blog-editor .wpd-comment-subheader{border-top:1px dashed #00B38F}#wpdcom.wpd-layout-3 .wpd-reply .wpd-blog-editor .wpd-comment-right{border-left:1px solid #00B38F}#wpdcom .wpd-blog-author .wpd-comment-label{color:#ffffff;background-color:#00B38F;border:none}#wpdcom .wpd-blog-author .wpd-comment-author, #wpdcom .wpd-blog-author .wpd-comment-author a{color:#00B38F}#wpdcom.wpd-layout-1 .wpd-comment .wpd-blog-author .wpd-avatar img{border-color:#00B38F}#wpdcom.wpd-layout-2 .wpd-comment .wpd-blog-author .wpd-avatar img{border-bottom-color:#00B38F}#wpdcom.wpd-layout-3 .wpd-blog-author .wpd-comment-subheader{border-top:1px dashed #00B38F}#wpdcom.wpd-layout-3 .wpd-reply .wpd-blog-author .wpd-comment-right{border-left:1px solid #00B38F}#wpdcom .wpd-blog-contributor .wpd-comment-label{color:#ffffff;background-color:#00B38F;border:none}#wpdcom .wpd-blog-contributor .wpd-comment-author, #wpdcom .wpd-blog-contributor .wpd-comment-author a{color:#00B38F}#wpdcom.wpd-layout-1 .wpd-comment .wpd-blog-contributor .wpd-avatar img{border-color:#00B38F}#wpdcom.wpd-layout-2 .wpd-comment .wpd-blog-contributor .wpd-avatar img{border-bottom-color:#00B38F}#wpdcom.wpd-layout-3 .wpd-blog-contributor .wpd-comment-subheader{border-top:1px dashed #00B38F}#wpdcom.wpd-layout-3 .wpd-reply .wpd-blog-contributor .wpd-comment-right{border-left:1px solid #00B38F}#wpdcom .wpd-blog-subscriber .wpd-comment-label{color:#ffffff;background-color:#00B38F;border:none}#wpdcom .wpd-blog-subscriber .wpd-comment-author, #wpdcom .wpd-blog-subscriber .wpd-comment-author a{color:#00B38F}#wpdcom.wpd-layout-2 .wpd-comment .wpd-blog-subscriber .wpd-avatar img{border-bottom-color:#00B38F}#wpdcom.wpd-layout-3 .wpd-blog-subscriber .wpd-comment-subheader{border-top:1px dashed #00B38F}#wpdcom .wpd-blog-bbp_keymaster .wpd-comment-label{color:#ffffff;background-color:#00B38F;border:none}#wpdcom .wpd-blog-bbp_keymaster .wpd-comment-author, #wpdcom .wpd-blog-bbp_keymaster .wpd-comment-author a{color:#00B38F}#wpdcom.wpd-layout-1 .wpd-comment .wpd-blog-bbp_keymaster .wpd-avatar img{border-color:#00B38F}#wpdcom.wpd-layout-2 .wpd-comment .wpd-blog-bbp_keymaster .wpd-avatar img{border-bottom-color:#00B38F}#wpdcom.wpd-layout-3 .wpd-blog-bbp_keymaster .wpd-comment-subheader{border-top:1px dashed #00B38F}#wpdcom.wpd-layout-3 .wpd-reply .wpd-blog-bbp_keymaster .wpd-comment-right{border-left:1px solid #00B38F}#wpdcom .wpd-blog-bbp_spectator .wpd-comment-label{color:#ffffff;background-color:#00B38F;border:none}#wpdcom .wpd-blog-bbp_spectator .wpd-comment-author, #wpdcom .wpd-blog-bbp_spectator .wpd-comment-author a{color:#00B38F}#wpdcom.wpd-layout-1 .wpd-comment .wpd-blog-bbp_spectator .wpd-avatar img{border-color:#00B38F}#wpdcom.wpd-layout-2 .wpd-comment .wpd-blog-bbp_spectator .wpd-avatar img{border-bottom-color:#00B38F}#wpdcom.wpd-layout-3 .wpd-blog-bbp_spectator .wpd-comment-subheader{border-top:1px dashed #00B38F}#wpdcom.wpd-layout-3 .wpd-reply .wpd-blog-bbp_spectator .wpd-comment-right{border-left:1px solid #00B38F}#wpdcom .wpd-blog-bbp_blocked .wpd-comment-label{color:#ffffff;background-color:#00B38F;border:none}#wpdcom .wpd-blog-bbp_blocked .wpd-comment-author, #wpdcom .wpd-blog-bbp_blocked .wpd-comment-author a{color:#00B38F}#wpdcom.wpd-layout-1 .wpd-comment .wpd-blog-bbp_blocked .wpd-avatar img{border-color:#00B38F}#wpdcom.wpd-layout-2 .wpd-comment .wpd-blog-bbp_blocked .wpd-avatar img{border-bottom-color:#00B38F}#wpdcom.wpd-layout-3 .wpd-blog-bbp_blocked .wpd-comment-subheader{border-top:1px dashed #00B38F}#wpdcom.wpd-layout-3 .wpd-reply .wpd-blog-bbp_blocked .wpd-comment-right{border-left:1px solid #00B38F}#wpdcom .wpd-blog-bbp_moderator .wpd-comment-label{color:#ffffff;background-color:#00B38F;border:none}#wpdcom .wpd-blog-bbp_moderator .wpd-comment-author, #wpdcom .wpd-blog-bbp_moderator .wpd-comment-author a{color:#00B38F}#wpdcom.wpd-layout-1 .wpd-comment .wpd-blog-bbp_moderator .wpd-avatar img{border-color:#00B38F}#wpdcom.wpd-layout-2 .wpd-comment .wpd-blog-bbp_moderator .wpd-avatar img{border-bottom-color:#00B38F}#wpdcom.wpd-layout-3 .wpd-blog-bbp_moderator .wpd-comment-subheader{border-top:1px dashed #00B38F}#wpdcom.wpd-layout-3 .wpd-reply .wpd-blog-bbp_moderator .wpd-comment-right{border-left:1px solid #00B38F}#wpdcom .wpd-blog-bbp_participant .wpd-comment-label{color:#ffffff;background-color:#00B38F;border:none}#wpdcom .wpd-blog-bbp_participant .wpd-comment-author, #wpdcom .wpd-blog-bbp_participant .wpd-comment-author a{color:#00B38F}#wpdcom.wpd-layout-1 .wpd-comment .wpd-blog-bbp_participant .wpd-avatar img{border-color:#00B38F}#wpdcom.wpd-layout-2 .wpd-comment .wpd-blog-bbp_participant .wpd-avatar img{border-bottom-color:#00B38F}#wpdcom.wpd-layout-3 .wpd-blog-bbp_participant .wpd-comment-subheader{border-top:1px dashed #00B38F}#wpdcom.wpd-layout-3 .wpd-reply .wpd-blog-bbp_participant .wpd-comment-right{border-left:1px solid #00B38F}#wpdcom .wpd-blog-pending .wpd-comment-label{color:#ffffff;background-color:#00B38F;border:none}#wpdcom .wpd-blog-pending .wpd-comment-author, #wpdcom .wpd-blog-pending .wpd-comment-author a{color:#00B38F}#wpdcom.wpd-layout-1 .wpd-comment .wpd-blog-pending .wpd-avatar img{border-color:#00B38F}#wpdcom.wpd-layout-2 .wpd-comment .wpd-blog-pending .wpd-avatar img{border-bottom-color:#00B38F}#wpdcom.wpd-layout-3 .wpd-blog-pending .wpd-comment-subheader{border-top:1px dashed #00B38F}#wpdcom.wpd-layout-3 .wpd-reply .wpd-blog-pending .wpd-comment-right{border-left:1px solid #00B38F}#wpdcom .wpd-blog-aioseo_manager .wpd-comment-label{color:#ffffff;background-color:#00B38F;border:none}#wpdcom .wpd-blog-aioseo_manager .wpd-comment-author, #wpdcom .wpd-blog-aioseo_manager .wpd-comment-author a{color:#00B38F}#wpdcom.wpd-layout-1 .wpd-comment .wpd-blog-aioseo_manager .wpd-avatar img{border-color:#00B38F}#wpdcom.wpd-layout-2 .wpd-comment .wpd-blog-aioseo_manager .wpd-avatar img{border-bottom-color:#00B38F}#wpdcom.wpd-layout-3 .wpd-blog-aioseo_manager .wpd-comment-subheader{border-top:1px dashed #00B38F}#wpdcom.wpd-layout-3 .wpd-reply .wpd-blog-aioseo_manager .wpd-comment-right{border-left:1px solid #00B38F}#wpdcom .wpd-blog-aioseo_editor .wpd-comment-label{color:#ffffff;background-color:#00B38F;border:none}#wpdcom .wpd-blog-aioseo_editor .wpd-comment-author, #wpdcom .wpd-blog-aioseo_editor .wpd-comment-author a{color:#00B38F}#wpdcom.wpd-layout-1 .wpd-comment .wpd-blog-aioseo_editor .wpd-avatar img{border-color:#00B38F}#wpdcom.wpd-layout-2 .wpd-comment .wpd-blog-aioseo_editor .wpd-avatar img{border-bottom-color:#00B38F}#wpdcom.wpd-layout-3 .wpd-blog-aioseo_editor .wpd-comment-subheader{border-top:1px dashed #00B38F}#wpdcom.wpd-layout-3 .wpd-reply .wpd-blog-aioseo_editor .wpd-comment-right{border-left:1px solid #00B38F}#wpdcom .wpd-blog-wpseo_manager .wpd-comment-label{color:#ffffff;background-color:#00B38F;border:none}#wpdcom .wpd-blog-wpseo_manager .wpd-comment-author, #wpdcom .wpd-blog-wpseo_manager .wpd-comment-author a{color:#00B38F}#wpdcom.wpd-layout-1 .wpd-comment .wpd-blog-wpseo_manager .wpd-avatar img{border-color:#00B38F}#wpdcom.wpd-layout-2 .wpd-comment .wpd-blog-wpseo_manager .wpd-avatar img{border-bottom-color:#00B38F}#wpdcom.wpd-layout-3 .wpd-blog-wpseo_manager .wpd-comment-subheader{border-top:1px dashed #00B38F}#wpdcom.wpd-layout-3 .wpd-reply .wpd-blog-wpseo_manager .wpd-comment-right{border-left:1px solid #00B38F}#wpdcom .wpd-blog-wpseo_editor .wpd-comment-label{color:#ffffff;background-color:#00B38F;border:none}#wpdcom .wpd-blog-wpseo_editor .wpd-comment-author, #wpdcom .wpd-blog-wpseo_editor .wpd-comment-author a{color:#00B38F}#wpdcom.wpd-layout-1 .wpd-comment .wpd-blog-wpseo_editor .wpd-avatar img{border-color:#00B38F}#wpdcom.wpd-layout-2 .wpd-comment .wpd-blog-wpseo_editor .wpd-avatar img{border-bottom-color:#00B38F}#wpdcom.wpd-layout-3 .wpd-blog-wpseo_editor .wpd-comment-subheader{border-top:1px dashed #00B38F}#wpdcom.wpd-layout-3 .wpd-reply .wpd-blog-wpseo_editor .wpd-comment-right{border-left:1px solid #00B38F}#wpdcom .wpd-blog-post_author .wpd-comment-label{color:#ffffff;background-color:#00B38F;border:none}#wpdcom .wpd-blog-post_author .wpd-comment-author, #wpdcom .wpd-blog-post_author .wpd-comment-author a{color:#00B38F}#wpdcom .wpd-blog-post_author .wpd-avatar img{border-color:#00B38F}#wpdcom.wpd-layout-1 .wpd-comment .wpd-blog-post_author .wpd-avatar img{border-color:#00B38F}#wpdcom.wpd-layout-2 .wpd-comment.wpd-reply .wpd-comment-wrap.wpd-blog-post_author{border-left:3px solid #00B38F}#wpdcom.wpd-layout-2 .wpd-comment .wpd-blog-post_author .wpd-avatar img{border-bottom-color:#00B38F}#wpdcom.wpd-layout-3 .wpd-blog-post_author .wpd-comment-subheader{border-top:1px dashed #00B38F}#wpdcom.wpd-layout-3 .wpd-reply .wpd-blog-post_author .wpd-comment-right{border-left:1px solid #00B38F}#wpdcom .wpd-blog-guest .wpd-comment-label{color:#ffffff;background-color:#00B38F;border:none}#wpdcom .wpd-blog-guest .wpd-comment-author, #wpdcom .wpd-blog-guest .wpd-comment-author a{color:#00B38F}#wpdcom.wpd-layout-3 .wpd-blog-guest .wpd-comment-subheader{border-top:1px dashed #00B38F}#comments, #respond, .comments-area, #wpdcom{}#wpdcom .ql-editor > *{color:#777777}#wpdcom .ql-editor::before{}#wpdcom .ql-toolbar{border:1px solid #DDDDDD;border-top:none}#wpdcom .ql-container{border:1px solid #DDDDDD;border-bottom:none}#wpdcom .wpd-form-row .wpdiscuz-item input[type="text"], #wpdcom .wpd-form-row .wpdiscuz-item input[type="email"], #wpdcom .wpd-form-row .wpdiscuz-item input[type="url"], #wpdcom .wpd-form-row .wpdiscuz-item input[type="color"], #wpdcom .wpd-form-row .wpdiscuz-item input[type="date"], #wpdcom .wpd-form-row .wpdiscuz-item input[type="datetime"], #wpdcom .wpd-form-row .wpdiscuz-item input[type="datetime-local"], #wpdcom .wpd-form-row .wpdiscuz-item input[type="month"], #wpdcom .wpd-form-row .wpdiscuz-item input[type="number"], #wpdcom .wpd-form-row .wpdiscuz-item input[type="time"], #wpdcom textarea, #wpdcom select{border:1px solid #DDDDDD;color:#777777}#wpdcom .wpd-form-row .wpdiscuz-item textarea{border:1px solid #DDDDDD}#wpdcom input::placeholder, #wpdcom textarea::placeholder, #wpdcom input::-moz-placeholder, #wpdcom textarea::-webkit-input-placeholder{}#wpdcom .wpd-comment-text{color:#777777}#wpdcom .wpd-thread-head .wpd-thread-info{border-bottom:2px solid #00B38F}#wpdcom .wpd-thread-head .wpd-thread-info.wpd-reviews-tab svg{fill:#00B38F}#wpdcom .wpd-thread-head .wpdiscuz-user-settings{border-bottom:2px solid #00B38F}#wpdcom .wpd-thread-head .wpdiscuz-user-settings:hover{color:#00B38F}#wpdcom .wpd-comment .wpd-follow-link:hover{color:#00B38F}#wpdcom .wpd-comment-status .wpd-sticky{color:#00B38F}#wpdcom .wpd-thread-filter .wpdf-active{color:#00B38F;border-bottom-color:#00B38F}#wpdcom .wpd-inline-filter-cta{border:1px dashed #33c3a6;background:#e6f8f4}#wpdcom .wpd-inline-filter-cta .wpd-current-view i{color:#00B38F}#wpdcom .wpd-filter-view-all:hover{background:#00B38F}#wpdcom .wpdiscuz-item .wpdiscuz-rating > label{color:#DDDDDD}#wpdcom .wpdiscuz-item .wpdiscuz-rating:not(:checked) > label:hover, .wpdiscuz-rating:not(:checked) > label:hover ~ label{}#wpdcom .wpdiscuz-item .wpdiscuz-rating > input ~ label:hover, #wpdcom .wpdiscuz-item .wpdiscuz-rating > input:not(:checked) ~ label:hover ~ label, #wpdcom .wpdiscuz-item .wpdiscuz-rating > input:not(:checked) ~ label:hover ~ label{color:#FFED85}#wpdcom .wpdiscuz-item .wpdiscuz-rating > input:checked ~ label:hover, #wpdcom .wpdiscuz-item .wpdiscuz-rating > input:checked ~ label:hover, #wpdcom .wpdiscuz-item .wpdiscuz-rating > label:hover ~ input:checked ~ label, #wpdcom .wpdiscuz-item .wpdiscuz-rating > input:checked + label:hover ~ label, #wpdcom .wpdiscuz-item .wpdiscuz-rating > input:checked ~ label:hover ~ label, .wpd-custom-field .wcf-active-star, #wpdcom .wpdiscuz-item .wpdiscuz-rating > input:checked ~ label{color:#FFD700}.wpd-post-rating .wpd-rating-wrap .wpd-rating-stars svg .wpd-star{fill:#DDDDDD}.wpd-post-rating .wpd-rating-wrap .wpd-rating-stars svg .wpd-active{fill:#FFD700}.wpd-post-rating .wpd-rating-wrap .wpd-rate-starts svg .wpd-star{fill:#DDDDDD}.wpd-post-rating .wpd-rating-wrap .wpd-rate-starts:hover svg .wpd-star{fill:#FFED85}.wpd-post-rating.wpd-not-rated .wpd-rating-wrap .wpd-rate-starts svg:hover ~ svg .wpd-star{fill:#DDDDDD}.wpdiscuz-post-rating-wrap .wpd-rating .wpd-rating-wrap .wpd-rating-stars svg .wpd-star{fill:#DDDDDD}.wpdiscuz-post-rating-wrap .wpd-rating .wpd-rating-wrap .wpd-rating-stars svg .wpd-active{fill:#FFD700}#wpdcom .wpd-comment .wpd-follow-active{color:#ff7a00}#wpdcom .page-numbers{color:#555;border:#555 1px solid}#wpdcom span.current{background:#555}#wpdcom.wpd-layout-1 .wpd-new-loaded-comment > .wpd-comment-wrap > .wpd-comment-right{background:#FFFAD6}#wpdcom.wpd-layout-2 .wpd-new-loaded-comment.wpd-comment > .wpd-comment-wrap > .wpd-comment-right{background:#FFFAD6}#wpdcom.wpd-layout-2 .wpd-new-loaded-comment.wpd-comment.wpd-reply > .wpd-comment-wrap > .wpd-comment-right{background:transparent}#wpdcom.wpd-layout-2 .wpd-new-loaded-comment.wpd-comment.wpd-reply > .wpd-comment-wrap{background:#FFFAD6}#wpdcom.wpd-layout-3 .wpd-new-loaded-comment.wpd-comment > .wpd-comment-wrap > .wpd-comment-right{background:#FFFAD6}#wpdcom .wpd-follow:hover i, #wpdcom .wpd-unfollow:hover i, #wpdcom .wpd-comment .wpd-follow-active:hover i{color:#00B38F}#wpdcom .wpdiscuz-readmore{cursor:pointer;color:#00B38F}.wpd-custom-field .wcf-pasiv-star, #wpcomm .wpdiscuz-item .wpdiscuz-rating > label{color:#DDDDDD}.wpd-wrapper .wpd-list-item.wpd-active{border-top:3px solid #00B38F}#wpdcom.wpd-layout-2 .wpd-comment.wpd-reply.wpd-unapproved-comment .wpd-comment-wrap{border-left:3px solid #FFFAD6}#wpdcom.wpd-layout-3 .wpd-comment.wpd-reply.wpd-unapproved-comment .wpd-comment-right{border-left:1px solid #FFFAD6}#wpdcom .wpd-prim-button{background-color:#555555;color:#FFFFFF}#wpdcom .wpd_label__check i.wpdicon-on{color:#555555;border:1px solid #aaaaaa}#wpd-bubble-wrapper #wpd-bubble-all-comments-count{color:#1DB99A}#wpd-bubble-wrapper > div{background-color:#1DB99A}#wpd-bubble-wrapper > #wpd-bubble #wpd-bubble-add-message{background-color:#1DB99A}#wpd-bubble-wrapper > #wpd-bubble #wpd-bubble-add-message::before{border-left-color:#1DB99A;border-right-color:#1DB99A}#wpd-bubble-wrapper.wpd-right-corner > #wpd-bubble #wpd-bubble-add-message::before{border-left-color:#1DB99A;border-right-color:#1DB99A}.wpd-inline-icon-wrapper path.wpd-inline-icon-first{fill:#1DB99A}.wpd-inline-icon-count{background-color:#1DB99A}.wpd-inline-icon-count::before{border-right-color:#1DB99A}.wpd-inline-form-wrapper::before{border-bottom-color:#1DB99A}.wpd-inline-form-question{background-color:#1DB99A}.wpd-inline-form{background-color:#1DB99A}.wpd-last-inline-comments-wrapper{border-color:#1DB99A}.wpd-last-inline-comments-wrapper::before{border-bottom-color:#1DB99A}.wpd-last-inline-comments-wrapper .wpd-view-all-inline-comments{background:#1DB99A}.wpd-last-inline-comments-wrapper .wpd-view-all-inline-comments:hover,.wpd-last-inline-comments-wrapper .wpd-view-all-inline-comments:active,.wpd-last-inline-comments-wrapper .wpd-view-all-inline-comments:focus{background-color:#1DB99A}#wpdcom .ql-snow .ql-tooltip[data-mode="link"]::before{content:"Enter link:"}#wpdcom .ql-snow .ql-tooltip.ql-editing a.ql-action::after{content:"Save"}.comments-area{width:auto}#wpdcom .wpd-comment-text{color:inherit !important}
+/*# sourceURL=wpdiscuz-frontend-css-inline-css */
+</style>
+<link rel='stylesheet' id='wpdiscuz-fa-css' href='https://restfulapi.net/wp-content/plugins/wpdiscuz/assets/third-party/font-awesome-5.13.0/css/fa.min.css' media='all' />
+<link rel='stylesheet' id='wpdiscuz-combo-css-css' href='https://restfulapi.net/wp-content/plugins/wpdiscuz/assets/css/wpdiscuz-combo.min.css' media='all' />
+<style id="generateblocks-inline-css">
+.gb-container.gb-tabs__item:not(.gb-tabs__item-open){display:none;}.gb-container-99ba62c5{font-size:16px;margin-bottom:60px;background-color:#f1f6f7;}.gb-container-99ba62c5 > .gb-inside-container{padding:25px;max-width:2000px;margin-left:auto;margin-right:auto;}.gb-grid-wrapper > .gb-grid-column-99ba62c5 > .gb-container{display:flex;flex-direction:column;height:100%;}.gb-container-726dea14 > .gb-inside-container{padding:0 0 10px;max-width:2000px;margin-left:auto;margin-right:auto;}.gb-grid-wrapper > .gb-grid-column-726dea14 > .gb-container{display:flex;flex-direction:column;height:100%;}.gb-container-726dea14.inline-post-meta-area > .gb-inside-container{display:flex;align-items:center;}.gb-container-aadd0a6f > .gb-inside-container{padding:0;}.gb-grid-wrapper > .gb-grid-column-aadd0a6f > .gb-container{display:flex;flex-direction:column;height:100%;}.gb-container-59edc08b{min-height:120px;background-color:#000000;color:#ffffff;position:relative;overflow:hidden;}.gb-container-59edc08b:before{content:"";background-image:url(https://restfulapi.net/wp-content/uploads/http-202-async-request.png);background-repeat:no-repeat;background-position:center center;background-size:cover;z-index:0;position:absolute;top:0;right:0;bottom:0;left:0;transition:inherit;pointer-events:none;opacity:0.4;}.gb-container-59edc08b > .gb-inside-container{padding:0 0 50px;z-index:1;position:relative;}.gb-container-59edc08b a{color:#ffffff;}.gb-container-59edc08b a:hover{color:#e3e3e3;}.gb-grid-wrapper > .gb-grid-column-59edc08b{width:50%;}.gb-grid-wrapper > .gb-grid-column-59edc08b > .gb-container{display:flex;flex-direction:column;height:100%;}.gb-container-59edc08b.gb-has-dynamic-bg:before{background-image:var(--background-url);}.gb-container-59edc08b.gb-no-dynamic-bg:before{background-image:none;}.gb-container-993a41e4{min-height:120px;text-align:right;background-color:#000000;color:#ffffff;position:relative;overflow:hidden;}.gb-container-993a41e4:before{content:"";background-image:url(https://restfulapi.net/wp-content/uploads/JAX-RS.jpg);background-repeat:no-repeat;background-position:center center;background-size:cover;z-index:0;position:absolute;top:0;right:0;bottom:0;left:0;transition:inherit;pointer-events:none;opacity:0.4;}.gb-container-993a41e4 > .gb-inside-container{padding:0 0 50px;z-index:1;position:relative;}.gb-container-993a41e4 a{color:#ffffff;}.gb-container-993a41e4 a:hover{color:#e3e3e3;}.gb-grid-wrapper > .gb-grid-column-993a41e4{width:50%;}.gb-grid-wrapper > .gb-grid-column-993a41e4 > .gb-container{display:flex;flex-direction:column;height:100%;}.gb-container-993a41e4.gb-has-dynamic-bg:before{background-image:var(--background-url);}.gb-container-993a41e4.gb-no-dynamic-bg:before{background-image:none;}.gb-container-7cb8f23a{background-color:#0b0521;color:#ffffff;position:relative;overflow:hidden;}.gb-container-7cb8f23a:before{content:"";background-image:url(https://restfulapi.net/wp-content/uploads/http-204-put-etag.png);background-repeat:no-repeat;background-position:right center;background-size:contain;z-index:0;position:absolute;top:0;right:0;bottom:0;left:0;transition:inherit;pointer-events:none;}.gb-container-7cb8f23a:after{content:"";background-image:linear-gradient(164deg, #000000, rgba(0, 0, 0, 0.35));z-index:0;position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none;}.gb-container-7cb8f23a > .gb-inside-container{padding:200px 0 120px;max-width:2000px;margin-left:auto;margin-right:auto;z-index:1;position:relative;}.gb-grid-wrapper > .gb-grid-column-7cb8f23a > .gb-container{justify-content:center;display:flex;flex-direction:column;height:100%;}.gb-container-7cb8f23a.gb-has-dynamic-bg:before{background-image:var(--background-url);}.gb-container-7cb8f23a.gb-no-dynamic-bg:before{background-image:none;}.gb-container-862c047f{font-size:18px;}.gb-container-862c047f > .gb-inside-container{padding:0 40px;}.gb-grid-wrapper > .gb-grid-column-862c047f{width:75%;}.gb-grid-wrapper > .gb-grid-column-862c047f > .gb-container{display:flex;flex-direction:column;height:100%;}.gb-container-b83a6043 > .gb-inside-container{padding:40px 0 0;max-width:2000px;margin-left:auto;margin-right:auto;}.gb-grid-wrapper > .gb-grid-column-b83a6043 > .gb-container{display:flex;flex-direction:column;height:100%;}.gb-container-b83a6043.inline-post-meta-area > .gb-inside-container{display:flex;align-items:center;}.gb-container-5d04ba48{font-size:15px;}.gb-container-5d04ba48 > .gb-inside-container{padding:0;}.gb-grid-wrapper > .gb-grid-column-5d04ba48{width:100%;}.gb-grid-wrapper > .gb-grid-column-5d04ba48 > .gb-container{display:flex;flex-direction:column;height:100%;}.gb-container-efa2e9db{width:100%;}.gb-container-efa2e9db > .gb-inside-container{max-width:2000px;margin-left:auto;margin-right:auto;}.gb-grid-wrapper > .gb-grid-column-efa2e9db > .gb-container{display:flex;flex-direction:column;height:100%;}p.gb-headline-4a56fbf6{font-size:19px;margin-bottom:0px;margin-left:10px;}p.gb-headline-8d3d4c12{display:inline-block;font-size:14px;text-transform:uppercase;padding:5px 10px;background-color:var(--contrast);}h3.gb-headline-352592d1{font-size:28px;padding-right:20px;padding-left:20px;margin-bottom:0px;}p.gb-headline-49c8845f{display:inline-block;font-size:14px;text-transform:uppercase;padding:5px 10px;background-color:var(--contrast);}h3.gb-headline-6ba8079e{font-size:28px;text-align:left;padding-right:20px;padding-left:20px;margin-bottom:0px;}h1.gb-headline-ba73f7d8{padding-right:0px;padding-left:0px;}p.gb-headline-104a6601{font-weight:600;margin-bottom:0px;margin-left:10px;}p.gb-headline-f06c3383{margin-bottom:0px;margin-left:10px;}.gb-button-wrapper{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:flex-start;clear:both;}.gb-button-wrapper-6db29ae0{justify-content:flex-start;margin-top:20px;}.gb-accordion__item:not(.gb-accordion__item-open) > .gb-button .gb-accordion__icon-open{display:none;}.gb-accordion__item.gb-accordion__item-open > .gb-button .gb-accordion__icon{display:none;}.gb-button-wrapper a.gb-button-931ee42a{display:inline-flex;align-items:center;justify-content:center;column-gap:0.5em;text-align:center;padding:0;color:var(--contrast-3);text-decoration:none;}.gb-button-wrapper a.gb-button-931ee42a:hover, .gb-button-wrapper a.gb-button-931ee42a:active, .gb-button-wrapper a.gb-button-931ee42a:focus{color:var(--contrast-3);}.gb-button-wrapper a.gb-button-931ee42a .gb-icon{line-height:0;padding-left:0.5em;}.gb-button-wrapper a.gb-button-931ee42a .gb-icon svg{width:1em;height:1em;fill:currentColor;}.gb-grid-wrapper-fe8855c5{display:flex;flex-wrap:wrap;}.gb-grid-wrapper-fe8855c5 > .gb-grid-column{box-sizing:border-box;padding-left:0px;}.gb-grid-wrapper-d1ce2cd9{display:flex;flex-wrap:wrap;align-items:center;margin-left:-30px;}.gb-grid-wrapper-d1ce2cd9 > .gb-grid-column{box-sizing:border-box;padding-left:30px;}.gb-grid-wrapper-628b4c43{display:flex;flex-wrap:wrap;margin-left:-30px;}.gb-grid-wrapper-628b4c43 > .gb-grid-column{box-sizing:border-box;padding-left:30px;}@media (max-width: 1024px) {.gb-grid-wrapper > .gb-grid-column-862c047f{width:75%;}h1.gb-headline-ba73f7d8{font-size:40px;}}@media (max-width: 1024px) and (min-width: 768px) {.gb-container-efa2e9db{display:none !important;}}@media (max-width: 767px) {.gb-grid-wrapper > .gb-grid-column-59edc08b{width:100%;}.gb-grid-wrapper > .gb-grid-column-993a41e4{width:100%;}.gb-container-7cb8f23a > .gb-inside-container{padding-top:160px;padding-bottom:80px;}.gb-container-862c047f > .gb-inside-container{padding-right:25px;padding-bottom:80px;padding-left:25px;}.gb-grid-wrapper > .gb-grid-column-862c047f{width:100%;}.gb-container-b83a6043 > .gb-inside-container{padding-top:40px;}.gb-grid-wrapper > .gb-grid-column-5d04ba48{width:100%;}.gb-container-efa2e9db{width:100%;display:none !important;}.gb-grid-wrapper > .gb-grid-column-efa2e9db{width:100%;}}:root{--gb-container-width:2000px;}.gb-container .wp-block-image img{vertical-align:middle;}.gb-grid-wrapper .wp-block-image{margin-bottom:0;}.gb-highlight{background:none;}.gb-shape{line-height:0;}.gb-container-link{position:absolute;top:0;right:0;bottom:0;left:0;z-index:99;}
+/*# sourceURL=generateblocks-inline-css */
+</style>
+<script id="breeze-prefetch-js-extra">
+var breeze_prefetch = {"local_url":"https://restfulapi.net","ignore_remote_prefetch":"1","ignore_list":["/ads.txt","wp-admin","wp-login.php"]};
+//# sourceURL=breeze-prefetch-js-extra
+</script>
+<script id="breeze-prefetch-js" src="https://restfulapi.net/wp-content/plugins/breeze/assets/js/js-front-end/breeze-prefetch-links.min.js"></script>
+<script id="mv-script-wrapper-js" async="async" fetchpriority="high" data-noptimize="1" data-cfasync="false" data-mv-mcp="2.10.12" src="https://scripts.mediavine.com/tags/restfulapi.js"></script>
+<script id="jquery-core-js" src="https://restfulapi.net/wp-includes/js/jquery/jquery.min.js"></script>
+<script id="jquery-migrate-js" src="https://restfulapi.net/wp-includes/js/jquery/jquery-migrate.min.js"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GKHN4ZGH3M"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-GKHN4ZGH3M');
+</script><link rel="icon" href="https://restfulapi.net/wp-content/uploads/cropped-rest-32x32.png" sizes="32x32" />
+<link rel="icon" href="https://restfulapi.net/wp-content/uploads/cropped-rest-192x192.png" sizes="192x192" />
+<link rel="apple-touch-icon" href="https://restfulapi.net/wp-content/uploads/cropped-rest-180x180.png" />
+<meta name="msapplication-TileImage" content="https://restfulapi.net/wp-content/uploads/cropped-rest-270x270.png" />
+<style id="wp-custom-css">
+/* GeneratePress Site CSS */ /* Volume Remastered CSS */
+ 
+.widget ul li {
+	font-size: 17px;
+}
+
+/* Featured post in blog */
+.featured-column.grid-100 {
+	width: 100%;
+}
+
+.featured-column.grid-100:not(.has-post-thumbnail) .gb-grid-wrapper > .gb-grid-column:first-child {
+	display: none;
+}
+
+/* Custom Post Navigation remove empty classes */
+.featured-navigation .gb-grid-column:empty {
+    flex: 0 1;
+}
+
+@media(min-width: 769px) {
+    .featured-navigation .gb-grid-column:not(:empty) {
+        flex: 1 0;
+    }
+}
+
+
+/* Single Post Hero image responsive controls */
+@media(max-width: 1024px) and (min-width: 769px) {
+    .page-hero-block:before {
+        background-size: cover;
+    }
+    .featured-column,
+    .featured-column img.wp-post-image {
+        width: 100% !important;
+    }
+}
+
+@media(max-width: 768px) {
+    .page-hero-block:before {
+        background: none;
+    }
+}
+
+/* Post Archives - force post meta to vertically align bottom */
+.generate-columns-container .post>.gb-container,
+.generate-columns-container .post>.gb-container>.gb-inside-container,
+.post-summary>.gb-inside-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.post-summary {
+    flex: 1;
+}
+
+.post-summary>.gb-inside-container>*:last-child {
+    margin-top: auto;
+}
+/* Add border radius to post archive images */
+.generate-columns-container .dynamic-featured-image {
+    border-radius: 4px;
+} /* End GeneratePress Site CSS */
+</style>
+</head>
+
+<body class="wp-singular post-template-default single single-post postid-156 single-format-standard wp-embed-responsive wp-theme-generatepress wp-child-theme-generatepress_child post-image-above-header post-image-aligned-center sticky-menu-slide both-sidebars nav-float-right one-container nav-search-enabled header-aligned-left dropdown-hover" itemtype="https://schema.org/Blog" itemscope>
+	<div class="header-wrap"><a class="screen-reader-text skip-link" href="#content" title="Skip to content">Skip to content</a>		<header class="site-header has-inline-mobile-toggle" id="masthead" aria-label="Site"  itemtype="https://schema.org/WPHeader" itemscope>
+			<div class="inside-header grid-container">
+				<div class="site-branding">
+						<p class="main-title" itemprop="headline">
+					<a href="https://restfulapi.net/" rel="home">REST API Tutorial</a>
+				</p>
+						
+					</div>	<nav class="main-navigation mobile-menu-control-wrapper" id="mobile-menu-control-wrapper" aria-label="Mobile Toggle">
+		<div class="menu-bar-items"><span class="menu-bar-item search-item"><a aria-label="Open Search Bar" href="#"><span class="gp-icon icon-search"><svg viewBox="0 0 512 512" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"><path fill-rule="evenodd" clip-rule="evenodd" d="M208 48c-88.366 0-160 71.634-160 160s71.634 160 160 160 160-71.634 160-160S296.366 48 208 48zM0 208C0 93.125 93.125 0 208 0s208 93.125 208 208c0 48.741-16.765 93.566-44.843 129.024l133.826 134.018c9.366 9.379 9.355 24.575-.025 33.941-9.379 9.366-24.575 9.355-33.941-.025L337.238 370.987C301.747 399.167 256.839 416 208 416 93.125 416 0 322.875 0 208z" /></svg><svg viewBox="0 0 512 512" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"><path d="M71.029 71.029c9.373-9.372 24.569-9.372 33.942 0L256 222.059l151.029-151.03c9.373-9.372 24.569-9.372 33.942 0 9.372 9.373 9.372 24.569 0 33.942L289.941 256l151.03 151.029c9.372 9.373 9.372 24.569 0 33.942-9.373 9.372-24.569 9.372-33.942 0L256 289.941l-151.029 151.03c-9.373 9.372-24.569 9.372-33.942 0-9.372-9.373-9.372-24.569 0-33.942L222.059 256 71.029 104.971c-9.372-9.373-9.372-24.569 0-33.942z" /></svg></span></a></span></div>		<button data-nav="site-navigation" class="menu-toggle" aria-controls="primary-menu" aria-expanded="false">
+			<span class="gp-icon icon-menu-bars"><svg viewBox="0 0 512 512" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"><path d="M0 96c0-13.255 10.745-24 24-24h464c13.255 0 24 10.745 24 24s-10.745 24-24 24H24c-13.255 0-24-10.745-24-24zm0 160c0-13.255 10.745-24 24-24h464c13.255 0 24 10.745 24 24s-10.745 24-24 24H24c-13.255 0-24-10.745-24-24zm0 160c0-13.255 10.745-24 24-24h464c13.255 0 24 10.745 24 24s-10.745 24-24 24H24c-13.255 0-24-10.745-24-24z" /></svg><svg viewBox="0 0 512 512" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"><path d="M71.029 71.029c9.373-9.372 24.569-9.372 33.942 0L256 222.059l151.029-151.03c9.373-9.372 24.569-9.372 33.942 0 9.372 9.373 9.372 24.569 0 33.942L289.941 256l151.03 151.029c9.372 9.373 9.372 24.569 0 33.942-9.373 9.372-24.569 9.372-33.942 0L256 289.941l-151.029 151.03c-9.373 9.372-24.569 9.372-33.942 0-9.372-9.373-9.372-24.569 0-33.942L222.059 256 71.029 104.971c-9.372-9.373-9.372-24.569 0-33.942z" /></svg></span><span class="screen-reader-text">Menu</span>		</button>
+	</nav>
+			<nav class="main-navigation nav-align-center has-menu-bar-items sub-menu-right" id="site-navigation" aria-label="Primary"  itemtype="https://schema.org/SiteNavigationElement" itemscope>
+			<div class="inside-navigation grid-container">
+				<form method="get" class="search-form navigation-search" action="https://restfulapi.net/">
+					<input type="search" class="search-field" value="" name="s" title="Search" />
+				</form>				<button class="menu-toggle" aria-controls="primary-menu" aria-expanded="false">
+					<span class="gp-icon icon-menu-bars"><svg viewBox="0 0 512 512" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"><path d="M0 96c0-13.255 10.745-24 24-24h464c13.255 0 24 10.745 24 24s-10.745 24-24 24H24c-13.255 0-24-10.745-24-24zm0 160c0-13.255 10.745-24 24-24h464c13.255 0 24 10.745 24 24s-10.745 24-24 24H24c-13.255 0-24-10.745-24-24zm0 160c0-13.255 10.745-24 24-24h464c13.255 0 24 10.745 24 24s-10.745 24-24 24H24c-13.255 0-24-10.745-24-24z" /></svg><svg viewBox="0 0 512 512" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"><path d="M71.029 71.029c9.373-9.372 24.569-9.372 33.942 0L256 222.059l151.029-151.03c9.373-9.372 24.569-9.372 33.942 0 9.372 9.373 9.372 24.569 0 33.942L289.941 256l151.03 151.029c9.372 9.373 9.372 24.569 0 33.942-9.373 9.372-24.569 9.372-33.942 0L256 289.941l-151.029 151.03c-9.373 9.372-24.569 9.372-33.942 0-9.372-9.373-9.372-24.569 0-33.942L222.059 256 71.029 104.971c-9.372-9.373-9.372-24.569 0-33.942z" /></svg></span><span class="screen-reader-text">Menu</span>				</button>
+				<div id="primary-menu" class="main-nav"><ul id="menu-primary-menu" class=" menu sf-menu"><li id="menu-item-1432" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-1432"><a href="https://restfulapi.net/rest/">REST</a></li>
+<li id="menu-item-1431" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-1431"><a href="https://restfulapi.net/json/">JSON</a></li>
+</ul></div><div class="menu-bar-items"><span class="menu-bar-item search-item"><a aria-label="Open Search Bar" href="#"><span class="gp-icon icon-search"><svg viewBox="0 0 512 512" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"><path fill-rule="evenodd" clip-rule="evenodd" d="M208 48c-88.366 0-160 71.634-160 160s71.634 160 160 160 160-71.634 160-160S296.366 48 208 48zM0 208C0 93.125 93.125 0 208 0s208 93.125 208 208c0 48.741-16.765 93.566-44.843 129.024l133.826 134.018c9.366 9.379 9.355 24.575-.025 33.941-9.379 9.366-24.575 9.355-33.941-.025L337.238 370.987C301.747 399.167 256.839 416 208 416 93.125 416 0 322.875 0 208z" /></svg><svg viewBox="0 0 512 512" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em"><path d="M71.029 71.029c9.373-9.372 24.569-9.372 33.942 0L256 222.059l151.029-151.03c9.373-9.372 24.569-9.372 33.942 0 9.372 9.373 9.372 24.569 0 33.942L289.941 256l151.03 151.029c9.372 9.373 9.372 24.569 0 33.942-9.373 9.372-24.569 9.372-33.942 0L256 289.941l-151.029 151.03c-9.373 9.372-24.569 9.372-33.942 0-9.372-9.373-9.372-24.569 0-33.942L222.059 256 71.029 104.971c-9.372-9.373-9.372-24.569 0-33.942z" /></svg></span></a></span></div>			</div>
+		</nav>
+					</div>
+		</header>
+		</div><!-- .header-wrap --><div class="gb-container gb-container-7cb8f23a page-hero-block"><div class="gb-inside-container">
+<div class="gb-grid-wrapper gb-grid-wrapper-d1ce2cd9">
+<div class="gb-grid-column gb-grid-column-862c047f"><div class="gb-container gb-container-862c047f"><div class="gb-inside-container">
+
+<h1 class="gb-headline gb-headline-ba73f7d8 gb-headline-text">HTTP Status 204 (No Content)</h1>
+
+
+<div class="dynamic-entry-excerpt"><p>HTTP 204 No Content explained from RFC 9110 and 9112: DELETE and PUT, ETag, no body rules, client parsing errors, testing, and mistakes.</p>
+</div>
+
+<div class="gb-container gb-container-b83a6043 inline-post-meta-area"><div class="gb-inside-container">
+<img alt='Photo of author' src='https://secure.gravatar.com/avatar/440b2ffa86b0f8f14d2d1e64cc0ddc8b9a2ffa2ad0fefcbe431460638bd88883?s=35&#038;d=robohash&#038;r=g' srcset='https://secure.gravatar.com/avatar/440b2ffa86b0f8f14d2d1e64cc0ddc8b9a2ffa2ad0fefcbe431460638bd88883?s=70&#038;d=robohash&#038;r=g 2x' class='avatar avatar-35 photo dynamic-author-image dynamic-author-image-rounded' height='35' width='35' decoding='async'/>
+
+<div class="gb-grid-wrapper gb-grid-wrapper-628b4c43">
+<div class="gb-grid-column gb-grid-column-5d04ba48"><div class="gb-container gb-container-5d04ba48"><div class="gb-inside-container">
+
+<p class="gb-headline gb-headline-104a6601 gb-headline-text">Written by: Lokesh Gupta</p>
+
+
+
+<p class="gb-headline gb-headline-f06c3383 gb-headline-text">Last Updated: <time class="entry-date updated-date" datetime="2026-10-01T12:28:25+05:30">October 1, 2026</time></p>
+
+</div></div></div>
+</div>
+</div></div>
+</div></div></div>
+</div>
+</div></div>
+
+<div class="gb-container gb-container-efa2e9db hide-on-desktop hide-on-tablet"><div class="gb-inside-container">
+<img width="1440" height="1260" src="https://restfulapi.net/wp-content/uploads/http-204-put-etag.png" class="dynamic-featured-image wp-post-image" alt="Four step diagram of a PUT request with If-Match that returns 204 No Content and a new ETag, which the client stores for the next update" decoding="async" fetchpriority="high" srcset="https://restfulapi.net/wp-content/uploads/http-204-put-etag.png 1440w, https://restfulapi.net/wp-content/uploads/http-204-put-etag-300x263.png 300w, https://restfulapi.net/wp-content/uploads/http-204-put-etag-1024x896.png 1024w" sizes="(max-width: 1440px) 100vw, 1440px" />
+</div></div>
+	<div class="site grid-container container hfeed" id="page">
+				<div class="site-content" id="content">
+			
+	<div class="content-area" id="primary">
+		<main class="site-main" id="main">
+			
+<article id="post-156" class="post-156 post type-post status-publish format-standard has-post-thumbnail hentry category-http-status mv-content-wrapper" itemtype="https://schema.org/CreativeWork" itemscope>
+	<div class="inside-article">
+		
+		<div class="entry-content" itemprop="text">
+			
+<p class="wp-block-paragraph">HTTP status <em>204 (No Content)</em> means the server fulfilled the request and has nothing to send back in the response content. It is the usual answer to a <em>DELETE</em>, and to a <em>PUT</em> or <em>PATCH</em> when the client does not need the updated resource. </p>
+
+
+
+<p class="wp-block-paragraph">A complete <em>204</em> response is only a status line and headers:</p>
+
+
+
+<pre class="wp-block-code"><code class="">HTTP/1.1 204 No Content
+Date: Thu, 01 Oct 2026 10:15:00 GMT</code></pre>
+
+
+
+<p class="wp-block-paragraph">The rules below come from <a href="https://www.rfc-editor.org/rfc/rfc9110.html" target="_blank" rel="noopener">RFC 9110</a> (HTTP Semantics) and <a href="https://www.rfc-editor.org/rfc/rfc9112.html" target="_blank" rel="noopener">RFC 9112</a> (HTTP/1.1), which replaced RFC 7231 and RFC 7230, and each rule links to its section.</p>
+
+
+
+<h2 class="wp-block-heading">1. Rules for Using HTTP 204 (No Content)</h2>
+
+
+
+<p class="wp-block-paragraph">The table below lists the rules for a <em>204</em> response. </p>
+
+
+
+<figure class="wp-block-table"><table><thead><tr><th>Rule</th><th>Strength</th><th>Source</th></tr></thead><tbody><tr><td>A <em>204</em> response means the server fulfilled the request and has no additional content to send.</td><td>Definition</td><td><a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-15.3.5" target="_blank" rel="noopener">Section 15.3.5</a></td></tr><tr><td>Header fields in a <em>204</em> response describe the target resource after the action was applied. An <em>ETag</em> after a <em>PUT</em> is the tag of the new representation.</td><td>Definition</td><td><a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-15.3.5" target="_blank" rel="noopener">Section 15.3.5</a></td></tr><tr><td>The client does not need to leave its current view. It shows its own success indication and applies any new header metadata.</td><td>Definition</td><td><a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-15.3.5" target="_blank" rel="noopener">Section 15.3.5</a></td></tr><tr><td>A <em>204</em> response ends at the end of the header section and cannot contain content or trailers.</td><td>Definition</td><td><a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-15.3.5" target="_blank" rel="noopener">Section 15.3.5</a></td></tr><tr><td>A <em>204</em> response is heuristically cacheable unless the method definition or cache controls say otherwise.</td><td>Definition</td><td><a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-15.3.5" target="_blank" rel="noopener">Section 15.3.5</a></td></tr><tr><td>A server must not send a <em>Content-Length</em> header in a <em>204</em> response.</td><td>MUST NOT</td><td><a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-8.6" target="_blank" rel="noopener">Section 8.6</a></td></tr><tr><td>A server must not send a <em>Transfer-Encoding</em> header in a <em>204</em> response.</td><td>MUST NOT</td><td><a href="https://www.rfc-editor.org/rfc/rfc9112.html#section-6.1" target="_blank" rel="noopener">9112 Section 6.1</a></td></tr><tr><td>A <em>204</em> response always ends at the first empty line after the headers, whatever headers it carries.</td><td>MUST</td><td><a href="https://www.rfc-editor.org/rfc/rfc9112.html#section-6.3" target="_blank" rel="noopener">9112 Section 6.3</a></td></tr><tr><td>A <em>PUT</em> that modifies an existing resource must send <em>200</em> or <em>204</em>.</td><td>MUST</td><td><a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-9.3.4" target="_blank" rel="noopener">Section 9.3.4</a></td></tr><tr><td>A successful <em>PUT</em> response must not carry an <em>ETag</em> or <em>Last-Modified</em> unless the stored content is identical to what the client sent.</td><td>MUST NOT</td><td><a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-9.3.4" target="_blank" rel="noopener">Section 9.3.4</a></td></tr><tr><td>A successful <em>DELETE</em> should send <em>202</em>, <em>204</em> or <em>200</em>, depending on whether the deletion is pending, finished without details, or finished with a status description.</td><td>SHOULD</td><td><a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-9.3.5" target="_blank" rel="noopener">Section 9.3.5</a></td></tr></tbody></table></figure>
+
+
+
+<h2 class="wp-block-heading">2. HTTP 204 Request and Response Examples</h2>
+
+
+
+<h3 class="wp-block-heading">2.1. DELETE Returns 204</h3>
+
+
+
+<p class="wp-block-paragraph">Suppose a project tracking API lets users delete a project. The server removes the project and has nothing useful to report, so it answers <em>204</em>.</p>
+
+
+
+<pre class="wp-block-code"><code class="">DELETE /projects/42 HTTP/1.1
+Host: api.example.com
+Authorization: Bearer &lt;token&gt;
+
+HTTP/1.1 204 No Content
+Date: Thu, 01 Oct 2026 10:15:00 GMT</code></pre>
+
+
+
+<p class="wp-block-paragraph">The response has no <em>Content-Type</em>, no <em>Content-Length</em> and no body. None of them applies to a response that has no content.</p>
+
+
+
+<h3 class="wp-block-heading">2.2. PUT Returns 204 with an ETag</h3>
+
+
+
+<p class="wp-block-paragraph">A client updates a project and includes the <em>ETag</em> it last saw in an <em>If-Match</em> header. The server stores the data exactly as received, so it may send the new <em>ETag</em> without any body.</p>
+
+
+
+<pre class="wp-block-code"><code class="">PUT /projects/42 HTTP/1.1
+Host: api.example.com
+Content-Type: application/json
+If-Match: "v7"
+
+{ "name": "Apollo", "status": "active" }
+
+HTTP/1.1 204 No Content
+ETag: "v8"</code></pre>
+
+
+
+<p class="wp-block-paragraph">If the server had changed the data while storing it, for example by adding an <em>updatedAt</em> value, <a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-9.3.4" target="_blank" rel="noreferrer noopener">section 9.3.4</a> forbids sending the validator. In that case it should answer <em>200 OK</em> with the stored representation.</p>
+
+
+<div class="wp-block-image">
+<figure class="aligncenter size-full is-resized"><img decoding="async" width="1440" height="1260" src="https://restfulapi.net/wp-content/uploads/http-204-put-etag.png" alt="Four step diagram of a PUT request with If-Match that returns 204 No Content and a new ETag, which the client stores for the next update" class="wp-image-2256" style="width:724px;height:auto" srcset="https://restfulapi.net/wp-content/uploads/http-204-put-etag.png 1440w, https://restfulapi.net/wp-content/uploads/http-204-put-etag-300x263.png 300w, https://restfulapi.net/wp-content/uploads/http-204-put-etag-1024x896.png 1024w" sizes="(max-width: 1440px) 100vw, 1440px" /><figcaption class="wp-element-caption">Figure 1: A 204 response can carry the new ETag without any body.</figcaption></figure>
+</div>
+
+
+<h2 class="wp-block-heading">3. Choosing Between 204 and Similar Responses</h2>
+
+
+
+<figure class="wp-block-table"><table><thead><tr><th>Situation</th><th>Status code</th></tr></thead><tbody><tr><td>The action succeeded and the client needs nothing back</td><td><em>204 No Content</em></td></tr><tr><td>The action succeeded and the response returns the updated or deleted resource</td><td><em>200 OK</em></td></tr><tr><td>The deletion has been accepted but is not finished</td><td><em>202 Accepted</em></td></tr><tr><td>The action succeeded and the client should reset its form or view</td><td><em>205 Reset Content</em></td></tr><tr><td>A new resource was created</td><td><em>201 Created</em></td></tr></tbody></table></figure>
+
+
+
+<p class="wp-block-paragraph">The difference between <em>204</em> and <em>205</em> is often missed. A <em>204</em> tells the client to keep its current view, while a <em>205</em> asks it to reset the view, for example by clearing a form (<a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-15.3.6" target="_blank" rel="noopener">section 15.3.6</a>). A server must not send content with a <em>205</em> either.</p>
+
+
+
+<h2 class="wp-block-heading">4. Problem: Clients Fail on the Empty Body</h2>
+
+
+
+<p class="wp-block-paragraph">The most common <em>204</em> bug is on the client side. Code that always parses the response as JSON throws an error on an empty body, even though the request succeeded. In JavaScript, calling <em>response.json()</em> on a <em>204</em> response fails with an error such as &#8220;Unexpected end of JSON input&#8221; (see <a href="https://developer.mozilla.org/en-US/docs/Web/API/Response/json" target="_blank" rel="noopener">MDN</a>). In Java, parsing an empty string with Jackson fails with a &#8220;No content to map&#8221; error.</p>
+
+
+
+<h3 class="wp-block-heading">4.1. Solution: Check the Status Before Parsing</h3>
+
+
+
+<pre class="wp-block-code"><code class="">async function request(url, options) {
+  const response = await fetch(url, options);
+  if (!response.ok) throw new Error('Request failed: ' + response.status);
+  if (response.status === 204) return null;
+  return response.json();
+}</code></pre>
+
+
+
+<h3 class="wp-block-heading">4.2. Solution: Use a Bodyless API in Java</h3>
+
+
+
+<p class="wp-block-paragraph">With Spring&#8217;s <em>WebClient</em>, we call <em>toBodilessEntity()</em> instead of <em>bodyToMono()</em> when we expect a <em>204</em>, so no body conversion is attempted.</p>
+
+
+
+<pre class="wp-block-code"><code class="">webClient.delete()
+    .uri("/projects/{id}", 42)
+    .retrieve()
+    .toBodilessEntity()
+    .block();</code></pre>
+
+
+
+<h2 class="wp-block-heading">5. Problem: Sending a Body or Length with 204</h2>
+
+
+
+<p class="wp-block-paragraph">Some servers add <em>Content-Length: 0</em> or even a small body to a <em>204</em> response. RFC 9110 and RFC 9112 forbid the length and transfer headers, and a <em>204</em> always ends at the first empty line after the headers. A receiver therefore ignores any bytes after that point. If a proxy or client reads them as the start of the next response, the connection gets out of step. The solution is to send nothing after the headers and to leave out <em>Content-Length</em>, <em>Transfer-Encoding</em> and <em>Content-Type</em>.</p>
+
+
+
+<h2 class="wp-block-heading">6. DELETE Policies: 204, 200 or 202</h2>
+
+
+
+<p class="wp-block-paragraph">RFC 9110 allows three answers to a successful <em>DELETE</em>, so the API should pick one rule and document it. Use <em>204</em> when the project is gone and nothing more needs saying. Use <em>200</em> when the response describes the result, such as a summary of what was deleted. Use <em>202</em> when deletion happens later, and point to a status resource as described in the article on <a href="https://restfulapi.net/http-status-202-accepted/" target="_blank" rel="noopener">HTTP Status 202 (Accepted)</a>. A repeated <em>DELETE</em> is idempotent in effect, but the second response is often <em>404</em>, and the documentation should say whether the API prefers <em>404</em> or <em>204</em> for it.</p>
+
+
+
+<h2 class="wp-block-heading">7. Preflight Requests and 204</h2>
+
+
+
+<p class="wp-block-paragraph">Browsers send a preflight <em>OPTIONS</em> request before some cross-origin calls, and many servers answer it with <em>204</em> plus the <em>Access-Control-Allow-Origin</em>, <em>Access-Control-Allow-Methods</em> and <em>Access-Control-Allow-Headers</em> headers. This is a convention, and the meaning of <em>204</em> is the same as before: the request worked and there is nothing to send back.</p>
+
+
+
+<h2 class="wp-block-heading">8. Code Examples for Returning 204</h2>
+
+
+
+<p class="wp-block-paragraph">We did not run these snippets as part of this article, so adapt them to your own project.</p>
+
+
+
+<pre class="wp-block-code"><code class="">// Spring Boot
+@DeleteMapping("/projects/{id}")
+public ResponseEntity&lt;Void&gt; delete(@PathVariable long id) {
+    service.delete(id);
+    return ResponseEntity.noContent().build();
+}</code></pre>
+
+
+
+<pre class="wp-block-code"><code class="">// Node.js with Express
+app.delete('/projects/:id', async (req, res) =&gt; {
+  await service.remove(req.params.id);
+  res.status(204).end();
+});</code></pre>
+
+
+
+<pre class="wp-block-code"><code class=""># Python with Flask
+@app.delete("/projects/&lt;int:project_id&gt;")
+def delete_project(project_id):
+    service.remove(project_id)
+    return "", 204</code></pre>
+
+
+
+<h2 class="wp-block-heading">9. How to Test a 204 Response</h2>
+
+
+
+<p class="wp-block-paragraph">A test for a <em>204</em> response checks the status and also checks that nothing else arrives. The table lists what to assert. As with the code above, we did not run the commands against a live server, so adjust the URLs to your own API.</p>
+
+
+
+<figure class="wp-block-table"><table><thead><tr><th>What to check</th><th>Expected result</th></tr></thead><tbody><tr><td>Status line</td><td><em>204 No Content</em></td></tr><tr><td>Body</td><td>Empty</td></tr><tr><td><em>Content-Length</em> and <em>Transfer-Encoding</em> headers</td><td>Absent</td></tr><tr><td><em>ETag</em> header after a <em>PUT</em></td><td>Present only when the stored data equals the request data</td></tr><tr><td>A second <em>DELETE</em> of the same project</td><td>The documented policy, such as <em>404</em></td></tr></tbody></table></figure>
+
+
+
+<h3 class="wp-block-heading">9.1. Test with curl</h3>
+
+
+
+<p class="wp-block-paragraph">The <em>-i</em> option prints the status line and headers, so we can confirm that no body or length header follows.</p>
+
+
+
+<pre class="wp-block-code"><code class="">curl -i -X DELETE https://api.example.com/projects/42 \
+  -H "Authorization: Bearer &lt;token&gt;"</code></pre>
+
+
+
+<h3 class="wp-block-heading">9.2. Test with Postman</h3>
+
+
+
+<pre class="wp-block-code"><code class="">pm.test("Status is 204 No Content", function () {
+  pm.response.to.have.status(204);
+});
+
+pm.test("Body is empty", function () {
+  pm.expect(pm.response.text()).to.eql("");
+});
+
+pm.test("No Content-Length header", function () {
+  pm.expect(pm.response.headers.has("Content-Length")).to.be.false;
+});</code></pre>
+
+
+
+<h3 class="wp-block-heading">9.3. Automated Tests in Code</h3>
+
+
+
+<pre class="wp-block-code"><code class="">// Spring MockMvc
+mockMvc.perform(delete("/projects/42"))
+    .andExpect(status().isNoContent())
+    .andExpect(content().string(""));</code></pre>
+
+
+
+<pre class="wp-block-code"><code class="">// Jest with Supertest
+it('deletes the project', async () =&gt; {
+  const res = await request(app).delete('/projects/42').expect(204);
+  expect(res.text).toBe('');
+});</code></pre>
+
+
+
+<h2 class="wp-block-heading">10. Common Mistakes</h2>
+
+
+
+<ul class="wp-block-list">
+<li>Sending a JSON body with a <em>204</em> response breaks the framing rule in <a href="https://www.rfc-editor.org/rfc/rfc9112.html#section-6.3" target="_blank" rel="noopener">RFC 9112 section 6.3</a>, because receivers stop reading at the end of the headers.</li>
+
+
+
+<li>Sending <em>Content-Length: 0</em> with a <em>204</em> response breaks the <em>MUST NOT</em> rule in <a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-8.6" target="_blank" rel="noopener">section 8.6</a>. Leave the header out.</li>
+
+
+
+<li>Returning <em>204</em> from a <em>GET</em> that should return data leaves clients with nothing to show. Use <em>200</em> with an empty list or object instead.</li>
+
+
+
+<li>Sending an <em>ETag</em> after a <em>PUT</em> that changed the stored data breaks the rule in <a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-9.3.4" target="_blank" rel="noopener">section 9.3.4</a>. Return <em>200</em> with the stored representation instead.</li>
+
+
+
+<li>Parsing every response as JSON on the client makes every <em>204</em> look like a failure, so the client has to check the status first.</li>
+</ul>
+
+
+
+<h2 class="wp-block-heading">11. Summary</h2>
+
+
+
+<p class="wp-block-paragraph">A <em>204 (No Content)</em> response says that the action worked and that there is nothing to return. It ends at the headers, carries no <em>Content-Length</em> or <em>Transfer-Encoding</em>, may carry an <em>ETag</em> that describes the new state, and fits <em>DELETE</em> and <em>PUT</em> well. Clients must check for it before parsing a body.</p>
+
+
+
+<h2 class="wp-block-heading">12. References</h2>
+
+
+
+<ul class="wp-block-list">
+<li><a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-15.3.5" target="_blank" rel="noopener">RFC 9110: HTTP Semantics, section 15.3.5 (204 No Content)</a></li>
+
+
+
+<li><a href="https://www.rfc-editor.org/rfc/rfc9112.html#section-6.3" target="_blank" rel="noopener">RFC 9112: HTTP/1.1, section 6.3 (Message Body Length)</a></li>
+
+
+
+<li><a href="https://www.rfc-editor.org/rfc/rfc5789.html" target="_blank" rel="noopener">RFC 5789: PATCH Method for HTTP</a></li>
+
+
+
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/204" target="_blank" rel="noopener">MDN Web Docs: 204 No Content</a></li>
+
+
+
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Response/json" target="_blank" rel="noopener">MDN Web Docs: Response.json()</a></li>
+
+
+
+<li><a href="https://restfulapi.net/http-status-201-created/" target="_blank" rel="noopener">HTTP Status 201 (Created)</a></li>
+
+
+
+<li><a href="https://restfulapi.net/http-status-202-accepted/" target="_blank" rel="noopener">HTTP Status 202 (Accepted)</a></li>
+
+
+
+<li><a href="https://restfulapi.net/http-status-200-ok/" target="_blank" rel="noopener">HTTP Status Code 200 (OK)</a></li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">Happy Learning !!</p>
+		</div>
+
+				<footer class="entry-meta" aria-label="Entry meta">
+					</footer>
+			</div>
+</article>
+
+			<div class="comments-area">
+				    <div class="wpdiscuz_top_clearing"></div>
+    <div id='comments' class='comments-area'><div id='respond' style='width: 0;height: 0;clear: both;margin: 0;padding: 0;'></div><h3 style="max-width: 750px;margin: 0px auto;">Comments</h3>    <div id="wpdcom" class="wpdiscuz_unauth wpd-default wpdiscuz_no_avatar wpd-layout-2 wpd-comments-open">
+                    <div class="wc_social_plugin_wrapper">
+                            </div>
+            <div class="wpd-form-wrap">
+                <div class="wpd-form-head">
+                                            <div class="wpd-sbs-toggle">
+                            <i class="far fa-envelope"></i> <span
+                                class="wpd-sbs-title">Subscribe</span>
+                            <i class="fas fa-caret-down"></i>
+                        </div>
+                                            <div class="wpd-auth">
+                                                <div class="wpd-login">
+                                                    </div>
+                    </div>
+                </div>
+                                                    <div class="wpdiscuz-subscribe-bar wpdiscuz-hidden">
+                                                    <form action="https://restfulapi.net/wp-admin/admin-ajax.php?action=wpdAddSubscription"
+                                  method="post" id="wpdiscuz-subscribe-form">
+                                <div class="wpdiscuz-subscribe-form-intro">Notify of </div>
+                                <div class="wpdiscuz-subscribe-form-option"
+                                     style="width:40%;">
+                                    <select class="wpdiscuz_select" name="wpdiscuzSubscriptionType">
+                                                                                    <option value="post">new follow-up comments</option>
+                                                                                                                                <option
+                                                value="all_comment" >new replies to my comments</option>
+                                                                                </select>
+                                </div>
+                                                                    <div class="wpdiscuz-item wpdiscuz-subscribe-form-email">
+                                        <input class="email" type="email" name="wpdiscuzSubscriptionEmail"
+                                               required="required" value=""
+                                               placeholder="Email"/>
+                                    </div>
+                                                                    <div class="wpdiscuz-subscribe-form-button">
+                                    <input id="wpdiscuz_subscription_button" class="wpd-prim-button wpd_not_clicked"
+                                           type="submit"
+                                           value="&rsaquo;"
+                                           name="wpdiscuz_subscription_button"/>
+                                </div>
+                                <input type="hidden" id="wpdiscuz_subscribe_form_nonce" name="wpdiscuz_subscribe_form_nonce" value="f5c6242aa9" /><input type="hidden" name="_wp_http_referer" value="/http-status-204-no-content/" />                            </form>
+                                                </div>
+                            <div
+            class="wpd-form wpd-form-wrapper wpd-main-form-wrapper" id='wpd-main-form-wrapper-0_0'>
+                                        <form  method="post" enctype="multipart/form-data" data-uploading="false" class="wpd_comm_form wpd_main_comm_form"                >
+                                        <div class="wpd-field-comment">
+                        <div class="wpdiscuz-item wc-field-textarea">
+                            <div class="wpdiscuz-textarea-wrap ">
+                                            <div id="wpd-editor-wraper-0_0" style="display: none;">
+                <div id="wpd-editor-char-counter-0_0"
+                     class="wpd-editor-char-counter"></div>
+                <label style="display: none;" for="wc-textarea-0_0">Label</label>
+                <textarea id="wc-textarea-0_0" name="wc_comment"
+                          class="wc_comment wpd-field"></textarea>
+                <div id="wpd-editor-0_0"></div>
+                        <div id="wpd-editor-toolbar-0_0">
+                            <button title="Bold"
+                        class="ql-bold"  ></button>
+                                <button title="Italic"
+                        class="ql-italic"  ></button>
+                                <button title="Underline"
+                        class="ql-underline"  ></button>
+                                <button title="Strike"
+                        class="ql-strike"  ></button>
+                                <button title="Ordered List"
+                        class="ql-list" value='ordered' ></button>
+                                <button title="Unordered List"
+                        class="ql-list" value='bullet' ></button>
+                                <button title="Blockquote"
+                        class="ql-blockquote"  ></button>
+                                <button title="Code Block"
+                        class="ql-code-block"  ></button>
+                                <button title="Link"
+                        class="ql-link"  ></button>
+                                <button title="Source Code"
+                        class="ql-sourcecode"  data-wpde_button_name='sourcecode'>{}</button>
+                                <button title="Spoiler"
+                        class="ql-spoiler"  data-wpde_button_name='spoiler'>[+]</button>
+                            <div class="wpd-editor-buttons-right">
+                            </div>
+        </div>
+                    </div>
+                                        </div>
+                        </div>
+                    </div>
+                    <div class="wpd-form-foot" style='display:none;'>
+                        <div class="wpdiscuz-textarea-foot">
+                                                        <div class="wpdiscuz-button-actions"></div>
+                        </div>
+                                <div class="wpd-form-row">
+                    <div class="wpd-form-col-left">
+                        <div class="wpdiscuz-item wc_name-wrapper wpd-has-icon">
+                                    <div class="wpd-field-icon"><i
+                            class="fas fa-user"></i>
+                    </div>
+                                    <input id="wc_name-0_0" value="" required='required' aria-required='true'                       class="wc_name wpd-field" type="text"
+                       name="wc_name"
+                       placeholder="Name*"
+                       maxlength="50" pattern='.{3,50}'                       title="">
+                <label for="wc_name-0_0"
+                       class="wpdlb">Name*</label>
+                            </div>
+                        <div class="wpdiscuz-item wc_email-wrapper wpd-has-icon">
+                                    <div class="wpd-field-icon"><i
+                            class="fas fa-at"></i>
+                    </div>
+                                    <input id="wc_email-0_0" value="" required='required' aria-required='true'                       class="wc_email wpd-field" type="email"
+                       name="wc_email"
+                       placeholder="Email*"/>
+                <label for="wc_email-0_0"
+                       class="wpdlb">Email*</label>
+                            </div>
+                            <div class="wpdiscuz-item wc_website-wrapper wpd-has-icon">
+                                            <div class="wpd-field-icon"><i
+                                class="fas fa-link"></i>
+                        </div>
+                                        <input id="wc_website-0_0" value=""
+                           class="wc_website wpd-field" type="text"
+                           name="wc_website"
+                           placeholder="Website"/>
+                    <label for="wc_website-0_0"
+                           class="wpdlb">Website</label>
+                                    </div>
+                        </div>
+                <div class="wpd-form-col-right">
+                        <div class="wpd-field-captcha wpdiscuz-item">
+                <div class="wpdiscuz-recaptcha" id='wpdiscuz-recaptcha-0_0'></div>
+                <input id='wpdiscuz-recaptcha-field-0_0' type='hidden' name='wc_captcha'
+                       value="" required="required" aria-required='true' class="wpdiscuz_reset"/>
+                <div class="clearfix"></div>
+            </div>
+                    <div class="wc-field-submit">
+                                                <label class="wpd_label"
+                           wpd-tooltip="Notify of new replies to this comment">
+                        <input id="wc_notification_new_comment-0_0"
+                               class="wc_notification_new_comment-0_0 wpd_label__checkbox"
+                               value="comment" type="checkbox"
+                               name="wpdiscuz_notification_type" checked='checked'/>
+                        <span class="wpd_label__text">
+                                <span class="wpd_label__check">
+                                    <i class="fas fa-bell wpdicon wpdicon-on"></i>
+                                    <i class="fas fa-bell-slash wpdicon wpdicon-off"></i>
+                                </span>
+                            </span>
+                    </label>
+                            <input id="wpd-field-submit-0_0"
+                   class="wc_comm_submit wpd_not_clicked wpd-prim-button" type="submit"
+                   name="submit" value="Post Comment"
+                   aria-label="Post Comment"/>
+        </div>
+                </div>
+                    <div class="clearfix"></div>
+        </div>
+                            </div>
+                                        <input type="hidden" class="wpdiscuz_unique_id" value="0_0"
+                           name="wpdiscuz_unique_id">
+                                    </form>
+                        </div>
+                <div id="wpdiscuz_hidden_secondary_form" style="display: none;">
+                    <div
+            class="wpd-form wpd-form-wrapper wpd-secondary-form-wrapper" id='wpd-secondary-form-wrapper-wpdiscuzuniqueid' style='display: none;'>
+                            <div class="wpd-secondary-forms-social-content"></div>
+                <div class="clearfix"></div>
+                                        <form  method="post" enctype="multipart/form-data" data-uploading="false" class="wpd_comm_form wpd-secondary-form-wrapper"                >
+                                        <div class="wpd-field-comment">
+                        <div class="wpdiscuz-item wc-field-textarea">
+                            <div class="wpdiscuz-textarea-wrap ">
+                                            <div id="wpd-editor-wraper-wpdiscuzuniqueid" style="display: none;">
+                <div id="wpd-editor-char-counter-wpdiscuzuniqueid"
+                     class="wpd-editor-char-counter"></div>
+                <label style="display: none;" for="wc-textarea-wpdiscuzuniqueid">Label</label>
+                <textarea id="wc-textarea-wpdiscuzuniqueid" name="wc_comment"
+                          class="wc_comment wpd-field"></textarea>
+                <div id="wpd-editor-wpdiscuzuniqueid"></div>
+                        <div id="wpd-editor-toolbar-wpdiscuzuniqueid">
+                            <button title="Bold"
+                        class="ql-bold"  ></button>
+                                <button title="Italic"
+                        class="ql-italic"  ></button>
+                                <button title="Underline"
+                        class="ql-underline"  ></button>
+                                <button title="Strike"
+                        class="ql-strike"  ></button>
+                                <button title="Ordered List"
+                        class="ql-list" value='ordered' ></button>
+                                <button title="Unordered List"
+                        class="ql-list" value='bullet' ></button>
+                                <button title="Blockquote"
+                        class="ql-blockquote"  ></button>
+                                <button title="Code Block"
+                        class="ql-code-block"  ></button>
+                                <button title="Link"
+                        class="ql-link"  ></button>
+                                <button title="Source Code"
+                        class="ql-sourcecode"  data-wpde_button_name='sourcecode'>{}</button>
+                                <button title="Spoiler"
+                        class="ql-spoiler"  data-wpde_button_name='spoiler'>[+]</button>
+                            <div class="wpd-editor-buttons-right">
+                            </div>
+        </div>
+                    </div>
+                                        </div>
+                        </div>
+                    </div>
+                    <div class="wpd-form-foot" style='display:none;'>
+                        <div class="wpdiscuz-textarea-foot">
+                                                        <div class="wpdiscuz-button-actions"></div>
+                        </div>
+                                <div class="wpd-form-row">
+                    <div class="wpd-form-col-left">
+                        <div class="wpdiscuz-item wc_name-wrapper wpd-has-icon">
+                                    <div class="wpd-field-icon"><i
+                            class="fas fa-user"></i>
+                    </div>
+                                    <input id="wc_name-wpdiscuzuniqueid" value="" required='required' aria-required='true'                       class="wc_name wpd-field" type="text"
+                       name="wc_name"
+                       placeholder="Name*"
+                       maxlength="50" pattern='.{3,50}'                       title="">
+                <label for="wc_name-wpdiscuzuniqueid"
+                       class="wpdlb">Name*</label>
+                            </div>
+                        <div class="wpdiscuz-item wc_email-wrapper wpd-has-icon">
+                                    <div class="wpd-field-icon"><i
+                            class="fas fa-at"></i>
+                    </div>
+                                    <input id="wc_email-wpdiscuzuniqueid" value="" required='required' aria-required='true'                       class="wc_email wpd-field" type="email"
+                       name="wc_email"
+                       placeholder="Email*"/>
+                <label for="wc_email-wpdiscuzuniqueid"
+                       class="wpdlb">Email*</label>
+                            </div>
+                            <div class="wpdiscuz-item wc_website-wrapper wpd-has-icon">
+                                            <div class="wpd-field-icon"><i
+                                class="fas fa-link"></i>
+                        </div>
+                                        <input id="wc_website-wpdiscuzuniqueid" value=""
+                           class="wc_website wpd-field" type="text"
+                           name="wc_website"
+                           placeholder="Website"/>
+                    <label for="wc_website-wpdiscuzuniqueid"
+                           class="wpdlb">Website</label>
+                                    </div>
+                        </div>
+                <div class="wpd-form-col-right">
+                        <div class="wpd-field-captcha wpdiscuz-item">
+                <div class="wpdiscuz-recaptcha" id='wpdiscuz-recaptcha-wpdiscuzuniqueid'></div>
+                <input id='wpdiscuz-recaptcha-field-wpdiscuzuniqueid' type='hidden' name='wc_captcha'
+                       value="" required="required" aria-required='true' class="wpdiscuz_reset"/>
+                <div class="clearfix"></div>
+            </div>
+                    <div class="wc-field-submit">
+                                                <label class="wpd_label"
+                           wpd-tooltip="Notify of new replies to this comment">
+                        <input id="wc_notification_new_comment-wpdiscuzuniqueid"
+                               class="wc_notification_new_comment-wpdiscuzuniqueid wpd_label__checkbox"
+                               value="comment" type="checkbox"
+                               name="wpdiscuz_notification_type" checked='checked'/>
+                        <span class="wpd_label__text">
+                                <span class="wpd_label__check">
+                                    <i class="fas fa-bell wpdicon wpdicon-on"></i>
+                                    <i class="fas fa-bell-slash wpdicon wpdicon-off"></i>
+                                </span>
+                            </span>
+                    </label>
+                            <input id="wpd-field-submit-wpdiscuzuniqueid"
+                   class="wc_comm_submit wpd_not_clicked wpd-prim-button" type="submit"
+                   name="submit" value="Post Comment"
+                   aria-label="Post Comment"/>
+        </div>
+                </div>
+                    <div class="clearfix"></div>
+        </div>
+                            </div>
+                                        <input type="hidden" class="wpdiscuz_unique_id" value="wpdiscuzuniqueid"
+                           name="wpdiscuz_unique_id">
+                                    </form>
+                        </div>
+                </div>
+                    </div>
+                        <div id="wpd-threads" class="wpd-thread-wrapper">
+                <div class="wpd-thread-head">
+                    <div class="wpd-thread-info "
+                         data-comments-count="6">
+                        <span class='wpdtc' title='6'>6</span> Comments                    </div>
+                                        <div class="wpd-space"></div>
+                    <div class="wpd-thread-filter">
+                                                    <div class="wpd-filter wpdf-reacted wpd_not_clicked " data-filter-type="most_reacted"
+                                 wpd-tooltip="Most reacted comment">
+                                <i class="fas fa-bolt"></i></div>
+                                                        <div class="wpd-filter wpdf-hottest wpd_not_clicked " data-filter-type="hottest_thread"
+                                 wpd-tooltip="Hottest comment thread">
+                                <i class="fas fa-fire"></i></div>
+                                                        <div class="wpd-filter wpdf-sorting ">
+                                                                        <span class="wpdiscuz-sort-button wpdiscuz-vote-sort-up wpdiscuz-sort-button-active"
+                                              data-sorting="by_vote">Most Voted</span>
+                                                                        <i class="fas fa-sort-down"></i>
+                                <div class="wpdiscuz-sort-buttons">
+                                                                            <span class="wpdiscuz-sort-button wpdiscuz-date-sort-desc"
+                                              data-sorting="newest">Newest</span>
+                                                                                <span class="wpdiscuz-sort-button wpdiscuz-date-sort-asc"
+                                              data-sorting="oldest">Oldest</span>
+                                                                        </div>
+                            </div>
+                                                </div>
+                    <div class="wpd-filter-container wpdiscuz-hidden"></div>
+                </div>
+                                <div class="wpd-thread-list">
+                                        <div class="wpdiscuz-comment-pagination" style='display:none;'>
+                                                    <div class="wpd-load-more-submit-wrap">
+                                <button name="submit" data-lastparentid="0"
+                                        class="wpd-load-more-submit wpd-loaded wpd-prim-button">
+                                    Load More Comments                                </button>
+                            </div>
+                            <span id="wpdiscuzHasMoreComments" data-is_show_load_more="0"></span>
+                                                </div>
+                </div>
+            </div>
+                </div>
+        </div>
+    <div id="wpdiscuz-loading-bar"
+         class="wpdiscuz-loading-bar-unauth"></div>
+    <div id="wpdiscuz-comment-message"
+         class="wpdiscuz-comment-message-unauth"></div>
+    			</div>
+
+					</main>
+	</div>
+
+	<div class="widget-area sidebar is-left-sidebar" id="left-sidebar">
+	<div class="inside-left-sidebar">
+		<aside id="nav_menu-17" class="widget inner-padding widget_nav_menu"><h2 class="widget-title">Learn REST</h2><div class="menu-site-links-container"><ul id="menu-site-links" class="menu"><li id="menu-item-136" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home menu-item-136"><a href="https://restfulapi.net/">What is REST?</a></li>
+<li id="menu-item-60" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-60"><a href="https://restfulapi.net/rest-architectural-constraints/">REST Constraints</a></li>
+<li id="menu-item-69" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-69"><a href="https://restfulapi.net/resource-naming/">Naming REST Resources</a></li>
+</ul></div></aside><aside id="nav_menu-18" class="widget inner-padding widget_nav_menu"><h2 class="widget-title">Guides</h2><div class="menu-guides-container"><ul id="menu-guides" class="menu"><li id="menu-item-1996" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-1996"><a href="https://restfulapi.net/rest-vs-graphql-vs-grpc/">REST vs GraphQL vs gRPC</a></li>
+<li id="menu-item-2061" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2061"><a href="https://restfulapi.net/jwt-auth-expiration-refresh-tokens/">JWT Auth</a></li>
+<li id="menu-item-132" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-132"><a href="https://restfulapi.net/caching/">Caching</a></li>
+<li id="menu-item-103" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-103"><a href="https://restfulapi.net/rest-resource-compression/">Compression</a></li>
+<li id="menu-item-130" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-130"><a href="https://restfulapi.net/content-negotiation/">Content Negotiation</a></li>
+<li id="menu-item-134" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-134"><a href="https://restfulapi.net/hateoas/">HATEOAS</a></li>
+<li id="menu-item-128" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-128"><a href="https://restfulapi.net/idempotent-rest-apis/">Idempotence</a></li>
+<li id="menu-item-133" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-133"><a href="https://restfulapi.net/security-essentials/">Security Essentials</a></li>
+<li id="menu-item-131" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-131"><a href="https://restfulapi.net/versioning/">Versioning</a></li>
+<li id="menu-item-151" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-151"><a href="https://restfulapi.net/statelessness/">Statelessness</a></li>
+<li id="menu-item-1816" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-1816"><a href="https://restfulapi.net/api-pagination-sorting-filtering/">Pagination, Sorting and Filtering</a></li>
+<li id="menu-item-1995" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-1995"><a href="https://restfulapi.net/rest-api-performance-testing/">Performance Testing</a></li>
+<li id="menu-item-1825" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-1825"><a href="https://restfulapi.net/rest-api-rate-limit-guidelines/">Rate Limits</a></li>
+<li id="menu-item-2009" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2009"><a href="https://restfulapi.net/designing-rest-apis-for-scalability/">Scalability</a></li>
+<li id="menu-item-2043" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2043"><a href="https://restfulapi.net/implementing-search-in-rest-apis/">Implementing Search</a></li>
+<li id="menu-item-2044" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2044"><a href="https://restfulapi.net/rest-api-throttling/">REST API Throttling</a></li>
+<li id="menu-item-2045" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2045"><a href="https://restfulapi.net/handling-large-payloads-in-rest-apis/">Handling Large Payloads</a></li>
+<li id="menu-item-2046" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2046"><a href="https://restfulapi.net/rest-api-health-monitoring/">Health Monitoring</a></li>
+<li id="menu-item-2120" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2120"><a href="https://restfulapi.net/security-headers-in-rest-apis/">Security Headers</a></li>
+<li id="menu-item-2221" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2221"><a href="https://restfulapi.net/owasp-api-security-top-10-for-rest-apis/">OWASP API Security</a></li>
+<li id="menu-item-1804" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-1804"><a href="https://restfulapi.net/rest-api-best-practices/">Best Practices</a></li>
+</ul></div></aside><aside id="nav_menu-19" class="widget inner-padding widget_nav_menu"><h2 class="widget-title">Tech &#8211; How To</h2><div class="menu-tech-how-to-container"><ul id="menu-tech-how-to" class="menu"><li id="menu-item-148" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-148"><a target="_blank" href="https://restfulapi.net/rest-api-design-tutorial-with-example/" title="REST API Design Tutorial">Design REST APIs</a></li>
+<li id="menu-item-2149" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2149"><a href="https://restfulapi.net/designing-rest-apis-for-ai-agents/">APIs for AI Agents</a></li>
+<li id="menu-item-2129" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2129"><a href="https://restfulapi.net/expanding-responses-in-rest-apis/">Expanding Responses</a></li>
+<li id="menu-item-1380" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-1380"><a href="https://restfulapi.net/rest-api-design-for-long-running-tasks/">Long-Running Tasks</a></li>
+<li id="menu-item-2062" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2062"><a href="https://restfulapi.net/rest-api-error-handling/">Error Handling</a></li>
+<li id="menu-item-2063" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2063"><a href="https://restfulapi.net/rest-api-testing/">API Testing</a></li>
+<li id="menu-item-2108" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2108"><a href="https://restfulapi.net/rest-api-analytics-tools/">API Analytics Tools</a></li>
+<li id="menu-item-2109" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2109"><a href="https://restfulapi.net/event-driven-apis/">Event-Driven APIs</a></li>
+<li id="menu-item-2110" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2110"><a href="https://restfulapi.net/handling-file-downloads-in-rest-apis/">File Download</a></li>
+<li id="menu-item-2111" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2111"><a href="https://restfulapi.net/handling-file-uploads-in-rest-apis/">File Upload</a></li>
+<li id="menu-item-2223" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2223"><a href="https://restfulapi.net/breaking-changes-and-api-deprecation/">API Deprecation</a></li>
+<li id="menu-item-2124" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2124"><a href="https://restfulapi.net/api-client-libraries/">Client Libraries</a></li>
+<li id="menu-item-2123" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2123"><a href="https://restfulapi.net/restful-api-frameworks/">Server-side Frameworks</a></li>
+<li id="menu-item-2222" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2222"><a href="https://restfulapi.net/contract-testing-rest-apis-with-pact/">Contract Testing with Pact</a></li>
+<li id="menu-item-2224" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2224"><a href="https://restfulapi.net/dates-times-and-money-in-rest-apis/">Handling Dates, Times and Money</a></li>
+<li id="menu-item-2225" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2225"><a href="https://restfulapi.net/bulk-and-batch-operations-in-rest-apis/">Bulk and Batch Operations</a></li>
+<li id="menu-item-2226" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2226"><a href="https://restfulapi.net/http-query-method/">HTTP QUERY in APIs</a></li>
+<li id="menu-item-2227" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2227"><a href="https://restfulapi.net/patch-json-patch-vs-json-merge-patch/">HTTP PATCH in APIs</a></li>
+<li id="menu-item-2228" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2228"><a href="https://restfulapi.net/optimistic-concurrency-etag-if-match/">ETag and If-Match</a></li>
+<li id="menu-item-2229" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2229"><a href="https://restfulapi.net/idempotency-keys-in-rest-apis/">Idempotency Key</a></li>
+</ul></div></aside><aside id="nav_menu-20" class="widget inner-padding widget_nav_menu"><h2 class="widget-title">FAQs</h2><div class="menu-faqs-container"><ul id="menu-faqs" class="menu"><li id="menu-item-141" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-141"><a href="https://restfulapi.net/rest-put-vs-post/">PUT vs POST</a></li>
+<li id="menu-item-172" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-172"><a href="https://restfulapi.net/rest-api-n-1-problem/">N+1 Problem</a></li>
+<li id="menu-item-176" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-176"><a href="https://restfulapi.net/q-parameter-in-http-accept-header/">&#8216;q&#8217; Parameter</a></li>
+</ul></div></aside><aside id="nav_menu-21" class="widget inner-padding widget_nav_menu"><h2 class="widget-title">Resources</h2><div class="menu-resources-container"><ul id="menu-resources" class="menu"><li id="menu-item-617" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-617"><a href="https://restfulapi.net/what-is-an-api/">What is an API?</a></li>
+<li id="menu-item-101" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-101"><a href="https://restfulapi.net/soap-vs-rest-apis/">SOAP vs REST</a></li>
+<li id="menu-item-102" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-102"><a href="https://restfulapi.net/http-methods/">HTTP Methods</a></li>
+<li id="menu-item-126" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-126"><a href="https://restfulapi.net/richardson-maturity-model/">Richardson Maturity Model</a></li>
+<li id="menu-item-100" class="menu-item menu-item-type-post_type menu-item-object-post current-menu-ancestor current-menu-parent menu-item-has-children menu-item-100"><a href="https://restfulapi.net/http-status-codes/">HTTP Response Codes</a>
+<ul class="sub-menu">
+	<li id="menu-item-290" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-290"><a href="https://restfulapi.net/http-status-200-ok/">200 (OK)</a></li>
+	<li id="menu-item-288" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-288"><a href="https://restfulapi.net/http-status-201-created/">201 (Created)</a></li>
+	<li id="menu-item-289" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-289"><a href="https://restfulapi.net/http-status-202-accepted/">202 (Accepted)</a></li>
+	<li id="menu-item-291" class="menu-item menu-item-type-post_type menu-item-object-post current-menu-item menu-item-291"><a href="https://restfulapi.net/http-status-204-no-content/" aria-current="page">204 (No Content)</a></li>
+	<li id="menu-item-605" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-605"><a href="https://restfulapi.net/http-status-301-moved-permanently/">301 (Moved Permanently)</a></li>
+	<li id="menu-item-2376" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2376"><a href="https://restfulapi.net/http-status-304-not-modified/">304 (Not Modified)</a></li>
+	<li id="menu-item-2377" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2377"><a href="https://restfulapi.net/http-status-400-bad-request/">400 (Bad Request)</a></li>
+	<li id="menu-item-2375" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2375"><a href="https://restfulapi.net/http-status-401-unauthorized/">401 (Unauthorized)</a></li>
+	<li id="menu-item-2374" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2374"><a href="https://restfulapi.net/http-status-403-forbidden/">403 (Forbidden)</a></li>
+	<li id="menu-item-2373" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2373"><a href="https://restfulapi.net/http-status-404-not-found/">404 (Not Found)</a></li>
+	<li id="menu-item-2367" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2367"><a href="https://restfulapi.net/http-status-405-method-not-allowed/">405 (Method Not Allowed)</a></li>
+	<li id="menu-item-2372" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2372"><a href="https://restfulapi.net/http-status-409-conflict/">409 (Conflict)</a></li>
+	<li id="menu-item-2366" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2366"><a href="https://restfulapi.net/http-status-412-precondition-failed/">412 (Precondition Failed)</a></li>
+	<li id="menu-item-2371" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2371"><a href="https://restfulapi.net/http-status-422-unprocessable-content/">422 (Unprocessable Content)</a></li>
+	<li id="menu-item-2370" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2370"><a href="https://restfulapi.net/http-status-429-too-many-requests/">429 (Too Many Requests)</a></li>
+	<li id="menu-item-2368" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2368"><a href="https://restfulapi.net/http-status-503-service-unavailable/">503 (Service Unavailable)</a></li>
+	<li id="menu-item-2369" class="menu-item menu-item-type-post_type menu-item-object-post menu-item-2369"><a href="https://restfulapi.net/http-status-500-internal-server-error/">500 (Internal Server Error)</a></li>
+</ul>
+</li>
+</ul></div></aside>	</div>
+</div>
+<div class="widget-area sidebar is-right-sidebar" id="right-sidebar">
+	<div class="inside-right-sidebar">
+		<div class="gb-container gb-container-99ba62c5"><div class="gb-inside-container">
+<div class="gb-container gb-container-726dea14 inline-post-meta-area"><div class="gb-inside-container">
+<img alt='Photo of author' src='https://secure.gravatar.com/avatar/440b2ffa86b0f8f14d2d1e64cc0ddc8b9a2ffa2ad0fefcbe431460638bd88883?s=30&#038;d=robohash&#038;r=g' srcset='https://secure.gravatar.com/avatar/440b2ffa86b0f8f14d2d1e64cc0ddc8b9a2ffa2ad0fefcbe431460638bd88883?s=60&#038;d=robohash&#038;r=g 2x' class='avatar avatar-30 photo dynamic-author-image dynamic-author-image-rounded' height='30' width='30' loading='lazy' decoding='async'/>
+
+
+<p class="gb-headline gb-headline-4a56fbf6 gb-headline-text">About Lokesh Gupta</p>
+
+</div></div>
+
+<div class="dynamic-author-description">A fun-loving family man, passionate about computers and problem-solving, with over 15 years of experience in Java and related technologies. 
+
+An avid Sci-Fi movie enthusiast and a fan of Christopher Nolan and Quentin Tarantino.</div>
+
+<div class="gb-button-wrapper gb-button-wrapper-6db29ae0">
+
+<a class="gb-button gb-button-931ee42a" href="https://twitter.com/HowToDoInJava" target="_blank" rel="nofollow noopener noreferrer"><span class="gb-icon"><svg xml:space="preserve" style="enable-background:new 0 0 24 24;" viewBox="0 0 24 24" height="24px" width="24px" id="Layer_1" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg"><path d="M14.095479,10.316482L22.286354,1h-1.940718l-7.115352,8.087682L7.551414,1H1l8.589488,12.231093L1,23h1.940717  l7.509372-8.542861L16.448587,23H23L14.095479,10.316482z M11.436522,13.338465l-0.871624-1.218704l-6.924311-9.68815h2.981339  l5.58978,7.82155l0.867949,1.218704l7.26506,10.166271h-2.981339L11.436522,13.338465z"></path></svg></span><span class="gb-button-text">Follow on Twitter</span></a>
+
+</div>
+</div></div>
+
+
+<p class="wp-block-paragraph"></p>
+	</div>
+</div>
+
+	</div>
+</div>
+
+<div class="gb-container gb-container-aadd0a6f featured-navigation"><div class="gb-inside-container">
+<div class="gb-grid-wrapper gb-grid-wrapper-fe8855c5">
+<div class="gb-grid-column gb-grid-column-59edc08b"><div class="gb-container gb-container-59edc08b"><div class="gb-inside-container">
+
+<p class="gb-headline gb-headline-8d3d4c12 gb-headline-text">Previous</p>
+
+
+
+<h3 class="gb-headline gb-headline-352592d1 gb-headline-text"><a href="https://restfulapi.net/http-status-202-accepted/">HTTP Status 202 (Accepted)</a></h3>
+
+</div></div></div>
+
+<div class="gb-grid-column gb-grid-column-993a41e4"><div class="gb-container gb-container-993a41e4"><div class="gb-inside-container">
+
+<p class="gb-headline gb-headline-49c8845f gb-headline-text">Next</p>
+
+
+
+<h3 class="gb-headline gb-headline-6ba8079e gb-headline-text"><a href="https://restfulapi.net/create-rest-apis-with-jax-rs/">Create REST APIs with JAX-RS</a></h3>
+
+</div></div></div>
+</div>
+</div></div>
+<div class="site-footer">
+				<div id="footer-widgets" class="site footer-widgets">
+				<div class="footer-widgets-container grid-container">
+					<div class="inside-footer-widgets">
+							<div class="footer-widget-1">
+		<aside id="nav_menu-23" class="widget inner-padding widget_nav_menu"><h2 class="widget-title">References</h2><div class="menu-references-container"><ul id="menu-references" class="menu"><li id="menu-item-143" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-143"><a target="_blank" href="http://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm">The dissertation by Roy Thomas Fielding</a></li>
+<li id="menu-item-144" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-144"><a target="_blank" href="http://www.ietf.org/rfc/rfc3986.txt" title="Uniform Resource Identifier ">Uniform Resource Identifier (URI, URL, URN) [RFC 3986]</a></li>
+<li id="menu-item-145" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-145"><a target="_blank" href="http://www.iana.org/assignments/media-types/media-types.xhtml">Internet MediaTypes</a></li>
+<li id="menu-item-146" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-146"><a target="_blank" href="https://www.w3.org/Submission/wadl/">Web Application Description Language (WADL)</a></li>
+</ul></div></aside>	</div>
+		<div class="footer-widget-2">
+		<aside id="nav_menu-24" class="widget inner-padding widget_nav_menu"><h2 class="widget-title">Meta Links</h2><div class="menu-meta-links-container"><ul id="menu-meta-links" class="menu"><li id="menu-item-82" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-82"><a href="https://restfulapi.net/about-us/">About</a></li>
+<li id="menu-item-81" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-81"><a href="https://restfulapi.net/contact/">Contact Us</a></li>
+<li id="menu-item-83" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-83"><a href="https://restfulapi.net/privacy-policy/">Privacy Policy</a></li>
+</ul></div></aside>	</div>
+		<div class="footer-widget-3">
+		<aside id="nav_menu-25" class="widget inner-padding widget_nav_menu"><h2 class="widget-title">Blogs</h2><div class="menu-other-blogs-container"><ul id="menu-other-blogs" class="menu"><li id="menu-item-219" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-219"><a target="_blank" href="http://howtodoinjava.com" title="howtodoinjava.com">How To Do In Java</a></li>
+</ul></div></aside>	</div>
+						</div>
+				</div>
+			</div>
+					<footer class="site-info" aria-label="Site"  itemtype="https://schema.org/WPFooter" itemscope>
+			<div class="inside-site-info grid-container">
+								<div class="copyright-bar">
+					Copyright © 2023 • <a href="https://restfulapi.net/sitemap_index.xml">Sitemap</a>				</div>
+			</div>
+		</footer>
+		</div>
+
+<a title="Scroll back to top" aria-label="Scroll back to top" rel="nofollow" href="#" class="generate-back-to-top" data-scroll-speed="400" data-start-scroll="300" role="button">
+					<span class="gp-icon icon-arrow-up"><svg viewBox="0 0 330 512" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill-rule="evenodd" clip-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="1.414"><path d="M305.863 314.916c0 2.266-1.133 4.815-2.832 6.514l-14.157 14.163c-1.699 1.7-3.964 2.832-6.513 2.832-2.265 0-4.813-1.133-6.512-2.832L164.572 224.276 53.295 335.593c-1.699 1.7-4.247 2.832-6.512 2.832-2.265 0-4.814-1.133-6.513-2.832L26.113 321.43c-1.699-1.7-2.831-4.248-2.831-6.514s1.132-4.816 2.831-6.515L158.06 176.408c1.699-1.7 4.247-2.833 6.512-2.833 2.265 0 4.814 1.133 6.513 2.833L303.03 308.4c1.7 1.7 2.832 4.249 2.832 6.515z" fill-rule="nonzero" /></svg></span>
+				</a><script type="speculationrules">
+{"prefetch":[{"source":"document","where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":["/wp-*.php","/wp-admin/*","/wp-content/uploads/*","/wp-content/*","/wp-content/plugins/*","/wp-content/themes/generatepress_child/*","/wp-content/themes/generatepress/*","/*\\?(.+)"]}},{"not":{"selector_matches":"a[rel~=\"nofollow\"]"}},{"not":{"selector_matches":".no-prefetch, .no-prefetch a"}}]},"eagerness":"conservative"}]}
+</script>
+<script id="generate-a11y">
+!function(){"use strict";if("querySelector"in document&&"addEventListener"in window){var e=document.body;e.addEventListener("pointerdown",(function(){e.classList.add("using-mouse")}),{passive:!0}),e.addEventListener("keydown",(function(){e.classList.remove("using-mouse")}),{passive:!0})}}();
+</script>
+<div id='wpd-editor-source-code-wrapper-bg'></div><div id='wpd-editor-source-code-wrapper'><textarea id='wpd-editor-source-code'></textarea><button id='wpd-insert-source-code'>Insert</button><input type='hidden' id='wpd-editor-uid' /></div><script id="mkaz-code-syntax-prism-js-js-extra">
+var prism_settings = {"pluginUrl":"https://restfulapi.net/wp-content/plugins/code-syntax-block/"};
+//# sourceURL=mkaz-code-syntax-prism-js-js-extra
+</script>
+<script id="mkaz-code-syntax-prism-js-js" src="https://restfulapi.net/wp-content/plugins/code-syntax-block/assets/prism/prism.js"></script>
+<script id="generate-menu-js-before">
+var generatepressMenu = {"toggleOpenedSubMenus":true,"openSubMenuLabel":"Open Sub-Menu","closeSubMenuLabel":"Close Sub-Menu"};
+//# sourceURL=generate-menu-js-before
+</script>
+<script id="generate-menu-js" src="https://restfulapi.net/wp-content/themes/generatepress/assets/js/menu.min.js"></script>
+<script id="generate-navigation-search-js-before">
+var generatepressNavSearch = {"open":"Open Search Bar","close":"Close Search Bar"};
+//# sourceURL=generate-navigation-search-js-before
+</script>
+<script id="generate-navigation-search-js" src="https://restfulapi.net/wp-content/themes/generatepress/assets/js/navigation-search.min.js"></script>
+<script id="generate-back-to-top-js-before">
+var generatepressBackToTop = {"smooth":true};
+//# sourceURL=generate-back-to-top-js-before
+</script>
+<script id="generate-back-to-top-js" src="https://restfulapi.net/wp-content/themes/generatepress/assets/js/back-to-top.min.js"></script>
+<script async data-wp-strategy="async" fetchpriority="low" id="comment-reply-js" src="https://restfulapi.net/wp-includes/js/comment-reply.min.js"></script>
+<script id="wpdiscuz-combo-js-js-extra">
+var wpdiscuzAjaxObj = {"wc_hide_replies_text":"Hide Replies","wc_show_replies_text":"View Replies","wc_msg_required_fields":"Please fill out required fields","wc_msg_comment_is_trash":"Your comment was not published.","wc_msg_comment_is_spam":"Your comment was not published.","wc_invalid_field":"Some of field value is invalid","wc_error_empty_text":"please fill out this field to comment","wc_error_url_text":"url is invalid","wc_error_email_text":"email address is invalid","wc_invalid_captcha":"Invalid Captcha Code","wc_login_to_vote":"You Must Be Logged In To Vote","wc_deny_voting_from_same_ip":"You are not allowed to vote for this comment","wc_self_vote":"You cannot vote for your comment","wc_vote_only_one_time":"You've already voted for this comment","wc_voting_error":"Voting Error","wc_banned_user":"You are banned","wc_rate_limit_exceeded":"Too many requests. Please slow down.","wc_comment_edit_not_possible":"Sorry, this comment is no longer possible to edit","wc_comment_not_updated":"Sorry, the comment was not updated","wc_comment_not_edited":"You've not made any changes","wc_msg_input_min_length":"Input is too short","wc_msg_input_max_length":"Input is too long","wc_spoiler_title":"Spoiler Title","wc_cannot_rate_again":"You cannot rate again","wc_not_allowed_to_rate":"You're not allowed to rate here","wc_confirm_rate_edit":"Are you sure you want to edit your rate?","wc_follow_user":"Follow this user","wc_unfollow_user":"Unfollow this user","wc_follow_success":"You started following this comment author","wc_follow_canceled":"You stopped following this comment author.","wc_follow_email_confirm":"Please check your email and confirm the user following request.","wc_follow_email_confirm_fail":"Sorry, we couldn't send confirmation email.","wc_follow_login_to_follow":"Please login to follow users.","wc_follow_impossible":"We are sorry, but you can't follow this user.","wc_follow_not_added":"Following failed. Please try again later.","wc_inline_feedbacks":"Inline Feedbacks","wc_inline_comments_view_all":"View all comments","is_user_logged_in":"","commentListLoadType":"0","commentListUpdateType":"0","commentListUpdateTimer":"600","liveUpdateGuests":"0","wordpressThreadCommentsDepth":"5","wordpressIsPaginate":"","commentTextMaxLength":"0","replyTextMaxLength":"0","commentTextMinLength":"10","replyTextMinLength":"10","storeCommenterData":"100000","socialLoginAgreementCheckbox":"0","enableFbLogin":"0","fbUseOAuth2":"0","enableFbShare":"0","facebookAppID":"","facebookUseOAuth2":"0","enableGoogleLogin":"0","cookiehash":"a21cf746f837f71681edc9e7cee3e405","isLoadOnlyParentComments":"0","scrollToComment":"1","commentFormView":"collapsed","enableDropAnimation":"1","isNativeAjaxEnabled":"1","userInteractionCheck":"1","enableBubble":"0","bubbleLiveUpdate":"0","bubbleHintTimeout":"45","bubbleHintHideTimeout":"10","cookieHideBubbleHint":"wpdiscuz_hide_bubble_hint","bubbleHintShowOnce":"1","bubbleHintCookieExpires":"7","bubbleShowNewCommentMessage":"1","bubbleLocation":"content_left","firstLoadWithAjax":"1","wc_copied_to_clipboard":"Copied to clipboard!","inlineFeedbackAttractionType":"disable","antispamFieldPrefixes":["ak_","akismet_comment_nonce","la_sentinelle_"],"loadRichEditor":"1","wpDiscuzReCaptchaSK":"6LfGc74pAAAAAN9U3FRGc2qdSZdoMTo_ZYfstfZk","wpDiscuzReCaptchaTheme":"light","wpDiscuzReCaptchaVersion":"2.0","wc_captcha_show_for_guest":"1","wc_captcha_show_for_members":"0","wpDiscuzIsShowOnSubscribeForm":"0","wmuEnabled":"0","wmuInput":"wmu_files","wmuMaxFileCount":"1","wmuMaxFileSize":"5242880","wmuPostMaxSize":"10485760","wmuIsLightbox":"0","wmuMimeTypes":[],"wmuPhraseConfirmDelete":"Are you sure you want to delete this attachment?","wmuPhraseNotAllowedFile":"Not allowed file type","wmuPhraseMaxFileCount":"Maximum number of uploaded files is 1","wmuPhraseMaxFileSize":"Maximum upload file size is 5MB","wmuPhrasePostMaxSize":"Maximum post size is 10MB","wmuPhraseDoingUpload":"Uploading in progress! Please wait.","msgEmptyFile":"File is empty. Please upload something more substantial. This error could also be caused by uploads being disabled in your php.ini or by post_max_size being defined as smaller than upload_max_filesize in php.ini.","msgPostIdNotExists":"Post ID not exists","msgUploadingNotAllowed":"Sorry, uploading not allowed for this post","msgPermissionDenied":"You do not have sufficient permissions to perform this action","wmuKeyImages":"images","wmuSingleImageWidth":"auto","wmuSingleImageHeight":"200","wmuIconVideo":"https://restfulapi.net/wp-content/plugins/wpdiscuz/assets/img/file-icons/video-audio-type.png","wmuIconFile":"https://restfulapi.net/wp-content/plugins/wpdiscuz/assets/img/file-icons/file-type.png","previewTemplate":"\u003Cdiv class=\"wmu-preview [PREVIEW_TYPE_CLASS]\" title=\"[PREVIEW_TITLE]\" data-wmu-type=\"[PREVIEW_TYPE]\" data-wmu-attachment=\"[PREVIEW_ID]\" data-wmu-index=\"[PREVIEW_INDEX]\"\u003E\r\n    \u003Cdiv class=\"wmu-preview-remove\"\u003E\r\n        \u003Cimg class=\"wmu-preview-img\" src=\"[PREVIEW_ICON]\"\u003E\r\n        \u003Cdiv class=\"wmu-file-name\"\u003E[PREVIEW_FILENAME]\u003C/div\u003E\r\n        \u003Cdiv class=\"wmu-preview-delete\" title=\"Delete\"\u003E\u2715\u003C/div\u003E\r\n        \u003Clabel class=\"wmu-preview-replace\" title=\"Replace\"\u003E\u21bb\u003Cinput type=\"file\" style=\"display:none\" class=\"wmu-replace-input\"\u003E\u003C/label\u003E\r\n    \u003C/div\u003E\r\n\u003C/div\u003E\r\n","isUserRated":"0","version":"7.6.71","wc_post_id":"156","wc_blog_id":"1","isCookiesEnabled":"1","loadLastCommentId":"0","dataFilterCallbacks":[],"phraseFilters":[],"scrollSize":"32","url":"https://restfulapi.net/wp-admin/admin-ajax.php","customAjaxUrl":"https://restfulapi.net/wp-content/plugins/wpdiscuz/utils/ajax/wpdiscuz-ajax.php","bubbleUpdateUrl":"https://restfulapi.net/wp-json/wpdiscuz/v1/update","restNonce":"22669c8f96","is_rate_editable":"0","menu_icon":"https://restfulapi.net/wp-content/plugins/wpdiscuz/assets/img/plugin-icon/wpdiscuz-svg.svg","menu_icon_hover":"https://restfulapi.net/wp-content/plugins/wpdiscuz/assets/img/plugin-icon/wpdiscuz-svg_hover.svg","nonceName":"wpdiscuz_nonce","postAttachmentsAsGallery":"","wmuPhraseNotAllowedFileType":"File type is not allowed","is_email_field_required":"1"};
+var wpdiscuzUCObj = {"msgConfirmDeleteComment":"Are you sure you want to delete this comment?","msgConfirmCancelSubscription":"Are you sure you want to cancel this subscription?","msgConfirmCancelFollow":"Are you sure you want to cancel this follow?","additionalTab":"0"};
+//# sourceURL=wpdiscuz-combo-js-js-extra
+</script>
+<script id="wpdiscuz-combo-js-js-before">
+var wpdiscuzEditorOptions = {
+        modules: {
+        toolbar: "",
+        counter: {
+        uniqueID: "",
+        commentmaxcount : 0,
+        replymaxcount : 0,
+        commentmincount : 10,
+        replymincount : 10,
+        },
+                },
+        wc_be_the_first_text: "Be the First to Comment!",
+        wc_comment_join_text: "Join the discussion",
+        theme: 'snow',
+        debug: 'error'
+        };
+        
+//# sourceURL=wpdiscuz-combo-js-js-before
+</script>
+<script id="wpdiscuz-combo-js-js" src="https://restfulapi.net/wp-content/plugins/wpdiscuz/assets/js/wpdiscuz-combo.min.js"></script>
+<script id="wpdiscuz-google-recaptcha-js" src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&#038;render=explicit&#038;hl=en&#038;ver=1.0.0"></script>
+
+</body>
+</html>
+
+<!-- Cache served by breeze CACHE - Last modified: Thu, 01 Oct 2026 13:54:13 GMT -->

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://theworldcountries.com/wp-content/uploads/2023/01/logo-1.png" type="image/x-icon">
+            <title>Tokyo, Capital city of Japan - The World Countries</title>
+         <meta name="description" content="Where in the World is Tokyo found? Tokyo is the capital of Japan (Japan), situated in the Eastern Asia subregion of Asia. In Tokyo, the currency used is Japanese yen (¥), which is the official currency used in Japan. The Latitude, Longitude cordinates of Tokyo are 35.6895, 139.6917.">
+    <meta property="og:title" content="Tokyo, Capital city of Japan - The World Countries">
+    <meta property="og:description" content="Where in the World is Tokyo found? Tokyo is the capital of Japan (Japan), situated in the Eastern Asia subregion of Asia. In Tokyo, the currency used is Japanese yen (¥), which is the official currency used in Japan. The Latitude, Longitude cordinates of Tokyo are 35.6895, 139.6917.">
+    <meta property="og:image" content="">
+    <!-- Integrating Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="https://ssl.gstatic.com/trends_nrtr/3620_RC01/embed_loader.js"></script>
+       
+    <!-- Render Google Trends widget -->
+     <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LZM5KRX6HF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-LZM5KRX6HF');
+</script><style>
+   /* Optional: You can add custom CSS to style the infobox */
+        .infobox {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 0 auto;
+            background-color: #f9f9f9;
+            width:98%;
+        }
+      table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+   td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+a {color:blue;}
+p {font-size: 1.125rem;
+    line-height: 1.75rem;
+    padding: inherit;
+}
+}
+
+#searchResults {
+  top: calc(100% + 5px); /* Adjust spacing between input and results */
+}
+ul#searchResults li {
+    margin-left: 15px;
+    padding: 5px;
+}
+  .search-container {
+  position: relative;
+  width: 96%;
+  margin:0 auto;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.search-results {
+  position: absolute;
+  width: calc(100% - 2px); /* Adjust for border width */
+  top: calc(100% + 5px); /* Adjust spacing between input and results */
+  left: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #ccc;
+  border-top: none;
+  border-radius: 0 0 5px 5px;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000; /* Ensure results appear above other content */
+}
+
+h2, h3, h4 {font-weight:bold;}
+h2{
+    font-size:x-large;
+   text-align:center; 
+}
+.mw-editsection{
+    display:none;
+}
+h3{font-size:larger}
+h4{font-size:large;}
+img.mw-file-element {
+    display: block;
+    margin: auto;
+    padding-bottom: 3rem;
+}
+    </style>
+    
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const apiKey = 'YBOzvOMIevwajaj4RhR+Sw==Qq2EhKwHHn8yrmdR';
+    
+    // Get longitude and latitude from PHP variable
+    const latitude = '35.6895';
+    const longitude = '139.6917';
+
+    const apiUrl = `https://api.api-ninjas.com/v1/worldtime?lat=${latitude}&lon=${longitude}`;
+    const userLocationApiUrl = 'https://ipapi.co/json/';
+
+    // Function to update the time and date
+    function updateTime(currentTime, timeElementId, dateElementId) {
+        currentTime.setSeconds(currentTime.getSeconds() + 1);
+        document.getElementById(timeElementId).textContent = currentTime.toLocaleTimeString();
+        document.getElementById(dateElementId).textContent = currentTime.toLocaleDateString(undefined, {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
+
+    // Fetch time and timezone from an API
+    function fetchTime(url, timeElementId, timezoneElementId, dateElementId) {
+        fetch(url, {
+            headers: {
+                'X-Api-Key': apiKey
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error fetching data.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const currentTime = new Date(data.datetime);
+            document.getElementById(timezoneElementId).textContent = data.timezone;
+            setInterval(() => updateTime(currentTime, timeElementId, dateElementId), 1000);
+        })
+        .catch(error => {
+            console.error('API response error:', error);
+        });
+    }
+
+    // Fetch and display time for country
+    fetchTime(apiUrl, 'time-country', 'timezone-country', 'date-country');
+
+    // Fetch and display user's location and time
+    fetch(userLocationApiUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error fetching user data.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const countryCode = data.country_code.toLowerCase();
+            const flagUrl = `https://flagcdn.com/w320/${countryCode}.png`;
+            document.getElementById('user-flag').src = flagUrl;
+
+            const timezone = data.timezone;
+            const userTimeApiUrl = `https://api.api-ninjas.com/v1/worldtime?timezone=${timezone}`;
+            
+            fetch(userTimeApiUrl, {
+                headers: {
+                    'X-Api-Key': apiKey
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error fetching user time data.');
+                }
+                return response.json();
+            })
+            .then(userData => {
+                const currentTime = new Date(userData.datetime);
+                document.getElementById('timezone-user').textContent = userData.timezone;
+                setInterval(() => updateTime(currentTime, 'time-user', 'date-user'), 1000);
+            })
+            .catch(error => {
+                console.error('User time API response error:', error);
+            });
+        })
+        .catch(error => {
+            console.error('User location API response error:', error);
+        });
+});
+</script></head>
+<body class="bg-gray-100">
+    <nav class="bg-white dark:bg-gray-900 fixed w-full z-20 top-0 start-0 border-b border-gray-200 dark:border-gray-600">
+  <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+    <a href="https://theworldcountries.com/geo" class="flex items-center space-x-3 rtl:space-x-reverse">
+      <img src="https://theworldcountries.com/wp-content/uploads/2023/01/TheWorld-Countries-transformed.png" class="h-8" alt="">
+      <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Factbook</span>
+    </a>
+    <div class="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
+      <button data-collapse-toggle="navbar-sticky" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-sticky" aria-expanded="false">
+        <span class="sr-only">Open main menu</span>
+        <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
+        </svg>
+      </button>
+    </div>
+    <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-sticky">
+      <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+        <li>
+          <a href="https://theworldcountries.com/geo" class="block py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500" aria-current="page">Home</a>
+        </li>
+        <li>
+          <a href="https://theworldcountries.com/geo/continent/Africa" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Africa</a>
+        </li>
+        <li>
+          <a href="https://theworldcountries.com/geo/continent/Europe" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Europe</a>
+        </li>
+        <li>
+          <a href="https://theworldcountries.com/geo/continent/Asia" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Asia</a>
+        </li>
+        <li>
+          <a href="https://theworldcountries.com/geo/continent/South-America" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">South America</a>
+        </li>
+        <li>
+          <a href="https://theworldcountries.com/geo/continent/North-America" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">North America</a>
+        </li>
+        <li>
+          <a href="https://theworldcountries.com/geo/continent/Oceania" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Oceania</a>
+        </li>
+        <li>
+          <a href="https://theworldcountries.com/geo/continent/Antarctica" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Antarctica</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<div class="w-full mt-20 container mx-auto">
+
+<!-- SEARCH -->
+
+<div class="relative">
+    <div class="search-container">
+        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M13.472 9.238c.005-.04.008-.082.008-.124 0-2.757-2.243-5-5-5-2.757 0-5 2.243-5 5 0 2.757 2.243 5 5 5 .042 0 .084-.003.124-.008a6.514 6.514 0 0 0 4.644-1.936l3.99 3.99c.195.195.451.293.707.293s.512-.098.707-.293c.39-.39.39-1.024 0-1.414l-3.99-3.99a6.492 6.492 0 0 0 1.937-4.644c0-.114-.01-.225-.03-.335l.82-.82c.39-.39.39-1.023 0-1.414-.39-.39-1.024-.39-1.414 0l-.82.82c-.11-.02-.221-.03-.335-.03a6.52 6.52 0 0 0-1.51.186A6.48 6.48 0 0 0 9.5 2c-3.584 0-6.5 2.916-6.5 6.5 0 3.584 2.916 6.5 6.5 6.5 3.584 0 6.5-2.916 6.5-6.5 0-.583-.078-1.156-.234-1.711a6.48 6.48 0 0 0 1.447-1.295c.067-.086.113-.187.136-.295zM9.5 12c2.481 0 4.5-2.019 4.5-4.5S11.981 3 9.5 3 5 5.019 5 7.5 7.019 12 9.5 12z" fill="currentColor"/>
+        </svg>
+        <input type="text" id="searchInput" class="pl-10 w-full py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" placeholder="Search..." onkeyup="liveSearch(this.value)">
+    </div>
+    <ul id="searchResults" class="absolute w-full border border-gray-300 rounded-lg shadow-lg mt-0 bg-white"></ul>
+</div>
+
+
+
+<script>
+    // Function to perform live search
+    function liveSearch(query) {
+        // Check if query length is at least three characters
+        if (query.length >= 3) {
+            fetch('https://theworldcountries.com/geo/api/countries.json')
+                .then(response => response.json())
+                .then(data => {
+                    // Filter countries based on the query
+                    const results = data.filter(country =>
+                        country.toLowerCase().includes(query.toLowerCase())
+                    );
+                    // Call function to display search results
+                    displaySearchResults(results);
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        } else {
+            // If query length is less than three characters, clear search results
+            clearSearchResults();
+        }
+    }
+
+function displaySearchResults(results) {
+    const resultList = document.getElementById('searchResults');
+    resultList.innerHTML = ''; // Clear previous results
+
+    results.forEach(country => {
+        const listItem = document.createElement('li');
+        const link = document.createElement('a');
+        link.textContent = country;
+        let countrySlug = country.replace(/\s+/g, '-');
+        link.href = `https://theworldcountries.com/geo/country/${countrySlug}`;
+        listItem.appendChild(link);
+        resultList.appendChild(listItem);
+    });
+}
+
+
+
+    // Function to clear search results
+    function clearSearchResults() {
+        const resultList = document.getElementById('searchResults');
+        resultList.innerHTML = ''; // Clear previous results
+    }
+</script>
+<!-- END SEARCH -->
+
+<!-- breadcrumbs -->
+    <nav class="bg-gray-100 py-4 px-6 text-sm">
+    <ol class="list-reset inline-flex text-gray-500">
+        <li><a href="https://theworldcountries.com/geo" class="text-blue-500">Home</a></li>
+        <li class="mx-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6 inline text-gray-500">
+    <path fill="currentColor" d="M5.59,7.41L7,6L13,12L7,18L5.59,16.59L10.17,12L5.59,7.41M11.59,7.41L13,6L19,12L13,18L11.59,16.59L16.17,12L11.59,7.41Z" />
+</svg>
+        </li>
+        <li><a href="https://theworldcountries.com/geo/continent/Asia" class="text-blue-500">Asia</a></li>
+           <li class="mx-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6 inline text-gray-500">
+            <path fill="currentColor" d="M5.59,7.41L7,6L13,12L7,18L5.59,16.59L10.17,12L5.59,7.41M11.59,7.41L13,6L19,12L13,18L11.59,16.59L16.17,12L11.59,7.41Z" />
+        </svg>
+            </li>
+    <li class="text-gray-700">
+        <a href="https://theworldcountries.com/geo/subregion/Eastern-Asia" class="text-blue-500">Eastern Asia</a>
+    </li>
+    <li class="mx-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6 inline text-gray-500">
+            <path fill="currentColor" d="M5.59,7.41L7,6L13,12L7,18L5.59,16.59L10.17,12L5.59,7.41M11.59,7.41L13,6L19,12L13,18L11.59,16.59L16.17,12L11.59,7.41Z" />
+        </svg>
+    </li>
+        <li class="text-gray-700"><a href="https://theworldcountries.com/geo/country/Japan" class="text-blue-500">JP</a></li>
+    <li class="mx-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6 inline text-gray-500">
+            <path fill="currentColor" d="M5.59,7.41L7,6L13,12L7,18L5.59,16.59L10.17,12L5.59,7.41M11.59,7.41L13,6L19,12L13,18L11.59,16.59L16.17,12L11.59,7.41Z" />
+        </svg>
+    </li>
+         <li class="text-gray-700">Tokyo</li>
+    </ol>
+</nav>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7092179791790867"
+     crossorigin="anonymous"></script>
+<!-- 237solution_main-widget_Blog1_1x1_as -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-7092179791790867"
+     data-ad-slot="6565727329"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script><div class="w-full p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-8 dark:bg-gray-800 dark:border-gray-700">
+    <h5 class="mb-2 text-center text-3xl font-bold text-gray-900 dark:text-white">Tokyo - Introduction</h5>
+    <p class="mb-5 text-base text-gray-500 sm:text-lg dark:text-gray-400">
+       <div class="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 p-4 gap-4">
+            <div class="bg-blue-500 dark:bg-gray-800 shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-blue-600 dark:border-gray-600 text-white font-medium group">
+                <div class="flex justify-center items-center w-14 h-14 bg-white rounded-full transition-all duration-300 transform group-hover:rotate-12">
+                    <img id="user-flag" width="50" height="50" class="rounded-lg" src="" alt="User Country Flag">
+                </div>
+                <div class="text-right">
+                    <p id="time-user" class="text-xl font-mono mb-2"></p>
+                    <p id="date-user" class="text-lg mb-2"></p>
+                    <p id="timezone-user" class="text-sm text-white"></p>
+                </div>
+            </div>
+            <div class="bg-blue-500 dark:bg-gray-800 shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-blue-600 dark:border-gray-600 text-white font-medium group">
+                <div class="flex justify-center items-center w-14 h-14 bg-white rounded-full transition-all duration-300 transform group-hover:rotate-12">
+                    <img width="50" height="50" class="rounded-lg" src="https://flagcdn.com/w320/jp.png" alt="Flag">
+                </div>
+                <div class="text-right">
+                    <p id="time-country" class="text-xl font-mono mb-2"></p>
+                    <p id="date-country" class="text-lg mb-2"></p>
+                    <p id="timezone-country" class="text-sm text-white"></p>
+                </div>
+            </div>
+        </div> 
+    Where in the World is Tokyo found? Tokyo is the capital of Japan (Japan), situated in the Eastern Asia subregion of Asia. In Tokyo, the currency used is Japanese yen (¥), which is the official currency used in Japan. The Latitude, Longitude cordinates of Tokyo are 35.6895, 139.6917.    </p>
+</div>
+
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7092179791790867"
+     crossorigin="anonymous"></script>
+<!-- 237solution_main-widget_Blog1_1x1_as -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-7092179791790867"
+     data-ad-slot="6565727329"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script><!-- Content starts here -->
+<div class="w-full p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-8 dark:bg-gray-800 dark:border-gray-700 mt-5 mb-5">
+    <h5 class="mb-2 text-center text-3xl font-bold text-gray-900 dark:text-white">About Tokyo</h5>
+    <div id="infoboxContainer"></div>
+
+    <script>
+    $(document).ready(function() {
+        var title = "Tokyo"; // Replace this with the title you want to fetch
+
+        $.ajax({
+            dataType: 'jsonp',
+            url: 'https://en.wikipedia.org/w/api.php',
+            data: {
+                action: 'parse',
+                prop: 'text',
+                page: title,
+                format: 'json',
+            },
+            success: function(data) {
+                var content = data.parse.text['*'];
+                var $infobox = $(content).find('.infobox').eq(0);
+
+                // Remove parts of the infobox
+                $infobox.find('.noresize').remove();
+                $infobox.find('a').contents().unwrap(); // Remove links
+                $infobox.find('sup').remove(); // Remove references
+                
+ $infobox.find('th.infobox-label').filter(function() {
+    return $(this).text().trim() === 'Capital';
+}).each(function() {
+    $(this).next('td.infobox-data').remove(); // Remove the following td.infobox-data
+}).remove(); // Remove the th.infobox-label
+
+$infobox.find('th.infobox-label').filter(function() {
+    // Replace the non-breaking space with a regular space and then trim the text
+    return $(this).text().replace(/\u00A0/g, ' ').trim() === 'Official languages';
+}).each(function() {
+    $(this).next('td.infobox-data').remove(); // Remove the following td.infobox-data
+}).remove(); // Remove the th.infobox-label
+
+$infobox.find('th.infobox-label').filter(function() {
+    // Replace the non-breaking space with a regular space and then trim the text
+    return $(this).text().replace(/\u00A0/g, ' ').trim() === 'Calling code';
+}).each(function() {
+    $(this).next('td.infobox-data').remove(); // Remove the following td.infobox-data
+}).remove(); // Remove the th.infobox-label
+
+$infobox.find('th.infobox-label').filter(function() {
+    // Replace the non-breaking space with a regular space and then trim the text
+    return $(this).text().replace(/\u00A0/g, ' ').trim() === 'ISO 3166 code';
+}).each(function() {
+    $(this).next('td.infobox-data').remove(); // Remove the following td.infobox-data
+}).remove(); // Remove the th.infobox-label
+$infobox.find('th.infobox-label').filter(function() {
+    // Replace the non-breaking space with a regular space and then trim the text
+    return $(this).text().replace(/\u00A0/g, ' ').trim() === 'Driving side';
+}).each(function() {
+    $(this).next('td.infobox-data').remove(); // Remove the following td.infobox-data
+}).remove(); // Remove the th.infobox-label
+
+
+ $infobox.find('th.infobox-label').filter(function() {
+    return $(this).text().trim() === 'Demonym(s)';
+}).each(function() {
+    $(this).next('td.infobox-data').remove(); // Remove the following td.infobox-data
+}).remove(); // Remove the th.infobox-label
+
+   $('#infoboxContainer').html($infobox); // Append modified infobox content to container
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching data:', error);
+            }
+        });
+    });
+    </script>
+    <div class="mb-5 text-base text-gray-500 sm:text-lg dark:text-gray-400">
+    
+    
+    </div>
+</div>
+<div class="w-full p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-8 dark:bg-gray-800 dark:border-gray-700 mt-5">
+    <h5 class="mb-2 text-center text-3xl font-bold text-gray-900 dark:text-white">Tokyo Current Weather</h5>
+<div class="w-full mx-auto p-4  flex justify-center">
+    <div class="flex flex-wrap">
+        <div class="w-full   px-2">
+            <div class="bg-gray-900 text-white relative min-w-0 break-words rounded-lg overflow-hidden shadow-sm mb-4 w-full bg-white dark:bg-gray-600">
+                <div class="px-6 py-6 relative">
+                    <div class="flex mb-4 justify-between items-center">
+                        <div>
+                            <h5 class="mb-0 font-medium text-xl">Tokyo, Japan</h5>
+                            <h6 class="mb-0">2026-10-02 07:40</h6><small>Light rain shower</small>
+                            <img src="//cdn.weatherapi.com/weather/64x64/day/353.png "/>
+                        </div>
+                        <div class="text-right">
+                            <h3 class="font-bold text-4xl mb-0"><span>20.6°C</span></h3>
+                        </div>
+                    </div>
+                    <div class="block sm:flex justify-between items-center flex-wrap">
+                        <div class="w-full sm:w-1/2">
+                            <div class="flex mb-2 justify-between items-center"><span calss="text-lg">Temperature:</span><small class="px-2 inline-block">20.6°C | </small></div>
+                        </div>
+                        <div class="w-full sm:w-1/2">
+                            <div class="flex mb-2 justify-between text-bold items-center text-red-800"><small class="px-2 inline-block">69.1°F</small></div>
+                        </div>
+                        <div class="w-full sm:w-1/2">
+                            <div class="flex mb-2 justify-between items-center"><span class="text-lg">Feels like:</span><small class="px-2 inline-block">19.7°C | </small></div>
+                        </div>
+                        <div class="w-full sm:w-1/2">
+                            <div class="flex mb-2 justify-between items-center text-red-800"><small class="px-2 inline-block">67.5°F</small></div>
+                        </div>
+                    </div>
+                </div>
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7092179791790867"
+     crossorigin="anonymous"></script>
+<!-- 237solution_main-widget_Blog1_1x1_as -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-7092179791790867"
+     data-ad-slot="6565727329"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>                <div class="divider table mx-2 text-center bg-transparent whitespace-nowrap"><span class="inline-block px-3 text-xl">Other weather information:</span></div>
+<table class="table-fixed w-full text-black bg-white border border-gray-300">
+  <thead>
+    <tr class="bg-gray-200 text-left">
+      <th class="px-4 py-2">Parameter</th>
+      <th class="px-4 py-2">Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="px-4 py-2 flex items-center">
+        Wind <img src="https://theworldcountries.com/geo/assets/wind.png" alt="Wind" class="w-8 h-8 mr-2 ml-4">
+        
+      </td>
+      <td class="px-4 py-2">18 km/h</td>
+    </tr>
+    <tr>
+      <td class="px-4 py-2 flex items-center">
+        Pressure <img src="https://theworldcountries.com/geo/assets/pressure.png" alt="Pressure" class="w-8 h-8 mr-2 ml-4">
+        
+      </td>
+      <td class="px-4 py-2">1013 mb</td>
+    </tr>
+    <tr>
+      <td class="px-4 py-2 flex items-center">
+        Humidity <img src="https://theworldcountries.com/geo/assets/humidity.png" alt="Humidity" class="w-8 h-8 mr-2 ml-4">
+        
+      </td>
+      <td class="px-4 py-2">82%</td>
+    </tr>
+    <tr>
+      <td class="px-4 py-2 flex items-center">
+        Visibility <img src="https://theworldcountries.com/geo/assets/visibility.png" alt="Visibility" class="w-8 h-8 mr-2 ml-4">
+      </td>
+      <td class="px-4 py-2">10 km</td>
+    </tr>
+    <tr>
+      <td class="px-4 py-2 flex items-center">
+        UV Index <img src="https://theworldcountries.com/geo/assets/uv-index.png" alt="UV Index" class="w-8 h-8 mr-2 ml-4">
+      </td>
+      <td class="px-4 py-2">0.1</td>
+    </tr>
+    <tr>
+      <td class="px-4 py-2 flex items-center">
+        Precip <img src="https://theworldcountries.com/geo/assets/precipitation.png" alt="Precipitation" class="w-8 h-8 mr-2 ml-4">
+        
+      </td>
+      <td class="px-4 py-2">0.55</td>
+    </tr>
+  </tbody>
+</table>
+
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+   
+</div>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7092179791790867"
+     crossorigin="anonymous"></script>
+<!-- 237solution_main-widget_Blog1_1x1_as -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-7092179791790867"
+     data-ad-slot="6565727329"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script><div class="gtranslate_wrapper"></div>
+<script>window.gtranslateSettings = {"default_language":"en","languages":["en","fr","de","it","es"],"wrapper_selector":".gtranslate_wrapper"}</script>
+<script src="https://cdn.gtranslate.net/widgets/latest/float.js" defer></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const button = document.querySelector('[data-collapse-toggle="navbar-sticky"]');
+    const menu = document.getElementById('navbar-sticky');
+
+    button.addEventListener('click', function () {
+      const expanded = button.getAttribute('aria-expanded') === 'true' || false;
+
+      button.setAttribute('aria-expanded', !expanded);
+      menu.classList.toggle('hidden', expanded);
+    });
+  });
+</script>
+<footer class="bg-gray-800 py-4 text-center text-gray-300 mt-10">
+    <div class="container mx-auto">
+        <ul class="flex flex-wrap justify-center items-center mb-6 text-base font-medium text-gray-500 sm:mb-0 dark:text-gray-400">
+                <li class="mx-3">
+                    <a href="https://theworldcountries.com/geo/about.php" class="hover:underline text-white me-4 md:me-6">About</a>
+                </li>
+                <li class="mx-3">
+                    <a href="https://theworldcountries.com/geo/privacy-policy.php" class="hover:underline me-4 text-white md:me-6">Privacy Policy</a>
+                </li>
+                <li class="mx-3">
+                    <a href="#" class="hover:underline me-4 md:me-6 text-white">Licensing</a>
+                </li>
+                <li class="mx-3">
+                    <a href="/cdn-cgi/l/email-protection#bdd1d2c8d4c7d28a84fddad0dcd4d193ded2d0" class="hover:underline text-white">Contact</a>
+                </li>
+            </ul>
+        <p>&copy; 2026 The World Countries. All rights reserved.</p>
+    </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"1b4dcd0b933545679d2e8a738f002fbe","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

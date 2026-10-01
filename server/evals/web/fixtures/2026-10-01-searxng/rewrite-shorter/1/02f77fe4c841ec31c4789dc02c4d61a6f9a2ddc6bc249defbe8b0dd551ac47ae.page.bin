@@ -1,0 +1,1396 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+	
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
+	<link rel="profile" href="https://gmpg.org/xfn/11">
+
+	<title>How to Set Up Tailscale: 13 Steps, 60 Min [2026] &#8211; Tech Insider Canada</title>
+<meta name='robots' content='max-image-preview:large' />
+<script>
+if(document.cookie.indexOf("ti_consent=granted")>-1){
+  var _paq=window._paq=window._paq||[];
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  (function(){
+    var u="https://tech-insider.org/91bd3c08.php";
+    _paq.push(['setTrackerUrl',u]);
+    _paq.push(['setSiteId','31']);
+    var d=document,g=d.createElement('script'),s=d.getElementsByTagName('script')[0];
+    g.async=true;g.src=u+'?js';
+    s.parentNode.insertBefore(g,s);
+  })();
+}
+</script>
+        <meta name="theme-color" content="#151515">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Google tag (gtag.js) - consent gated -->
+<script>
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+if(document.cookie.indexOf("ti_consent=granted")>-1){
+  var _g=document.createElement("script");_g.async=true;_g.src="https://www.googletagmanager.com/gtag/js?id=G-KMP6CGCKNF";document.head.appendChild(_g);
+  gtag("js",new Date());gtag("config","G-KMP6CGCKNF");
+}
+</script>
+<meta property="og:locale" content="en_CA" />
+<link rel="alternate" hreflang="en-CA" href="https://tech-insider.org/ca/how-to-set-up-tailscale-2026/" />
+<link rel="alternate" hreflang="x-default" href="https://tech-insider.org/ca/how-to-set-up-tailscale-2026/" />
+<link rel='dns-prefetch' href='//fonts.googleapis.com' />
+<link rel="alternate" type="application/rss+xml" title="Tech Insider Canada &raquo; Feed" href="https://tech-insider.org/ca/feed/" />
+<link rel="alternate" type="application/rss+xml" title="Tech Insider Canada &raquo; Comments Feed" href="https://tech-insider.org/ca/comments/feed/" />
+<meta name="description" content="Set up Tailscale step by step: install, MagicDNS, subnet routers, exit nodes, ACLs, and SSH. A complete Zero Trust guide for 2026." data-ti-desc-fallback="1" />
+<meta property="og:description" content="Set up Tailscale step by step: install, MagicDNS, subnet routers, exit nodes, ACLs, and SSH. A complete Zero Trust guide for 2026." data-ti-desc-fallback="1" />
+<meta name="twitter:description" content="Set up Tailscale step by step: install, MagicDNS, subnet routers, exit nodes, ACLs, and SSH. A complete Zero Trust guide for 2026." data-ti-desc-fallback="1" />
+<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="https://tech-insider.org/ca/wp-json/oembed/1.0/embed?url=https%3A%2F%2Ftech-insider.org%2Fca%2Fhow-to-set-up-tailscale-2026%2F" />
+<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="https://tech-insider.org/ca/wp-json/oembed/1.0/embed?url=https%3A%2F%2Ftech-insider.org%2Fca%2Fhow-to-set-up-tailscale-2026%2F&#038;format=xml" />
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"How to Set Up Tailscale: 13 Steps, 60 Min [2026]","datePublished":"2026-07-30T14:37:23+00:00","dateModified":"2026-09-13T23:49:29+00:00","author":{"@type":"Person","name":"Marcus Chen","url":"https://tech-insider.org/ca/author/marcus-chen/"},"publisher":{"@type":"Organization","name":"Tech Insider","url":"https://tech-insider.org","logo":{"@type":"ImageObject","url":"https://tech-insider.org/wp-content/uploads/logo.png"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tech-insider.org/ca/how-to-set-up-tailscale-2026/"},"description":"Marcus Chen July 30, 2026 21 min read Most small teams don&#8217;t have a network engineer on staff, but they still need a way to reach a home server, a client&#8217;s staging box, or a colleague&#8217;s laptop without punching holes in a firewall. That gap is exactly what Tailscale was built to close, and it&#8217;s [&hellip;]","image":{"@type":"ImageObject","url":"https://tech-insider.org/ca/wp-content/uploads/sites/7/2026/07/how-to-set-up-tailscale-2026.webp"}}</script>
+    <style>
+    /* Tables — dark theme */
+    .entry-content .wp-block-table {
+        margin: 28px 0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 12px;
+        box-shadow: 0 2px 16px rgba(0,0,0,.3);
+    }
+    .entry-content .wp-block-table table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 14.5px;
+        min-width: 600px;
+    }
+    .entry-content .wp-block-table thead tr {
+        background: linear-gradient(135deg, #1e3a5f, #2563eb) !important;
+    }
+    .entry-content .wp-block-table thead th {
+        color: #fff !important;
+        font-weight: 700;
+        font-size: 12.5px;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        padding: 14px 14px;
+        border: none !important;
+    }
+    .entry-content .wp-block-table tbody td {
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(255,255,255,.08) !important;
+        border-left: none !important;
+        border-right: none !important;
+        vertical-align: middle;
+        color: #e2e8f0;
+        background: transparent !important;
+    }
+    .entry-content .wp-block-table tbody tr {
+        background: rgba(15,23,42,.6) !important;
+        transition: background .15s;
+    }
+    .entry-content .wp-block-table tbody tr:hover {
+        background: rgba(37,99,235,.15) !important;
+    }
+    .entry-content .wp-block-table tbody tr:nth-child(even) {
+        background: rgba(15,23,42,.4) !important;
+    }
+    .entry-content .wp-block-table tbody tr:nth-child(even):hover {
+        background: rgba(37,99,235,.15) !important;
+    }
+    .entry-content .wp-block-table figcaption {
+        background: rgba(15,23,42,.5);
+        padding: 8px 14px;
+        font-size: 12px;
+        color: #94a3b8;
+        border-top: 1px solid rgba(255,255,255,.06);
+    }
+    /* Fix striped variant */
+    .entry-content .wp-block-table.is-style-stripes tbody tr:nth-child(odd) {
+        background: rgba(15,23,42,.6) !important;
+    }
+    .entry-content .wp-block-table.is-style-stripes tbody tr:nth-child(even) {
+        background: rgba(30,41,59,.8) !important;
+    }
+    .entry-content .wp-block-table.is-style-stripes tbody tr:nth-child(odd) td,
+    .entry-content .wp-block-table.is-style-stripes tbody tr:nth-child(even) td {
+        border-color: rgba(255,255,255,.06) !important;
+    }
+    /* Override any WordPress defaults for tables */
+    .wp-block-table table, .wp-block-table td, .wp-block-table th {
+        border-color: rgba(255,255,255,.08) !important;
+    }
+    figure.wp-block-table {
+        background: transparent !important;
+    }
+
+    /* Code blocks — dark theme */
+    .entry-content .wp-block-code {
+        background: #0a0f1a !important;
+        border: 1px solid rgba(37,99,235,.3);
+        border-radius: 12px;
+        padding: 24px;
+        margin: 24px 0;
+        overflow-x: auto;
+        box-shadow: 0 4px 16px rgba(0,0,0,.3);
+    }
+    .entry-content .wp-block-code code {
+        color: #a5f3fc !important;
+        font-family: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+        font-size: 14px;
+        line-height: 1.65;
+        background: transparent !important;
+    }
+
+    /* Images */
+    .entry-content .wp-block-image {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,.25);
+        margin: 28px 0;
+    }
+    .entry-content .wp-block-image img {
+        border-radius: 12px;
+    }
+
+    /* Headings — blue accent for dark bg */
+    .entry-content h2 {
+        padding-bottom: 12px;
+        border-bottom: 3px solid transparent;
+        border-image: linear-gradient(90deg, #2563eb, #7c3aed) 1;
+        margin-top: 48px;
+    }
+    .entry-content h3 {
+        padding-left: 14px;
+        border-left: 4px solid #2563eb;
+        margin-top: 32px;
+    }
+
+    /* Links */
+    .entry-content a:not(.wp-block-button__link) {
+        color: #60a5fa;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        text-decoration-color: rgba(96,165,250,.3);
+    }
+    .entry-content a:not(.wp-block-button__link):hover {
+        color: #93c5fd;
+        text-decoration-color: #60a5fa;
+    }
+
+    /* Separator */
+    .entry-content .wp-block-separator {
+        border: none !important;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent) !important;
+        margin: 36px 0;
+    }
+
+    /* Lists */
+    .entry-content ul li::marker { color: #2563eb; }
+    .entry-content ol li::marker { color: #60a5fa; font-weight: 700; }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+        .entry-content .wp-block-table table { min-width: 500px; }
+    }
+    </style>
+    <style id="wp-img-auto-sizes-contain-inline-css">
+img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
+/*# sourceURL=wp-img-auto-sizes-contain-inline-css */
+</style>
+<style id="wp-block-library-inline-css">
+:root{--wp-block-synced-color:#7a00df;--wp-block-synced-color--rgb:122,0,223;--wp-bound-block-color:var(--wp-block-synced-color);--wp-editor-canvas-background:#ddd;--wp-admin-theme-color:#007cba;--wp-admin-theme-color--rgb:0,124,186;--wp-admin-theme-color-darker-10:#006ba1;--wp-admin-theme-color-darker-10--rgb:0,107,160.5;--wp-admin-theme-color-darker-20:#005a87;--wp-admin-theme-color-darker-20--rgb:0,90,135;--wp-admin-border-width-focus:2px}@media (min-resolution:192dpi){:root{--wp-admin-border-width-focus:1.5px}}.wp-element-button{cursor:pointer}:root .has-very-light-gray-background-color{background-color:#eee}:root .has-very-dark-gray-background-color{background-color:#313131}:root .has-very-light-gray-color{color:#eee}:root .has-very-dark-gray-color{color:#313131}:root .has-vivid-green-cyan-to-vivid-cyan-blue-gradient-background{background:linear-gradient(135deg,#00d084,#0693e3)}:root .has-purple-crush-gradient-background{background:linear-gradient(135deg,#34e2e4,#4721fb 50%,#ab1dfe)}:root .has-hazy-dawn-gradient-background{background:linear-gradient(135deg,#faaca8,#dad0ec)}:root .has-subdued-olive-gradient-background{background:linear-gradient(135deg,#fafae1,#67a671)}:root .has-atomic-cream-gradient-background{background:linear-gradient(135deg,#fdd79a,#004a59)}:root .has-nightshade-gradient-background{background:linear-gradient(135deg,#330968,#31cdcf)}:root .has-midnight-gradient-background{background:linear-gradient(135deg,#020381,#2874fc)}:root{--wp--preset--font-size--normal:16px;--wp--preset--font-size--huge:42px}.has-regular-font-size{font-size:1em}.has-larger-font-size{font-size:2.625em}.has-normal-font-size{font-size:var(--wp--preset--font-size--normal)}.has-huge-font-size{font-size:var(--wp--preset--font-size--huge)}:root .has-text-align-center{text-align:center}:root .has-text-align-left{text-align:left}:root .has-text-align-right{text-align:right}.has-fit-text{white-space:nowrap!important}#end-resizable-editor-section{display:none}.aligncenter{clear:both}.items-justified-left{justify-content:flex-start}.items-justified-center{justify-content:center}.items-justified-right{justify-content:flex-end}.items-justified-space-between{justify-content:space-between}.screen-reader-text{word-wrap:normal!important;border:0;clip-path:inset(50%);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px}.screen-reader-text:focus{background-color:#ddd;clip-path:none;color:#444;display:block;font-size:1em;height:auto;left:5px;line-height:normal;padding:15px 23px 14px;text-decoration:none;top:5px;width:auto;z-index:100000}html :where(.has-border-color){border-style:solid}html :where([style*=border-color]){border-style:solid}html :where([style*=border-top-color]){border-top-style:solid}html :where([style*=border-right-color]){border-right-style:solid}html :where([style*=border-bottom-color]){border-bottom-style:solid}html :where([style*=border-left-color]){border-left-style:solid}html :where([style*=border-width]){border-style:solid}html :where([style*=border-top-width]){border-top-style:solid}html :where([style*=border-right-width]){border-right-style:solid}html :where([style*=border-bottom-width]){border-bottom-style:solid}html :where([style*=border-left-width]){border-left-style:solid}html :where(img[class*=wp-image-]){height:auto;max-width:100%}:where(figure){margin:0 0 1em}html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:var(--wp-admin--admin-bar--height,0px)}@media screen and (max-width:600px){html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:0px}}
+
+/*# sourceURL=/wp-includes/css/dist/block-library/common.min.css */
+</style>
+<style id="wp-block-code-inline-css">
+.wp-block-code{box-sizing:border-box}.wp-block-code code{direction:ltr;display:block;font-family:inherit;overflow-wrap:break-word;text-align:initial;white-space:pre-wrap}
+/*# sourceURL=https://tech-insider.org/ca/wp-includes/blocks/code/style.min.css */
+</style>
+
+
+<style id="global-styles-inline-css">
+:root{--wp--preset--aspect-ratio--square: 1;--wp--preset--aspect-ratio--4-3: 4/3;--wp--preset--aspect-ratio--3-4: 3/4;--wp--preset--aspect-ratio--3-2: 3/2;--wp--preset--aspect-ratio--2-3: 2/3;--wp--preset--aspect-ratio--16-9: 16/9;--wp--preset--aspect-ratio--9-16: 9/16;--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--color--palette-color-1: var(--theme-palette-color-1, #9f367b);--wp--preset--color--palette-color-2: var(--theme-palette-color-2, #b8448e);--wp--preset--color--palette-color-3: var(--theme-palette-color-3, #e4e4e4);--wp--preset--color--palette-color-4: var(--theme-palette-color-4, #ffffff);--wp--preset--color--palette-color-5: var(--theme-palette-color-5, #151515);--wp--preset--color--palette-color-6: var(--theme-palette-color-6, #1e1e1e);--wp--preset--color--palette-color-7: var(--theme-palette-color-7, #1e1e1e);--wp--preset--color--palette-color-8: var(--theme-palette-color-8, #151515);--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgb(6,147,227) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgb(252,185,0) 0%,rgb(255,105,0) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgb(255,105,0) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--gradient--juicy-peach: linear-gradient(to right, #ffecd2 0%, #fcb69f 100%);--wp--preset--gradient--young-passion: linear-gradient(to right, #ff8177 0%, #ff867a 0%, #ff8c7f 21%, #f99185 52%, #cf556c 78%, #b12a5b 100%);--wp--preset--gradient--true-sunset: linear-gradient(to right, #fa709a 0%, #fee140 100%);--wp--preset--gradient--morpheus-den: linear-gradient(to top, #30cfd0 0%, #330867 100%);--wp--preset--gradient--plum-plate: linear-gradient(135deg, #667eea 0%, #764ba2 100%);--wp--preset--gradient--aqua-splash: linear-gradient(15deg, #13547a 0%, #80d0c7 100%);--wp--preset--gradient--love-kiss: linear-gradient(to top, #ff0844 0%, #ffb199 100%);--wp--preset--gradient--new-retrowave: linear-gradient(to top, #3b41c5 0%, #a981bb 49%, #ffc8a9 100%);--wp--preset--gradient--plum-bath: linear-gradient(to top, #cc208e 0%, #6713d2 100%);--wp--preset--gradient--high-flight: linear-gradient(to right, #0acffe 0%, #495aff 100%);--wp--preset--gradient--teen-party: linear-gradient(-225deg, #FF057C 0%, #8D0B93 50%, #321575 100%);--wp--preset--gradient--fabled-sunset: linear-gradient(-225deg, #231557 0%, #44107A 29%, #FF1361 67%, #FFF800 100%);--wp--preset--gradient--arielle-smile: radial-gradient(circle 248px at center, #16d9e3 0%, #30c7ec 47%, #46aef7 100%);--wp--preset--gradient--itmeo-branding: linear-gradient(180deg, #2af598 0%, #009efd 100%);--wp--preset--gradient--deep-blue: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);--wp--preset--gradient--strong-bliss: linear-gradient(to right, #f78ca0 0%, #f9748f 19%, #fd868c 60%, #fe9a8b 100%);--wp--preset--gradient--sweet-period: linear-gradient(to top, #3f51b1 0%, #5a55ae 13%, #7b5fac 25%, #8f6aae 38%, #a86aa4 50%, #cc6b8e 62%, #f18271 75%, #f3a469 87%, #f7c978 100%);--wp--preset--gradient--purple-division: linear-gradient(to top, #7028e4 0%, #e5b2ca 100%);--wp--preset--gradient--cold-evening: linear-gradient(to top, #0c3483 0%, #a2b6df 100%, #6b8cce 100%, #a2b6df 100%);--wp--preset--gradient--mountain-rock: linear-gradient(to right, #868f96 0%, #596164 100%);--wp--preset--gradient--desert-hump: linear-gradient(to top, #c79081 0%, #dfa579 100%);--wp--preset--gradient--ethernal-constance: linear-gradient(to top, #09203f 0%, #537895 100%);--wp--preset--gradient--happy-memories: linear-gradient(-60deg, #ff5858 0%, #f09819 100%);--wp--preset--gradient--grown-early: linear-gradient(to top, #0ba360 0%, #3cba92 100%);--wp--preset--gradient--morning-salad: linear-gradient(-225deg, #B7F8DB 0%, #50A7C2 100%);--wp--preset--gradient--night-call: linear-gradient(-225deg, #AC32E4 0%, #7918F2 48%, #4801FF 100%);--wp--preset--gradient--mind-crawl: linear-gradient(-225deg, #473B7B 0%, #3584A7 51%, #30D2BE 100%);--wp--preset--gradient--angel-care: linear-gradient(-225deg, #FFE29F 0%, #FFA99F 48%, #FF719A 100%);--wp--preset--gradient--juicy-cake: linear-gradient(to top, #e14fad 0%, #f9d423 100%);--wp--preset--gradient--rich-metal: linear-gradient(to right, #d7d2cc 0%, #304352 100%);--wp--preset--gradient--mole-hall: linear-gradient(-20deg, #616161 0%, #9bc5c3 100%);--wp--preset--gradient--cloudy-knoxville: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);--wp--preset--gradient--soft-grass: linear-gradient(to top, #c1dfc4 0%, #deecdd 100%);--wp--preset--gradient--saint-petersburg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);--wp--preset--gradient--everlasting-sky: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);--wp--preset--gradient--kind-steel: linear-gradient(-20deg, #e9defa 0%, #fbfcdb 100%);--wp--preset--gradient--over-sun: linear-gradient(60deg, #abecd6 0%, #fbed96 100%);--wp--preset--gradient--premium-white: linear-gradient(to top, #d5d4d0 0%, #d5d4d0 1%, #eeeeec 31%, #efeeec 75%, #e9e9e7 100%);--wp--preset--gradient--clean-mirror: linear-gradient(45deg, #93a5cf 0%, #e4efe9 100%);--wp--preset--gradient--wild-apple: linear-gradient(to top, #d299c2 0%, #fef9d7 100%);--wp--preset--gradient--snow-again: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%);--wp--preset--gradient--confident-cloud: linear-gradient(to top, #dad4ec 0%, #dad4ec 1%, #f3e7e9 100%);--wp--preset--gradient--glass-water: linear-gradient(to top, #dfe9f3 0%, white 100%);--wp--preset--gradient--perfect-white: linear-gradient(-225deg, #E3FDF5 0%, #FFE6FA 100%);--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: clamp(22px, 1.375rem + ((1vw - 3.2px) * 0.625), 30px);--wp--preset--font-size--x-large: clamp(30px, 1.875rem + ((1vw - 3.2px) * 1.563), 50px);--wp--preset--font-size--xx-large: clamp(45px, 2.813rem + ((1vw - 3.2px) * 2.734), 80px);--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgb(255, 255, 255), 6px 6px rgb(0, 0, 0);--wp--preset--shadow--crisp: 6px 6px 0px rgb(0, 0, 0);}:root { --wp--style--global--content-size: var(--theme-block-max-width);--wp--style--global--wide-size: var(--theme-block-wide-max-width); }:where(body) { margin: 0; }.wp-site-blocks > .alignleft { float: left; margin-right: 2em; }.wp-site-blocks > .alignright { float: right; margin-left: 2em; }.wp-site-blocks > .aligncenter { justify-content: center; margin-left: auto; margin-right: auto; }:where(.wp-site-blocks) > * { margin-block-start: var(--theme-content-spacing); margin-block-end: 0; }:where(.wp-site-blocks) > :first-child { margin-block-start: 0; }:where(.wp-site-blocks) > :last-child { margin-block-end: 0; }:root { --wp--style--block-gap: var(--theme-content-spacing); }:root :where(.is-layout-flow) > :first-child{margin-block-start: 0;}:root :where(.is-layout-flow) > :last-child{margin-block-end: 0;}:root :where(.is-layout-flow) > *{margin-block-start: var(--theme-content-spacing);margin-block-end: 0;}:root :where(.is-layout-constrained) > :first-child{margin-block-start: 0;}:root :where(.is-layout-constrained) > :last-child{margin-block-end: 0;}:root :where(.is-layout-constrained) > *{margin-block-start: var(--theme-content-spacing);margin-block-end: 0;}:root :where(.is-layout-flex){gap: var(--theme-content-spacing);}:root :where(.is-layout-grid){gap: var(--theme-content-spacing);}.is-layout-flow > .alignleft{float: left;margin-inline-start: 0;margin-inline-end: 2em;}.is-layout-flow > .alignright{float: right;margin-inline-start: 2em;margin-inline-end: 0;}.is-layout-flow > .aligncenter{margin-left: auto !important;margin-right: auto !important;}.is-layout-constrained > .alignleft{float: left;margin-inline-start: 0;margin-inline-end: 2em;}.is-layout-constrained > .alignright{float: right;margin-inline-start: 2em;margin-inline-end: 0;}.is-layout-constrained > .aligncenter{margin-left: auto !important;margin-right: auto !important;}.is-layout-constrained > :where(:not(.alignleft):not(.alignright):not(.alignfull)){max-width: var(--wp--style--global--content-size);margin-left: auto !important;margin-right: auto !important;}.is-layout-constrained > .alignwide{max-width: var(--wp--style--global--wide-size);}body .is-layout-flex{display: flex;}.is-layout-flex{flex-wrap: wrap;align-items: center;}.is-layout-flex > :is(*, div){margin: 0;}body .is-layout-grid{display: grid;}.is-layout-grid > :is(*, div){margin: 0;}body{padding-top: 0px;padding-right: 0px;padding-bottom: 0px;padding-left: 0px;}:root :where(.wp-element-button, .wp-block-button__link){font-style: inherit;font-weight: inherit;letter-spacing: inherit;text-transform: inherit;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-palette-color-1-color{color: var(--wp--preset--color--palette-color-1) !important;}.has-palette-color-2-color{color: var(--wp--preset--color--palette-color-2) !important;}.has-palette-color-3-color{color: var(--wp--preset--color--palette-color-3) !important;}.has-palette-color-4-color{color: var(--wp--preset--color--palette-color-4) !important;}.has-palette-color-5-color{color: var(--wp--preset--color--palette-color-5) !important;}.has-palette-color-6-color{color: var(--wp--preset--color--palette-color-6) !important;}.has-palette-color-7-color{color: var(--wp--preset--color--palette-color-7) !important;}.has-palette-color-8-color{color: var(--wp--preset--color--palette-color-8) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-palette-color-1-background-color{background-color: var(--wp--preset--color--palette-color-1) !important;}.has-palette-color-2-background-color{background-color: var(--wp--preset--color--palette-color-2) !important;}.has-palette-color-3-background-color{background-color: var(--wp--preset--color--palette-color-3) !important;}.has-palette-color-4-background-color{background-color: var(--wp--preset--color--palette-color-4) !important;}.has-palette-color-5-background-color{background-color: var(--wp--preset--color--palette-color-5) !important;}.has-palette-color-6-background-color{background-color: var(--wp--preset--color--palette-color-6) !important;}.has-palette-color-7-background-color{background-color: var(--wp--preset--color--palette-color-7) !important;}.has-palette-color-8-background-color{background-color: var(--wp--preset--color--palette-color-8) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-palette-color-1-border-color{border-color: var(--wp--preset--color--palette-color-1) !important;}.has-palette-color-2-border-color{border-color: var(--wp--preset--color--palette-color-2) !important;}.has-palette-color-3-border-color{border-color: var(--wp--preset--color--palette-color-3) !important;}.has-palette-color-4-border-color{border-color: var(--wp--preset--color--palette-color-4) !important;}.has-palette-color-5-border-color{border-color: var(--wp--preset--color--palette-color-5) !important;}.has-palette-color-6-border-color{border-color: var(--wp--preset--color--palette-color-6) !important;}.has-palette-color-7-border-color{border-color: var(--wp--preset--color--palette-color-7) !important;}.has-palette-color-8-border-color{border-color: var(--wp--preset--color--palette-color-8) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-juicy-peach-gradient-background{background: var(--wp--preset--gradient--juicy-peach) !important;}.has-young-passion-gradient-background{background: var(--wp--preset--gradient--young-passion) !important;}.has-true-sunset-gradient-background{background: var(--wp--preset--gradient--true-sunset) !important;}.has-morpheus-den-gradient-background{background: var(--wp--preset--gradient--morpheus-den) !important;}.has-plum-plate-gradient-background{background: var(--wp--preset--gradient--plum-plate) !important;}.has-aqua-splash-gradient-background{background: var(--wp--preset--gradient--aqua-splash) !important;}.has-love-kiss-gradient-background{background: var(--wp--preset--gradient--love-kiss) !important;}.has-new-retrowave-gradient-background{background: var(--wp--preset--gradient--new-retrowave) !important;}.has-plum-bath-gradient-background{background: var(--wp--preset--gradient--plum-bath) !important;}.has-high-flight-gradient-background{background: var(--wp--preset--gradient--high-flight) !important;}.has-teen-party-gradient-background{background: var(--wp--preset--gradient--teen-party) !important;}.has-fabled-sunset-gradient-background{background: var(--wp--preset--gradient--fabled-sunset) !important;}.has-arielle-smile-gradient-background{background: var(--wp--preset--gradient--arielle-smile) !important;}.has-itmeo-branding-gradient-background{background: var(--wp--preset--gradient--itmeo-branding) !important;}.has-deep-blue-gradient-background{background: var(--wp--preset--gradient--deep-blue) !important;}.has-strong-bliss-gradient-background{background: var(--wp--preset--gradient--strong-bliss) !important;}.has-sweet-period-gradient-background{background: var(--wp--preset--gradient--sweet-period) !important;}.has-purple-division-gradient-background{background: var(--wp--preset--gradient--purple-division) !important;}.has-cold-evening-gradient-background{background: var(--wp--preset--gradient--cold-evening) !important;}.has-mountain-rock-gradient-background{background: var(--wp--preset--gradient--mountain-rock) !important;}.has-desert-hump-gradient-background{background: var(--wp--preset--gradient--desert-hump) !important;}.has-ethernal-constance-gradient-background{background: var(--wp--preset--gradient--ethernal-constance) !important;}.has-happy-memories-gradient-background{background: var(--wp--preset--gradient--happy-memories) !important;}.has-grown-early-gradient-background{background: var(--wp--preset--gradient--grown-early) !important;}.has-morning-salad-gradient-background{background: var(--wp--preset--gradient--morning-salad) !important;}.has-night-call-gradient-background{background: var(--wp--preset--gradient--night-call) !important;}.has-mind-crawl-gradient-background{background: var(--wp--preset--gradient--mind-crawl) !important;}.has-angel-care-gradient-background{background: var(--wp--preset--gradient--angel-care) !important;}.has-juicy-cake-gradient-background{background: var(--wp--preset--gradient--juicy-cake) !important;}.has-rich-metal-gradient-background{background: var(--wp--preset--gradient--rich-metal) !important;}.has-mole-hall-gradient-background{background: var(--wp--preset--gradient--mole-hall) !important;}.has-cloudy-knoxville-gradient-background{background: var(--wp--preset--gradient--cloudy-knoxville) !important;}.has-soft-grass-gradient-background{background: var(--wp--preset--gradient--soft-grass) !important;}.has-saint-petersburg-gradient-background{background: var(--wp--preset--gradient--saint-petersburg) !important;}.has-everlasting-sky-gradient-background{background: var(--wp--preset--gradient--everlasting-sky) !important;}.has-kind-steel-gradient-background{background: var(--wp--preset--gradient--kind-steel) !important;}.has-over-sun-gradient-background{background: var(--wp--preset--gradient--over-sun) !important;}.has-premium-white-gradient-background{background: var(--wp--preset--gradient--premium-white) !important;}.has-clean-mirror-gradient-background{background: var(--wp--preset--gradient--clean-mirror) !important;}.has-wild-apple-gradient-background{background: var(--wp--preset--gradient--wild-apple) !important;}.has-snow-again-gradient-background{background: var(--wp--preset--gradient--snow-again) !important;}.has-confident-cloud-gradient-background{background: var(--wp--preset--gradient--confident-cloud) !important;}.has-glass-water-gradient-background{background: var(--wp--preset--gradient--glass-water) !important;}.has-perfect-white-gradient-background{background: var(--wp--preset--gradient--perfect-white) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}.has-xx-large-font-size{font-size: var(--wp--preset--font-size--xx-large) !important;}
+/*# sourceURL=global-styles-inline-css */
+</style>
+
+<link rel='stylesheet' id='parent-style-css' href='https://tech-insider.org/ca/wp-content/themes/blocksy/style.css?ver=7.0.2' media='all' />
+<link rel='stylesheet' id='dark-theme-css' href='https://tech-insider.org/ca/wp-content/themes/blocksy-child/dark-theme.css?ver=1773167158' media='all' />
+<link rel='stylesheet' id='google-fonts-exo2-css' href='https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700;800;900&#038;display=swap' media='all' />
+<link rel='stylesheet' id='blocksy-fonts-font-source-google-css' href='https://fonts.googleapis.com/css2?family=Exo%202:wght@400;500;600;700&#038;display=swap' media='all' />
+<link rel='stylesheet' id='ct-main-styles-css' href='https://tech-insider.org/ca/wp-content/themes/blocksy/static/bundle/main.min.css?ver=2.1.27' media='all' />
+<link rel='stylesheet' id='ct-page-title-styles-css' href='https://tech-insider.org/ca/wp-content/themes/blocksy/static/bundle/page-title.min.css?ver=2.1.27' media='all' />
+<link rel='stylesheet' id='wp-block-paragraph-css' href='https://tech-insider.org/ca/wp-includes/blocks/paragraph/style.min.css?ver=7.0.2' media='all' />
+<link rel='stylesheet' id='wp-block-heading-css' href='https://tech-insider.org/ca/wp-includes/blocks/heading/style.min.css?ver=7.0.2' media='all' />
+<link rel='stylesheet' id='wp-block-table-css' href='https://tech-insider.org/ca/wp-includes/blocks/table/style.min.css?ver=7.0.2' media='all' />
+<link rel='stylesheet' id='wp-block-list-css' href='https://tech-insider.org/ca/wp-includes/blocks/list/style.min.css?ver=7.0.2' media='all' />
+<link rel="canonical" href="https://tech-insider.org/ca/how-to-set-up-tailscale-2026/" />
+<link rel='shortlink' href='https://tech-insider.org/ca/?p=504' />
+<style>.last-updated-notice{background:#1a1a2e;border-left:4px solid #00d4ff;padding:12px 16px;margin-bottom:24px;font-size:14px;color:#ccc;border-radius:4px;}</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is Tailscale free for personal use?","acceptedAnswer":{"@type":"Answer","text":"Yes. Since Tailscale expanded the plan in April 2026, the Personal tier is free for up to 6 users with unlimited user-owned devices per user, according to Tailscale&#039;s own pricing page."}},{"@type":"Question","name":"Does Tailscale replace my existing firewall or VPN gateway?","acceptedAnswer":{"@type":"Answer","text":"It replaces the need for inbound port forwarding and a traditional site-to-site VPN gateway for the use cases in this tutorial, but it isn&#039;t a firewall replacement and doesn&#039;t inspect traffic content. Most teams run it alongside their existing security stack, including endpoint protection and a properly configured local firewall, rather than instead of it."}},{"@type":"Question","name":"What&#039;s the real difference between Tailscale and a hand-configured WireGuard VPN?","acceptedAnswer":{"@type":"Answer","text":"Tailscale runs on the WireGuard protocol underneath, but it automates key exchange, NAT traversal, and access rules that you&#039;d otherwise manage by hand in a plain WireGuard setup. The trade-off is that Tailscale&#039;s coordination happens through its hosted service by default, unless you self-host that piece with Headscale."}},{"@type":"Question","name":"Can I self-host the coordination server instead of using Tailscale&#039;s cloud?","acceptedAnswer":{"@type":"Answer","text":"Yes, through Headscale, an open-source and community-maintained project that reimplements the coordination server while staying compatible with the standard Tailscale clients."}},{"@type":"Question","name":"Will Tailscale slow down my internet connection?","acceptedAnswer":{"@type":"Answer","text":"Most connections are direct, device to device, with minimal overhead. Speeds only drop noticeably when a direct path isn&#039;t possible and traffic falls back to a relayed DERP connection, which the troubleshooting section above explains how to diagnose."}},{"@type":"Question","name":"Is Tailscale secure enough for business use?","acceptedAnswer":{"@type":"Answer","text":"It&#039;s built on WireGuard and layers identity-based ACLs, tagged access, optional tailnet lock, and Tailscale SSH on top, which reflects the same Zero Trust model described in NIST&#039;s SP 800-207. Whether that&#039;s sufficient for a given business depends on its own risk assessment and compliance obligations, but the underlying architecture matches current Zero Trust guidance."}},{"@type":"Question","name":"What happens if Tailscale&#039;s coordination servers go down?","acceptedAnswer":{"@type":"Answer","text":"Devices that are already connected keep their existing peer-to-peer sessions. New connections, key exchanges, and ACL changes are what depend on reaching the control plane, which is also the main argument in favor of Headscale for teams that need to remove that dependency entirely."}},{"@type":"Question","name":"Can I install Tailscale on a router or a NAS instead of a full computer?","acceptedAnswer":{"@type":"Answer","text":"Yes. Beyond standard desktop, server, and mobile installs, Tailscale supports several NAS platforms and OpenWrt-based routers, which is a common way to turn an existing home router into the subnet router from Step 8 without adding another device."}},{"@type":"Question","name":"How is a Tailscale login different from a normal VPN username and password?","acceptedAnswer":{"@type":"Answer","text":"There isn&#039;t a separate Tailscale password to manage at all. Every login goes through the identity provider chosen in Step 1, so access to the tailnet rises and falls with that account. Disable someone&#039;s Google or Microsoft account and their access to every device on the tailnet disappears with it, without a separate offboarding step."}},{"@type":"Question","name":"Do I need a paid plan once I go past six users?","acceptedAnswer":{"@type":"Answer","text":"Yes. Past six users, the Personal plan no longer applies and the tailnet needs to move to Standard or Premium, priced per user per month as shown in the pricing table above. The core setup from this tutorial, subnet routers, exit nodes, ACLs, and SSH, works the same way on every paid tier."}}]}</script>
+    <style id="ti-toc-css">
+    .ti-toc {
+        background: #111827;
+        border: 1px solid #1e3a5f;
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin: 28px 0;
+        font-size: 0.92em;
+        line-height: 1.6;
+        transition: all 0.3s ease;
+    }
+    .ti-toc-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .ti-toc-title {
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 1.1em !important;
+        font-weight: 700 !important;
+        color: #e2e8f0 !important;
+        background: none !important;
+        border: none !important;
+    }
+    .ti-toc-toggle {
+        background: none;
+        border: 1px solid #374151;
+        border-radius: 6px;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 4px 8px;
+        transition: all 0.2s;
+    }
+    .ti-toc-toggle:hover { border-color: #60a5fa; color: #60a5fa; }
+    .ti-toc.collapsed .ti-toc-list { display: none; }
+    .ti-toc.collapsed .ti-toc-toggle svg { transform: rotate(-90deg); }
+
+    .ti-toc-list {
+        margin: 14px 0 0 !important;
+        padding-left: 0 !important;
+        list-style: none !important;
+        counter-reset: toc;
+    }
+    .ti-toc-list > li {
+        counter-increment: toc;
+        padding: 6px 0 6px 0;
+        border-bottom: 1px solid #1e293b;
+        position: relative;
+    }
+    .ti-toc-list > li:last-child { border-bottom: none; }
+    .ti-toc-list > li::before {
+        content: counter(toc) "." !important;
+        color: #7c3aed !important;
+        font-weight: 700;
+        margin-right: 8px;
+        position: static !important;
+        padding: 0 !important;
+    }
+    .ti-toc-list a {
+        color: #94a3b8 !important;
+        text-decoration: none !important;
+        transition: color 0.15s;
+    }
+    .ti-toc-list a:hover {
+        color: #60a5fa !important;
+    }
+
+    /* H3 sub-items */
+    .ti-toc-sub {
+        margin: 4px 0 4px 24px !important;
+        padding: 0 !important;
+        list-style: none !important;
+        counter-reset: tocsub;
+    }
+    .ti-toc-sub li {
+        padding: 3px 0;
+    }
+    .ti-toc-sub li::before {
+        content: "–" !important;
+        color: #4b5563 !important;
+        margin-right: 6px;
+        position: static !important;
+        padding: 0 !important;
+    }
+    .ti-toc-sub a {
+        color: #6b7280 !important;
+        font-size: 0.93em;
+    }
+    .ti-toc-sub a:hover { color: #60a5fa !important; }
+
+    /* Smooth scroll */
+    html { scroll-behavior: smooth; }
+    h2[id], h3[id] { scroll-margin-top: 80px; }
+    </style>
+    <noscript><link rel='stylesheet' href='https://tech-insider.org/ca/wp-content/themes/blocksy/static/bundle/no-scripts.min.css' type='text/css'></noscript>
+<style id="ct-main-styles-inline-css">[data-header*="type-1"] .ct-header [data-id="logo"] .site-title {--theme-font-family:, Sans-Serif;--theme-link-initial-color:var(--theme-palette-color-4);} [data-header*="type-1"] .ct-header [data-id="menu"] > ul > li > a {--theme-font-family:'Exo 2', Sans-Serif;--theme-font-weight:600;--theme-text-transform:uppercase;--theme-font-size:13px;--theme-letter-spacing:1px;--theme-link-initial-color:var(--theme-text-color);} [data-header*="type-1"] .ct-header [data-id="menu"] .sub-menu .ct-menu-link {--theme-link-initial-color:var(--theme-palette-color-8);--theme-font-weight:500;--theme-font-size:12px;} [data-header*="type-1"] .ct-header [data-id="menu"] .sub-menu {--dropdown-divider:1px dashed rgba(255, 255, 255, 0.1);--theme-box-shadow:0px 10px 20px rgba(41, 51, 61, 0.1);--theme-border-radius:0px 0px 2px 2px;} [data-header*="type-1"] .ct-header [data-row*="middle"] {--height:120px;--row-padding:0px 35px;--theme-border-top:none;--theme-border-bottom:none;--theme-box-shadow:none;} [data-header*="type-1"] .ct-header [data-row*="middle"] > div {background-color:#0d0d0d;background-image:none;--theme-border-top:none;--theme-border-bottom:none;} [data-header*="type-1"] [data-id="mobile-menu"] {--theme-font-weight:700;--theme-font-size:20px;--theme-link-initial-color:#ffffff;--mobile-menu-divider:none;} [data-header*="type-1"] #offcanvas {--theme-box-shadow:0px 0px 70px rgba(0, 0, 0, 0.35);--side-panel-width:500px;--panel-content-height:100%;} [data-header*="type-1"] #offcanvas .ct-panel-inner {background-color:rgba(18, 21, 25, 0.98);} [data-header*="type-1"] [data-id="trigger"] {--theme-icon-size:18px;--theme-icon-color:#ffffff;--theme-icon-hover-color:#9f367b;} [data-header*="type-1"] {--header-height:120px;} [data-header*="type-1"] .ct-header {background-color:#0d0d0d;background-image:none;} [data-footer*="type-1"] .ct-footer [data-row*="bottom"] > div {--container-spacing:25px;--theme-border:none;--theme-border-top:none;--theme-border-bottom:none;--grid-template-columns:repeat(3, 1fr);} [data-footer*="type-1"] .ct-footer [data-row*="bottom"] .widget-title {--theme-font-size:16px;} [data-footer*="type-1"] .ct-footer [data-row*="bottom"] {--theme-border-top:none;--theme-border-bottom:none;background-color:#0a0a0a;} [data-footer*="type-1"] [data-id="copyright"] {--theme-font-family:, Sans-Serif;--theme-font-size:13px;--theme-text-color:#555555;} [data-footer*="type-1"] .ct-footer [data-id="menu"] ul {--theme-font-family:, Sans-Serif;--theme-font-size:13px;} [data-footer*="type-1"] .ct-footer [data-id="menu"] > ul > li > a {--theme-link-initial-color:var(--theme-text-color);} [data-footer*="type-1"] .ct-footer [data-row*="top"] > div {--container-spacing:30px;--theme-border:none;--theme-border-top:1px solid #9f367b;--theme-border-bottom:none;--grid-template-columns:repeat(3, 1fr);} [data-footer*="type-1"] .ct-footer [data-row*="top"] .widget-title {--theme-font-size:16px;} [data-footer*="type-1"] .ct-footer [data-row*="top"] {--theme-border-top:none;--theme-border-bottom:none;background-color:#111111;} [data-footer*="type-1"] .ct-footer {background-color:var(--theme-palette-color-6);}:root {--theme-font-family:'Exo 2', Sans-Serif;--theme-font-weight:400;--theme-font-size:16px;--theme-line-height:1.65;--theme-button-font-weight:500;--theme-button-font-size:15px;--has-classic-forms:var(--true);--has-modern-forms:var(--false);--theme-form-field-border-initial-color:var(--theme-border-color);--theme-form-field-border-focus-color:var(--theme-palette-color-1);--theme-form-selection-field-initial-color:var(--theme-border-color);--theme-form-selection-field-active-color:var(--theme-palette-color-1);--theme-palette-color-1:#9f367b;--theme-palette-color-2:#b8448e;--theme-palette-color-3:#e4e4e4;--theme-palette-color-4:#ffffff;--theme-palette-color-5:#151515;--theme-palette-color-6:#1e1e1e;--theme-palette-color-7:#1e1e1e;--theme-palette-color-8:#151515;--theme-text-color:#e4e4e4;--theme-link-initial-color:#9f367b;--theme-link-hover-color:#b8448e;--theme-selection-text-color:#ffffff;--theme-selection-background-color:var(--theme-palette-color-1);--theme-border-color:var(--theme-palette-color-5);--theme-headings-color:var(--theme-palette-color-4);--theme-content-spacing:1.5em;--theme-button-min-height:40px;--theme-button-shadow:none;--theme-button-transform:none;--theme-button-text-initial-color:#ffffff;--theme-button-text-hover-color:#ffffff;--theme-button-background-initial-color:var(--theme-palette-color-1);--theme-button-background-hover-color:var(--theme-palette-color-2);--theme-button-border:none;--theme-button-padding:5px 20px;--theme-normal-container-max-width:1290px;--theme-content-vertical-spacing:60px;--theme-container-edge-spacing:90vw;--theme-narrow-container-max-width:750px;--theme-wide-offset:130px;}h1 {--theme-font-weight:700;--theme-font-size:40px;--theme-line-height:1.5;}h2 {--theme-font-weight:700;--theme-font-size:35px;--theme-line-height:1.5;}h3 {--theme-font-weight:700;--theme-font-size:30px;--theme-line-height:1.5;}h4 {--theme-font-weight:700;--theme-font-size:25px;--theme-line-height:1.5;}h5 {--theme-font-weight:700;--theme-font-size:20px;--theme-line-height:1.5;}h6 {--theme-font-weight:700;--theme-font-size:16px;--theme-line-height:1.5;}.wp-block-pullquote {--theme-font-family:Georgia;--theme-font-weight:600;--theme-font-size:25px;}pre, code, samp, kbd {--theme-font-family:monospace;--theme-font-weight:400;--theme-font-size:16px;}figcaption {--theme-font-size:14px;}.ct-sidebar .widget-title {--theme-font-size:20px;}.ct-breadcrumbs {--theme-font-weight:600;--theme-text-transform:uppercase;--theme-font-size:12px;}body {background-color:#151515;background-image:none;} [data-prefix="single_blog_post"] .entry-header .page-title {--theme-font-size:30px;} [data-prefix="single_blog_post"] .entry-header .entry-meta {--theme-font-weight:600;--theme-text-transform:uppercase;--theme-font-size:12px;--theme-line-height:1.3;} [data-prefix="categories"] .entry-header .page-title {--theme-font-size:30px;} [data-prefix="categories"] .entry-header .entry-meta {--theme-font-weight:600;--theme-text-transform:uppercase;--theme-font-size:12px;--theme-line-height:1.3;} [data-prefix="search"] .entry-header .page-title {--theme-font-size:30px;} [data-prefix="search"] .entry-header .entry-meta {--theme-font-weight:600;--theme-text-transform:uppercase;--theme-font-size:12px;--theme-line-height:1.3;} [data-prefix="author"] .entry-header .page-title {--theme-font-size:30px;} [data-prefix="author"] .entry-header .entry-meta {--theme-font-weight:600;--theme-text-transform:uppercase;--theme-font-size:12px;--theme-line-height:1.3;} [data-prefix="author"] .hero-section[data-type="type-2"] {background-color:var(--theme-palette-color-6);background-image:none;--container-padding:50px 0px;} [data-prefix="single_page"] .entry-header .page-title {--theme-font-size:30px;} [data-prefix="single_page"] .entry-header .entry-meta {--theme-font-weight:600;--theme-text-transform:uppercase;--theme-font-size:12px;--theme-line-height:1.3;} [data-prefix="blog"] .entries {--grid-template-columns:repeat(3, minmax(0, 1fr));} [data-prefix="blog"] .entry-card .entry-title {--theme-font-size:20px;--theme-line-height:1.3;} [data-prefix="blog"] .entry-card .entry-meta {--theme-font-weight:600;--theme-text-transform:uppercase;--theme-font-size:12px;} [data-prefix="blog"] .entry-card {background-color:var(--theme-palette-color-8);--theme-box-shadow:0px 12px 18px -6px rgba(34, 56, 101, 0.04);} [data-prefix="categories"] .entries {--grid-template-columns:repeat(3, minmax(0, 1fr));} [data-prefix="categories"] .entry-card .entry-title {--theme-font-size:20px;--theme-line-height:1.3;} [data-prefix="categories"] .entry-card .entry-meta {--theme-font-weight:600;--theme-text-transform:uppercase;--theme-font-size:12px;} [data-prefix="categories"] .entry-card {background-color:var(--theme-palette-color-8);--theme-box-shadow:0px 12px 18px -6px rgba(34, 56, 101, 0.04);} [data-prefix="author"] .entries {--grid-template-columns:repeat(3, minmax(0, 1fr));} [data-prefix="author"] .entry-card .entry-title {--theme-font-size:20px;--theme-line-height:1.3;} [data-prefix="author"] .entry-card .entry-meta {--theme-font-weight:600;--theme-text-transform:uppercase;--theme-font-size:12px;} [data-prefix="author"] .entry-card {background-color:var(--theme-palette-color-8);--theme-box-shadow:0px 12px 18px -6px rgba(34, 56, 101, 0.04);} [data-prefix="search"] .entries {--grid-template-columns:repeat(3, minmax(0, 1fr));} [data-prefix="search"] .entry-card .entry-title {--theme-font-size:20px;--theme-line-height:1.3;} [data-prefix="search"] .entry-card .entry-meta {--theme-font-weight:600;--theme-text-transform:uppercase;--theme-font-size:12px;} [data-prefix="search"] .entry-card {background-color:var(--theme-palette-color-8);--theme-box-shadow:0px 12px 18px -6px rgba(34, 56, 101, 0.04);}form textarea {--theme-form-field-height:170px;}.ct-sidebar {--theme-link-initial-color:var(--theme-text-color);}.ct-back-to-top {--theme-icon-color:#ffffff;--theme-icon-hover-color:#ffffff;} [data-prefix="single_blog_post"] [class*="ct-container"] > article[class*="post"] {--has-boxed:var(--false);--has-wide:var(--true);} [data-prefix="single_page"] [class*="ct-container"] > article[class*="post"] {--has-boxed:var(--false);--has-wide:var(--true);}@media (max-width: 999.98px) {[data-header*="type-1"] .ct-header [data-row*="middle"] {--height:70px;--row-padding:0vw 4vw;} [data-header*="type-1"] #offcanvas {--side-panel-width:65vw;} [data-header*="type-1"] {--header-height:70px;} [data-footer*="type-1"] .ct-footer [data-row*="bottom"] > div {--grid-template-columns:initial;} [data-footer*="type-1"] .ct-footer [data-row*="top"] > div {--grid-template-columns:initial;} [data-prefix="blog"] .entries {--grid-template-columns:repeat(2, minmax(0, 1fr));} [data-prefix="categories"] .entries {--grid-template-columns:repeat(2, minmax(0, 1fr));} [data-prefix="author"] .entries {--grid-template-columns:repeat(2, minmax(0, 1fr));} [data-prefix="search"] .entries {--grid-template-columns:repeat(2, minmax(0, 1fr));}}@media (max-width: 689.98px) {[data-header*="type-1"] .ct-header [data-row*="middle"] {--row-padding:0vw 5vw;} [data-header*="type-1"] #offcanvas {--side-panel-width:90vw;} [data-footer*="type-1"] .ct-footer [data-row*="bottom"] > div {--container-spacing:15px;--grid-template-columns:initial;} [data-footer*="type-1"] .ct-footer [data-row*="top"] > div {--grid-template-columns:initial;} [data-prefix="blog"] .entries {--grid-template-columns:repeat(1, minmax(0, 1fr));} [data-prefix="blog"] .entry-card .entry-title {--theme-font-size:18px;} [data-prefix="categories"] .entries {--grid-template-columns:repeat(1, minmax(0, 1fr));} [data-prefix="categories"] .entry-card .entry-title {--theme-font-size:18px;} [data-prefix="author"] .entries {--grid-template-columns:repeat(1, minmax(0, 1fr));} [data-prefix="author"] .entry-card .entry-title {--theme-font-size:18px;} [data-prefix="search"] .entries {--grid-template-columns:repeat(1, minmax(0, 1fr));} [data-prefix="search"] .entry-card .entry-title {--theme-font-size:18px;}:root {--theme-content-vertical-spacing:50px;--theme-container-edge-spacing:88vw;}}</style>
+    <style id="ti-preferred-sources-css">
+    .ti-preferred-sources{margin:36px 0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+    .ti-preferred-sources__panel{display:flex;align-items:center;gap:22px;padding:22px 26px;border-radius:16px;background:linear-gradient(135deg,rgba(15,23,42,.92),rgba(30,41,59,.88));border:1px solid rgba(37,99,235,.35);box-shadow:0 6px 24px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.04);position:relative;overflow:hidden}
+    .ti-preferred-sources__panel::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 0% 0%,rgba(37,99,235,.18),transparent 55%);pointer-events:none}
+    .ti-preferred-sources__logos{display:flex;align-items:center;gap:10px;flex-shrink:0;position:relative}
+    .ti-preferred-sources__ti-logo svg{width:40px;height:40px;display:block;border-radius:11px;box-shadow:0 2px 8px rgba(37,99,235,.35)}
+    .ti-preferred-sources__sep{color:rgba(226,232,240,.45);font-size:20px;line-height:1;font-weight:300}
+    .ti-preferred-sources__google svg{width:30px;height:30px;display:block}
+    .ti-preferred-sources__copy{flex:1;min-width:0;position:relative}
+    .ti-preferred-sources__eyebrow{display:block;font-size:11.5px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:#60a5fa;margin-bottom:4px}
+    .ti-preferred-sources__headline{margin:0 0 4px;font-size:17px;line-height:1.35;font-weight:700;color:#f1f5f9}
+    .ti-preferred-sources__sub{margin:0;font-size:13.5px;line-height:1.5;color:#cbd5e1}
+    .ti-preferred-sources__action{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;padding:11px 22px;border-radius:999px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff !important;font-size:14px;font-weight:600;letter-spacing:.2px;text-decoration:none !important;border:1px solid rgba(96,165,250,.4);box-shadow:0 4px 14px rgba(37,99,235,.4);transition:transform .15s ease,box-shadow .15s ease,background .15s ease;white-space:nowrap;position:relative}
+    .ti-preferred-sources__action:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(37,99,235,.55);background:linear-gradient(135deg,#3b82f6,#2563eb)}
+    .ti-preferred-sources__action:focus-visible{outline:2px solid #60a5fa;outline-offset:3px}
+    @media (max-width:680px){
+        .ti-preferred-sources__panel{flex-wrap:wrap;gap:16px;padding:20px}
+        .ti-preferred-sources__logos{order:1}
+        .ti-preferred-sources__copy{order:2;flex-basis:100%}
+        .ti-preferred-sources__action{order:3;width:100%;padding:13px 22px}
+        .ti-preferred-sources__headline{font-size:16px}
+    }
+    @media print{.ti-preferred-sources{display:none}}
+    </style>
+    
+<script async defer data-website-id="0b02aa67-de8e-47b1-bf5b-005e4db947ec" src="https://umami.adnixa.com/script.js"></script>
+<style id="ti-update-callout-css">
+.entry-content .ti-update-callout,
+article .ti-update-callout,
+.ti-update-callout {
+    display: block !important;
+    position: relative !important;
+    background: linear-gradient(135deg, #eaf4ff 0%, #d7ebff 100%) !important;
+    border: 1px solid #93c1e8 !important;
+    border-left: 5px solid #1e6ec8 !important;
+    border-radius: 8px !important;
+    padding: 1.25rem 1.5rem 1.25rem 3.25rem !important;
+    margin: 1.75rem 0 !important;
+    box-shadow: 0 2px 6px rgba(30,110,200,0.08) !important;
+    color: #0b3d78 !important;
+    font-size: 0.98em !important;
+    line-height: 1.55 !important;
+}
+.entry-content .ti-update-callout::before,
+article .ti-update-callout::before,
+.ti-update-callout::before {
+    content: "🔔" !important;
+    position: absolute !important;
+    left: 1rem !important;
+    top: 1.15rem !important;
+    font-size: 1.35rem !important;
+    line-height: 1 !important;
+}
+.entry-content .ti-update-callout > h2,
+.entry-content .ti-update-callout > h3,
+.entry-content .ti-update-callout > h4,
+article .ti-update-callout > h2,
+article .ti-update-callout > h3,
+article .ti-update-callout > h4,
+.ti-update-callout > h2,
+.ti-update-callout > h3,
+.ti-update-callout > h4 {
+    margin: 0 0 0.4rem 0 !important;
+    padding: 0 !important;
+    color: #0b3d78 !important;
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.01em !important;
+    text-transform: none !important;
+    border: 0 !important;
+}
+.entry-content .ti-update-callout > p,
+article .ti-update-callout > p,
+.ti-update-callout > p {
+    margin: 0 !important;
+    color: #0b3d78 !important;
+}
+.entry-content .ti-update-callout a,
+article .ti-update-callout a,
+.ti-update-callout a {
+    color: #0b3d78 !important;
+    text-decoration: underline !important;
+}
+.ti-updated-byline {
+    margin: 0.35rem 0 1rem 0 !important;
+    color: #666 !important;
+    font-size: 0.88em !important;
+    font-style: italic !important;
+}
+/* --- Sponsored / editorial disclosure banner --- */
+.entry-content .ti-sponsored-notice,
+article .ti-sponsored-notice,
+.ti-sponsored-notice {
+    display: block !important;
+    position: relative !important;
+    background: linear-gradient(135deg, #fff4d1 0%, #ffe9a8 100%) !important;
+    border: 1px solid #e2b73d !important;
+    border-left: 5px solid #d19700 !important;
+    border-radius: 8px !important;
+    padding: 0.95rem 1.25rem 0.95rem 3rem !important;
+    margin: 1.25rem 0 1.75rem !important;
+    color: #4a3600 !important;
+    font-size: 0.94em !important;
+    line-height: 1.55 !important;
+    box-shadow: 0 2px 5px rgba(210,150,0,0.10) !important;
+}
+.entry-content .ti-sponsored-notice::before,
+article .ti-sponsored-notice::before,
+.ti-sponsored-notice::before {
+    content: "\1F4E2" !important; /* megaphone emoji */
+    position: absolute !important;
+    left: 0.9rem !important;
+    top: 0.85rem !important;
+    font-size: 1.35rem !important;
+    line-height: 1 !important;
+}
+.entry-content .ti-sponsored-notice > p,
+article .ti-sponsored-notice > p,
+.ti-sponsored-notice > p {
+    margin: 0 !important;
+    color: #4a3600 !important;
+}
+.entry-content .ti-sponsored-notice strong,
+article .ti-sponsored-notice strong,
+.ti-sponsored-notice strong {
+    color: #2f2200 !important;
+    font-weight: 700 !important;
+}
+@media (prefers-color-scheme: dark) {
+    .ti-update-callout {
+        background: linear-gradient(135deg, #14243a 0%, #1a2f4a 100%) !important;
+        border-color: #3a6ba0 !important;
+        border-left-color: #4d9eef !important;
+        color: #d6e6fa !important;
+    }
+    .ti-update-callout > h2,
+    .ti-update-callout > h3,
+    .ti-update-callout > h4,
+    .ti-update-callout > p,
+    .ti-update-callout a { color: #e4f0ff !important; }
+    .ti-sponsored-notice {
+        background: linear-gradient(135deg, #3a2f0a 0%, #4d3f0f 100%) !important;
+        border-color: #a68430 !important;
+        border-left-color: #e2b73d !important;
+        color: #f5e6b8 !important;
+    }
+    .ti-sponsored-notice > p, .ti-sponsored-notice strong { color: #ffefb0 !important; }
+}
+</style>
+<link rel="icon" href="https://tech-insider.org/ca/wp-content/uploads/sites/7/2026/06/favicon-tech-512-150x150.png" sizes="32x32" />
+<link rel="icon" href="https://tech-insider.org/ca/wp-content/uploads/sites/7/2026/06/favicon-tech-512-300x300.png" sizes="192x192" />
+<link rel="apple-touch-icon" href="https://tech-insider.org/ca/wp-content/uploads/sites/7/2026/06/favicon-tech-512-300x300.png" />
+<meta name="msapplication-TileImage" content="https://tech-insider.org/ca/wp-content/uploads/sites/7/2026/06/favicon-tech-512-300x300.png" />
+<style>
+.ct-header [class*=ct-menu] > ul > li > ul,
+header [class*=menu] > ul > li > ul,
+.ct-header .sub-menu {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+    top: 100% !important;
+}
+.ct-header [class*=ct-menu] > ul > li:hover > ul,
+header [class*=menu] > ul > li:hover > ul {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+}
+</style>	</head>
+
+
+<body class="wp-singular post-template-default single single-post postid-504 single-format-standard wp-custom-logo wp-embed-responsive wp-theme-blocksy wp-child-theme-blocksy-child" data-link="type-2" data-prefix="single_blog_post" data-header="type-1" data-footer="type-1" itemscope="itemscope" itemtype="https://schema.org/Blog">
+
+<a class="skip-link screen-reader-text" href="#main">Skip to content</a><div class="ct-drawer-canvas" data-location="start"><div id="offcanvas" class="ct-panel ct-header" data-behaviour="right-side" role="dialog" aria-label="Offcanvas modal" inert=""><div class="ct-panel-inner">
+		<div class="ct-panel-actions">
+			
+			<button class="ct-toggle-close" data-type="type-1" aria-label="Close drawer">
+				<svg class="ct-icon" width="12" height="12" viewBox="0 0 15 15"><path d="M1 15a1 1 0 01-.71-.29 1 1 0 010-1.41l5.8-5.8-5.8-5.8A1 1 0 011.7.29l5.8 5.8 5.8-5.8a1 1 0 011.41 1.41l-5.8 5.8 5.8 5.8a1 1 0 01-1.41 1.41l-5.8-5.8-5.8 5.8A1 1 0 011 15z"/></svg>
+			</button>
+		</div>
+		<div class="ct-panel-content" data-device="desktop"><div class="ct-panel-content-inner"></div></div><div class="ct-panel-content" data-device="mobile"><div class="ct-panel-content-inner">
+<nav
+	class="mobile-menu menu-container"
+	data-id="mobile-menu" data-interaction="click" data-toggle-type="type-1" data-submenu-dots="yes"	aria-label="Navigation">
+
+	<ul id="menu-navigation-1" class=""><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-4"><a href="https://tech-insider.org/ca/" class="ct-menu-link">Home</a></li>
+<li class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-5"><a href="https://tech-insider.org/ca/category/ai-machine-learning/" class="ct-menu-link">AI &amp; Machine Learning</a></li>
+<li class="menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor current-menu-parent current-post-parent menu-item-6"><a href="https://tech-insider.org/ca/category/cybersecurity/" class="ct-menu-link">Cybersecurity</a></li>
+<li class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-7"><a href="https://tech-insider.org/ca/category/cloud-computing/" class="ct-menu-link">Cloud Computing</a></li>
+<li class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-8"><a href="https://tech-insider.org/ca/category/software/" class="ct-menu-link">Software</a></li>
+<li class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-9"><a href="https://tech-insider.org/ca/category/hardware/" class="ct-menu-link">Hardware</a></li>
+<li class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-10"><a href="https://tech-insider.org/ca/category/gaming/" class="ct-menu-link">Gaming</a></li>
+<li class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-11"><a href="https://tech-insider.org/ca/category/startups/" class="ct-menu-link">Startups</a></li>
+</ul></nav>
+
+</div></div></div></div></div>
+<div id="main-container">
+	<header id="header" class="ct-header" data-id="type-1" itemscope="" itemtype="https://schema.org/WPHeader"><div data-device="desktop"><div data-row="middle:boxed" data-column-set="2"><div class="ct-container"><div data-column="start" data-placements="1"><div data-items="primary">
+<div	class="site-branding"
+	data-id="logo"	data-logo="left"	itemscope="itemscope" itemtype="https://schema.org/Organization">
+
+			<a href="https://tech-insider.org/ca/" class="site-logo-container" rel="home" itemprop="url" ></a>	
+			<div class="site-title-container">
+			<span class="site-title " itemprop="name"><a href="https://tech-insider.org/ca/" rel="home" itemprop="url">Tech Insider</a></span>					</div>
+	  </div>
+
+</div></div><div data-column="end" data-placements="1"><div data-items="primary">
+<nav
+	id="header-menu-1"
+	class="header-menu-1 menu-container"
+	data-id="menu" data-interaction="hover"	data-menu="type-1"
+	data-dropdown="type-1:simple"		data-responsive="no"	itemscope="" itemtype="https://schema.org/SiteNavigationElement"	aria-label="Navigation">
+
+	<ul id="menu-navigation" class="menu"><li id="menu-item-4" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-4"><a href="https://tech-insider.org/ca/" class="ct-menu-link">Home</a></li>
+<li id="menu-item-5" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-5"><a href="https://tech-insider.org/ca/category/ai-machine-learning/" class="ct-menu-link">AI &amp; Machine Learning</a></li>
+<li id="menu-item-6" class="menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor current-menu-parent current-post-parent menu-item-6"><a href="https://tech-insider.org/ca/category/cybersecurity/" class="ct-menu-link">Cybersecurity</a></li>
+<li id="menu-item-7" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-7"><a href="https://tech-insider.org/ca/category/cloud-computing/" class="ct-menu-link">Cloud Computing</a></li>
+<li id="menu-item-8" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-8"><a href="https://tech-insider.org/ca/category/software/" class="ct-menu-link">Software</a></li>
+<li id="menu-item-9" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-9"><a href="https://tech-insider.org/ca/category/hardware/" class="ct-menu-link">Hardware</a></li>
+<li id="menu-item-10" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-10"><a href="https://tech-insider.org/ca/category/gaming/" class="ct-menu-link">Gaming</a></li>
+<li id="menu-item-11" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-11"><a href="https://tech-insider.org/ca/category/startups/" class="ct-menu-link">Startups</a></li>
+<li class="menu-item ti-search-toggle-wrap"><button class="ti-search-toggle" id="tiSearchToggle" aria-label="Search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></button></li></ul></nav>
+
+</div></div></div></div></div><div data-device="mobile"><div data-row="middle:boxed" data-column-set="2"><div class="ct-container"><div data-column="start" data-placements="1"><div data-items="primary">
+<div	class="site-branding"
+	data-id="logo"	data-logo="left"	>
+
+			<a href="https://tech-insider.org/ca/" class="site-logo-container" rel="home" itemprop="url" ></a>	
+			<div class="site-title-container">
+			<span class="site-title "><a href="https://tech-insider.org/ca/" rel="home" >Tech Insider</a></span>					</div>
+	  </div>
+
+</div></div><div data-column="end" data-placements="1"><div data-items="primary">
+<button
+	class="ct-header-trigger ct-toggle "
+	data-toggle-panel="#offcanvas"
+	aria-controls="offcanvas"
+	data-design="simple"
+	data-label="right"
+	aria-label="Menu"
+	data-id="trigger">
+
+	<span class="ct-label ct-hidden-sm ct-hidden-md ct-hidden-lg" aria-hidden="true">Menu</span>
+
+	<svg class="ct-icon" width="18" height="14" viewBox="0 0 18 14" data-type="type-1" aria-hidden="true">
+		<rect y="0.00" width="18" height="1.7" rx="1"/>
+		<rect y="6.15" width="18" height="1.7" rx="1"/>
+		<rect y="12.3" width="18" height="1.7" rx="1"/>
+	</svg></button>
+</div></div></div></div></div></header>
+	<main id="main" class="site-main hfeed" itemscope="itemscope" itemtype="https://schema.org/CreativeWork">
+
+		
+	<div
+		class="ct-container"
+						data-vertical-spacing="top:bottom">
+
+		
+		
+	<article
+		id="post-504"
+		class="post-504 post type-post status-publish format-standard has-post-thumbnail hentry category-cybersecurity">
+
+		<figure class="ct-featured-image  alignwide"><div class="ct-media-container"><img width="1344" height="768" src="https://tech-insider.org/ca/wp-content/uploads/sites/7/2026/07/how-to-set-up-tailscale-2026.webp" class="attachment-full size-full wp-post-image" alt="" loading="eager" decoding="async" srcset="https://tech-insider.org/ca/wp-content/uploads/sites/7/2026/07/how-to-set-up-tailscale-2026.webp 1344w, https://tech-insider.org/ca/wp-content/uploads/sites/7/2026/07/how-to-set-up-tailscale-2026-300x171.webp 300w, https://tech-insider.org/ca/wp-content/uploads/sites/7/2026/07/how-to-set-up-tailscale-2026-1024x585.webp 1024w, https://tech-insider.org/ca/wp-content/uploads/sites/7/2026/07/how-to-set-up-tailscale-2026-768x439.webp 768w" sizes="auto, (max-width: 1344px) 100vw, 1344px" fetchpriority="high" itemprop="image" style="aspect-ratio: 7/4;" /></div></figure>
+<div class="hero-section is-width-constrained" data-type="type-1">
+			<header class="entry-header">
+			<h1 class="page-title" itemprop="headline">How to Set Up Tailscale: 13 Steps, 60 Min [2026]</h1><ul class="entry-meta" data-type="simple:slash" ><li class="meta-author" itemprop="author" itemscope="" itemtype="https://schema.org/Person"><a href="https://tech-insider.org/ca/author/marcus-chen/" tabindex="-1" class="ct-media-container-static"><img decoding="async" src="https://secure.gravatar.com/avatar/9fd5d0ea0dd03913800acb181fc9c69cee6db42ea45126b6e3b2a3445a6bb2fb?s=50&amp;d=mm&amp;r=g" width="25" height="25" style="height:25px" alt="Marcus Chen"></a><a class="ct-meta-element-author" href="https://tech-insider.org/ca/author/marcus-chen/" title="Posts by Marcus Chen" rel="author" itemprop="url"><span itemprop="name">Marcus Chen</span></a></li><li class="meta-date" itemprop="datePublished"><time class="ct-meta-element-date" datetime="2026-07-30T14:37:23+00:00">July 30, 2026</time></li><li class="meta-categories" data-type="simple"><a href="https://tech-insider.org/ca/category/cybersecurity/" rel="tag" class="ct-term-3">Cybersecurity</a></li></ul>		</header>
+	</div>
+		
+		
+		<div class="entry-content is-layout-constrained">
+			<div class="ti-post-meta-bar"><div class="ti-post-meta-bar__item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <a href="https://tech-insider.org/ca/author/marcus-chen/" style="color:inherit;text-decoration:none;">Marcus Chen</a></div><div class="ti-post-meta-bar__item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> July 30, 2026</div><div class="ti-post-meta-bar__item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 21 min read</div></div>
+<p class="wp-block-paragraph">Most small teams don&#8217;t have a network engineer on staff, but they still need a way to reach a home server, a client&#8217;s staging box, or a colleague&#8217;s laptop without punching holes in a firewall. That gap is exactly what Tailscale was built to close, and it&#8217;s why searches for how to actually configure it have climbed steadily through 2026 alongside broader Zero Trust adoption, backed by real capital: Tailscale&#8217;s $160 million Series C round, led by Accel in April 2025, valued the company at $1.5 billion and pushed total funding to $275 million, according to Cyber Company Profiles, while GetLatka modeled 2025 revenue at roughly $45.2 million in annual recurring revenue as of November 2025, growth that&#8217;s since gone into the pricing overhaul and workload-identity features covered later in this guide. This tutorial builds one complete setup from scratch: a Canadian small business or solo developer connecting a laptop, a phone, and a home-lab server into a single private network, then locking it down with access rules, SSH, and a public-facing service that never requires an open inbound port.</p><nav class="ti-toc collapsed" aria-label="Table of Contents"><div class="ti-toc-header"><h3 class="ti-toc-title">Table of Contents</h3><button class="ti-toc-toggle" onclick="this.closest('.ti-toc').classList.toggle('collapsed')" aria-label="Toggle table of contents"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M2 4l4 4 4-4z"/></svg></button></div><ol class="ti-toc-list"><li><a href="#toc-0">What Tailscale Is, and Why Zero Trust Access Matters Right Now</a></li><li><a href="#toc-1">Prerequisites: What You Need Before You Start</a></li><li><a href="#toc-2">Step-by-Step: Create Your Account and Connect Your First Device</a></li><ol class="ti-toc-sub"><li><a href="#toc-3">Step 1: Create a Tailscale Account With an Identity Provider</a></li><li><a href="#toc-4">Step 2: Install the Tailscale Client</a></li><li><a href="#toc-5">Step 3: Authenticate and Confirm Your First Node</a></li></ol><li><a href="#toc-6">Step-by-Step: Bring Every Device Onto Your Tailnet</a></li><ol class="ti-toc-sub"><li><a href="#toc-7">Step 4: Add a Second Device</a></li><li><a href="#toc-8">Step 5: Install Tailscale on iOS and Android</a></li><li><a href="#toc-9">Step 6: Tour the Tailscale Admin Console</a></li></ol><li><a href="#toc-10">Step 7: Turn On MagicDNS</a></li><li><a href="#toc-11">Step 8: Configure a Subnet Router to Reach Your Whole LAN</a></li><li><a href="#toc-12">Step 9: Set Up an Exit Node for Full-Tunnel Routing</a></li><li><a href="#toc-13">Step 10: Write an Access Control List (ACL) Policy</a></li><li><a href="#toc-14">Step 11: Turn On Tailscale SSH</a></li><li><a href="#toc-15">Step 12: Expose a Service Safely With Funnel and Serve</a></li><li><a href="#toc-16">Step 13: Test the Tailnet, Rotate Keys, and Lock It Down</a></li><li><a href="#toc-17">Recap: What Your Complete Tailnet Looks Like Now</a></li><li><a href="#toc-18">Tailscale Pricing in 2026: Personal, Standard, Premium, and Enterprise</a></li><li><a href="#toc-19">Tailscale vs Cloudflare Zero Trust vs ZeroTier vs WireGuard</a></li><li><a href="#toc-20">7 Common Pitfalls When Setting Up Tailscale</a></li><li><a href="#toc-21">Troubleshooting: 10 Tailscale Problems and How to Fix Them</a></li><li><a href="#toc-22">Advanced Tips: Headscale, Automation, and Hardening Your Tailnet</a></li><li><a href="#toc-23">Frequently Asked Questions</a></li><ol class="ti-toc-sub"><li><a href="#toc-24">Is Tailscale free for personal use?</a></li><li><a href="#toc-25">Does Tailscale replace my existing firewall or VPN gateway?</a></li><li><a href="#toc-26">What&#8217;s the real difference between Tailscale and a hand-configured WireGuard VPN?</a></li><li><a href="#toc-27">Can I self-host the coordination server instead of using Tailscale&#8217;s cloud?</a></li><li><a href="#toc-28">Will Tailscale slow down my internet connection?</a></li><li><a href="#toc-29">Is Tailscale secure enough for business use?</a></li><li><a href="#toc-30">What happens if Tailscale&#8217;s coordination servers go down?</a></li><li><a href="#toc-31">Can I install Tailscale on a router or a NAS instead of a full computer?</a></li><li><a href="#toc-32">How is a Tailscale login different from a normal VPN username and password?</a></li><li><a href="#toc-33">Do I need a paid plan once I go past six users?</a></li><li><a href="#toc-34">Related Coverage</a></li></ol></ol></nav>
+
+
+
+<p class="wp-block-paragraph">By the end, you&#8217;ll have a working tailnet with MagicDNS, a subnet router, an exit node, a written access control policy, Tailscale SSH, and one service exposed through Funnel. Every command below is one you can run today.</p>
+
+
+
+    <section class="ti-preferred-sources" aria-labelledby="ti-preferred-sources-title">
+        <div class="ti-preferred-sources__panel">
+            <div class="ti-preferred-sources__logos" aria-hidden="true">
+                <span class="ti-preferred-sources__ti-logo" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" focusable="false" aria-hidden="true">
+                        <defs>
+                            <linearGradient id="ti-ps-grad" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stop-color="#60a5fa"/>
+                                <stop offset="100%" stop-color="#2563eb"/>
+                            </linearGradient>
+                        </defs>
+                        <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#ti-ps-grad)"/>
+                        <path fill="#ffffff" d="M14 18h22v6h-8v22h-6V24h-8v-6zm26 0h6v28h-6V18z"/>
+                    </svg>
+                </span>
+                <span class="ti-preferred-sources__sep" aria-hidden="true">·</span>
+                <span class="ti-preferred-sources__google">
+                    <svg viewBox="0 0 24 24" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                </span>
+            </div>
+            <div class="ti-preferred-sources__copy">
+                <span class="ti-preferred-sources__eyebrow">Google · Preferred Sources</span>
+                <p id="ti-preferred-sources-title" class="ti-preferred-sources__headline">Don&#039;t miss new tech stories on Google</p>
+                <p class="ti-preferred-sources__sub">Add Tech Insider once in the Google app and our stories appear in your news suggestions.</p>
+            </div>
+            <a class="ti-preferred-sources__action" href="https://www.google.com/preferences/source?hl=en&#038;q=https%3A%2F%2Ftech-insider.org%2Fca%2F" target="_blank" rel="noopener noreferrer">Add Now</a>
+        </div>
+    </section>
+    <h2 id="toc-0" class="wp-block-heading">What Tailscale Is, and Why Zero Trust Access Matters Right Now</h2>
+
+
+
+<p class="wp-block-paragraph">Tailscale is a mesh VPN built on the WireGuard protocol. Instead of routing every device through one central gateway, it creates direct, encrypted connections between the machines on what it calls a &#8220;tailnet,&#8221; authenticated through an identity provider you likely already use, such as Google, Microsoft, GitHub, or Okta. If you&#8217;ve already configured a <a href="/how-to-set-up-wireguard-vpn-2026/">WireGuard VPN</a> by hand, Tailscale automates the parts that make WireGuard tedious at scale: key exchange, NAT traversal, and per-device access rules. The client keeps hardening that foundation release over release: version 1.92.5, shipped in January 2026, changed the Windows and Linux defaults for state file encryption and hardware attestation keys, and added workload identity federation support across the API, the Go client, and the Terraform provider. That cadence matters: after security researcher QuiverSphere disclosed a set of flaws on July 13 2026, Tailscale issued an advisory urging every user to upgrade to version 1.98.9 or later, a reminder that staying current with the client isn&#8217;t optional in a tool built around trust between devices.</p>
+
+
+
+<p class="wp-block-paragraph">The &#8220;Zero Trust&#8221; label describes an access model, not a single product. Rather than trusting anything inside a network perimeter, a Zero Trust setup checks every device and every identity on every connection, then grants only the access that connection actually needs. The <a href="https://www.nist.gov/publications/zero-trust-architecture">NIST Zero Trust Architecture guidance (SP 800-207)</a> lays out that same principle, and it&#8217;s the logic behind Tailscale&#8217;s access control lists: nobody gets broad network access by default, and every rule is written down somewhere you can audit.</p>
+
+
+
+<p class="wp-block-paragraph">For a Canadian business handling customer data, that model lines up with how PIPEDA expects organizations to demonstrate reasonable safeguards, not just claim them. For a solo developer, it means no static IP requirements, no port forwarding on a home router, and no shared VPN password sitting in a group chat. Every device gets its own identity, its own address inside the tailnet, and its own rules for what it can reach. That&#8217;s the setup this guide builds, one step at a time.</p>
+
+
+
+<p class="wp-block-paragraph">Beyond access itself, Tailscale bundles a few smaller features that make it worth the switch even for a network of two devices. Taildrop sends files directly between your own machines without an intermediate cloud service. Device tags let you group machines by role, server, laptop, printer, and reference that group in policy instead of listing individual devices by name. None of these are the main event in this tutorial, but they&#8217;re the kind of detail that separates a tool people keep using from one they set up once and abandon.</p>
+
+
+
+<h2 id="toc-1" class="wp-block-heading">Prerequisites: What You Need Before You Start</h2>
+
+
+
+<p class="wp-block-paragraph">This walkthrough assumes no prior Tailscale experience, but it does assume basic comfort with a terminal. Gather these before Step 1.</p>
+
+
+
+<figure class="wp-block-table"><table><thead><tr><th>Requirement</th><th>Details</th></tr></thead><tbody><tr><td>Devices</td><td>At least two: a primary computer (Windows, macOS, or Linux) and a second device such as a phone or a home-lab server</td></tr><tr><td>Tailscale client</td><td>The latest version of the Tailscale client for each OS, downloaded from the official site</td></tr><tr><td>Account</td><td>A free Tailscale account, created by signing in with Google, Microsoft, GitHub, Apple, or another supported identity provider</td></tr><tr><td>Operating systems</td><td>Windows 10 or 11, a current release of macOS, or a modern Linux distribution such as Ubuntu, Debian, or Fedora</td></tr><tr><td>Access rights</td><td>Administrator or sudo access on every device you plan to connect</td></tr><tr><td>Network access</td><td>Outbound internet access only, no inbound firewall ports need to be opened</td></tr><tr><td>Time</td><td>Around 60 minutes for the full walkthrough, testing included</td></tr><tr><td>Optional</td><td>A home router, NAS, or small Linux server with SSH access, for the subnet router and exit node steps</td></tr></tbody></table></figure>
+
+
+
+<h2 id="toc-2" class="wp-block-heading">Step-by-Step: Create Your Account and Connect Your First Device</h2>
+
+
+
+<h3 id="toc-3" class="wp-block-heading">Step 1: Create a Tailscale Account With an Identity Provider</h3>
+
+
+
+<p class="wp-block-paragraph">Go to Tailscale&#8217;s site and choose Get Started, then sign in with an identity provider rather than creating a new username and password. If you sign up with a public domain account such as a personal Gmail address, you land on the Personal plan automatically, which covers up to six users with unlimited devices and includes most of what a small team needs. If you sign up with a Google Workspace or Microsoft 365 work account, Tailscale treats your organization&#8217;s domain as the tailnet owner instead, which matters later when you invite coworkers.</p>
+
+
+
+<p class="wp-block-paragraph">This is also the moment to think about identity hygiene. Tailscale login security is only as strong as the identity provider behind it, so if your team hasn&#8217;t already turned on multi-factor authentication at that provider, do it before continuing. Our <a href="/how-to-set-up-totp-mfa-2026/">TOTP MFA setup guide</a> covers that in about an hour, and it directly strengthens every tailnet login that follows.</p>
+
+
+
+<h3 id="toc-4" class="wp-block-heading">Step 2: Install the Tailscale Client</h3>
+
+
+
+<p class="wp-block-paragraph">On Windows and macOS, download the installer from the official downloads page and run it like any other application; as of September 2026 that installer ships the latest stable client, version 1.102.4, published that month by Tailscale, Inc. on GitHub. Both platforms get a menu bar or system tray icon once installed. On Linux, the fastest path is the official install script, which detects your distribution and sets up the right package repository automatically.</p>
+
+
+
+<pre class="wp-block-code"><code>curl -fsSL https://tailscale.com/install.sh | sh</code></pre>
+
+
+
+<p class="wp-block-paragraph">That script installs the <code>tailscale</code> command-line tool and the <code>tailscaled</code> background daemon that actually maintains your connections. If you&#8217;d rather review the script or install manually through your distribution&#8217;s package manager, the official install documentation covers both.</p>
+
+
+
+<h3 id="toc-5" class="wp-block-heading">Step 3: Authenticate and Confirm Your First Node</h3>
+
+
+
+<p class="wp-block-paragraph">With the client installed, bring the connection up from the terminal on Linux, or click Connect from the tray icon on Windows and macOS.</p>
+
+
+
+<pre class="wp-block-code"><code>sudo tailscale up --ssh</code></pre>
+
+
+
+<p class="wp-block-paragraph">This prints a URL. Open it in a browser, sign in with the same identity provider account from Step 1, and approve the device. Back in the terminal, confirm the machine has an address on the tailnet.</p>
+
+
+
+<pre class="wp-block-code"><code>tailscale ip -4</code></pre>
+
+
+
+<p class="wp-block-paragraph">Expect output similar to this, an address in Tailscale&#8217;s private 100.x.y.z range that stays fixed for this device no matter which physical network it&#8217;s on:</p>
+
+
+
+<pre class="wp-block-code"><code>100.101.102.5</code></pre>
+
+
+
+<p class="wp-block-paragraph">Name this machine something you&#8217;ll recognize later. This tutorial calls it <code>office-server</code> throughout, standing in for whatever home-lab box, NAS, or small cloud instance you&#8217;re connecting first.</p>
+
+
+
+<h2 id="toc-6" class="wp-block-heading">Step-by-Step: Bring Every Device Onto Your Tailnet</h2>
+
+
+
+<h3 id="toc-7" class="wp-block-heading">Step 4: Add a Second Device</h3>
+
+
+
+<p class="wp-block-paragraph">Repeat Step 2 and Step 3 on a laptop, a desktop, or a second server, signing in with the same account. Once it authenticates, both machines show up in the admin console&#8217;s device list within seconds, and each can reach the other directly by its 100.x address, with no router configuration on either end. This tutorial calls this second machine <code>laptop</code> from here forward, standing in for whatever everyday device you actually connected.</p>
+
+
+
+<h3 id="toc-8" class="wp-block-heading">Step 5: Install Tailscale on iOS and Android</h3>
+
+
+
+<p class="wp-block-paragraph">Install the Tailscale app from the App Store or Google Play, sign in with the same identity provider account, and approve the device the same way. The Android client has moved quickly lately: APKMirror listed a 1.92.1 beta on December 6 2025, followed by version 1.96.4 on March 31 2026, and by July 11 2026 both the phone app (version 1.99.148) and the separate Android TV build (version 1.98.8, a 7.63 MB download) had shipped, so it&#8217;s worth confirming you aren&#8217;t still running one of the earlier releases before you rely on it. Mobile clients behave like any other tailnet member: they get a 100.x address, they respect the same access rules, and they can reach anything the ACL policy allows. One caveat worth flagging now and revisiting in the troubleshooting section: Android&#8217;s aggressive battery optimization can quietly kill the background connection, so exempt the app from battery restrictions right after installing it.</p>
+
+
+
+<h3 id="toc-9" class="wp-block-heading">Step 6: Tour the Tailscale Admin Console</h3>
+
+
+
+<p class="wp-block-paragraph">Everything you&#8217;ll configure for the rest of this tutorial happens partly in the admin console, reached from your account on the Tailscale site. Four tabs matter most.</p>
+
+
+
+<ul class="wp-block-list"><li><strong>Machines:</strong> every device, its address, and its owner, plus where you approve routes and exit nodes</li><li><strong>DNS:</strong> MagicDNS and split-DNS settings</li><li><strong>Access Controls:</strong> the ACL policy file</li><li><strong>Keys:</strong> auth keys and device key expiry</li></ul>
+
+
+
+<p class="wp-block-paragraph">Spend a minute clicking through each tab before moving on. Steps 7 through 13 all come back to this console.</p>
+
+
+
+<h2 id="toc-10" class="wp-block-heading">Step 7: Turn On MagicDNS</h2>
+
+
+
+<p class="wp-block-paragraph">Remembering a 100.x.y.z address for every device gets old fast. MagicDNS solves that by giving each machine a stable, human-readable name, automatically, without you running your own DNS server. Tailscale&#8217;s own documentation on <a href="https://tailscale.com/kb/1081/magicdns">MagicDNS</a> describes it as automatic DNS name assignment for every device on your tailnet, and it&#8217;s the single setting that makes the rest of this tutorial easier to follow.</p>
+
+
+
+<p class="wp-block-paragraph">Turn it on from the DNS tab in the admin console. Once enabled, every device becomes reachable by name instead of address:</p>
+
+
+
+<pre class="wp-block-code"><code>ping office-server.yourtailnet.ts.net</code></pre>
+
+
+
+<p class="wp-block-paragraph">From here on, this tutorial refers to devices by name, not address, exactly like that.</p>
+
+
+
+<h2 id="toc-11" class="wp-block-heading">Step 8: Configure a Subnet Router to Reach Your Whole LAN</h2>
+
+
+
+<p class="wp-block-paragraph">Installing Tailscale on every printer, camera, and smart-home device on your home or office network isn&#8217;t realistic. A subnet router solves that by letting one device, <code>office-server</code> in this example, advertise an entire local network to the rest of the tailnet. According to Tailscale&#8217;s <a href="https://tailscale.com/kb/1019/subnets">subnet routes documentation</a>, this is the standard way to reach devices that can&#8217;t run the client themselves.</p>
+
+
+
+<p class="wp-block-paragraph">On <code>office-server</code>, advertise the local subnet, substituting the actual range your router hands out:</p>
+
+
+
+<pre class="wp-block-code"><code>sudo tailscale up --ssh --advertise-routes=192.168.1.0/24</code></pre>
+
+
+
+<p class="wp-block-paragraph">On Linux, that route won&#8217;t actually forward traffic until IP forwarding is enabled at the kernel level. This step trips up more people than any other in this tutorial, so don&#8217;t skip it:</p>
+
+
+
+<pre class="wp-block-code"><code>echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
+echo 'net.ipv6.conf.all.forwarding = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
+sudo sysctl -p /etc/sysctl.d/99-tailscale.conf</code></pre>
+
+
+
+<p class="wp-block-paragraph">Last, open the Machines tab in the admin console, find <code>office-server</code>, and approve the advertised route. Advertising a route only proposes it. Nothing else on the tailnet can use it until an admin explicitly approves it, which is itself a small but deliberate Zero Trust control.</p>
+
+
+
+<h2 id="toc-12" class="wp-block-heading">Step 9: Set Up an Exit Node for Full-Tunnel Routing</h2>
+
+
+
+<p class="wp-block-paragraph">A subnet router shares a specific network. An exit node goes further and routes all of a device&#8217;s internet traffic through another tailnet member, which is useful for securing traffic on public Wi-Fi or giving a laptop a consistent egress point. Tailscale documents the feature in detail on its <a href="https://tailscale.com/kb/1103/exit-nodes">exit nodes page</a>.</p>
+
+
+
+<p class="wp-block-paragraph">On the machine that will serve as the exit node:</p>
+
+
+
+<pre class="wp-block-code"><code>sudo tailscale up --ssh --advertise-exit-node</code></pre>
+
+
+
+<p class="wp-block-paragraph">Approve it in the Machines tab, the same way you approved the subnet route. Then, on any client device that should route through it:</p>
+
+
+
+<pre class="wp-block-code"><code>sudo tailscale up --exit-node=office-server.yourtailnet.ts.net --exit-node-allow-lan-access</code></pre>
+
+
+
+<p class="wp-block-paragraph">The <code>--exit-node-allow-lan-access</code> flag matters if that client still needs to reach printers or other devices on its own local network while the exit node is active. Without it, all traffic, including local traffic, goes through the exit node, which is a common source of &#8220;why can&#8217;t I print anymore&#8221; support tickets covered later in this guide.</p>
+
+
+
+<h2 id="toc-13" class="wp-block-heading">Step 10: Write an Access Control List (ACL) Policy</h2>
+
+
+
+<p class="wp-block-paragraph">By default, every device on a tailnet can reach every other device. That&#8217;s fine for a quick test, but it isn&#8217;t Zero Trust, and it isn&#8217;t what you want running permanently. Tailscale&#8217;s <a href="https://tailscale.com/kb/1018/acls">ACL documentation</a> covers the full policy format. Here&#8217;s a working example that fits the setup this tutorial has built so far.</p>
+
+
+
+<p class="wp-block-paragraph">Open the Access Controls tab in the admin console and replace the default policy with something closer to this:</p>
+
+
+
+<pre class="wp-block-code"><code>{
+  "groups": {
+    "group:admins": ["<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1960766c597c61787469757c377a7674">[email&#160;protected]</a>"],
+    "group:staff": ["<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="760f190336130e171b061a135815191b">[email&#160;protected]</a>", "<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="80e3efecece5e1e7f5e5c0e5f8e1edf0ece5aee3efed">[email&#160;protected]</a>"]
+  },
+  "tagOwners": {
+    "tag:server": ["group:admins"]
+  },
+  "acls": [
+    {
+      "action": "accept",
+      "src": ["group:admins"],
+      "dst": ["tag:server:*"]
+    },
+    {
+      "action": "accept",
+      "src": ["group:staff"],
+      "dst": ["tag:server:443", "tag:server:80"]
+    }
+  ],
+  "ssh": [
+    {
+      "action": "check",
+      "src": ["group:admins"],
+      "dst": ["tag:server"],
+      "users": ["autogroup:nonroot"]
+    }
+  ]
+}</code></pre>
+
+
+
+<p class="wp-block-paragraph">Then tag <code>office-server</code> so the policy actually applies to it:</p>
+
+
+
+<pre class="wp-block-code"><code>sudo tailscale up --ssh --advertise-routes=192.168.1.0/24 --advertise-exit-node --advertise-tags=tag:server</code></pre>
+
+
+
+<p class="wp-block-paragraph">The result: admins reach everything on that server, general staff reach only the web ports, and nobody outside those two groups reaches it at all. That&#8217;s least-privilege access, written down in a file you can review in a pull request instead of a mental model nobody else on the team can see.</p>
+
+
+
+<figure class="wp-block-table"><table><thead><tr><th>ACL field</th><th>Purpose</th></tr></thead><tbody><tr><td>acls</td><td>The core rules: which source can reach which destination and on what port</td></tr><tr><td>groups</td><td>Named collections of user identities, reused across rules instead of repeated</td></tr><tr><td>tagOwners</td><td>Defines which group is allowed to assign a given tag to a device</td></tr><tr><td>ssh</td><td>Controls who can use Tailscale SSH, to which tagged devices, and as which OS user</td></tr><tr><td>grants</td><td>A newer, more granular alternative to acls for application-aware access rules</td></tr></tbody></table></figure>
+
+
+
+<h2 id="toc-14" class="wp-block-heading">Step 11: Turn On Tailscale SSH</h2>
+
+
+
+<p class="wp-block-paragraph">You already enabled the <code>--ssh</code> flag in earlier steps, which turns on Tailscale&#8217;s built-in SSH server. Combined with the <code>ssh</code> block in the ACL policy above, that means access is governed by tailnet identity, not by a static list of public keys sitting in an <code>authorized_keys</code> file that someone eventually forgets to clean up. Official coverage of the feature lives on the <a href="https://tailscale.com/kb/1193/tailscale-ssh">Tailscale SSH page</a>.</p>
+
+
+
+<p class="wp-block-paragraph">Connect from any authorized device with the Tailscale CLI itself, rather than a conventional SSH client:</p>
+
+
+
+<pre class="wp-block-code"><code>tailscale ssh youruser@office-server</code></pre>
+
+
+
+<p class="wp-block-paragraph">If your ACL policy denies that user or that device, the connection fails immediately with a permission error rather than falling back to a password prompt, which is exactly the behavior you want from an access-controlled server.</p>
+
+
+
+<h2 id="toc-15" class="wp-block-heading">Step 12: Expose a Service Safely With Funnel and Serve</h2>
+
+
+
+<p class="wp-block-paragraph">Sometimes you need to share something with people who aren&#8217;t on your tailnet at all, a client demo, a webhook receiver, a small internal tool. Tailscale Serve and Funnel handle that without opening a port on your firewall. Serve, documented on the same knowledge base, publishes a service to your tailnet only. Funnel, covered on the <a href="https://tailscale.com/kb/1223/funnel">Funnel page</a>, takes the extra step of publishing it to the public internet through Tailscale&#8217;s own relay.</p>
+
+
+
+<p class="wp-block-paragraph">To publish a local web app running on port 3000 to the rest of your tailnet only:</p>
+
+
+
+<pre class="wp-block-code"><code>tailscale serve --bg 3000</code></pre>
+
+
+
+<p class="wp-block-paragraph">To make that same service reachable from the public internet:</p>
+
+
+
+<pre class="wp-block-code"><code>tailscale funnel 443 on</code></pre>
+
+
+
+<p class="wp-block-paragraph">Tailscale prints the resulting address, something like this:</p>
+
+
+
+<pre class="wp-block-code"><code>Available within your tailnet:
+https://office-server.yourtailnet.ts.net/
+
+Available on the internet:
+https://office-server.yourtailnet.ts.net/</code></pre>
+
+
+
+<p class="wp-block-paragraph">That URL comes with a valid TLS certificate automatically. No reverse proxy to configure, no certificate to renew by hand, and no port forwarded on your router. Turn Funnel off the moment the demo or the webhook testing is done, since it&#8217;s the one setting in this tutorial that intentionally opens a door to the public internet.</p>
+
+
+
+<h2 id="toc-16" class="wp-block-heading">Step 13: Test the Tailnet, Rotate Keys, and Lock It Down</h2>
+
+
+
+<p class="wp-block-paragraph">With every device connected, MagicDNS on, a subnet route and exit node approved, an ACL policy enforced, SSH working, and one service published, run a final pass to confirm everything actually behaves the way you configured it.</p>
+
+
+
+<pre class="wp-block-code"><code>tailscale status</code></pre>
+
+
+
+<p class="wp-block-paragraph">Expect a list of every device on the tailnet, its address, and whether it&#8217;s currently reachable directly or through a relay:</p>
+
+
+
+<pre class="wp-block-code"><code>100.101.102.5   office-server   you@       linux   -
+100.101.102.8   laptop          you@       windows active; direct
+100.101.102.9   phone           you@       ios     active; relay</code></pre>
+
+
+
+<p class="wp-block-paragraph">Next, confirm the connection type and round-trip time between two devices:</p>
+
+
+
+<pre class="wp-block-code"><code>tailscale ping laptop</code></pre>
+
+
+
+<p class="wp-block-paragraph">A response marked &#8220;direct&#8221; means the two devices found a peer-to-peer path. A response marked &#8220;relay&#8221; means they&#8217;re bouncing through a DERP relay server instead, usually because a firewall somewhere is blocking direct traffic, which the troubleshooting section below addresses directly.</p>
+
+
+
+<p class="wp-block-paragraph">Last, open the Keys tab in the admin console. Tailscale periodically expires device keys as a security measure, which is good practice for laptops and phones but can unexpectedly disconnect a headless server at an inconvenient time. For <code>office-server</code>, disable key expiry so it doesn&#8217;t silently drop off the tailnet during a long weekend.</p>
+
+
+
+<h2 id="toc-17" class="wp-block-heading">Recap: What Your Complete Tailnet Looks Like Now</h2>
+
+
+
+<p class="wp-block-paragraph">It&#8217;s worth pausing here to see the whole project at once, since each step so far has only touched one piece of it. Three devices now share a single private network with no firewall ports opened and no static IP anywhere in sight: a laptop, a phone, and <code>office-server</code>, which is doing double duty as both the subnet router for the home or office LAN and the exit node for full-tunnel routing.</p>
+
+
+
+<figure class="wp-block-table"><table><thead><tr><th>Component</th><th>Role in this setup</th></tr></thead><tbody><tr><td>laptop</td><td>Primary work device, reaches office-server by name through MagicDNS, can route all traffic through the exit node when needed</td></tr><tr><td>phone</td><td>Mobile client, same ACL rules apply as on any other device, exempted from battery optimization so it stays connected</td></tr><tr><td>office-server</td><td>Tagged tag:server, advertises the 192.168.1.0/24 LAN as a subnet router, advertises itself as an exit node, runs Tailscale SSH, and serves one app through Funnel</td></tr><tr><td>ACL policy</td><td>Admins reach office-server on every port, general staff reach only ports 80 and 443, nobody outside those two groups reaches it at all</td></tr><tr><td>Key expiry</td><td>Disabled on office-server only, so a routine key rotation never takes the server offline unannounced</td></tr></tbody></table></figure>
+
+
+
+<p class="wp-block-paragraph">That&#8217;s a complete, working Zero Trust setup, not a demo. Everything in the table above came from a command or a console click earlier in this tutorial, and the same pattern scales to a fourth device, a tenth device, or a small office full of them without changing the underlying approach. Add a device, tag it, decide who should reach it, and write that decision into the ACL policy instead of leaving it to memory. Nothing here depended on a static IP address, a forwarded port, or a shared secret sitting in a spreadsheet somewhere.</p>
+
+
+
+<h2 id="toc-18" class="wp-block-heading">Tailscale Pricing in 2026: Personal, Standard, Premium, and Enterprise</h2>
+
+
+
+<p class="wp-block-paragraph">Everything built in this tutorial runs on Tailscale&#8217;s free tier. It&#8217;s worth understanding the full pricing picture before scaling past a personal project, since the plan you land on determines how many people can share one tailnet and how much automation you get for ephemeral or CI-driven devices. Tailscale rolled out pricing v4 in April 2026, shifting business plans from usage-based billing to a seat-based model with a 12-month transition window for existing customers, while Standard and Premium settled at $8 and $18 per user, per month; Megachangelog then flagged a further tweak in August 2026, when Tailscale doubled the free Personal plan from 3 to 6 users while keeping unlimited user-owned devices. That same pricing v4 release added the Tailnet custom resource, which lets a single account manage multiple tailnets instead of just one. Current figures, per <a href="https://tailscale.com/pricing">Tailscale&#8217;s pricing page</a> as of August 2026, are below.</p>
+
+
+
+<figure class="wp-block-table"><table><thead><tr><th>Plan</th><th>Price</th><th>Key limits</th></tr></thead><tbody><tr><td>Personal</td><td>Free</td><td>Up to 6 users, unlimited devices, 50 tagged resources, 1,000 ephemeral minutes per month</td></tr><tr><td>Standard</td><td>$8 per user, per month</td><td>Unlimited devices, 50 tagged resources, 1,000 ephemeral minutes per month</td></tr><tr><td>Premium</td><td>$18 per user, per month</td><td>Unlimited devices, 50 tagged resources, 10,000 ephemeral minutes per month</td></tr><tr><td>Enterprise</td><td>Custom</td><td>Custom limits and support, negotiated directly with Tailscale</td></tr></tbody></table></figure>
+
+
+
+<p class="wp-block-paragraph">The question &#8220;is Tailscale free&#8221; comes up often enough that it&#8217;s worth answering directly: yes, for up to six people and an unlimited number of their devices, which covers most solo developers, families, and very small teams without a credit card in sight.</p>
+
+
+
+<h2 id="toc-19" class="wp-block-heading">Tailscale vs Cloudflare Zero Trust vs ZeroTier vs WireGuard</h2>
+
+
+
+<p class="wp-block-paragraph">Tailscale isn&#8217;t the only way to build this kind of access, and a common Tailscale alternative search usually lands on <a href="https://developers.cloudflare.com/cloudflare-one/">Cloudflare Zero Trust</a> or <a href="https://www.zerotier.com/pricing/">ZeroTier</a>. Here&#8217;s how they actually differ, using only publicly documented free-tier limits.</p>
+
+
+
+<figure class="wp-block-table"><table><thead><tr><th>Tool</th><th>Model</th><th>Free tier</th><th>Best fit</th></tr></thead><tbody><tr><td>Tailscale</td><td>Managed mesh VPN built on WireGuard</td><td>Up to 6 users, unlimited devices</td><td>Teams that want Zero Trust access without running their own coordination server</td></tr><tr><td>Cloudflare Zero Trust</td><td>Identity-aware proxy plus WARP client</td><td>Up to 50 users</td><td>Organizations already built around Cloudflare&#8217;s network wanting app-level access control</td></tr><tr><td>ZeroTier</td><td>Software-defined mesh network</td><td>Up to 25 devices</td><td>Hobbyists and small labs that want a lightweight virtual LAN</td></tr><tr><td>WireGuard (self-managed)</td><td>Open-source VPN protocol, no vendor involved</td><td>Free, self-hosted, no user cap</td><td>Engineers who want full control and don&#8217;t mind managing keys and configs by hand</td></tr><tr><td>Headscale</td><td>Open-source, self-hosted Tailscale control server</td><td>Free, community-maintained</td><td>Teams that want Tailscale&#8217;s client experience without the hosted coordination service</td></tr></tbody></table></figure>
+
+
+
+<p class="wp-block-paragraph">Notice that Tailscale and WireGuard aren&#8217;t really competitors so much as different layers of the same stack. Tailscale runs on WireGuard under the hood and adds the identity, ACL, and NAT-traversal layer on top, which is why teams that outgrow a hand-rolled <a href="/how-to-set-up-wireguard-vpn-2026/">WireGuard setup</a> tend to migrate to Tailscale rather than away from it.</p>
+
+
+
+<p class="wp-block-paragraph">The right choice usually comes down to who&#8217;s already in your stack and how much infrastructure you want to run yourself. A team already paying for Cloudflare gets Zero Trust access almost for free by turning on Access and WARP. A hobbyist with a handful of Raspberry Pis and no interest in per-user pricing tends to land on ZeroTier. Anyone who wants zero dependency on a third party&#8217;s coordination servers, and is comfortable maintaining that infrastructure, ends up on either self-managed WireGuard or Headscale. Tailscale sits in the middle: less setup than raw WireGuard, more access control than ZeroTier&#8217;s free tier, and no per-user cost until a team passes six people.</p>
+
+
+
+<h2 id="toc-20" class="wp-block-heading">7 Common Pitfalls When Setting Up Tailscale</h2>
+
+
+
+<p class="wp-block-paragraph">Most Tailscale support requests trace back to one of seven mistakes, and every one of them shows up as &#8220;it should be working, but it isn&#8217;t&#8221; rather than an obvious error message. Knowing the pattern in advance saves the half hour of guessing.</p>
+
+
+
+<ul class="wp-block-list"><li><strong>Skipping route approval.</strong> Advertising a subnet route or an exit node only proposes it. Until an admin approves it in the Machines tab, no other device can use it, and the setup looks broken even though every command ran without an error.</li><li><strong>Forgetting IP forwarding.</strong> A Linux subnet router with an approved route still won&#8217;t forward a single packet until <code>net.ipv4.ip_forward</code> is set to 1, exactly as covered in Step 8.</li><li><strong>Tagging a device without a matching tagOwners entry.</strong> If the group that owns a tag doesn&#8217;t include your own account, you can lock yourself out of retagging that device later. Always add your admin group to <code>tagOwners</code> before assigning the tag.</li><li><strong>Enabling an exit node without planning for LAN access.</strong> Without <code>--exit-node-allow-lan-access</code>, a laptop routing through an exit node loses access to its own local printer, NAS, or smart TV, which generates far more support requests than the feature itself is worth.</li><li><strong>Leaving the default &#8220;allow all&#8221; ACL in place.</strong> It&#8217;s convenient for the first hour of testing and a real liability after that. Replace it with something like the Step 10 example as soon as more than one person joins the tailnet.</li><li><strong>Ignoring outbound firewall rules on corporate networks.</strong> If a network blocks outbound UDP 41641, every connection from behind it falls back to a slower relayed path instead of a direct one, and nobody ever tells the person setting up Tailscale why.</li><li><strong>Treating Funnel like a permanent setting.</strong> It&#8217;s meant for short-lived public exposure, a demo, a webhook test, a one-off share. Leaving it on by default for a service that doesn&#8217;t need public access widens your attack surface for no real benefit.</li></ul>
+
+
+
+<h2 id="toc-21" class="wp-block-heading">Troubleshooting: 10 Tailscale Problems and How to Fix Them</h2>
+
+
+
+<p class="wp-block-paragraph">Even a careful setup runs into one of these sooner or later. The table below covers the ten issues that come up most, matched to the fix that actually resolves them rather than a generic &#8220;restart the client&#8221; suggestion.</p>
+
+
+
+<figure class="wp-block-table"><table><thead><tr><th>Problem</th><th>Likely cause</th><th>Fix</th></tr></thead><tbody><tr><td>Route shows &#8220;pending approval&#8221;</td><td>Advertised routes always require manual approval</td><td>Approve it in the Machines tab of the admin console</td></tr><tr><td>Devices are connected but won&#8217;t ping each other</td><td>Outbound UDP 41641 is blocked, forcing a relay</td><td>Allow outbound UDP 41641, or accept the slower relayed connection</td></tr><tr><td>Subnet route approved but LAN devices are unreachable</td><td>IP forwarding isn&#8217;t enabled on the router host</td><td>Run the sysctl commands from Step 8, then confirm with <code>sysctl net.ipv4.ip_forward</code></td></tr><tr><td>&#8220;tailscale ssh&#8221; returns permission denied</td><td>The ACL&#8217;s ssh block doesn&#8217;t grant that user or device access</td><td>Update the ssh section of the ACL policy in Step 10</td></tr><tr><td>Exit node is on but traffic isn&#8217;t routing through it</td><td>The client never selected the exit node</td><td>Run <code>tailscale up --exit-node=&lt;name&gt;</code> on the client device</td></tr><tr><td>ACL policy won&#8217;t save, &#8220;invalid ACLs&#8221; error</td><td>A HuJSON syntax issue, often a trailing comma or unmatched brace</td><td>Use the admin console&#8217;s built-in ACL editor, which flags the exact line</td></tr><tr><td>Funnel URL returns 404 or connection refused</td><td>Serve wasn&#8217;t configured before Funnel was turned on</td><td>Run <code>tailscale serve status</code> to confirm the service is published locally first</td></tr><tr><td>Mobile app disconnects in the background</td><td>The phone&#8217;s battery optimization is killing the background service</td><td>Exclude the Tailscale app from battery optimization in the OS settings</td></tr><tr><td>MagicDNS name won&#8217;t resolve</td><td>MagicDNS is off, or the client has <code>--accept-dns=false</code> set</td><td>Enable MagicDNS in the DNS tab and remove any accept-dns override</td></tr><tr><td>A headless server vanishes from the tailnet without warning</td><td>Its device key expired</td><td>Disable key expiry for that device from the Keys tab</td></tr></tbody></table></figure>
+
+
+
+<h2 id="toc-22" class="wp-block-heading">Advanced Tips: Headscale, Automation, and Hardening Your Tailnet</h2>
+
+
+
+<p class="wp-block-paragraph">Once the basic setup is running, a few additions turn it from a personal project into something closer to production infrastructure. None of these require redoing the steps above. They layer on top of the tailnet that already exists, and it&#8217;s worth keeping the client current while you do: version 1.96.4, released in March 2026, added scripting-friendly CLI commands like <code>tailscale wait</code> and <code>tailscale ip --assert</code>, alongside a Peer Relay throughput improvement and a fixed memory leak that matter once a tailnet is running unattended.</p>
+
+
+
+<ul class="wp-block-list"><li><strong>Self-host the control plane with Headscale.</strong> <a href="https://github.com/juanfont/headscale">Headscale</a> is an open-source, community-maintained implementation of Tailscale&#8217;s coordination server. It&#8217;s the option to reach for if a compliance requirement means the control plane itself has to live on infrastructure you own, while every client still runs the standard Tailscale app.</li><li><strong>Automate device enrollment with auth keys.</strong> Instead of manually approving every new server or CI runner, generate a pre-authorized key from the Keys tab and pass it to <code>tailscale up --authkey</code> in a provisioning script. Combine it with tags so new machines join the tailnet already scoped to the right ACL rules.</li><li><strong>Use grants for finer application-layer rules.</strong> The newer <code>grants</code> block in the ACL policy can express rules beyond simple IP-and-port pairs, which is worth exploring once the basic acls block above starts feeling limiting.</li><li><strong>Turn on tailnet lock.</strong> This requires new signing keys to be cryptographically approved by existing trusted devices before they can join, which closes off a theoretical attack against the coordination service itself.</li><li><strong>Pair it with strong identity at the login layer.</strong> Since every Tailscale login inherits the security of its identity provider, moving that provider to <a href="/passkeys-vs-passwords-vs-2fa-2026/">passkeys instead of passwords</a> raises the security floor of the entire tailnet at once.</li><li><strong>Script against the JSON output.</strong> <code>tailscale status --json</code> returns the same device and connection data in a machine-readable form, which is enough to build a simple uptime dashboard without any third-party monitoring agent.</li></ul>
+
+
+
+<p class="wp-block-paragraph">None of this replaces endpoint security on the devices themselves. A tailnet controls who can reach a machine. It doesn&#8217;t inspect what&#8217;s running on that machine once someone&#8217;s connected. Pairing this setup with an endpoint tool like the ones compared in our <a href="/crowdstrike-vs-defender-vs-sentinelone-2026/">CrowdStrike vs Defender vs SentinelOne</a> breakdown covers the layer Tailscale intentionally leaves alone.</p>
+
+
+
+<p class="wp-block-paragraph">Treat the ACL policy as a living document rather than a one-time setup task. Revisit it whenever someone joins the team, a device gets decommissioned, or a service moves to a new tagged group. A short quarterly review, five minutes spent reading the policy file and asking whether every rule still earns its place, catches the kind of access creep that a &#8220;set it and forget it&#8221; tailnet accumulates over a year.</p>
+
+
+
+<h2 id="toc-23" class="wp-block-heading">Frequently Asked Questions</h2>
+
+
+
+<h3 id="toc-24" class="wp-block-heading">Is Tailscale free for personal use?</h3>
+
+
+
+<p class="wp-block-paragraph">Yes. Since Tailscale expanded the plan in April 2026, the Personal tier is free for up to 6 users with unlimited user-owned devices per user, according to Tailscale&#8217;s own pricing page.</p>
+
+
+
+<h3 id="toc-25" class="wp-block-heading">Does Tailscale replace my existing firewall or VPN gateway?</h3>
+
+
+
+<p class="wp-block-paragraph">It replaces the need for inbound port forwarding and a traditional site-to-site VPN gateway for the use cases in this tutorial, but it isn&#8217;t a firewall replacement and doesn&#8217;t inspect traffic content. Most teams run it alongside their existing security stack, including endpoint protection and a properly configured local firewall, rather than instead of it.</p>
+
+
+
+<h3 id="toc-26" class="wp-block-heading">What&#8217;s the real difference between Tailscale and a hand-configured WireGuard VPN?</h3>
+
+
+
+<p class="wp-block-paragraph">Tailscale runs on the WireGuard protocol underneath, but it automates key exchange, NAT traversal, and access rules that you&#8217;d otherwise manage by hand in a <a href="/how-to-set-up-wireguard-vpn-2026/">plain WireGuard setup</a>. The trade-off is that Tailscale&#8217;s coordination happens through its hosted service by default, unless you self-host that piece with Headscale.</p>
+
+
+
+<h3 id="toc-27" class="wp-block-heading">Can I self-host the coordination server instead of using Tailscale&#8217;s cloud?</h3>
+
+
+
+<p class="wp-block-paragraph">Yes, through Headscale, an open-source and community-maintained project that reimplements the coordination server while staying compatible with the standard Tailscale clients.</p>
+
+
+
+<h3 id="toc-28" class="wp-block-heading">Will Tailscale slow down my internet connection?</h3>
+
+
+
+<p class="wp-block-paragraph">Most connections are direct, device to device, with minimal overhead. Speeds only drop noticeably when a direct path isn&#8217;t possible and traffic falls back to a relayed DERP connection, which the troubleshooting section above explains how to diagnose.</p>
+
+
+
+<h3 id="toc-29" class="wp-block-heading">Is Tailscale secure enough for business use?</h3>
+
+
+
+<p class="wp-block-paragraph">It&#8217;s built on WireGuard and layers identity-based ACLs, tagged access, optional tailnet lock, and Tailscale SSH on top, which reflects the same Zero Trust model described in NIST&#8217;s SP 800-207. Whether that&#8217;s sufficient for a given business depends on its own risk assessment and compliance obligations, but the underlying architecture matches current Zero Trust guidance.</p>
+
+
+
+<h3 id="toc-30" class="wp-block-heading">What happens if Tailscale&#8217;s coordination servers go down?</h3>
+
+
+
+<p class="wp-block-paragraph">Devices that are already connected keep their existing peer-to-peer sessions. New connections, key exchanges, and ACL changes are what depend on reaching the control plane, which is also the main argument in favor of Headscale for teams that need to remove that dependency entirely.</p>
+
+
+
+<h3 id="toc-31" class="wp-block-heading">Can I install Tailscale on a router or a NAS instead of a full computer?</h3>
+
+
+
+<p class="wp-block-paragraph">Yes. Beyond standard desktop, server, and mobile installs, Tailscale supports several NAS platforms and OpenWrt-based routers, which is a common way to turn an existing home router into the subnet router from Step 8 without adding another device.</p>
+
+
+
+<h3 id="toc-32" class="wp-block-heading">How is a Tailscale login different from a normal VPN username and password?</h3>
+
+
+
+<p class="wp-block-paragraph">There isn&#8217;t a separate Tailscale password to manage at all. Every login goes through the identity provider chosen in Step 1, so access to the tailnet rises and falls with that account. Disable someone&#8217;s Google or Microsoft account and their access to every device on the tailnet disappears with it, without a separate offboarding step.</p>
+
+
+
+<h3 id="toc-33" class="wp-block-heading">Do I need a paid plan once I go past six users?</h3>
+
+
+
+<p class="wp-block-paragraph">Yes. Past six users, the Personal plan no longer applies and the tailnet needs to move to Standard or Premium, priced per user per month as shown in the pricing table above. The core setup from this tutorial, subnet routers, exit nodes, ACLs, and SSH, works the same way on every paid tier.</p>
+
+
+
+<h3 id="toc-34" class="wp-block-heading">Related Coverage</h3>
+
+
+
+<ul class="wp-block-list"><li><a href="/how-to-set-up-wireguard-vpn-2026/">How to Set Up WireGuard VPN: 12 Steps, 45 Min [2026]</a></li><li><a href="/how-to-set-up-totp-mfa-2026/">How to Set Up TOTP MFA: 12 Steps, 60 Min [2026]</a></li><li><a href="/passkeys-vs-passwords-vs-2fa-2026/">Passkeys vs Passwords vs 2FA: 93% Success Rate [2026]</a></li><li><a href="/crowdstrike-vs-defender-vs-sentinelone-2026/">CrowdStrike vs Defender vs SentinelOne: 100% MITRE [2026]</a></li><li><a href="/what-is-a-password-and-why-is-it-still-everywhere/">What Is a Password, and Why Is It Still Everywhere?</a></li><li><a href="/24-billion-credentials-leaked-2026/">24 Billion Credentials Leaked in Record Data Dump [2026]</a></li><li><a href="/cybersecurity-threats-2026/">More Cybersecurity Coverage</a></li></ul>
+
+
+
+
+
+<div class="ti-author-card"><img decoding="async" class="ti-author-card__avatar" src="https://tech-insider.org/wp-content/uploads/2026/03/ti-author-marcus.jpg" alt="Marcus Chen" width="80" height="80" /><div class="ti-author-card__info"><h4 class="ti-author-card__name"><a href="https://tech-insider.org/ca/author/marcus-chen/">Marcus Chen</a></h4><div class="ti-author-card__role">Gaming &amp; Consumer Tech Editor</div><p class="ti-author-card__bio">Marcus Chen is a senior editor at Tech Insider, where he leads coverage of the US online gaming market, including sweepstakes and social casinos, alongside consumer technology. He evaluates operators on their published terms, licensing and RNG certifications, stated redemption policies, and corroborating independent reporting, and writes plainly about what the evidence supports. Tech Insider does not run first-party money tests and does not gamble with reader funds. Marcus has reported on the technology and online-gaming industries for more than a decade.</p><a href="https://tech-insider.org/ca/author/marcus-chen/" class="ti-author-card__link">View all articles <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a></div></div>		</div>
+
+		
+		
+		
+		
+	</article>
+
+	
+		
+			</div>
+
+	</main>
+
+	    <div class="ti-footer">
+        <div class="ti-footer__inner">
+            <!-- Logo + About column -->
+            <div class="ti-footer__col ti-footer__col--brand">
+                <div class="ti-footer__logo">
+                                        <img src="https://tech-insider.org/ca/wp-content/uploads/sites/7/2026/06/ti-eye-logo-150x150.png" alt="Tech Insider" width="40" height="40" />
+                                        <span class="ti-footer__logo-text">Tech<br>Insider</span>
+                </div>
+                <p class="ti-footer__text">Tech Insider delivers in-depth coverage of the technologies shaping the future: AI, cybersecurity, cloud computing, hardware, and the trends that matter.</p>
+                <div class="ti-footer__address">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="m22 6-10 7L2 6"/></svg>
+                    <span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="187d7c716c776a717974586c7d7b703571766b717c7d6a36776a7f">[email&#160;protected]</a></span>
+                </div>
+            </div>
+
+            <!-- About column -->
+            <div class="ti-footer__col">
+                <h4 class="ti-footer__title">Company</h4>
+                <ul class="ti-footer__links">
+                    <li><a href="https://tech-insider.org/ca/about/">About Us</a></li><li><a href="https://tech-insider.org/ca/editorial-policy/">Editorial Policy</a></li><li><a href="https://tech-insider.org/ca/write-for-us/">Write for Us</a></li>                </ul>
+            </div>
+
+            <!-- Explore / Casino-guider column -->
+            <div class="ti-footer__col">
+                                <h4 class="ti-footer__title">Explore</h4>
+                <ul class="ti-footer__links">
+                                        <li><a href="https://tech-insider.org/ca/category/ai-machine-learning/">AI &amp; Machine Learning</a></li>
+                                        <li><a href="https://tech-insider.org/ca/category/cloud-computing/">Cloud Computing</a></li>
+                                        <li><a href="https://tech-insider.org/ca/category/cybersecurity/">Cybersecurity</a></li>
+                                        <li><a href="https://tech-insider.org/ca/category/gaming/">Gaming</a></li>
+                                        <li><a href="https://tech-insider.org/ca/category/hardware/">Hardware</a></li>
+                                    </ul>
+                            </div>            <!-- Categories column -->
+            <div class="ti-footer__col">
+                <h4 class="ti-footer__title">Categories</h4>
+                <ul class="ti-footer__links">
+                                        <li><a href="https://tech-insider.org/ca/category/igaming-tech/">iGaming Tech</a></li>
+                                        <li><a href="https://tech-insider.org/ca/category/software/">Software</a></li>
+                                        <li><a href="https://tech-insider.org/ca/category/startups/">Startups</a></li>
+                                    </ul>
+            </div>
+        </div>
+
+        <!-- Bottom bar -->
+                <div class="ti-footer__bottom">
+            <span class="ti-footer__copyright">
+                &copy; 2026 Tech Insider Media AB. All rights reserved.            </span>
+            <div class="ti-footer__bottom-right">
+                <div class="ti-footer__lang-links">
+                                        <a href="https://tech-insider.org/" class="">EN</a>
+                                        <a href="https://tech-insider.org/au/" class="">AU</a>
+                                        <a href="https://tech-insider.org/ca/" class="active">CA</a>
+                                        <a href="https://tech-insider.org/ie/" class="">IE</a>
+                                        <a href="https://tech-insider.org/it/" class="">IT</a>
+                                        <a href="https://tech-insider.org/de/" class="">DE</a>
+                                        <a href="https://tech-insider.org/nl/" class="">NL</a>
+                                        <a href="https://tech-insider.org/sv/" class="">SV</a>
+                                        <a href="https://tech-insider.org/fr/" class="">FR</a>
+                                        <a href="https://tech-insider.org/fi/" class="">FI</a>
+                                        <a href="https://tech-insider.org/es/" class="">ES</a>
+                                    </div>
+                <a href="https://x.com/techinsider" class="ti-footer__social" aria-label="X (Twitter)" target="_blank" rel="noopener">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+                <a href="https://linkedin.com/company/tech-insider" class="ti-footer__social" aria-label="LinkedIn" target="_blank" rel="noopener">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                </a>
+            </div>
+        </div>
+    </div>
+    <footer id="footer" class="ct-footer" data-id="type-1" itemscope="" itemtype="https://schema.org/WPFooter"><div data-row="top"><div class="ct-container"><div data-column="ghost"></div><div data-column="ghost"></div><div data-column="ghost"></div></div></div><div data-row="bottom"><div class="ct-container"><div data-column="copyright">
+<div
+	class="ct-footer-copyright"
+	data-id="copyright">
+
+	© 2026 Tech Insider. All rights reserved.</div>
+</div><div data-column="ghost"></div><div data-column="menu">
+<nav
+	id="footer-menu"
+	class="footer-menu-inline menu-container "
+	data-id="menu"		itemscope="" itemtype="https://schema.org/SiteNavigationElement"	aria-label="Footer">
+
+	<ul id="menu-footer" class="menu"><li id="menu-item-24" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-24"><a href="https://tech-insider.org/ca/about/" class="ct-menu-link">About</a></li>
+<li id="menu-item-25" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-25"><a href="https://tech-insider.org/ca/editorial-policy/" class="ct-menu-link">Editorial Policy</a></li>
+</ul></nav>
+</div></div></div></footer></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="speculationrules">
+{"prefetch":[{"source":"document","where":{"and":[{"href_matches":"/ca/*"},{"not":{"href_matches":["/ca/wp-*.php","/ca/wp-admin/*","/ca/wp-content/uploads/sites/7/*","/ca/wp-content/*","/ca/wp-content/plugins/*","/ca/wp-content/themes/blocksy-child/*","/ca/wp-content/themes/blocksy/*","/ca/*\\?(.+)"]}},{"not":{"selector_matches":"a[rel~=\"nofollow\"]"}},{"not":{"selector_matches":".no-prefetch, .no-prefetch a"}}]},"eagerness":"conservative"}]}
+</script>
+<div class="ct-drawer-canvas" data-location="end"><div class="ct-drawer-inner">
+	<a href="#main-container" class="ct-back-to-top ct-hidden-sm"
+		data-shape="square"
+		data-alignment="right"
+		title="Go to top" aria-label="Go to top" hidden>
+
+		<svg class="ct-icon" width="15" height="15" viewBox="0 0 20 20"><path d="M10,0L9.4,0.6L0.8,9.1l1.2,1.2l7.1-7.1V20h1.7V3.3l7.1,7.1l1.2-1.2l-8.5-8.5L10,0z"/></svg>	</a>
+
+	</div></div><script id="ct-scripts-js-extra">
+var ct_localizations = {"ajax_url":"https://tech-insider.org/ca/wp-admin/admin-ajax.php","public_url":"https://tech-insider.org/ca/wp-content/themes/blocksy/static/bundle/","rest_url":"https://tech-insider.org/ca/wp-json/","search_url":"https://tech-insider.org/ca/search/QUERY_STRING/","show_more_text":"Show more","more_text":"More","search_live_results":"Search results","search_live_no_results":"No results","search_live_no_result":"No results","search_live_one_result":"You got %s result. Please press Tab to select it.","search_live_many_results":"You got %s results. Please press Tab to select one.","search_live_stock_status_texts":{"instock":"In stock","outofstock":"Out of stock"},"clipboard_copied":"Copied!","clipboard_failed":"Failed to Copy","expand_submenu":"Expand dropdown menu","collapse_submenu":"Collapse dropdown menu","dynamic_js_chunks":[],"dynamic_styles":{"lazy_load":"https://tech-insider.org/ca/wp-content/themes/blocksy/static/bundle/non-critical-styles.min.css?ver=2.1.27","search_lazy":"https://tech-insider.org/ca/wp-content/themes/blocksy/static/bundle/non-critical-search-styles.min.css?ver=2.1.27","back_to_top":"https://tech-insider.org/ca/wp-content/themes/blocksy/static/bundle/back-to-top.min.css?ver=2.1.27"},"dynamic_styles_selectors":[{"selector":".ct-header-cart, #woo-cart-panel","url":"https://tech-insider.org/ca/wp-content/themes/blocksy/static/bundle/cart-header-element-lazy.min.css?ver=2.1.27"},{"selector":".flexy","url":"https://tech-insider.org/ca/wp-content/themes/blocksy/static/bundle/flexy.min.css?ver=2.1.27"}]};
+//# sourceURL=ct-scripts-js-extra
+</script>
+<script id="ct-scripts-js" src="https://tech-insider.org/ca/wp-content/themes/blocksy/static/bundle/main.js?ver=2.1.27"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add("ti-visible");
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1, rootMargin: "0px 0px -40px 0px" });
+
+    document.querySelectorAll(".ti-card, .ti-section__header").forEach(function(el) {
+        el.style.opacity = "0";
+        el.style.transform = "translateY(20px)";
+        el.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+        observer.observe(el);
+    });
+
+    var s = document.createElement("style");
+    s.textContent = ".ti-visible{opacity:1!important;transform:translateY(0)!important;}";
+    document.head.appendChild(s);
+
+    document.querySelectorAll(".ti-section__accent").forEach(function(el) {
+        el.style.animation = "glowPulse 3s ease infinite";
+    });
+
+    var hero = document.querySelector(".ti-hero__main");
+    if (hero) {
+        var sc = document.createElement("div");
+        sc.style.cssText = "position:absolute;inset:0;pointer-events:none;z-index:4;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);";
+        hero.appendChild(sc);
+    }
+
+    document.querySelectorAll(".ti-grid").forEach(function(grid) {
+        grid.querySelectorAll(".ti-card").forEach(function(card, i) {
+            card.style.transitionDelay = (i * 0.08) + "s";
+        });
+    });
+
+    // Live Search
+    var overlay = document.getElementById("tiSearchOverlay");
+    var inp = document.getElementById("tiSearchInput");
+    var res = document.getElementById("tiSearchResults");
+    var tog = document.getElementById("tiSearchToggle");
+    var cls = document.getElementById("tiSearchClose");
+    var timer = null;
+
+    function openS() { if(!overlay) return; overlay.style.display="flex"; setTimeout(function(){ overlay.classList.add("ti-search-overlay--open"); inp.focus(); },10); }
+    function closeS() { if(!overlay) return; overlay.classList.remove("ti-search-overlay--open"); setTimeout(function(){ overlay.style.display="none"; res.innerHTML=""; inp.value=""; },300); }
+
+    if(tog) tog.addEventListener("click", openS);
+    if(cls) cls.addEventListener("click", closeS);
+    if(overlay) overlay.addEventListener("click", function(e){ if(e.target===overlay) closeS(); });
+    document.addEventListener("keydown", function(e){ if(e.key==="Escape") closeS(); if((e.key==="k"||e.key==="K")&&(e.metaKey||e.ctrlKey)){ e.preventDefault(); openS(); }});
+
+    if(inp) inp.addEventListener("input", function(){
+        clearTimeout(timer);
+        var v = this.value.trim();
+        if(v.length<2){ res.innerHTML=""; return; }
+        timer = setTimeout(function(){
+            var x = new XMLHttpRequest();
+            x.open("GET","https://tech-insider.org/ca/wp-admin/admin-ajax.php?action=ti_live_search&q="+encodeURIComponent(v));
+            x.onload = function(){
+                if(x.status!==200) return;
+                var d = JSON.parse(x.responseText);
+                if(!d.length){ res.innerHTML='<div class="ti-search-noresult">No results found</div>'; return; }
+                var h = "";
+                d.forEach(function(r){
+                    h += '<a href="'+r.url+'" class="ti-search-result">';
+                    if(r.thumb) h += '<img src="'+r.thumb+'" class="ti-search-result__thumb" alt="" />';
+                    h += '<div class="ti-search-result__text"><div class="ti-search-result__title">'+r.title+'</div>';
+                    h += '<div class="ti-search-result__meta">'+(r.cat?'<span class="ti-search-result__cat">'+r.cat+'</span>':'')+'<span>'+r.date+'</span></div></div></a>';
+                });
+                res.innerHTML = h;
+            };
+            x.send();
+        }, 300);
+    });
+});
+</script>
+
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"a1b3ace0a90547449495db299e857266","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

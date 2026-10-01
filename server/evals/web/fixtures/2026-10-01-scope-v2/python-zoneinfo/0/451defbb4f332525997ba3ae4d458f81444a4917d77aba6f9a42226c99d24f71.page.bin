@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python 3.9 Zoneinfo Module for IANA Time Zones - python</title>
+    <meta name="description" content="The zoneinfo module, introduced in Python 3.9 under PEP 615, brings native support for the IANA (Internet Assigned Numbers Authority) time zone database directly into Python's standard library. This article explains what the module provides, how it repla">
+    <link rel="canonical" href="https://salivity.github.io/python/article/python-3-9-zoneinfo-module-for-iana-time-zones">
+    <link rel="search" type="application/opensearchdescription+xml" title="python" href="/python/opensearch.xml">
+    <link rel="icon" href="/python/favicon.ico">
+    <link rel="stylesheet" href="/python/css/style.css">
+    <link media="print" rel="stylesheet" href="/python/css/print.css">
+    <script src="/python/js/fuse.min.js"></script>
+    <script src="/python/js/script.js"></script>
+    <script id="MathJax-script" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/4.1.3/tex-chtml.min.js" defer></script>
+    <script src="/monetize/monetize.js"></script>
+    <script src="/social/social.js"></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Python 3.9 Zoneinfo Module for IANA Time Zones - python" />
+    <meta property="og:url" content="https://salivity.github.io/python/article/python-3-9-zoneinfo-module-for-iana-time-zones" />
+    <meta property="og:image" content="https://salivity.github.io/python/images/open-graph/default.webp" />
+    <meta property="og:image:secure_url" content="https://salivity.github.io/python/images/open-graph/default.webp" />
+    <meta property="og:image:width" content="1120" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:description" content="The zoneinfo module, introduced in Python 3.9 under PEP 615, brings native support for the IANA (Internet Assigned Numbers Authority) time zone database directly into Python's standard library. This article explains what the module provides, how it repla" />
+    <link rel="manifest" href="/python/pwa/manifest.json" />
+</head>
+<body>
+    <header>
+        <a href="/python/" aria-label="Go To Home Page" title="Go To Home Page" id="logo">
+            <span>salivity.github.io/</span><span>python</span>
+        </a>
+        <nav>
+            <ul class="header-links">
+                <li><a href="/python/search" title="Search" aria-label="Go To Search Page"><svg class="svg-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg></a></li>
+                <li><a id="theme-toggle" title="Theme" href="javascript:void(0);" aria-label="Toggle Website Theme"></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        
+    <div class="article-layout">
+        <aside id="profile-sidebar" class="profile-column" aria-label="Author Profile"></aside>
+        <div class="article-main-column">
+            <article><h1 id="python-39-zoneinfo-module-for-iana-time-zones">Python 3.9
+Zoneinfo Module for IANA Time Zones</h1>
+<p>The <code>zoneinfo</code> module, introduced in Python 3.9 under PEP
+615, brings native support for the IANA (Internet Assigned Numbers
+Authority) time zone database directly into Python's standard library.
+This article explains what the module provides, how it replaces legacy
+third-party tools, and how it handles Daylight Saving Time transitions
+and time zone arithmetic cleanly using standard datetime objects.</p>
+<h3 id="native-iana-time-zone-implementation">Native IANA Time Zone
+Implementation</h3>
+<p>Prior to Python 3.9, the standard library only included basic tools
+for fixed UTC offsets (<code>datetime.timezone</code>). Handling
+regional time zones with complex Daylight Saving Time (DST) rules
+required third-party libraries such as <code>pytz</code> or
+<code>python-dateutil</code>.</p>
+<p>The <code>zoneinfo</code> module provides
+<code>zoneinfo.ZoneInfo</code>, a concrete subclass of
+<code>datetime.tzinfo</code>. It allows developers to instantiate any
+valid IANA time zone string—such as <code>"America/New_York"</code>,
+<code>"Europe/London"</code>, or <code>"Asia/Tokyo"</code>—and attach it
+directly to datetime objects.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> datetime</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> zoneinfo <span class="im">import</span> ZoneInfo</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>dt <span class="op">=</span> datetime(<span class="dv">2026</span>, <span class="dv">6</span>, <span class="dv">1</span>, <span class="dv">12</span>, <span class="dv">0</span>, tzinfo<span class="op">=</span>ZoneInfo(<span class="st">&quot;Europe/Paris&quot;</span>))</span></code></pre></div>
+<h3 id="system-data-access-and-the-tzdata-fallback">System Data Access
+and the <code>tzdata</code> Fallback</h3>
+<p>The <code>zoneinfo</code> module primarily utilizes the host
+operating system's time zone data (commonly located in
+<code>/usr/share/zoneinfo</code> on Linux, macOS, and BSD systems). This
+ensures that Python applications automatically benefit from system-level
+time zone updates without requiring Python code modifications.</p>
+<p>On platforms that lack a built-in time zone database—such as
+Windows—or in minimal container environments, Python falls back to the
+first-party <code>tzdata</code> package available via PyPI. When
+installed, <code>tzdata</code> provides the official IANA database
+directly to <code>zoneinfo</code>.</p>
+<h3 id="resolution-of-pytz-usability-issues">Resolution of
+<code>pytz</code> Usability Issues</h3>
+<p>The legacy <code>pytz</code> library contained design quirks that
+often led to silent calculation bugs. In <code>pytz</code>, constructing
+a datetime using <code>datetime(..., tzinfo=pytz.timezone(...))</code>
+often resulted in incorrect offsets because initial localizations could
+not anticipate DST rules. Developers had to remember to call special
+methods like <code>tz.localize()</code> and
+<code>tz.normalize()</code>.</p>
+<p><code>ZoneInfo</code> eliminates these quirks:</p>
+<ul>
+<li>It works directly with standard datetime constructors.</li>
+<li>It supports standard addition and subtraction across DST boundaries
+using <code>datetime.timedelta</code>.</li>
+<li>It integrates natively with <code>datetime.astimezone()</code> for
+conversions.</li>
+</ul>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Converting between time zones</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>eastern <span class="op">=</span> ZoneInfo(<span class="st">&quot;America/New_York&quot;</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>tokyo <span class="op">=</span> ZoneInfo(<span class="st">&quot;Asia/Tokyo&quot;</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>ny_time <span class="op">=</span> datetime(<span class="dv">2026</span>, <span class="dv">3</span>, <span class="dv">15</span>, <span class="dv">9</span>, <span class="dv">30</span>, tzinfo<span class="op">=</span>eastern)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>tokyo_time <span class="op">=</span> ny_time.astimezone(tokyo)</span></code></pre></div>
+<h3 id="automatic-ambiguity-handling-with-fold">Automatic Ambiguity
+Handling with <code>fold</code></h3>
+<p>During the "fall back" transition of Daylight Saving Time, clocks are
+set backward, causing the same local time to occur twice. Python 3.6
+introduced the <code>fold</code> attribute on datetime objects to
+distinguish between the first (<code>fold=0</code>) and second
+(<code>fold=1</code>) occurrences of an ambiguous time.</p>
+<p>The <code>zoneinfo</code> module fully utilizes this standard:</p>
+<ul>
+<li>When creating times in an ambiguous window, <code>ZoneInfo</code>
+defaults to <code>fold=0</code> (the earlier time before the
+switch).</li>
+<li>Modifying <code>fold=1</code> shifts the offset to the standard time
+without requiring proprietary helper methods.</li>
+<li>For nonexistent times during the "spring forward" transition,
+<code>ZoneInfo</code> handles conversions predictably based on standard
+target offsets.</li>
+</ul>
+<h3 id="performance-through-caching">Performance Through Caching</h3>
+<p>The <code>ZoneInfo</code> constructor implements an internal cache.
+Calling <code>ZoneInfo("UTC")</code> or any other key multiple times
+returns the exact same instance in memory, minimizing overhead and
+keeping memory usage predictable even in long-running services
+processing high volumes of timestamp conversions. Available time zone
+keys can also be inspected dynamically at runtime using
+<code>zoneinfo.available_timezones()</code>.</p></article>
+        <div id="comments-container"></div>
+        <script>
+            const utterancesScript = document.createElement('script');
+            utterancesScript.setAttribute('src', 'https://utteranc.es/client.js');
+            utterancesScript.setAttribute('repo', 'salivity/python'); 
+            utterancesScript.setAttribute('issue-term', 'pathname'); 
+            utterancesScript.setAttribute('theme', localStorage.getItem('theme') === 'dark' ? 'github-dark' : 'github-light'); 
+            utterancesScript.setAttribute('crossorigin', 'anonymous');
+            utterancesScript.async = true;
+            document.getElementById('comments-container').appendChild(utterancesScript);
+        </script>
+    
+        </div>
+    </div>
+    
+    </main>
+    <footer>
+        <nav>
+            <ul class="social-links">
+            </ul>
+        </nav>
+        <nav>
+            <ul class="footer-links">
+                <li><a href="/python/privacy-policy">Privacy Policy</a></li>
+                <li><a href="/python/terms-and-conditions">Terms and Conditions</a></li>
+            </ul>
+        </nav>
+        <div class="copyright">
+            Copyright &copy; <span id="current-year"></span>
+        </div>
+    </footer>
+</body>
+</html>

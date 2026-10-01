@@ -1,0 +1,2558 @@
+<!doctype html><html><head>
+	<meta charset="UTF-8">
+	<style>
+		wral-header {
+			display: block;
+			min-height: var(--wral-header-height, 44px);
+		}
+		wral-alerts-bar {
+			display: block;
+			min-height: var(--wral-alerts-bar-height, 87px);
+		}
+		@media (min-width: 1024px) {
+			wral-header {
+				min-height: var(--wral-header-height, 108px);
+			}
+		}
+	</style>
+	<!-- DEV-888: lay out library tags before upgrade as after it (no CLS, no homepage thumbnail flash); keep in step with article-asset.mjs, wral-section-header.mjs, listen-watch.mjs -->
+	<!-- DEV-888: measured desktop CLS on /sports/ and /news/ 0.26 to 0.005 and on the homepage 0.10 to 0.015 with the thumbnail flash gone (lab A/B, 2026-09-29); every rule is scoped to :not(:defined), so nothing changes once the library upgrades -->
+	<!-- DEV-888: this also applies to the homepage on purpose: with the .a3 rules it removes the flash and lowers homepage LCP; if the library never loads, the .a3 thumbnails stay hidden (accepted trade) -->
+	<style id="sf-pre-upgrade">
+		/* wral-section-header: match the upgraded shadow layout (padding, 46px title, nav row) so the header keeps its height */
+		wral-section-header:not(:defined){display:block;width:100%;box-sizing:border-box;background-color:var(--color-primary-dark);color:var(--color-white);padding:1.25rem max(20px,calc((100% - 1366px) / 2 + 20px)) 0;white-space:nowrap;overflow:hidden;font-size:0}
+		:where(wral-section-header:not(:defined))>[slot=title]{margin:0;font-size:2.875rem;font-weight:500;font-family:var(--heading-font-family);text-transform:capitalize;line-height:2.875rem;letter-spacing:-.035em;white-space:normal}
+		:where(wral-section-header:not(:defined))>[slot=description]{margin:1em 0 8px;white-space:normal;font-size:1.125rem}
+		:where(wral-section-header:not(:defined))>[slot=nav]{display:inline-block;vertical-align:top;margin:calc(1.25rem + 1px) 1rem 0 0;padding:.5rem;font-size:.875rem;line-height:1.5rem;font-family:var(--heading-font-family);font-weight:500;text-transform:uppercase;text-decoration:none;color:var(--color-white)}
+		/* article-asset: emulate the upgraded grid (thumbnail first, excerpt, tag and date lines) so each card keeps its height */
+		article-asset:not(:defined){display:grid!important;grid-template-columns:minmax(0,1fr);align-content:start}
+		:where(article-asset:not(:defined))>[slot=thumbnail]{order:-1;margin-bottom:var(--thumbnail-gap,1rem)}
+		article-asset:not(:defined):not(:has(>[slot=thumbnail]))::before{content:"";display:block;height:var(--thumbnail-gap,1rem)}
+		:where(article-asset:not(:defined))>[slot=excerpt]{margin-top:.625rem;font-size:15px;font-family:var(--body-font-family);color:var(--color-gray-8)}
+		:where(article-asset:not(:defined))>[slot=tags]{display:none}
+		article-asset:not(:defined)::after{content:"";display:block;grid-column:1;margin-top:.5125rem;font-size:.6875rem;font-family:sans-serif;letter-spacing:.05rem;text-transform:uppercase}
+		article-asset:not(:defined):has(>[slot=tags])::after,article-asset:not(:defined)[date]:not([date=""])::after{height:1lh}
+		article-asset:not(:defined):has(>[slot=tags])[date]:not([date=""])::after{height:2lh}
+		/* align-thumbnail=right: the thumbnail sits in a 33% side column, as after upgrade */
+		article-asset[align-thumbnail=right]:not(:defined){grid-template-columns:minmax(0,1fr) var(--thumbnail-size,33%);grid-template-rows:repeat(8,auto) 1fr;column-gap:var(--thumbnail-gap,1rem)}
+		article-asset[align-thumbnail=right]:not(:defined)::before{display:none}
+		:where(article-asset[align-thumbnail=right]:not(:defined))>*{grid-column:1}
+		:where(article-asset[align-thumbnail=right]:not(:defined))>[slot=thumbnail]{grid-column:2;grid-row:1/-1;margin-bottom:0;align-self:start}
+		/* thumbnail-stack: narrow cards put the thumbnail on top, as the component does */
+		article-asset[thumbnail-stack]:not(:defined){container-type:inline-size}
+		@container (max-width:768px){
+		:where(article-asset[align-thumbnail=right]:not(:defined))>*{grid-column:1/-1}
+		:where(article-asset[align-thumbnail=right]:not(:defined))>[slot=thumbnail]{grid-column:1/-1;grid-row:1;margin-bottom:var(--thumbnail-gap,1rem)}
+		}
+		/* phones: align-thumbnail-mobile=right uses the same side column */
+		@media (max-width:600px){
+		article-asset[align-thumbnail-mobile=right]:not(:defined){grid-template-columns:minmax(0,1fr) var(--thumbnail-size-mobile,var(--thumbnail-size,33%));grid-template-rows:repeat(8,auto) 1fr;column-gap:var(--thumbnail-gap,1rem)}
+		article-asset[align-thumbnail-mobile=right]:not(:defined)::before{display:none}
+		:where(article-asset[align-thumbnail-mobile=right]:not(:defined))>*{grid-column:1}
+		:where(article-asset[align-thumbnail-mobile=right]:not(:defined))>[slot=thumbnail]{grid-column:2;grid-row:1/-1;margin-bottom:0;align-self:start}
+		}
+		/* wral-listen-watch: reserve its upgraded desktop height */
+		@media (min-width:1024px){wral-listen-watch:not(:defined){display:block;min-height:271px}}
+		/* homepage Top Stories 2-item collection (.a3, News+ and the forecast video): hide the thumbnail until upgrade and reserve its 16:9 side box, so it never flashes full width */
+		.a3 article-asset:not(:defined)>[slot=thumbnail]{display:none}
+		.a3 article-asset[align-thumbnail=right]:not(:defined):has(>[slot=thumbnail])::before{content:"";display:block;grid-column:2;grid-row:1/-1;align-self:start;aspect-ratio:16/9;height:auto}
+	</style>
+	<!-- OneTrust Cookies Consent Notice start for wral.com -->
+	<script src="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js" type="text/javascript" charset="UTF-8" data-domain-script="6d068f80-e744-46ab-877e-4847983f3ad4"></script>
+	<script type="text/javascript">
+	function OptanonWrapper() { }
+	</script>
+	<!-- OneTrust Cookies Consent Notice end for wral.com -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="sitemap" type="application/xml" href="/sitemap_index.xml">
+	<link rel="preconnect" href="https://securepubads.g.doubleclick.net" crossorigin="">
+	<link rel="preconnect" href="https://images.wral.com" crossorigin="">
+	<link rel="preconnect" href="https://video-player.cdn.wral.com" crossorigin="">
+	<link rel="preconnect" href="https://web-components.cdn.wral.com" crossorigin="">
+	<link rel="modulepreload" href="https://web-components.cdn.wral.com/core/v0.15/components.es.js">
+	<link rel="dns-prefetch" href="https://htlbid.com">
+	<link rel="dns-prefetch" href="https://config.aps.amazon-adsystem.com">
+	<link rel="canonical" href="https://www.wral.com/">
+	<meta name="robots" content="index, follow">
+	<meta property="og:type" content="website">
+	<title>WRAL | News and Weather in Raleigh NC</title>
+	<link rel="icon" type="image/png" href="https://www.wral.com/favicon-48x48.png" sizes="48x48">
+	<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TV2CD7D" onload="window.dataLayer = window.dataLayer || []; window.dataLayer.push({ &#x27;gtm.start&#x27; : new Date().getTime(), event : &#x27;gtm.js&#x27; });">
+	</script>
+	<meta name="description" content="Raleigh breaking news and weather, Raleigh North Carolina news today, WRAL 7-day forecasts, NC lottery updates. WRAL news in Raleigh, NC.">
+	<meta name="keywords" content="WRAL,WRAL Weather,NC Lottery,News Channel 5,news today,Weather for Raleigh NC,NC Time,Raleigh,News Near Me">
+	<meta name="author" content="WRAL News">
+	<meta property="og:title" content="WRAL | News and Weather in Raleigh NC">
+	<meta property="og:description" content="Raleigh breaking news and weather, Raleigh North Carolina news today, WRAL 7-day forecasts, NC lottery updates. WRAL news in Raleigh, NC.">
+	<meta property="og:image" content="https://wwwcache.wral.com/presentation/v3/images/content/social/open_graph/wral_newcom_1920x1080.jpg?w=1200&#x26;h=630&#x26;f=jpg">
+	<meta property="og:url" content="https://www.wral.com/">
+
+	<meta property="og:site_name" content="WRAL News">
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="WRAL | News and Weather in Raleigh NC">
+	<meta name="twitter:description" content="Raleigh breaking news and weather, Raleigh North Carolina news today, WRAL 7-day forecasts, NC lottery updates. WRAL news in Raleigh, NC.">
+	<meta name="twitter:image" content="https://wwwcache.wral.com/presentation/v3/images/content/social/open_graph/wral_newcom_1920x1080.jpg?w=1200&#x26;h=630&#x26;f=jpg">
+	<meta name="ad-unit-path" content="wral-v4/home">
+	<script>
+		(() => {
+			const define = (root) => {
+				if (!root || typeof root.__WRAL_IS_SPONSORED === 'function') {
+					return;
+				}
+				root.__WRAL_IS_SPONSORED = (entity) => {
+					if (!entity || typeof entity !== 'object') {
+						return false;
+					}
+					if (entity.sponsored === true || String(entity.sponsored || '').toLowerCase() === 'true') {
+						return true;
+					}
+					const tags = Array.isArray(entity.tags) ? entity.tags : [];
+					return tags.some((tag) => {
+						const value = typeof tag === 'string'
+							? tag
+							: (tag?.name || tag?.displayName || tag?.label || '');
+						return typeof value === 'string'
+							&& value.trim().toLowerCase() === 'sponsored';
+					});
+				};
+			};
+			if (typeof window !== 'undefined') {
+				define(window);
+			}
+		})();
+	</script>
+
+	<script defer src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+	<script defer src="https://video-player.cdn.wral.com/v1.0/wralvideo.js"></script>
+	<script type="application/ld+json">
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "WRAL News",
+    "url": "https://www.wral.com/",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://www.wral.com/search/?q={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "NewsMediaOrganization",
+    "name": "WRAL News",
+    "url": "https://www.wral.com/",
+    "description": "The official website for WRAL News, bringing you the latest Raleigh, Durham & Fayetteville community news and weather from the Research Triangle in North Carolina and beyond. Owned by the Capitol Broadcasting Company, Inc.",
+    "sameAs": [
+      "https://www.facebook.com/WRALTV/",
+      "https://x.com/WRAL",
+      "https://www.instagram.com/wral/?hl=en",
+      "https://www.youtube.com/channel/UCfmkz6A3aTJwJzox2xhAuRw"
+    ],
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://www.wral.com/presentation/v3/images/content/wralnews_newsschema_logo.jpg",
+      "width": 300,
+      "height": 60
+    }
+  }
+]
+	</script>
+	<!--
+		web-components-wral · core library.
+		Pinned to v0.15 by default; rendered for staging.wral.com gets "v0"
+		(latest) so staging QA picks up new core releases without bumping this
+		template.
+	-->
+	<link rel="stylesheet" href="https://web-components.cdn.wral.com/core/v0.15/styles.css" media="all" onload="this.media=&#x27;all&#x27;">
+  <script type="module" src="https://web-components.cdn.wral.com/weather/icon/v0/component.es.js"></script>
+  <script type="module" src="https://web-components.cdn.wral.com/core/v0.15/components.es.js"></script>
+		
+	<!-- Hashtag Labs Head Start -->
+	<link rel="stylesheet" type="text/css" href="https://htlbid.com/v3/wral.com/opscobid.css">
+	<script async src="https://htlbid.com/v3/wral.com/opscobid.js"></script>
+	<!-- Hashtag Labs Head End (see also body below) -->
+
+	<!-- Nativo Ads Script Start -->
+	<script type="text/javascript" src="https://s.ntv.io/serve/load.js" async></script>
+	<!-- Nativo Ads Script End -->
+
+	</head><body>
+	<script type="text/javascript">
+		window._taboola = window._taboola || [];
+		_taboola.push({homepage:'auto'});
+		!function (e, f, u, i) {
+			if (!document.getElementById(i)){
+				e.async = 1;
+				e.src = u;
+				e.id = i;
+				f.parentNode.insertBefore(e, f);
+			}
+		}(document.createElement('script'),
+		document.getElementsByTagName('script')[0],
+		'//cdn.taboola.com/libtrc/wral-wralnews/loader.js',
+		'tb_loader_script');
+		if(window.performance && typeof window.performance.mark == 'function')
+			{window.performance.mark('tbl_ic');}
+	</script>
+
+	<!-- Admiral Measure Script -->
+	<script type="text/javascript">
+		!(function(Y, _name) {
+			Y[_name] = Y[_name] || function D() { (D.q = D.q || []).push(arguments) };
+			Y[_name].v = Y[_name].v || 2;
+			Y[_name].s = "1";
+		})(window, "admiral");
+		!(function(Y, D, A, U) {
+			A = Y.createElement(D);
+			Y = Y.getElementsByTagName(D)[0];
+			A.async = 1;
+			A.src = "https://websitesdude.com/files/l1mg4m_15klgw-prod.js";
+			(U = 0) && U(A);
+			Y.parentNode.insertBefore(A, Y);
+		})(document, "script");
+	</script>
+	<script type="text/javascript">
+		!(function(Y, D, A, U, M) {
+			function s(U, M) {
+				try {
+					s = Y.localStorage;
+					(U = JSON.parse(s.getItem(A)).lgk || []) &&
+						(M = Y[D].pubads()) &&
+						U.forEach(function(Y) {
+							Y && Y[0] && M.setTargeting(Y[0], Y[1] || "");
+						});
+				} catch(N) {}
+				var s;
+			}
+			try {
+				(M = Y[D] = Y[D] || {}).cmd = M.cmd || [];
+				typeof M.pubads === U ? s() :
+					typeof M.cmd.unshift === U ? M.cmd.unshift(s) : M.cmd.push(s);
+			} catch(N) {}
+		})(window, "googletag", "_a10Q1zA" + "wNjNeCQzk0MjBD" + "MMDU9OD4YwN0NFMUMtMQ", "function");
+	</script>
+  <script type="module" crossorigin="" src="https://cdn.wral.com/templates/wral-web/section-index/v1.0.119/assets/bundle.bPt6y1yf.js"></script>
+  <link rel="stylesheet" crossorigin="" href="https://cdn.wral.com/templates/wral-web/section-index/v1.0.119/assets/bundle.CzFf0DbQ.css">
+
+
+	<!-- DEV-1114: one H1 per page — the brand heading stays an H1 only when the
+		section header (and its visible H1) below will not render. -->
+	
+		<h1 class="visually-hidden">WRAL News – Raleigh, NC Breaking News and Weather</h1>
+	
+	
+	<wral-header style="position: sticky; top: 0; z-index: 99999;"></wral-header>
+	<wral-alerts-bar id="alerts"></wral-alerts-bar>
+
+	
+	
+		<!-- Homepage-only out-of-page ad slots near the site navigation. -->
+		<div class="opscoad-OOP_Leaderboard" data-unit="wral-v4/home"></div>
+		<div class="opscoad-OOP_Pushdown" data-unit="wral-v4/home"></div>
+		<div class="opscoad-OOP_Adhesion" data-unit="wral-v4/home"></div>
+	
+	
+	
+		<!-- Homepage mobile adhesion before closing header. -->
+		<div class="opscoad-Mobile_Adhesion" data-unit="wral-v4/home"></div>
+	
+
+	
+		<style>@media (max-width: 768px) { main { padding-bottom: calc(3.75rem + env(safe-area-inset-bottom, 0)); } }</style>
+	
+	<main>
+		
+	
+
+		
+
+		
+
+		<!-- DEV-1087: Homepage mobile in-content ABOVE the Video Central section -->
+		
+
+		<!-- DEV-1087: Section-front mobile in-content ABOVE each layout-b section (e.g. Local & State) -->
+		
+
+				
+
+				
+
+		
+			<!-- Featured section, including 3 featured stories, a list of links,
+					 followed by the remaining stories. -->
+					 <section class="section-wrapper content-wrapper style-featured">
+					 		<div>
+									<div class="featured-top-story">
+										
+											<div class="aspect-16x9 aspect-16x9--embed">
+												<div class="video-embed home-top-video-container">
+													<video id="home-top-video" class="home-top-video" fetchpriority="high" controls playsinline preload="auto" poster="https://assets.wral.com/e60d98f9-34ad-42f2-8256-aebdf7628f16?w=1200&#x26;h=675&#x26;f=jpg">
+														
+															<source src="https://media-hls.wral.com/vodhttporigins3/_definst_/smil:amazons3/api-vod-prod-renditions/5fc34b7a-3d57-53b8-b181-ea4f7ff9cb1f-fab9d58ca207/d62d4efe-ee54-4a15-abab-1511098f432a/playlist.smil/playlist.m3u8" type="application/x-mpegURL">
+														
+														<!-- Keep an empty track to satisfy some accessibility/UA quirks -->
+														<track kind="captions">
+													</video>
+												</div>
+											</div>
+										
+
+										
+										<article-asset class="featured-top-story__meta" href="https://www.wral.com/news/investigates/zoe-welsh-iryna-zarutska-mental-health-funding-north-carolina-october-2026/" date="2026-10-01T20:51:52Z" asset-video-duration="PT2M16S" asset-video-is-live="">
+											
+											<h2 slot="title" class="featured-top-story__title">
+												<a href="https://www.wral.com/news/investigates/zoe-welsh-iryna-zarutska-mental-health-funding-north-carolina-october-2026/">After murders of Zoe Welsh, Iryna Zarutska, NC lawmakers face questions over mental health funding</a>
+											</h2>
+											<p slot="excerpt" class="featured-top-story__excerpt">Sen. Danny Britt, who helped craft Iryna’s Law, said North Carolina has not provided enough funding for the criminal justice and mental health reforms to work as intended.</p>
+										</article-asset>
+									</div>
+								</div>
+								<div>
+								<ul>
+									
+										<li>
+											<article-asset href="https://www.wral.com/weather/forecast-raleigh-durham-fayetteville/" date="2026-10-01T19:30:26Z" asset-video-duration="" align-thumbnail-mobile="right" asset-video-is-live="">
+												<h4 slot="title"><a href="https://www.wral.com/weather/forecast-raleigh-durham-fayetteville/">Weekend cold front brings a good chance for rain</a></h4>
+												
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/05e30a18-b496-4556-9484-a470d6d8175a?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/05e30a18-b496-4556-9484-a470d6d8175a?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/05e30a18-b496-4556-9484-a470d6d8175a?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/05e30a18-b496-4556-9484-a470d6d8175a?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Weekend cold front brings a good chance for rain">
+												</div>
+											</article-asset>
+										</li>
+									
+										<li>
+											<article-asset href="https://www.wral.com/news/local/five-new-nc-laws-taking-effect-today-what-changes-for-you-october-2026/" date="2026-10-01T21:43:41Z" asset-video-duration="" align-thumbnail-mobile="right" asset-video-is-live="">
+												<h4 slot="title"><a href="https://www.wral.com/news/local/five-new-nc-laws-taking-effect-today-what-changes-for-you-october-2026/">5 new NC laws taking effect today: What changes for you</a></h4>
+												
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/eb43f1ec-edd1-4a7d-80c1-33a4190ad724?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/eb43f1ec-edd1-4a7d-80c1-33a4190ad724?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/eb43f1ec-edd1-4a7d-80c1-33a4190ad724?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/eb43f1ec-edd1-4a7d-80c1-33a4190ad724?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="5 new NC laws taking effect today: What changes for you">
+												</div>
+											</article-asset>
+										</li>
+									
+								</ul>
+							</div>
+							<div class="svelte-cokg19 opscoad-Mobile_In_Content_Top" data-unit="wral-v4/home"></div>
+							<div>
+								<ul>
+									<!-- Alternative Collection - (like featured videos) -->
+									
+									<li>
+										
+											<article-asset align-thumbnail="right" href="https://www.wral.com/video/wral-news-plus/20364185/" asset-video-duration="" asset-video-is-live="true">
+												<h4 slot="title"><a href="https://www.wral.com/video/wral-news-plus/20364185/">
+												WRAL News+
+												</a></h4>
+												
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://video-thumbnails.wral.com/thumbnail?src=https%3A%2F%2Fcontent.uplynk.com%2Fchannel%2F4f69a64fd31e4e80bf62e31d1d57f9e5.m3u8%3Fad%3Ddesktop%26ad.url%3Dhttps%253A%252F%252Fwral.com%26ad.description_url%3Dhttps%253A%252F%252Fwral.com%26euid%3Ddesktop%26expand%3Dlive&#x26;w=800&#x26;f=webp" srcset="https://video-thumbnails.wral.com/thumbnail?src=https%3A%2F%2Fcontent.uplynk.com%2Fchannel%2F4f69a64fd31e4e80bf62e31d1d57f9e5.m3u8%3Fad%3Ddesktop%26ad.url%3Dhttps%253A%252F%252Fwral.com%26ad.description_url%3Dhttps%253A%252F%252Fwral.com%26euid%3Ddesktop%26expand%3Dlive&#x26;w=400&#x26;f=webp 400w, https://video-thumbnails.wral.com/thumbnail?src=https%3A%2F%2Fcontent.uplynk.com%2Fchannel%2F4f69a64fd31e4e80bf62e31d1d57f9e5.m3u8%3Fad%3Ddesktop%26ad.url%3Dhttps%253A%252F%252Fwral.com%26ad.description_url%3Dhttps%253A%252F%252Fwral.com%26euid%3Ddesktop%26expand%3Dlive&#x26;w=800&#x26;f=webp 800w, https://video-thumbnails.wral.com/thumbnail?src=https%3A%2F%2Fcontent.uplynk.com%2Fchannel%2F4f69a64fd31e4e80bf62e31d1d57f9e5.m3u8%3Fad%3Ddesktop%26ad.url%3Dhttps%253A%252F%252Fwral.com%26ad.description_url%3Dhttps%253A%252F%252Fwral.com%26euid%3Ddesktop%26expand%3Dlive&#x26;w=1200&#x26;f=webp 1200w" sizes="(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 33vw" loading="lazy" decoding="async" alt="WRAL News+">
+												</div>
+											</article-asset>
+										
+										
+									</li>
+									
+									<li>
+										
+										
+											<article-asset align-thumbnail="right" href="https://www.wral.com/video/forecast-raleigh-durham-fayetteville/" asset-video-duration="" asset-video-is-live="">
+												<h4 slot="title"><a href="https://www.wral.com/video/forecast-raleigh-durham-fayetteville/">
+												<span class="video-icon"></span>
+												WRAL WeatherCenter Forecast
+												</a></h4>
+												
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/05e30a18-b496-4556-9484-a470d6d8175a?w=800&#x26;f=webp" srcset="https://images.wral.com/05e30a18-b496-4556-9484-a470d6d8175a?w=400&#x26;f=webp 400w, https://images.wral.com/05e30a18-b496-4556-9484-a470d6d8175a?w=800&#x26;f=webp 800w, https://images.wral.com/05e30a18-b496-4556-9484-a470d6d8175a?w=1200&#x26;f=webp 1200w" sizes="(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 33vw" loading="lazy" decoding="async" alt="WRAL WeatherCenter Forecast">
+												</div>
+											</article-asset>
+										
+									</li>
+									
+								</ul>
+								<ul>
+									
+											<li>
+												<article-asset href="https://www.wral.com/news/local/axe-rake-dog-injuries-chapel-hill-father-frustrated-pulling-kids-dangerous-home-october-2026/">
+													<h4 slot="title"><a href="https://www.wral.com/news/local/axe-rake-dog-injuries-chapel-hill-father-frustrated-pulling-kids-dangerous-home-october-2026/">Axe, rake, dog injuries: Father shares frustrations pulling kids out of dangerous Chapel Hill home</a></h4>
+													
+											</article-asset>
+									</li>
+									
+											<li>
+												<article-asset href="https://www.wral.com/news/local/wilson-county-district-attorney-charges-e-bike-crash-october-2026/">
+													<h4 slot="title"><a href="https://www.wral.com/news/local/wilson-county-district-attorney-charges-e-bike-crash-october-2026/">'We want to be thorough': Wilson Co. DA explains delay in charging deadly crash suspect</a></h4>
+													
+											</article-asset>
+									</li>
+									
+											<li>
+												<article-asset href="https://www.wral.com/news/state/new-snap-costs-take-effect-north-carolina-october-2026/">
+													<h4 slot="title"><a href="https://www.wral.com/news/state/new-snap-costs-take-effect-north-carolina-october-2026/">New SNAP costs take effect in North Carolina on Oct. 1</a></h4>
+													
+											</article-asset>
+									</li>
+									
+											<li>
+												<article-asset href="https://www.wral.com/lifestyles/pullen-park-holiday-express-presented-by-wral-tickets-on-sale-october-2026/">
+													<h4 slot="title"><a href="https://www.wral.com/lifestyles/pullen-park-holiday-express-presented-by-wral-tickets-on-sale-october-2026/">Tickets for 2026 Pullen Park Holiday Express, Presented by WRAL go on sale Oct. 15 </a></h4>
+													
+											</article-asset>
+									</li>
+									
+								</ul>
+							</div>
+							<!-- Elections section – render only when electionCollection is published, remove after election cycle -->
+							
+							<!-- remaining articles (up to 25 total) -->
+							<div class="a3">
+								<div class="a3-articles" aria-labelledby="more-on-this">
+									<div class="a3-header"><p id="more-on-this">More Top Stories</p></div>
+									<ul>
+										
+											<li>
+												<article-asset href="https://www.wral.com/news/local/failed-tennessee-execution-puts-spotlight-on-ncs-efforts-to-jumpstart-death-penalty-october-2026/" align-thumbnail="right" date="2026-10-01T22:20:04Z" asset-video-duration="" asset-video-is-live="">
+													<h4 slot="title"><a href="https://www.wral.com/news/local/failed-tennessee-execution-puts-spotlight-on-ncs-efforts-to-jumpstart-death-penalty-october-2026/">Failed Tennessee execution puts spotlight on NC’s efforts to jumpstart death penalty</a></h4>
+													
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/07ea6a6b-dd9a-465c-80fa-89eccf8e59cd?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/07ea6a6b-dd9a-465c-80fa-89eccf8e59cd?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/07ea6a6b-dd9a-465c-80fa-89eccf8e59cd?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/07ea6a6b-dd9a-465c-80fa-89eccf8e59cd?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Failed Tennessee execution puts spotlight on NC’s efforts to jumpstart death penalty">
+													</div>
+													
+												</article-asset>
+											</li>
+											
+											
+										
+											<li>
+												<article-asset href="https://www.wral.com/news/state/fact-check-trump-ice-agent-voting-site-elections-october-1/" align-thumbnail="right" date="2026-10-01T22:18:51Z" asset-video-duration="PT2M17S" asset-video-is-live="">
+													<h4 slot="title"><a href="https://www.wral.com/news/state/fact-check-trump-ice-agent-voting-site-elections-october-1/">Fact-check: What have Trump officials said about ICE agents at voting sites?</a></h4>
+													
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/b94b647f-741b-5eb3-b59c-526eb8b6ce95?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/b94b647f-741b-5eb3-b59c-526eb8b6ce95?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/b94b647f-741b-5eb3-b59c-526eb8b6ce95?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/b94b647f-741b-5eb3-b59c-526eb8b6ce95?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Fact-check: What have Trump officials said about ICE agents at voting sites?">
+													</div>
+													
+												</article-asset>
+											</li>
+											
+											
+										
+											<li>
+												<article-asset href="https://www.wral.com/news/local/flock-used-apex-arrest-ahead-town-council-discussion-future-program-october-2026/" align-thumbnail="right" date="2026-10-01T22:18:51Z" asset-video-duration="PT2M33S" asset-video-is-live="">
+													<h4 slot="title"><a href="https://www.wral.com/news/local/flock-used-apex-arrest-ahead-town-council-discussion-future-program-october-2026/">Flock camera used in Apex arrest as town council weighs program’s future</a></h4>
+													
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/a3d867d8-7e0a-59bd-9166-b690a3ddc3a7?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/a3d867d8-7e0a-59bd-9166-b690a3ddc3a7?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/a3d867d8-7e0a-59bd-9166-b690a3ddc3a7?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/a3d867d8-7e0a-59bd-9166-b690a3ddc3a7?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Flock camera used in Apex arrest as town council weighs program’s future">
+													</div>
+													
+												</article-asset>
+											</li>
+											
+											
+										
+											<li>
+												<article-asset href="https://www.wral.com/news/local/raleigh-apartment-north-hills-balcony-collapse-repairs-october-2026/" align-thumbnail="right" date="2026-10-01T22:03:14Z" asset-video-duration="" asset-video-is-live="">
+													<h4 slot="title"><a href="https://www.wral.com/news/local/raleigh-apartment-north-hills-balcony-collapse-repairs-october-2026/">Balcony failure prompts evaluation at North Hills apartment complex, city says permits are needed</a></h4>
+													
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/f7ddd0cb-c918-40f7-b306-9a95bae995a3?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/f7ddd0cb-c918-40f7-b306-9a95bae995a3?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/f7ddd0cb-c918-40f7-b306-9a95bae995a3?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/f7ddd0cb-c918-40f7-b306-9a95bae995a3?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Balcony failure prompts evaluation at North Hills apartment complex, city says permits are needed">
+													</div>
+													
+												</article-asset>
+											</li>
+											
+											
+										
+											<li>
+												<article-asset href="https://www.wral.com/news/local/illegal-gambling-raleigh-sweepstakes-parlor-october-2026/" align-thumbnail="right" date="2026-10-01T21:42:24Z" asset-video-duration="" asset-video-is-live="">
+													<h4 slot="title"><a href="https://www.wral.com/news/local/illegal-gambling-raleigh-sweepstakes-parlor-october-2026/">5 charged, $180,000 seized in illegal gambling investigation at Raleigh sweepstakes parlor</a></h4>
+													
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/6b438b6c-692a-4bae-bc4d-c97c9adfcb94?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/6b438b6c-692a-4bae-bc4d-c97c9adfcb94?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/6b438b6c-692a-4bae-bc4d-c97c9adfcb94?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/6b438b6c-692a-4bae-bc4d-c97c9adfcb94?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="5 charged, $180,000 seized in illegal gambling investigation at Raleigh sweepstakes parlor">
+													</div>
+													
+												</article-asset>
+											</li>
+											
+												<li class="more-top-stories-nativo" aria-hidden="true">
+													<div id="nativo-0002"></div>
+												</li>
+											
+											
+										
+											<li>
+												<article-asset href="https://www.wral.com/news/nccapitol/trump-nc-federal-judge-nominee-tillis-budd-aubart-myers-james-comey-prosecutor-september-2026/" align-thumbnail="right" date="2026-10-01T20:58:08Z" asset-video-duration="" asset-video-is-live="">
+													<h4 slot="title"><a href="https://www.wral.com/news/nccapitol/trump-nc-federal-judge-nominee-tillis-budd-aubart-myers-james-comey-prosecutor-september-2026/">Trump nominates 2 as new federal judges for NC, including James Comey prosecutor</a></h4>
+													
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/cef79a69-15f1-4140-a4b5-f82dcc72bc0d?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/cef79a69-15f1-4140-a4b5-f82dcc72bc0d?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/cef79a69-15f1-4140-a4b5-f82dcc72bc0d?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/cef79a69-15f1-4140-a4b5-f82dcc72bc0d?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Trump nominates 2 as new federal judges for NC, including James Comey prosecutor">
+													</div>
+													
+												</article-asset>
+											</li>
+											
+											
+										
+											<li>
+												<article-asset href="https://www.wral.com/news/local/faith-hedgepeth-trial-juror-dismissed-october-2026/" align-thumbnail="right" date="2026-10-01T20:34:04Z" asset-video-duration="PT1M59S" asset-video-is-live="">
+													<h4 slot="title"><a href="https://www.wral.com/news/local/faith-hedgepeth-trial-juror-dismissed-october-2026/">Faith Hedgepeth trial: Judge dismisses potential juror who said case 'has nothing to do with him'</a></h4>
+													
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/22ad7806-b014-4e12-a3f6-d2a895b99bac?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/22ad7806-b014-4e12-a3f6-d2a895b99bac?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/22ad7806-b014-4e12-a3f6-d2a895b99bac?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/22ad7806-b014-4e12-a3f6-d2a895b99bac?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Faith Hedgepeth trial: Judge dismisses potential juror who said case &#x27;has nothing to do with him&#x27;">
+													</div>
+													
+												</article-asset>
+											</li>
+											
+											
+										
+											<li>
+												<article-asset href="https://www.wral.com/news/state/ncdmv-license-registration-september-2026/" align-thumbnail="right" date="2026-10-01T20:08:11Z" asset-video-duration="PT1M0S" asset-video-is-live="">
+													<h4 slot="title"><a href="https://www.wral.com/news/state/ncdmv-license-registration-september-2026/">Bye-bye license plate stickers: NCDMV goes fully digital with vehicle registration</a></h4>
+													
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://assets.wral.com/9bca7338-d1b4-554a-9266-8407320a620a?w=320&#x26;h=180&#x26;f=webp" srcset="https://assets.wral.com/9bca7338-d1b4-554a-9266-8407320a620a?w=320&#x26;h=180&#x26;f=webp 320w, https://assets.wral.com/9bca7338-d1b4-554a-9266-8407320a620a?w=640&#x26;h=360&#x26;f=webp 640w, https://assets.wral.com/9bca7338-d1b4-554a-9266-8407320a620a?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Bye-bye license plate stickers: NCDMV goes fully digital with vehicle registration">
+													</div>
+													
+												</article-asset>
+											</li>
+											
+											
+										
+											<li>
+												<article-asset href="https://www.wral.com/news/local/chapel-hill-high-school-teacher-guilty-sex-student-september-2026/" align-thumbnail="right" date="2026-10-01T19:23:29Z" asset-video-duration="" asset-video-is-live="">
+													<h4 slot="title"><a href="https://www.wral.com/news/local/chapel-hill-high-school-teacher-guilty-sex-student-september-2026/">Former Chapel Hill High teacher sentenced to at least 9 years for sex with student</a></h4>
+													
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/0c3c048e-8906-446f-b1bb-6da0cac81c22?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/0c3c048e-8906-446f-b1bb-6da0cac81c22?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/0c3c048e-8906-446f-b1bb-6da0cac81c22?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/0c3c048e-8906-446f-b1bb-6da0cac81c22?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Former Chapel Hill High teacher sentenced to at least 9 years for sex with student">
+													</div>
+													
+												</article-asset>
+											</li>
+											
+											
+												<li class="more-top-stories-nativo" aria-hidden="true">
+													<div id="nativo-0003"></div>
+												</li>
+											
+										
+											<li>
+												<article-asset href="https://www.wral.com/news/local/trailer-blocks-lanes-i-540-raleigh-october-2026/" align-thumbnail="right" date="2026-10-01T19:18:41Z" asset-video-duration="PT0M53S" asset-video-is-live="">
+													<h4 slot="title"><a href="https://www.wral.com/news/local/trailer-blocks-lanes-i-540-raleigh-october-2026/">Trailer blocks lanes on I-540 near Falls of Neuse Road, creating major delays</a></h4>
+													
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/f32f1d3c-25cd-4b36-9f24-d6f8cd37f7ba?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/f32f1d3c-25cd-4b36-9f24-d6f8cd37f7ba?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/f32f1d3c-25cd-4b36-9f24-d6f8cd37f7ba?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/f32f1d3c-25cd-4b36-9f24-d6f8cd37f7ba?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Trailer blocks lanes on I-540 near Falls of Neuse Road, creating major delays">
+													</div>
+													
+												</article-asset>
+											</li>
+											
+											
+										
+									</ul>
+									
+										<div class="cta"><a href="https://www.wral.com/news/">View more</a></div>
+									
+								</div>
+								<div class="a3-aside">
+									<div class="opscoad-Homepage_Desktop_MedRec" data-unit="wral-v4/home" style="width:300px;margin:20px auto"></div>
+									<wral-traffic-widget></wral-traffic-widget>
+
+									<!-- Listen Live Promo -->
+									<h3 class="section-title">Listen Live</h3>
+									<wral-live-promo></wral-live-promo>
+
+								</div>
+								<div class="a3-ads">
+									<div class="sticky-container">
+										<!-- TODO: set the ad unit based on pathname, (home if empty) -->
+											<!-- DEV-1087: removed Mobile_In_Content below Listen Live (it was also rendering on desktop; per adeptli) -->
+											<div class="svelte-cokg19 opscoad-Desktop_Right_Rail_1" data-unit="wral-v4/home"></div>
+											<a href="https://www.wral.com/content/creative_services/promos/clickthru?oaparams=2__bannerid=1462__zoneid=2__cb=5d35f356ff__oadest=http%3A%2F%2Fwral.com%2Fapps" style="display:flex; flex-direction:column; align-items:center; justify-content:center; width:300px; border:3px solid #f9f9f9; box-sizing:border-box; padding:.625rem; text-decoration:none; color:inherit;">
+													<img src="https://wr.al/Fyz0/" style="max-width:100%;" alt="WRAL App" loading="lazy" decoding="async">
+													<p style="text-align:center; font-weight:700; margin:.5rem 0 0; line-height:1.3;">Get the app<br>Local news &#x26; alerts</p>
+												</a>
+									</div>
+								</div>
+							</div>
+					 </section>
+		<!-- END of Featured section -->
+		
+
+		
+
+			
+
+			<!-- DEV-1087: section-front desktop 970x250 leaderboard below each layout-d section (e.g. WRAL Investigates) -->
+			
+
+			
+
+			<!-- DEV-1087: removed the extra standalone Mobile_In_Content below Video Central (relocated above; the "directly beneath" desktop+mobile cluster remains) -->
+
+			
+
+			
+
+
+			
+				
+					<!-- Display current conditions after the first (0th) section. -->
+					<section style="min-height: 316px;" class="weather-conditions-wrapper">
+						<my-interactive-radar baseurl="https://api.wral.com/user-facts/v1/" weatherversion="latest" weatherqueryparams="layout=mobile&#x26;openMenuOnLoad=false"></my-interactive-radar>
+						<wral-weather-conditions id="weather-conditions" baseurl="https://api.wral.com/user-facts/v1/"></wral-weather-conditions>
+						<my-wral-benefits-modal></my-wral-benefits-modal>
+					</section>
+				
+			
+
+			
+				
+					<!-- Ad slot between weather and Don't Miss It -->
+					<section class="section-wrapper content-wrapper">
+						<div class="svelte-cokg19 opscoad-Desktop_Leaderboard" data-unit="wral-v4/home"></div>
+					</section>
+				
+			
+
+	
+
+		
+			<div class="opscoad-Mobile_In_Content" data-unit="wral-v4/home"></div>
+			<div id="homepage-section-2"></div>
+		
+
+		
+
+		<!-- DEV-1087: Homepage mobile in-content ABOVE the Video Central section -->
+		
+
+		<!-- DEV-1087: Section-front mobile in-content ABOVE each layout-b section (e.g. Local & State) -->
+		
+
+				
+
+				
+					
+				
+				
+				
+				
+					<!-- Default section of up to 5 items -->
+					<div id="section-1" class="section-wrapper content-wrapper">
+				
+					<h2 class="section-title">
+						
+						
+							Don't Miss It
+						
+					</h2>
+				
+					
+					
+						
+						
+								<ul class="grid-5 dont-miss-it-grid" style="margin: 1rem 0;" data-nativo-grid="dont-miss-it">
+									
+										<li>
+											<article-asset href="https://www.wral.com/news/investigates/documentary-preview-decades-of-warning-september-2026/" date="2026-10-01T00:01:01Z">
+											<h3 slot="title"><a href="https://www.wral.com/news/investigates/documentary-preview-decades-of-warning-september-2026/">New WRAL documentary examines warning signs decades before Raleigh teacher’s murder</a></h3>
+											
+											<div slot="thumbnail" class="aspect-16x9">
+												<img src="https://assets.wral.com/34d26c55-f82b-4069-97a1-2fe24ad368f8?w=320&#x26;h=180&#x26;f=webp" srcset="https://assets.wral.com/34d26c55-f82b-4069-97a1-2fe24ad368f8?w=320&#x26;h=180&#x26;f=webp 320w, https://assets.wral.com/34d26c55-f82b-4069-97a1-2fe24ad368f8?w=640&#x26;h=360&#x26;f=webp 640w, https://assets.wral.com/34d26c55-f82b-4069-97a1-2fe24ad368f8?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="New WRAL documentary examines warning signs decades before Raleigh teacher’s murder">
+											</div>
+											</article-asset>
+										</li>
+										
+											<li class="dont-miss-it-nativo" aria-hidden="true">
+												<div id="nativo_dont_miss_it"></div>
+											</li>
+										
+									
+										<li>
+											<article-asset href="https://www.wral.com/lifestyles/weekend-events-raleigh-durham-october-2026/" date="">
+											<h3 slot="title"><a href="https://www.wral.com/lifestyles/weekend-events-raleigh-durham-october-2026/">Weekend best bets: Move-a-Bull, Triangle Oktoberfest and fall fun</a></h3>
+											
+											<div slot="thumbnail" class="aspect-16x9">
+												<img src="https://images.wral.com/19d8b911-3c27-438e-83f4-fafc899a55c3?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/19d8b911-3c27-438e-83f4-fafc899a55c3?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/19d8b911-3c27-438e-83f4-fafc899a55c3?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/19d8b911-3c27-438e-83f4-fafc899a55c3?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Weekend best bets: Move-a-Bull, Triangle Oktoberfest and fall fun">
+											</div>
+											</article-asset>
+										</li>
+										
+									
+										<li>
+											<article-asset href="https://www.wral.com/lifestyle/family/pumpkin-patches-fall-halloween-events-nc/" date="">
+											<h3 slot="title"><a href="https://www.wral.com/lifestyle/family/pumpkin-patches-fall-halloween-events-nc/">Pumpkin patches, fall and Halloween events in NC</a></h3>
+											
+											<div slot="thumbnail" class="aspect-16x9">
+												<img src="https://images.wral.com/d0ac06de-67d4-49d9-834d-8dbc5093de5a?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/d0ac06de-67d4-49d9-834d-8dbc5093de5a?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/d0ac06de-67d4-49d9-834d-8dbc5093de5a?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/d0ac06de-67d4-49d9-834d-8dbc5093de5a?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Pumpkin patches, fall and Halloween events in NC">
+											</div>
+											</article-asset>
+										</li>
+										
+									
+										<li>
+											<article-asset href="https://www.wral.com/weather/drought-impact-fall-color/" date="">
+											<h3 slot="title"><a href="https://www.wral.com/weather/drought-impact-fall-color/">NC fall foliage forecast: The drought could impact our fall color</a></h3>
+											
+											<div slot="thumbnail" class="aspect-16x9">
+												<img src="https://images.wral.com/d4fa22ef-e397-5aa1-8fcd-68a5dc503629?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/d4fa22ef-e397-5aa1-8fcd-68a5dc503629?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/d4fa22ef-e397-5aa1-8fcd-68a5dc503629?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/d4fa22ef-e397-5aa1-8fcd-68a5dc503629?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="NC fall foliage forecast: The drought could impact our fall color">
+											</div>
+											</article-asset>
+										</li>
+										
+									
+										<li>
+											<article-asset href="https://www.wral.com/lifestyles/pullen-park-holiday-express-presented-by-wral-tickets-on-sale-october-2026/" date="2026-10-01T16:44:10Z">
+											<h3 slot="title"><a href="https://www.wral.com/lifestyles/pullen-park-holiday-express-presented-by-wral-tickets-on-sale-october-2026/">Tickets for 2026 Pullen Park Holiday Express, Presented by WRAL go on sale Oct. 15 </a></h3>
+											
+											<div slot="thumbnail" class="aspect-16x9">
+												<img src="https://images.wral.com/63e6c5b1-1c2b-45cb-a829-4c47811366b4?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/63e6c5b1-1c2b-45cb-a829-4c47811366b4?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/63e6c5b1-1c2b-45cb-a829-4c47811366b4?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/63e6c5b1-1c2b-45cb-a829-4c47811366b4?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Tickets for 2026 Pullen Park Holiday Express, Presented by WRAL go on sale Oct. 15 ">
+											</div>
+											</article-asset>
+										</li>
+										
+									
+									
+										
+											<li class="dont-miss-it-fallback">
+												<article-asset href="https://www.wral.com/news/investigates/college-football-refunds-nc-state-athlete-advantage-brasil-cancel-september-2026/" date="">
+												<h3 slot="title"><a href="https://www.wral.com/news/investigates/college-football-refunds-nc-state-athlete-advantage-brasil-cancel-september-2026/">Where are the refunds? Kentucky company still owes fans, NC State money for canceled Brazil game</a></h3>
+												
+												<div slot="thumbnail" class="aspect-16x9">
+													<img src="https://images.wral.com/61d268af-23e8-562b-8f6b-f70929bf43d0?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/61d268af-23e8-562b-8f6b-f70929bf43d0?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/61d268af-23e8-562b-8f6b-f70929bf43d0?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/61d268af-23e8-562b-8f6b-f70929bf43d0?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Where are the refunds? Kentucky company still owes fans, NC State money for canceled Brazil game">
+												</div>
+												</article-asset>
+											</li>
+										
+									
+								</ul>
+						
+						
+					
+			</div>
+			
+		
+
+		
+
+		
+
+			
+
+			<!-- DEV-1087: section-front desktop 970x250 leaderboard below each layout-d section (e.g. WRAL Investigates) -->
+			
+
+			
+
+			<!-- DEV-1087: removed the extra standalone Mobile_In_Content below Video Central (relocated above; the "directly beneath" desktop+mobile cluster remains) -->
+
+			
+
+			
+
+
+			
+
+			
+
+	
+
+		
+
+		
+
+		<!-- DEV-1087: Homepage mobile in-content ABOVE the Video Central section -->
+		
+			<div class="opscoad-Mobile_In_Content" data-unit="wral-v4/home"></div>
+		
+
+		<!-- DEV-1087: Section-front mobile in-content ABOVE each layout-b section (e.g. Local & State) -->
+		
+
+				
+
+				
+
+		
+
+		
+			<!-- Style B - a grid of articles with thumbnails, with an aside list -->
+			<section class="section-wrapper content-wrapper style-b">
+				
+					<h2 class="section-title" id="section-2">
+						
+						<a href="https://www.wral.com/video/">Video Central</a>
+						
+						
+					</h2>
+				
+			<div class="style-b__container">
+				<ul class="collection">
+					
+						<li>
+							<article-asset href="https://www.wral.com/news/local/decades-of-warning-ryan-camacho-history-september-2026/" asset-video-duration="PT30M49S" asset-video-is-live="">
+								<h4 slot="title"><a href="https://www.wral.com/news/local/decades-of-warning-ryan-camacho-history-september-2026/">Decades of Warning: WRAL Documentary traces Ryan Camacho’s history before Zoe Welsh’s murder</a></h4>
+								
+								<div slot="thumbnail" class="aspect-16x9">
+									<img src="https://assets.wral.com/34d26c55-f82b-4069-97a1-2fe24ad368f8?w=320&#x26;h=180&#x26;f=webp" srcset="https://assets.wral.com/34d26c55-f82b-4069-97a1-2fe24ad368f8?w=320&#x26;h=180&#x26;f=webp 320w, https://assets.wral.com/34d26c55-f82b-4069-97a1-2fe24ad368f8?w=640&#x26;h=360&#x26;f=webp 640w, https://assets.wral.com/34d26c55-f82b-4069-97a1-2fe24ad368f8?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Decades of Warning: WRAL Documentary traces Ryan Camacho’s history before Zoe Welsh’s murder">
+								</div>
+							</article-asset>
+						</li>
+					
+						<li>
+							<article-asset href="https://www.wral.com/video/raleigh-apartment-balcony-collapse-raises-safety-concerns-october-2026/" asset-video-duration="PT2M19S" asset-video-is-live="">
+								<h4 slot="title"><a href="https://www.wral.com/video/raleigh-apartment-balcony-collapse-raises-safety-concerns-october-2026/">Raleigh apartment balcony collapse raises safety concerns</a></h4>
+								
+								<div slot="thumbnail" class="aspect-16x9">
+									<img src="https://images.wral.com/627395fc-dfd7-5096-b742-14c6d2acf0eb?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/627395fc-dfd7-5096-b742-14c6d2acf0eb?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/627395fc-dfd7-5096-b742-14c6d2acf0eb?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/627395fc-dfd7-5096-b742-14c6d2acf0eb?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Raleigh apartment balcony collapse raises safety concerns">
+								</div>
+							</article-asset>
+						</li>
+					
+						<li>
+							<article-asset href="https://www.wral.com/video/voting-machine-testing-ahead-of-midterms-oct-1-2026/" asset-video-duration="PT1M34S" asset-video-is-live="">
+								<h4 slot="title"><a href="https://www.wral.com/video/voting-machine-testing-ahead-of-midterms-oct-1-2026/">Voting machine testing in NC ahead of midterms</a></h4>
+								
+								<div slot="thumbnail" class="aspect-16x9">
+									<img src="https://images.wral.com/b2bcf190-b8f1-4a25-bfff-71147d9abc29?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/b2bcf190-b8f1-4a25-bfff-71147d9abc29?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/b2bcf190-b8f1-4a25-bfff-71147d9abc29?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/b2bcf190-b8f1-4a25-bfff-71147d9abc29?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Voting machine testing in NC ahead of midterms">
+								</div>
+							</article-asset>
+						</li>
+					
+						<li>
+							<article-asset href="https://www.wral.com/video/netanyahu-flydubai-flight-israel-cockpit-hero-october-2026/" asset-video-duration="PT1M16S" asset-video-is-live="">
+								<h4 slot="title"><a href="https://www.wral.com/video/netanyahu-flydubai-flight-israel-cockpit-hero-october-2026/">Netanyahu praises man hailed as hero in FlyDubai flight</a></h4>
+								
+								<div slot="thumbnail" class="aspect-16x9">
+									<img src="https://assets.wral.com/43d9cf4a-2389-48cc-9a8f-3c3a3a176496?w=320&#x26;h=180&#x26;f=webp" srcset="https://assets.wral.com/43d9cf4a-2389-48cc-9a8f-3c3a3a176496?w=320&#x26;h=180&#x26;f=webp 320w, https://assets.wral.com/43d9cf4a-2389-48cc-9a8f-3c3a3a176496?w=640&#x26;h=360&#x26;f=webp 640w, https://assets.wral.com/43d9cf4a-2389-48cc-9a8f-3c3a3a176496?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Netanyahu praises man hailed as hero in FlyDubai flight">
+								</div>
+							</article-asset>
+						</li>
+					
+						<li>
+							<article-asset href="https://www.wral.com/video/hatteras-island-travel-restrictions-lifted-following-noreaster-october-2026/" asset-video-duration="PT0M32S" asset-video-is-live="">
+								<h4 slot="title"><a href="https://www.wral.com/video/hatteras-island-travel-restrictions-lifted-following-noreaster-october-2026/">Hatteras Island travel restrictions lifted following nor'easter</a></h4>
+								
+								<div slot="thumbnail" class="aspect-16x9">
+									<img src="https://images.wral.com/c56971d4-2add-5257-bfc1-0bf38a57e6e4?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/c56971d4-2add-5257-bfc1-0bf38a57e6e4?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/c56971d4-2add-5257-bfc1-0bf38a57e6e4?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/c56971d4-2add-5257-bfc1-0bf38a57e6e4?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Hatteras Island travel restrictions lifted following nor&#x27;easter">
+								</div>
+							</article-asset>
+						</li>
+					
+						<li>
+							<article-asset href="https://www.wral.com/video/pet-of-the-day-october-1-2026/" asset-video-duration="PT0M26S" asset-video-is-live="">
+								<h4 slot="title"><a href="https://www.wral.com/video/pet-of-the-day-october-1-2026/">Pet of the Day October 1, 2026</a></h4>
+								
+								<div slot="thumbnail" class="aspect-16x9">
+									<img src="https://images.wral.com/9e2c563b-8967-5c4c-bc87-94a8eb230898?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/9e2c563b-8967-5c4c-bc87-94a8eb230898?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/9e2c563b-8967-5c4c-bc87-94a8eb230898?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/9e2c563b-8967-5c4c-bc87-94a8eb230898?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Pet of the Day October 1, 2026">
+								</div>
+							</article-asset>
+						</li>
+					
+				</ul>
+				<ul class="alt-collection">
+					
+						<li class="alt-collection__item">
+							<article-asset href="https://www.wral.com/video/news/wral-6am-news/">
+								<h4 slot="title"><a href="https://www.wral.com/video/news/wral-6am-news/">
+									WRAL 6am News | October 1
+								</a></h4>
+								
+							</article-asset>
+						</li>
+					
+						<li class="alt-collection__item">
+							<article-asset href="https://www.wral.com/video/news/wral-9am-news/">
+								<h4 slot="title"><a href="https://www.wral.com/video/news/wral-9am-news/">
+									WRAL 9am News | October 1
+								</a></h4>
+								
+							</article-asset>
+						</li>
+					
+						<li class="alt-collection__item">
+							<article-asset href="https://www.wral.com/video/news/wral-noon-news/">
+								<h4 slot="title"><a href="https://www.wral.com/video/news/wral-noon-news/">
+									WRAL Noon News | October 1
+								</a></h4>
+								
+							</article-asset>
+						</li>
+					
+						<li class="alt-collection__item">
+							<article-asset href="https://www.wral.com/video/news/wral-4pm-news/">
+								<h4 slot="title"><a href="https://www.wral.com/video/news/wral-4pm-news/">
+									WRAL 4pm News | October 1
+								</a></h4>
+								
+							</article-asset>
+						</li>
+					
+						<li class="alt-collection__item">
+							<article-asset href="https://www.wral.com/video/news/wral-6pm-news/">
+								<h4 slot="title"><a href="https://www.wral.com/video/news/wral-6pm-news/">
+									WRAL 6pm News | September 30
+								</a></h4>
+								
+							</article-asset>
+						</li>
+					
+						<li class="alt-collection__item">
+							<article-asset href="https://www.wral.com/video/news/wral-10pm-news/">
+								<h4 slot="title"><a href="https://www.wral.com/video/news/wral-10pm-news/">
+									WRAL 10pm News | September 30
+								</a></h4>
+								
+							</article-asset>
+						</li>
+					
+					
+						<li class="alt-collection__cta">
+							<a class="cta" href="https://www.wral.com/video/">View more</a>
+						</li>
+					
+				</ul>
+			</div>
+			</section>
+			
+
+			
+				<!-- Ad slot directly beneath Video Central -->
+				<section class="section-wrapper content-wrapper">
+					<div class="ad-container ad-6">
+						<div class="svelte-cokg19 opscoad-Mobile_In_Content" data-unit="wral-v4/home"></div>
+						<div class="svelte-cokg19 opscoad-Desktop_Leaderboard" data-unit="wral-v4/home"></div>
+					</div>
+				</section>
+			
+
+			<!-- DEV-1087: section-front desktop 970x250 leaderboard below each layout-d section (e.g. WRAL Investigates) -->
+			
+
+			
+
+			<!-- DEV-1087: removed the extra standalone Mobile_In_Content below Video Central (relocated above; the "directly beneath" desktop+mobile cluster remains) -->
+
+			
+
+			
+
+
+			
+
+			
+
+	
+
+		
+
+		
+
+		<!-- DEV-1087: Homepage mobile in-content ABOVE the Video Central section -->
+		
+
+		<!-- DEV-1087: Section-front mobile in-content ABOVE each layout-b section (e.g. Local & State) -->
+		
+
+				
+
+				
+
+		
+
+		
+
+			
+
+			<!-- DEV-1087: section-front desktop 970x250 leaderboard below each layout-d section (e.g. WRAL Investigates) -->
+			
+
+			
+				<!-- Display a grid of columns of articles (up to 5) -->
+				<section class="section-wrapper content-wrapper style-columns">
+					<ul class="grid-5">
+					
+						<li>
+							
+							<h3 class="section-title">
+								
+								<a href="https://www.wral.com/news/local/">Local News</a>
+								
+								
+							</h3>
+							
+							
+								<article-asset href="https://www.wral.com/news/local/flock-used-apex-arrest-ahead-town-council-discussion-future-program-october-2026/">
+					
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/a3d867d8-7e0a-59bd-9166-b690a3ddc3a7?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/a3d867d8-7e0a-59bd-9166-b690a3ddc3a7?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/a3d867d8-7e0a-59bd-9166-b690a3ddc3a7?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/a3d867d8-7e0a-59bd-9166-b690a3ddc3a7?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Flock camera used in Apex arrest as town council weighs program’s future">
+						</div>
+									
+									<h4 slot="title"><a href="https://www.wral.com/news/local/flock-used-apex-arrest-ahead-town-council-discussion-future-program-october-2026/">Flock camera used in Apex arrest as town council weighs program’s future</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/local/five-new-nc-laws-taking-effect-today-what-changes-for-you-october-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/local/five-new-nc-laws-taking-effect-today-what-changes-for-you-october-2026/">5 new NC laws taking effect today: What changes for you</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/state/reclaim-your-sanity-escape-to-canopy-overhangs-uwharrie-august-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/state/reclaim-your-sanity-escape-to-canopy-overhangs-uwharrie-august-2026/">Reclaim your sanity: escape into the quiet canopy overhangs of the Uwharrie region </a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/local/illegal-gambling-raleigh-sweepstakes-parlor-october-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/local/illegal-gambling-raleigh-sweepstakes-parlor-october-2026/">5 charged, $180,000 seized in illegal gambling investigation at Raleigh sweepstakes parlor</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/local/failed-tennessee-execution-puts-spotlight-on-ncs-efforts-to-jumpstart-death-penalty-october-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/local/failed-tennessee-execution-puts-spotlight-on-ncs-efforts-to-jumpstart-death-penalty-october-2026/">Failed Tennessee execution puts spotlight on NC’s efforts to jumpstart death penalty</a></h4>
+									
+								</article-asset>
+							
+						</li>
+					
+						<li>
+							
+							<h3 class="section-title">
+								
+								<a href="https://www.wral.com/news/world/">Nation/World</a>
+								
+								
+							</h3>
+							
+							
+								<article-asset href="https://www.wral.com/news/ap/3df1b-fbi-arrests-energy-department-employee-on-charge-of-trying-to-support-iran-backed-houthis-in-yemen/">
+					
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/86a1c000-ed80-587c-9cba-2acc7af98abc?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/86a1c000-ed80-587c-9cba-2acc7af98abc?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/86a1c000-ed80-587c-9cba-2acc7af98abc?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/86a1c000-ed80-587c-9cba-2acc7af98abc?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="FBI arrests Energy Department employee on charge of trying to support Iran-backed Houthis in Yemen">
+						</div>
+									
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/3df1b-fbi-arrests-energy-department-employee-on-charge-of-trying-to-support-iran-backed-houthis-in-yemen/">FBI arrests Energy Department employee on charge of trying to support Iran-backed Houthis in Yemen</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/ap/5638e-failed-tennessee-execution-renews-the-debate-over-death-penalty-methods/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/5638e-failed-tennessee-execution-renews-the-debate-over-death-penalty-methods/">Christa Pike is in critical condition after Tennessee’s failed execution attempt, her lawyers say</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/ap/be018-the-latest-trump-hits-the-campaign-trail-as-a-new-ap-norc-poll-shows-his-deepening-unpopularity/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/be018-the-latest-trump-hits-the-campaign-trail-as-a-new-ap-norc-poll-shows-his-deepening-unpopularity/">The Latest: Trump hits the campaign trail in Texas, kicking off blitz before midterms</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/ap/7203e-texts-show-how-cornell-accuser-became-convinced-she-had-been-raped-report-says/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/7203e-texts-show-how-cornell-accuser-became-convinced-she-had-been-raped-report-says/">Texts show Cornell accuser's shifting emotions before she went to police, report says</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/ap/8a834-what-to-know-about-christa-pike-who-survived-a-lethal-injection-execution-attempt-in-tennessee/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/8a834-what-to-know-about-christa-pike-who-survived-a-lethal-injection-execution-attempt-in-tennessee/">What to know about Christa Pike, who survived a lethal injection execution attempt in Tennessee</a></h4>
+									
+								</article-asset>
+							
+						</li>
+					
+						<li>
+							
+							<h3 class="section-title">
+								
+								<a href="https://www.wral.com/news/local/politifactnc/">Politifact</a>
+								
+								
+							</h3>
+							
+							
+								<article-asset href="https://www.wral.com/news/state/fact-check-trump-ice-agent-voting-site-elections-october-1/">
+					
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/b94b647f-741b-5eb3-b59c-526eb8b6ce95?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/b94b647f-741b-5eb3-b59c-526eb8b6ce95?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/b94b647f-741b-5eb3-b59c-526eb8b6ce95?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/b94b647f-741b-5eb3-b59c-526eb8b6ce95?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Fact-check: What have Trump officials said about ICE agents at voting sites?">
+						</div>
+									
+									<h4 slot="title"><a href="https://www.wral.com/news/state/fact-check-trump-ice-agent-voting-site-elections-october-1/">Fact-check: What have Trump officials said about ICE agents at voting sites?</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/state/fact-check-trump-taxpayer-ad-propaganda-public-service-september-30/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/state/fact-check-trump-taxpayer-ad-propaganda-public-service-september-30/">Fact-check: Are taxpayer-funded Trump ads public service announcements or  'propaganda'?</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/state/fact-check-trump-data-center-opposition-china-pr-september-28/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/state/fact-check-trump-data-center-opposition-china-pr-september-28/">Fact-check: Trump says US data center opposition is a ‘China PR thing’</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/state/fact-check-biden-cut-white-house-reporter-access-september-25/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/state/fact-check-biden-cut-white-house-reporter-access-september-25/">Fact-check: Did Biden 'cut off' White House access for 400 reporters?</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/state/fact-check-rnc-north-carolina-commercial-driver-license-noncitizen-september-24/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/state/fact-check-rnc-north-carolina-commercial-driver-license-noncitizen-september-24/">Fact-check: RNC says 54% of NC's commercial driver licenses were issued illegally to noncitizens</a></h4>
+									
+								</article-asset>
+							
+						</li>
+					
+						<li>
+							
+							<h3 class="section-title">
+								
+								<a href="https://www.wral.com/news/state/nccapitol/">NC Capitol</a>
+								
+								
+							</h3>
+							
+							
+								<article-asset href="https://www.wral.com/news/local/five-new-nc-laws-taking-effect-today-what-changes-for-you-october-2026/">
+					
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/eb43f1ec-edd1-4a7d-80c1-33a4190ad724?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/eb43f1ec-edd1-4a7d-80c1-33a4190ad724?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/eb43f1ec-edd1-4a7d-80c1-33a4190ad724?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/eb43f1ec-edd1-4a7d-80c1-33a4190ad724?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="5 new NC laws taking effect today: What changes for you">
+						</div>
+									
+									<h4 slot="title"><a href="https://www.wral.com/news/local/five-new-nc-laws-taking-effect-today-what-changes-for-you-october-2026/">5 new NC laws taking effect today: What changes for you</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/local/failed-tennessee-execution-puts-spotlight-on-ncs-efforts-to-jumpstart-death-penalty-october-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/local/failed-tennessee-execution-puts-spotlight-on-ncs-efforts-to-jumpstart-death-penalty-october-2026/">Failed Tennessee execution puts spotlight on NC’s efforts to jumpstart death penalty</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/nccapitol/nc-us-senate-roy-cooper-michael-whatley-iran-war-tariffs-taxes-economy-business-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/nccapitol/nc-us-senate-roy-cooper-michael-whatley-iran-war-tariffs-taxes-economy-business-september-2026/">Whatley doubles down on support for tariffs, Iran War, tax cuts</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/business/caterpillar-1-billion-investment-sanford-nc-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/business/caterpillar-1-billion-investment-sanford-nc-september-2026/">Caterpillar to invest $1B in new Sanford factory, buoyed by $85M in local incentives</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/investigates/whistleblowers-allege-top-nc-health-officials-used-false-information-to-secure-medicaid-funds-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/investigates/whistleblowers-allege-top-nc-health-officials-used-false-information-to-secure-medicaid-funds-september-2026/">Whistleblowers allege top NC health officials used false information to secure Medicaid funds</a></h4>
+									
+								</article-asset>
+							
+						</li>
+					
+				</ul>
+			</section>
+		
+
+			<!-- DEV-1087: removed the extra standalone Mobile_In_Content below Video Central (relocated above; the "directly beneath" desktop+mobile cluster remains) -->
+
+			
+
+			
+
+
+			
+
+			
+
+	
+
+		
+
+		
+
+		<!-- DEV-1087: Homepage mobile in-content ABOVE the Video Central section -->
+		
+
+		<!-- DEV-1087: Section-front mobile in-content ABOVE each layout-b section (e.g. Local & State) -->
+		
+
+				
+
+				
+					
+				
+				
+				
+				
+					<!-- Default section of up to 5 items -->
+					<div id="section-4" class="section-wrapper content-wrapper">
+				
+					<h2 class="section-title">
+						
+							<a href="https://www.wral.com/entertainment/out-and-about/">Out &#x26; About</a>
+						
+						
+					</h2>
+				
+					
+						<div class="out-and-about__layout">
+							<ul class="out-and-about__list" style="margin: 1rem 0;">
+									
+									<li>
+										<article-asset href="https://www.wral.com/lifestyles/weekend-events-raleigh-durham-october-2026/" date="">
+										<h3 slot="title"><a href="https://www.wral.com/lifestyles/weekend-events-raleigh-durham-october-2026/">Weekend best bets: Move-a-Bull, Triangle Oktoberfest and fall fun</a></h3>
+										
+										<div slot="thumbnail" class="aspect-16x9">
+											<img src="https://images.wral.com/19d8b911-3c27-438e-83f4-fafc899a55c3?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/19d8b911-3c27-438e-83f4-fafc899a55c3?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/19d8b911-3c27-438e-83f4-fafc899a55c3?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/19d8b911-3c27-438e-83f4-fafc899a55c3?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Weekend best bets: Move-a-Bull, Triangle Oktoberfest and fall fun">
+										</div>
+										</article-asset>
+									</li>
+								
+									<li>
+										<article-asset href="https://www.wral.com/lifestyle/family/pumpkin-patches-fall-halloween-events-nc/" date="">
+										<h3 slot="title"><a href="https://www.wral.com/lifestyle/family/pumpkin-patches-fall-halloween-events-nc/">Pumpkin patches, fall and Halloween events in NC</a></h3>
+										
+										<div slot="thumbnail" class="aspect-16x9">
+											<img src="https://images.wral.com/d0ac06de-67d4-49d9-834d-8dbc5093de5a?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/d0ac06de-67d4-49d9-834d-8dbc5093de5a?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/d0ac06de-67d4-49d9-834d-8dbc5093de5a?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/d0ac06de-67d4-49d9-834d-8dbc5093de5a?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Pumpkin patches, fall and Halloween events in NC">
+										</div>
+										</article-asset>
+									</li>
+								
+									<li>
+										<article-asset href="https://www.wral.com/lifestyles/events-triangle-nc-september-2026/" date="">
+										<h3 slot="title"><a href="https://www.wral.com/lifestyles/events-triangle-nc-september-2026/">80+ events happening in September</a></h3>
+										
+										<div slot="thumbnail" class="aspect-16x9">
+											<img src="https://images.wral.com/4e42f2d2-c56c-4a1a-a2f0-94ae56990356?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/4e42f2d2-c56c-4a1a-a2f0-94ae56990356?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/4e42f2d2-c56c-4a1a-a2f0-94ae56990356?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/4e42f2d2-c56c-4a1a-a2f0-94ae56990356?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="80+ events happening in September">
+										</div>
+										</article-asset>
+									</li>
+								
+									<li>
+										<article-asset href="https://www.wral.com/lifestyles/pullen-park-holiday-express-presented-by-wral-tickets-on-sale-october-2026/" date="2026-10-01T16:44:10Z">
+										<h3 slot="title"><a href="https://www.wral.com/lifestyles/pullen-park-holiday-express-presented-by-wral-tickets-on-sale-october-2026/">Tickets for 2026 Pullen Park Holiday Express, Presented by WRAL go on sale Oct. 15 </a></h3>
+										
+										<div slot="thumbnail" class="aspect-16x9">
+											<img src="https://images.wral.com/63e6c5b1-1c2b-45cb-a829-4c47811366b4?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/63e6c5b1-1c2b-45cb-a829-4c47811366b4?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/63e6c5b1-1c2b-45cb-a829-4c47811366b4?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/63e6c5b1-1c2b-45cb-a829-4c47811366b4?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Tickets for 2026 Pullen Park Holiday Express, Presented by WRAL go on sale Oct. 15 ">
+										</div>
+										</article-asset>
+									</li>
+								
+									<li>
+										<article-asset href="https://www.wral.com/lifestyles/hilary-duff-performing-raleigh-ticket-sales-september-2026/" date="">
+										<h3 slot="title"><a href="https://www.wral.com/lifestyles/hilary-duff-performing-raleigh-ticket-sales-september-2026/">Hilary Duff coming to Raleigh’s Lenovo Center next fall </a></h3>
+										
+										<div slot="thumbnail" class="aspect-16x9">
+											<img src="https://images.wral.com/7c7cba7f-8574-5c1b-9137-34a3f1e3a636?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/7c7cba7f-8574-5c1b-9137-34a3f1e3a636?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/7c7cba7f-8574-5c1b-9137-34a3f1e3a636?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/7c7cba7f-8574-5c1b-9137-34a3f1e3a636?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Hilary Duff coming to Raleigh’s Lenovo Center next fall ">
+										</div>
+										</article-asset>
+									</li>
+								
+									<li>
+										<article-asset href="https://www.wral.com/lifestyles/food/foodie-news-jubala-coffee-new-location-north-hills-september-2026/" date="">
+										<h3 slot="title"><a href="https://www.wral.com/lifestyles/food/foodie-news-jubala-coffee-new-location-north-hills-september-2026/">Foodie News: Jubala Coffee opening new location in North Hills</a></h3>
+										
+										<div slot="thumbnail" class="aspect-16x9">
+											<img src="https://images.wral.com/c675e0d7-8a46-4629-b2f0-1a30ea31cc4b?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/c675e0d7-8a46-4629-b2f0-1a30ea31cc4b?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/c675e0d7-8a46-4629-b2f0-1a30ea31cc4b?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/c675e0d7-8a46-4629-b2f0-1a30ea31cc4b?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Foodie News: Jubala Coffee opening new location in North Hills">
+										</div>
+										</article-asset>
+									</li>
+								
+							</ul>
+							<aside class="out-and-about__ad" aria-label="Advertisement">
+								<div class="svelte-cokg19 opscoad-Desktop_Right_Rail_1" data-unit="wral-v4/home"></div>
+							</aside>
+						</div>
+					
+					
+			</div>
+			
+		
+
+		
+
+		
+
+			
+
+			<!-- DEV-1087: section-front desktop 970x250 leaderboard below each layout-d section (e.g. WRAL Investigates) -->
+			
+
+			
+
+			<!-- DEV-1087: removed the extra standalone Mobile_In_Content below Video Central (relocated above; the "directly beneath" desktop+mobile cluster remains) -->
+
+			
+
+			
+
+
+			
+
+			
+
+	
+
+		
+
+		
+			<div class="opscoad-Mobile_In_Content" data-unit="wral-v4/home"></div>
+		
+
+		<!-- DEV-1087: Homepage mobile in-content ABOVE the Video Central section -->
+		
+
+		<!-- DEV-1087: Section-front mobile in-content ABOVE each layout-b section (e.g. Local & State) -->
+		
+
+				
+
+				
+
+		
+
+		
+
+			
+
+			<!-- DEV-1087: section-front desktop 970x250 leaderboard below each layout-d section (e.g. WRAL Investigates) -->
+			
+
+			
+				<!-- Display a grid of columns of articles (up to 5) -->
+				<section class="section-wrapper content-wrapper style-columns">
+					<ul class="grid-5">
+					
+						<li>
+							
+							<h3 class="section-title">
+								
+								<a href="https://www.wral.com/news/education/">Education</a>
+								
+								
+							</h3>
+							
+							
+								<article-asset href="https://www.wral.com/news/education/changes-to-nc-school-math-requirements-standards-vote-october-2026/">
+					
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/123ed852-a993-559e-abd0-375077f5f705?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/123ed852-a993-559e-abd0-375077f5f705?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/123ed852-a993-559e-abd0-375077f5f705?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/123ed852-a993-559e-abd0-375077f5f705?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="&#x27;Time for change&#x27;: NC approves new school math requirements, standards">
+						</div>
+									
+									<h4 slot="title"><a href="https://www.wral.com/news/education/changes-to-nc-school-math-requirements-standards-vote-october-2026/">'Time for change': NC approves new school math requirements, standards</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/local/wake-school-board-considering-policy-to-allow-inions-on-all-campuses-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/local/wake-school-board-considering-policy-to-allow-inions-on-all-campuses-september-2026/">Wake school board considering policy to allow unions on all campuses</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/local/nc-launches-10-million-books-campaign-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/local/nc-launches-10-million-books-campaign-september-2026/">NC wants students to read 10 million books, as reading for fun drops</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/education/higher-payments-expected-first-wave-borrowers-face-deadlines-switch-out-save-plan-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/education/higher-payments-expected-first-wave-borrowers-face-deadlines-switch-out-save-plan-september-2026/">Higher payments expected: First wave of borrowers face deadline to switch out of SAVE plan</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/video/teacher-vacancies-down-in-north-carolina-data-shows-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/video/teacher-vacancies-down-in-north-carolina-data-shows-september-2026/">Teacher vacancies down in North Carolina, new data shows</a></h4>
+									
+								</article-asset>
+							
+						</li>
+					
+						<li>
+							
+							<h3 class="section-title">
+								
+								<a href="https://www.wral.com/specialists/dan-haggerty/">WRAL In Depth</a>
+								
+								
+							</h3>
+							
+							
+								<article-asset href="https://www.wral.com/news/investigates/zoe-welsh-iryna-zarutska-mental-health-funding-north-carolina-october-2026/">
+					
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://assets.wral.com/e60d98f9-34ad-42f2-8256-aebdf7628f16?w=320&#x26;h=180&#x26;f=webp" srcset="https://assets.wral.com/e60d98f9-34ad-42f2-8256-aebdf7628f16?w=320&#x26;h=180&#x26;f=webp 320w, https://assets.wral.com/e60d98f9-34ad-42f2-8256-aebdf7628f16?w=640&#x26;h=360&#x26;f=webp 640w, https://assets.wral.com/e60d98f9-34ad-42f2-8256-aebdf7628f16?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="After murders of Zoe Welsh, Iryna Zarutska, NC lawmakers face questions over mental health funding">
+						</div>
+									
+									<h4 slot="title"><a href="https://www.wral.com/news/investigates/zoe-welsh-iryna-zarutska-mental-health-funding-north-carolina-october-2026/">After murders of Zoe Welsh, Iryna Zarutska, NC lawmakers face questions over mental health funding</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/investigates/saint-augustines-real-estate-company-bankruptcy-hearing-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/investigates/saint-augustines-real-estate-company-bankruptcy-hearing-september-2026/">Saint Augustine's deal with real estate company set to be discussed during bankruptcy hearing</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/investigates/50-plus-1-sports-saint-augustines-university-fraud-money-laundering-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/investigates/50-plus-1-sports-saint-augustines-university-fraud-money-laundering-september-2026/">Owner of company behind failed St. Aug’s deal pleads not guilty to federal fraud charges</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/local/wral-documentary-decades-of-warning-district-attorney-decisions-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/local/wral-documentary-decades-of-warning-district-attorney-decisions-september-2026/">Two DAs explain decisions in Ryan Camacho cases before Zoe Welsh’s murder</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/investigates/college-football-refunds-nc-state-athlete-advantage-brasil-cancel-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/investigates/college-football-refunds-nc-state-athlete-advantage-brasil-cancel-september-2026/">Where are the refunds? Kentucky company still owes fans, NC State money for canceled Brazil game</a></h4>
+									
+								</article-asset>
+							
+						</li>
+					
+						<li>
+							
+							<h3 class="section-title">
+								
+								<a href="https://www.wral.com/sports/">Sports</a>
+								
+								
+							</h3>
+							
+							
+								<article-asset href="https://www.wral.com/sports/carolina-hurricanes-ovechkin-debut-of-hurricanes-hockey-network-wral-october-2026/">
+					
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/858a3171-3810-4b71-87b1-3c4f884910fb?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/858a3171-3810-4b71-87b1-3c4f884910fb?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/858a3171-3810-4b71-87b1-3c4f884910fb?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/858a3171-3810-4b71-87b1-3c4f884910fb?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Canes take on NHL’s all-time leading scorer on WRAL in debut of new network">
+						</div>
+									
+									<h4 slot="title"><a href="https://www.wral.com/sports/carolina-hurricanes-ovechkin-debut-of-hurricanes-hockey-network-wral-october-2026/">Canes take on NHL’s all-time leading scorer on WRAL in debut of new network</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/ap/6eb3a-no-3-notre-dame-visits-north-carolina-with-a-revamped-rushing-game-after-nfl-departures/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/6eb3a-no-3-notre-dame-visits-north-carolina-with-a-revamped-rushing-game-after-nfl-departures/">No. 3 Notre Dame visits North Carolina with a revamped rushing game after NFL departures</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/sports/nc-state-dave-doeren-louisville-preview-october-1-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/sports/nc-state-dave-doeren-louisville-preview-october-1-2026/">Doeren calls on NC State fans to bring the noise against Louisville</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/ap/533bd-panthers-place-starting-cbs-jaycee-horn-and-mike-jackson-on-ir-ahead-of-lions-game/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/533bd-panthers-place-starting-cbs-jaycee-horn-and-mike-jackson-on-ir-ahead-of-lions-game/">Panthers place starting CBs Jaycee Horn and Mike Jackson on IR ahead of Lions game on WRAL</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/ap/e8489-protestors-call-on-ireland-to-boycott-second-nations-league-match-against-israel/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/e8489-protestors-call-on-ireland-to-boycott-second-nations-league-match-against-israel/">Protesters throw tennis balls and call on Ireland to boycott second match against Israel</a></h4>
+									
+								</article-asset>
+							
+						</li>
+					
+						<li>
+							
+							<h3 class="section-title">
+								
+								<a href="https://www.highschoolot.com/">HighschoolOT</a>
+								
+								
+							</h3>
+							
+							
+								<article-asset href="https://www.highschoolot.com/news/tennis/girls-dual-team-projections-2026/">
+					
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.highschoolot.com/dbe548ce-8d78-4449-8a64-960a99025c4c?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.highschoolot.com/dbe548ce-8d78-4449-8a64-960a99025c4c?w=320&#x26;h=180&#x26;f=webp 320w, https://images.highschoolot.com/dbe548ce-8d78-4449-8a64-960a99025c4c?w=640&#x26;h=360&#x26;f=webp 640w, https://images.highschoolot.com/dbe548ce-8d78-4449-8a64-960a99025c4c?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="NCHSAA girls dual-team tennis playoff projections for the 2026 postseason">
+						</div>
+									
+									<h4 slot="title"><a href="https://www.highschoolot.com/news/tennis/girls-dual-team-projections-2026/">NCHSAA girls dual-team tennis playoff projections for the 2026 postseason</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.highschoolot.com/news/tennis/girls-dual-team-playoff-projection-brackets-2026/">
+					
+									<h4 slot="title"><a href="https://www.highschoolot.com/news/tennis/girls-dual-team-playoff-projection-brackets-2026/">NCHSAA 1A-8A Classifications Girls Tennis Playoff Projections - 2026</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.highschoolot.com/news/soccer/marvin-ridge-mavericks-at-charlotte-catholic-cougars-boys-soccer-sept-2026-game-coverage/">
+					
+									<h4 slot="title"><a href="https://www.highschoolot.com/news/soccer/marvin-ridge-mavericks-at-charlotte-catholic-cougars-boys-soccer-sept-2026-game-coverage/">No. 2 Charlotte Catholic blanks No. 5 Marvin Ridge in showdown of defending champs</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.highschoolot.com/news/volleyball/girls/brady-collins-francesca-sales-girls-volleyball/">
+					
+									<h4 slot="title"><a href="https://www.highschoolot.com/news/volleyball/girls/brady-collins-francesca-sales-girls-volleyball/">Next up: Meet the two freshmen girls volleyball players making waves nationally</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.highschoolot.com/news/nchsaa/wilsons-mills-playoff-eligibility-2a-school-opening-sept-2026/">
+					
+									<h4 slot="title"><a href="https://www.highschoolot.com/news/nchsaa/wilsons-mills-playoff-eligibility-2a-school-opening-sept-2026/">Even without a conference, Wilson's Mills eligible for 2A playoffs in all sports but football</a></h4>
+									
+								</article-asset>
+							
+						</li>
+					
+				</ul>
+			</section>
+		
+
+			<!-- DEV-1087: removed the extra standalone Mobile_In_Content below Video Central (relocated above; the "directly beneath" desktop+mobile cluster remains) -->
+
+			
+
+			
+
+
+			
+
+			
+
+	
+
+		
+
+		
+
+		<!-- DEV-1087: Homepage mobile in-content ABOVE the Video Central section -->
+		
+
+		<!-- DEV-1087: Section-front mobile in-content ABOVE each layout-b section (e.g. Local & State) -->
+		
+
+				
+
+				
+					
+				
+				
+				
+				
+					<!-- Default section of up to 5 items -->
+					<div id="section-6" class="section-wrapper content-wrapper">
+				
+					<h2 class="section-title">
+						
+							<a href="https://www.wral.com/specialists/">WRAL Specialists</a>
+						
+						
+					</h2>
+				
+					
+					
+						
+						
+						
+							<ul class="grid-5" style="margin: 1rem 0;">
+								
+									<li>
+											<article-asset href="https://www.wral.com/news/investigates/documentary-preview-decades-of-warning-september-2026/" date="2026-10-01T00:01:01Z">
+											<h3 slot="title"><a href="https://www.wral.com/news/investigates/documentary-preview-decades-of-warning-september-2026/">New WRAL documentary examines warning signs decades before Raleigh teacher’s murder</a></h3>
+											
+											<div slot="thumbnail" class="aspect-16x9">
+												<img src="https://assets.wral.com/34d26c55-f82b-4069-97a1-2fe24ad368f8?w=320&#x26;h=180&#x26;f=webp" srcset="https://assets.wral.com/34d26c55-f82b-4069-97a1-2fe24ad368f8?w=320&#x26;h=180&#x26;f=webp 320w, https://assets.wral.com/34d26c55-f82b-4069-97a1-2fe24ad368f8?w=640&#x26;h=360&#x26;f=webp 640w, https://assets.wral.com/34d26c55-f82b-4069-97a1-2fe24ad368f8?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="New WRAL documentary examines warning signs decades before Raleigh teacher’s murder">
+											</div>
+											</article-asset>
+									</li>
+								
+									<li>
+											<article-asset href="https://www.wral.com/news/investigates/college-football-refunds-nc-state-athlete-advantage-brasil-cancel-september-2026/" date="">
+											<h3 slot="title"><a href="https://www.wral.com/news/investigates/college-football-refunds-nc-state-athlete-advantage-brasil-cancel-september-2026/">Where are the refunds? Kentucky company still owes fans, NC State money for canceled Brazil game</a></h3>
+											
+											<div slot="thumbnail" class="aspect-16x9">
+												<img src="https://images.wral.com/61d268af-23e8-562b-8f6b-f70929bf43d0?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/61d268af-23e8-562b-8f6b-f70929bf43d0?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/61d268af-23e8-562b-8f6b-f70929bf43d0?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/61d268af-23e8-562b-8f6b-f70929bf43d0?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Where are the refunds? Kentucky company still owes fans, NC State money for canceled Brazil game">
+											</div>
+											</article-asset>
+									</li>
+								
+									<li>
+											<article-asset href="https://www.wral.com/news/education/higher-payments-expected-first-wave-borrowers-face-deadlines-switch-out-save-plan-september-2026/" date="">
+											<h3 slot="title"><a href="https://www.wral.com/news/education/higher-payments-expected-first-wave-borrowers-face-deadlines-switch-out-save-plan-september-2026/">Higher payments expected: First wave of borrowers face deadline to switch out of SAVE plan</a></h3>
+											
+											<div slot="thumbnail" class="aspect-16x9">
+												<img src="https://images.wral.com/0156bc62-f459-5cfd-aa48-91f290158213?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/0156bc62-f459-5cfd-aa48-91f290158213?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/0156bc62-f459-5cfd-aa48-91f290158213?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/0156bc62-f459-5cfd-aa48-91f290158213?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Higher payments expected: First wave of borrowers face deadline to switch out of SAVE plan">
+											</div>
+											</article-asset>
+									</li>
+								
+									<li>
+											<article-asset href="https://www.wral.com/news/investigates/renew-nc-applicants-waiting-homes-two-years-helene-sept-2026/" date="">
+											<h3 slot="title"><a href="https://www.wral.com/news/investigates/renew-nc-applicants-waiting-homes-two-years-helene-sept-2026/">Slow road home: Most Renew NC applicants still waiting for homes two years after Hurricane Helene</a></h3>
+											
+											<div slot="thumbnail" class="aspect-16x9">
+												<img src="https://assets.wral.com/fd447d13-7f97-4455-9812-8e9dd3843084?w=320&#x26;h=180&#x26;f=webp" srcset="https://assets.wral.com/fd447d13-7f97-4455-9812-8e9dd3843084?w=320&#x26;h=180&#x26;f=webp 320w, https://assets.wral.com/fd447d13-7f97-4455-9812-8e9dd3843084?w=640&#x26;h=360&#x26;f=webp 640w, https://assets.wral.com/fd447d13-7f97-4455-9812-8e9dd3843084?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Slow road home: Most Renew NC applicants still waiting for homes two years after Hurricane Helene">
+											</div>
+											</article-asset>
+									</li>
+								
+									<li>
+											<article-asset href="https://www.wral.com/news/local/north-carolina-drought-falling-limb-syndrome-september-2026/" date="">
+											<h3 slot="title"><a href="https://www.wral.com/news/local/north-carolina-drought-falling-limb-syndrome-september-2026/">Trees take out Wake County woman's home, truck. Is 'falling limb syndrome' to blame?</a></h3>
+											
+											<div slot="thumbnail" class="aspect-16x9">
+												<img src="https://images.wral.com/cd3b6020-f5e5-410f-be60-62509bb44a1d?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/cd3b6020-f5e5-410f-be60-62509bb44a1d?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/cd3b6020-f5e5-410f-be60-62509bb44a1d?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/cd3b6020-f5e5-410f-be60-62509bb44a1d?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Trees take out Wake County woman&#x27;s home, truck. Is &#x27;falling limb syndrome&#x27; to blame?">
+											</div>
+											</article-asset>
+									</li>
+								
+							</ul>
+						
+					
+			</div>
+			
+		
+
+		
+
+		
+
+			
+
+			<!-- DEV-1087: section-front desktop 970x250 leaderboard below each layout-d section (e.g. WRAL Investigates) -->
+			
+
+			
+
+			<!-- DEV-1087: removed the extra standalone Mobile_In_Content below Video Central (relocated above; the "directly beneath" desktop+mobile cluster remains) -->
+
+			
+				<!-- DEV-1087: Homepage mid-page ad below the WRAL Specialists block (desktop leaderboard + mobile in-content; mid-page replacement for the removed bottom-of-page footer units) -->
+				<section class="section-wrapper content-wrapper">
+					<div class="ad-container">
+						<div class="svelte-cokg19 opscoad-Mobile_In_Content" data-unit="wral-v4/home"></div>
+						<div class="svelte-cokg19 opscoad-Desktop_Leaderboard" data-unit="wral-v4/home"></div>
+					</div>
+				</section>
+			
+
+			
+
+
+			
+
+			
+
+	
+
+		
+
+		
+
+		<!-- DEV-1087: Homepage mobile in-content ABOVE the Video Central section -->
+		
+
+		<!-- DEV-1087: Section-front mobile in-content ABOVE each layout-b section (e.g. Local & State) -->
+		
+
+				
+
+				
+
+		
+
+		
+
+			
+
+			<!-- DEV-1087: section-front desktop 970x250 leaderboard below each layout-d section (e.g. WRAL Investigates) -->
+			
+
+			
+				<!-- Display a grid of columns of articles (up to 5) -->
+				<section class="section-wrapper content-wrapper style-columns">
+					<ul class="grid-5">
+					
+						<li>
+							
+							<h3 class="section-title">
+								
+								<a href="https://www.wral.com/lifestyles/family/">Family</a>
+								
+								
+							</h3>
+							
+							
+								<article-asset href="https://www.wral.com/video/warl-sponsors-pullen-park-holiday-express/">
+					
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/deb199d4-d86d-44a9-8ee7-690cee4216bf?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/deb199d4-d86d-44a9-8ee7-690cee4216bf?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/deb199d4-d86d-44a9-8ee7-690cee4216bf?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/deb199d4-d86d-44a9-8ee7-690cee4216bf?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="WRAL sponsors Pullen Park&#x27;s Holiday Express">
+						</div>
+									
+									<h4 slot="title"><a href="https://www.wral.com/video/warl-sponsors-pullen-park-holiday-express/">WRAL sponsors Pullen Park's Holiday Express</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/lifestyles/pullen-park-holiday-express-presented-by-wral-tickets-on-sale-october-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/lifestyles/pullen-park-holiday-express-presented-by-wral-tickets-on-sale-october-2026/">Tickets for 2026 Pullen Park Holiday Express, Presented by WRAL go on sale Oct. 15 </a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/ap/royals-prince-harry-meghan-paparazzi-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/royals-prince-harry-meghan-paparazzi-september-2026/">Harry and Meghan blame ‘extraordinarily reckless’ paparazzi for security scare at children’s school</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/local/wake-schools-family-community-engagement-summit-sept-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/local/wake-schools-family-community-engagement-summit-sept-2026/">Wake schools push family engagement to improve attendance, student success</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/video/wake-schools-family-community-engagement-summit-sept-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/video/wake-schools-family-community-engagement-summit-sept-2026/">Wake Co Schools working to improve student outcomes with family engagement</a></h4>
+									
+								</article-asset>
+							
+						</li>
+					
+						<li>
+							
+							<h3 class="section-title">
+								
+								<a href="https://www.wral.com/5onyourside/smartshopper/">Smartshopper</a>
+								
+								
+							</h3>
+							
+							
+								<article-asset href="https://www.wral.com/lifestyle/food/best-prices-grocery-staples-triangle/">
+					
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/31c2fe1c-b05e-4a71-8947-7af0fc4b9a5e?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/31c2fe1c-b05e-4a71-8947-7af0fc4b9a5e?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/31c2fe1c-b05e-4a71-8947-7af0fc4b9a5e?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/31c2fe1c-b05e-4a71-8947-7af0fc4b9a5e?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Where can I find the best prices on grocery staples this week?">
+						</div>
+									
+									<h4 slot="title"><a href="https://www.wral.com/lifestyle/food/best-prices-grocery-staples-triangle/">Where can I find the best prices on grocery staples this week?</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/consumer/5onyourside/consumer-reports-going-into-debt-buying-groceries-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/consumer/5onyourside/consumer-reports-going-into-debt-buying-groceries-september-2026/">People are going into debt just to buy groceries. Here's how to save</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/consumer/amazon-deals-jn-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/consumer/amazon-deals-jn-2026/">Top Amazon deals: Stanley Tumbler, Shark Stick Vacuum, Power Strip w/USB, Tactical flashlights</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/consumer/school-supply-deals-jly-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/consumer/school-supply-deals-jly-2026/">List of school supply deals starting at 25 cents</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/consumer/swagbucks-swag-code-jn-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/consumer/swagbucks-swag-code-jn-2026/">New Swagbucks Swag Code Monday through Friday</a></h4>
+									
+								</article-asset>
+							
+						</li>
+					
+						<li>
+							
+							<h3 class="section-title">
+								
+								<a href="https://www.wral.com/goodnews/">Good News</a>
+								
+								
+							</h3>
+							
+							
+								<article-asset href="https://www.wral.com/news/local/world-news-day-goddard-cary-lochmere-september-2026/">
+					
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/90f61527-f304-40c3-95cd-9dab04e5c8a3?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/90f61527-f304-40c3-95cd-9dab04e5c8a3?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/90f61527-f304-40c3-95cd-9dab04e5c8a3?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/90f61527-f304-40c3-95cd-9dab04e5c8a3?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Preschoolers in Cary become junior reporters on World News Day">
+						</div>
+									
+									<h4 slot="title"><a href="https://www.wral.com/news/local/world-news-day-goddard-cary-lochmere-september-2026/">Preschoolers in Cary become junior reporters on World News Day</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/local/panther-creek-green-level-game-promoting-mental-health-awareness-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/local/panther-creek-green-level-game-promoting-mental-health-awareness-september-2026/">Panther Creek and Green Level meet for annual game promoting mental health awareness</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/local/dog-dumpster-durham-adopted-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/local/dog-dumpster-durham-adopted-september-2026/">Dog found in a dumpster in Durham has found a home</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/local/dog-dumpster-recovers-adoption-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/local/dog-dumpster-recovers-adoption-september-2026/">Dog found in Durham dumpster goes up for adoption</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/local/first-responders-breakfast-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/local/first-responders-breakfast-2026/">Recognizing local heroes: Free Chick-fil-A for first responders Thursday morning</a></h4>
+									
+								</article-asset>
+							
+						</li>
+					
+						<li>
+							
+							<h3 class="section-title">
+								
+								<a href="https://www.wral.com/news/strange/">Offbeat</a>
+								
+								
+							</h3>
+							
+							
+								<article-asset href="https://www.wral.com/news/ap/a7ef1-pl-nio-trump-mick-jagger-and-samurai-taxi-driver-keep-brazils-tradition-of-joke-candidates-alive/">
+					
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/fd12183f-82df-5784-875f-2ba4040ea92a?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/fd12183f-82df-5784-875f-2ba4040ea92a?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/fd12183f-82df-5784-875f-2ba4040ea92a?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/fd12183f-82df-5784-875f-2ba4040ea92a?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Plínio Trump, Mick Jagger and Samurai Taxi Driver keep Brazil&#x27;s tradition of joke candidates alive">
+						</div>
+									
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/a7ef1-pl-nio-trump-mick-jagger-and-samurai-taxi-driver-keep-brazils-tradition-of-joke-candidates-alive/">Plínio Trump, Mick Jagger and Samurai Taxi Driver keep Brazil's tradition of joke candidates alive</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/ap/9cef4-south-korea-embraces-a-huge-shark-slowly-circling-a-canal-in-the-countrys-biggest-port-city/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/9cef4-south-korea-embraces-a-huge-shark-slowly-circling-a-canal-in-the-countrys-biggest-port-city/">South Korea embraces a huge shark slowly circling a canal in the country's biggest port city</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/ap/e4a8c-do-over-fa-cup-game-to-be-replayed-because-of-referee-error/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/e4a8c-do-over-fa-cup-game-to-be-replayed-because-of-referee-error/">Do-over: FA Cup game to be replayed because of referee error</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/ap/ce371-catman-to-the-rescue-as-man-pulls-stuck-long-island-pet-to-safety-after-long-ordeal/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/ce371-catman-to-the-rescue-as-man-pulls-stuck-long-island-pet-to-safety-after-long-ordeal/">'Catman' to the rescue, as man pulls stuck Long Island pet to safety after long ordeal</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/ap/3f222-fire-up-the-grills-thousands-of-south-africans-try-to-set-a-record-for-the-biggest-cookout/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/3f222-fire-up-the-grills-thousands-of-south-africans-try-to-set-a-record-for-the-biggest-cookout/">Fire up the grills! Thousands of South Africans try to set a record for the biggest cookout</a></h4>
+									
+								</article-asset>
+							
+						</li>
+					
+				</ul>
+			</section>
+		
+
+			<!-- DEV-1087: removed the extra standalone Mobile_In_Content below Video Central (relocated above; the "directly beneath" desktop+mobile cluster remains) -->
+
+			
+
+			
+				<!-- Taboola: Below Homepage Thumbnails -->
+				<section class="section-wrapper content-wrapper">
+					<div id="taboola-below-homepage-thumbnails" style="min-height: 636px;"></div>
+					<script type="text/javascript">
+						window._taboola = window._taboola || [];
+						_taboola.push({
+							mode: 'alternating-thumbnails-a',
+							container: 'taboola-below-homepage-thumbnails',
+							placement: 'Below Homepage Thumbnails',
+							target_type: 'mix'
+						});
+					</script>
+				</section>
+				<!-- Display marketwatch and lottery directly after the Taboola ad. -->
+				<section class="section-wrapper content-wrapper">
+					<div class="svelte-cokg19 opscoad-Desktop_Leaderboard" data-unit="wral-v4/home"></div>
+				</section>
+				<section class="section-wrapper content-wrapper">
+					<ul class="grid-2 marketwatch-lottery-grid">
+					<li>
+						<h2 class="section-title">NC Market Watch</h2>
+						<script src="https://markets.financialcontent.com/wral/widget:watchlist?Output=JS" onload="window._init_marketwatch()"></script>
+					</li>
+					<li class="marketwatch-lottery-grid__ad">
+						<div class="svelte-cokg19 opscoad-Desktop_MedRec" data-unit="wral-v4/home"></div>
+					</li>
+					<li>
+						<h2 class="section-title">Lottery</h2>
+						<wral-lottery></wral-lottery>
+						<div class="cta"><a href="https://www.wral.com/entertainment/lottery/">See All Winning Numbers</a></div>
+					</li>
+				</ul>
+			</section>
+		
+
+
+			
+
+			
+
+	
+
+		
+
+		
+
+		<!-- DEV-1087: Homepage mobile in-content ABOVE the Video Central section -->
+		
+
+		<!-- DEV-1087: Section-front mobile in-content ABOVE each layout-b section (e.g. Local & State) -->
+		
+
+				
+
+				
+
+		
+
+		
+
+			
+
+			<!-- DEV-1087: section-front desktop 970x250 leaderboard below each layout-d section (e.g. WRAL Investigates) -->
+			
+
+			
+				<!-- Display a grid of columns of articles (up to 5) -->
+				<section class="section-wrapper content-wrapper style-columns">
+					<ul class="grid-5">
+					
+						<li>
+							
+							<h3 class="section-title">
+								
+								<a href="https://www.wral.com/5onyourside/">5 on your side</a>
+								
+								
+							</h3>
+							
+							
+								<article-asset href="https://www.wral.com/video/raleigh-apartment-balcony-collapse-raises-safety-concerns-october-2026/">
+					
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/627395fc-dfd7-5096-b742-14c6d2acf0eb?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/627395fc-dfd7-5096-b742-14c6d2acf0eb?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/627395fc-dfd7-5096-b742-14c6d2acf0eb?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/627395fc-dfd7-5096-b742-14c6d2acf0eb?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Raleigh apartment balcony collapse raises safety concerns">
+						</div>
+									
+									<h4 slot="title"><a href="https://www.wral.com/video/raleigh-apartment-balcony-collapse-raises-safety-concerns-october-2026/">Raleigh apartment balcony collapse raises safety concerns</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/local/raleigh-apartment-north-hills-balcony-collapse-repairs-october-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/local/raleigh-apartment-north-hills-balcony-collapse-repairs-october-2026/">Balcony failure prompts evaluation at North Hills apartment complex, city says permits are needed</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/state/new-snap-costs-take-effect-north-carolina-october-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/state/new-snap-costs-take-effect-north-carolina-october-2026/">New SNAP costs take effect in North Carolina on Oct. 1</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/consumer/5onyourside/funflation-spending-habits-leisure-entertainment-october-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/consumer/5onyourside/funflation-spending-habits-leisure-entertainment-october-2026/">'Funflation': People are spending on hobbies, leisure even as prices rise</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/consumer/5onyourside/e-scooters-not-recommended-for-safety-consumer-reports-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/consumer/5onyourside/e-scooters-not-recommended-for-safety-consumer-reports-september-2026/">E-scooters no longer recommended by Consumer Reports</a></h4>
+									
+								</article-asset>
+							
+						</li>
+					
+						<li>
+							
+							<h3 class="section-title">
+								
+								<a href="https://www.wral.com/news/local/investigations/">Investigations</a>
+								
+								
+							</h3>
+							
+							
+								<article-asset href="https://www.wral.com/news/investigates/zoe-welsh-iryna-zarutska-mental-health-funding-north-carolina-october-2026/">
+					
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://assets.wral.com/e60d98f9-34ad-42f2-8256-aebdf7628f16?w=320&#x26;h=180&#x26;f=webp" srcset="https://assets.wral.com/e60d98f9-34ad-42f2-8256-aebdf7628f16?w=320&#x26;h=180&#x26;f=webp 320w, https://assets.wral.com/e60d98f9-34ad-42f2-8256-aebdf7628f16?w=640&#x26;h=360&#x26;f=webp 640w, https://assets.wral.com/e60d98f9-34ad-42f2-8256-aebdf7628f16?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="After murders of Zoe Welsh, Iryna Zarutska, NC lawmakers face questions over mental health funding">
+						</div>
+									
+									<h4 slot="title"><a href="https://www.wral.com/news/investigates/zoe-welsh-iryna-zarutska-mental-health-funding-north-carolina-october-2026/">After murders of Zoe Welsh, Iryna Zarutska, NC lawmakers face questions over mental health funding</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/investigates/saint-augustines-real-estate-company-bankruptcy-hearing-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/investigates/saint-augustines-real-estate-company-bankruptcy-hearing-september-2026/">Saint Augustine's deal with real estate company set to be discussed during bankruptcy hearing</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/investigates/50-plus-1-sports-saint-augustines-university-fraud-money-laundering-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/investigates/50-plus-1-sports-saint-augustines-university-fraud-money-laundering-september-2026/">Owner of company behind failed St. Aug’s deal pleads not guilty to federal fraud charges</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/local/wral-documentary-decades-of-warning-district-attorney-decisions-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/local/wral-documentary-decades-of-warning-district-attorney-decisions-september-2026/">Two DAs explain decisions in Ryan Camacho cases before Zoe Welsh’s murder</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/investigates/college-football-refunds-nc-state-athlete-advantage-brasil-cancel-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/investigates/college-football-refunds-nc-state-athlete-advantage-brasil-cancel-september-2026/">Where are the refunds? Kentucky company still owes fans, NC State money for canceled Brazil game</a></h4>
+									
+								</article-asset>
+							
+						</li>
+					
+						<li>
+							
+							<h3 class="section-title">
+								
+								<a href="https://www.wral.com/business/technology/">WRAL Techwire</a>
+								
+								
+							</h3>
+							
+							
+								<article-asset href="https://www.wral.com/business/rti-to-cut-200-more-jobs-as-it-looks-to-streamline-operations-october-2026/">
+					
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/450f1dfb-e906-48e8-a924-e5b7227a85db?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/450f1dfb-e906-48e8-a924-e5b7227a85db?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/450f1dfb-e906-48e8-a924-e5b7227a85db?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/450f1dfb-e906-48e8-a924-e5b7227a85db?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="RTI to cut 200 more jobs as it looks to streamline operations">
+						</div>
+									
+									<h4 slot="title"><a href="https://www.wral.com/business/rti-to-cut-200-more-jobs-as-it-looks-to-streamline-operations-october-2026/">RTI to cut 200 more jobs as it looks to streamline operations</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/business/technology/research-triangle-park-evolution-collaboration-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/business/technology/research-triangle-park-evolution-collaboration-september-2026/">RTP 3.0: What the Research Triangle can teach us about building together</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/business/technology/ai-human-systems-growth-safeguards-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/business/technology/ai-human-systems-growth-safeguards-september-2026/">Datafication Nation: How AI is learning to be human</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/business/technology/tech-scene-wilmington-nc-coast-wral-techwire-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/business/technology/tech-scene-wilmington-nc-coast-wral-techwire-september-2026/">Progress at the coast: The emerging startup scene in Wilmington, North Carolina</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/business/technology/counter-ai-anxiety-support-dt-sept-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/business/technology/counter-ai-anxiety-support-dt-sept-2026/">Don’t ignore AI anxiety. Support employees with training, clarity and empathy</a></h4>
+									
+								</article-asset>
+							
+						</li>
+					
+						<li>
+							
+							<h3 class="section-title">
+								
+								<a href="https://www.wral.com/business/">Business</a>
+								
+								
+							</h3>
+							
+							
+								<article-asset href="https://www.wral.com/news/ap/a49cd-g20-trade-talks-yield-little-progress-while-tensions-simmer/">
+					
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/fdccc43f-f8d4-53c7-9a1a-064048a28ddd?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/fdccc43f-f8d4-53c7-9a1a-064048a28ddd?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/fdccc43f-f8d4-53c7-9a1a-064048a28ddd?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/fdccc43f-f8d4-53c7-9a1a-064048a28ddd?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="G20 trade talks yield little progress while tensions simmer">
+						</div>
+									
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/a49cd-g20-trade-talks-yield-little-progress-while-tensions-simmer/">G20 trade talks yield little progress while tensions simmer</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/ap/a62a7-federal-report-says-pilots-werent-warned-about-wind-before-amazon-cargo-plane-crashed-in-miami/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/a62a7-federal-report-says-pilots-werent-warned-about-wind-before-amazon-cargo-plane-crashed-in-miami/">Federal report says pilots weren't warned about wind before Amazon cargo plane crashed in Miami</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/ap/dd059-supreme-court-denies-arizona-s-bid-to-delay-start-of-takeover-of-healthcare-in-state-prisons/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/dd059-supreme-court-denies-arizona-s-bid-to-delay-start-of-takeover-of-healthcare-in-state-prisons/">Supreme Court denies Arizona’s bid to delay start of takeover of healthcare in state prisons</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/ap/cc89d-no-longer-a-secret-nathan-fielders-elizabeth-holmes-doc-you-can-see-everything-lands-in-new-york/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/cc89d-no-longer-a-secret-nathan-fielders-elizabeth-holmes-doc-you-can-see-everything-lands-in-new-york/">No longer a secret, Nathan Fielder's Elizabeth Holmes doc 'You Can See Everything' lands in New York</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/ap/80e3e-puerto-rico-faces-record-electric-rate-as-demand-and-costs-increase/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/80e3e-puerto-rico-faces-record-electric-rate-as-demand-and-costs-increase/">Puerto Rico faces record electric rate as demand and costs increase</a></h4>
+									
+								</article-asset>
+							
+						</li>
+					
+				</ul>
+			</section>
+		
+
+			<!-- DEV-1087: removed the extra standalone Mobile_In_Content below Video Central (relocated above; the "directly beneath" desktop+mobile cluster remains) -->
+
+			
+
+			
+
+
+			
+
+			
+
+	
+
+		
+
+		
+
+		<!-- DEV-1087: Homepage mobile in-content ABOVE the Video Central section -->
+		
+
+		<!-- DEV-1087: Section-front mobile in-content ABOVE each layout-b section (e.g. Local & State) -->
+		
+
+				
+
+				
+
+		
+
+		
+
+			
+
+			<!-- DEV-1087: section-front desktop 970x250 leaderboard below each layout-d section (e.g. WRAL Investigates) -->
+			
+
+			
+				<!-- Display a grid of columns of articles (up to 5) -->
+				<section class="section-wrapper content-wrapper style-columns">
+					<ul class="grid-5">
+					
+						<li>
+							
+							<h3 class="section-title">
+								
+								<a href="https://www.wral.com/tar-heel-traveler/">Travel</a>
+								
+								
+							</h3>
+							
+							
+								<article-asset href="https://www.wral.com/news/ap/airport-security-tsa-boarding-september-2026/">
+					
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/6430e045-b98b-4081-83c4-febe52e44420?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/6430e045-b98b-4081-83c4-febe52e44420?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/6430e045-b98b-4081-83c4-febe52e44420?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/6430e045-b98b-4081-83c4-febe52e44420?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="TSA officers now not allowed to sit down while checking boarding passes and IDs">
+						</div>
+									
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/airport-security-tsa-boarding-september-2026/">TSA officers now not allowed to sit down while checking boarding passes and IDs</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/video/whats-behind-labor-day-travel-cost-crunch-sept-4-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/video/whats-behind-labor-day-travel-cost-crunch-sept-4-2026/">What's behind the labor day travel cost crunch?</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/ap/labor-day-gas-expensive-trump-scramble-answers-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/labor-day-gas-expensive-trump-scramble-answers-september-2026/">Labor Day gas has never been this expensive; Trump is scrambling for answers</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/local/rdu-prepares-labor-day-travel-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/local/rdu-prepares-labor-day-travel-september-2026/">RDU prepares for more than 100,000 travelers this Labor Day holiday</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/local/aaa-gas-prices-north-carolina-more-expensive-labor-day-travel-september-2026/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/local/aaa-gas-prices-north-carolina-more-expensive-labor-day-travel-september-2026/">AAA: Labor Day holiday travel poised to be busy, more expensive this year</a></h4>
+									
+								</article-asset>
+							
+						</li>
+					
+						<li>
+							
+							<h3 class="section-title">
+								
+								<a href="https://www.wral.com/hometown-carolina/">Hometown Carolina</a>
+								
+								
+							</h3>
+							
+							
+								<article-asset href="https://www.wral.com/story/fun-things-to-do-in-washington-this-spring/21933464/">
+					
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/asset/marketplace/hometown_carolina/2025/03/31/21937213/Swing_Sunset-DMID1-66h7crxxb-640x480.jpg?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/asset/marketplace/hometown_carolina/2025/03/31/21937213/Swing_Sunset-DMID1-66h7crxxb-640x480.jpg?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/asset/marketplace/hometown_carolina/2025/03/31/21937213/Swing_Sunset-DMID1-66h7crxxb-640x480.jpg?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/asset/marketplace/hometown_carolina/2025/03/31/21937213/Swing_Sunset-DMID1-66h7crxxb-640x480.jpg?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Fun Things to do in Washington this Spring">
+						</div>
+									
+									<h4 slot="title"><a href="https://www.wral.com/story/fun-things-to-do-in-washington-this-spring/21933464/">Fun Things to do in Washington this Spring</a></h4>
+									
+										<div class="sponsored-badge">Sponsored</div>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/story/10-reasons-to-visit-washington-in-2025/21825649/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/story/10-reasons-to-visit-washington-in-2025/21825649/">10 Reasons to Visit Washington in 2025</a></h4>
+									
+										<div class="sponsored-badge">Sponsored</div>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/story/nightlife-in-washington/21712037/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/story/nightlife-in-washington/21712037/">Nightlife in Washington</a></h4>
+									
+										<div class="sponsored-badge">Sponsored</div>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/story/cultural-grounds-in-downtown-washington/21650638/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/story/cultural-grounds-in-downtown-washington/21650638/">Cultural Grounds in downtown Washington</a></h4>
+									
+										<div class="sponsored-badge">Sponsored</div>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/story/new-mural-that-celebrates-inclusion-in-washington/21585828/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/story/new-mural-that-celebrates-inclusion-in-washington/21585828/">New Mural that Celebrates Inclusion in Washington</a></h4>
+									
+										<div class="sponsored-badge">Sponsored</div>
+									
+								</article-asset>
+							
+						</li>
+					
+						<li>
+							
+							<h3 class="section-title">
+								
+								<a href="https://www.wral.com/entertainment/">Entertainment</a>
+								
+								
+							</h3>
+							
+							
+								<article-asset href="https://www.wral.com/news/ap/e72be-rapper-rick-ross-charged-with-battery-after-domestic-violence-accusation/">
+					
+						<div slot="thumbnail" class="aspect-16x9">
+							<img src="https://images.wral.com/4409d806-812d-548e-b24c-12a9fae769f1?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/4409d806-812d-548e-b24c-12a9fae769f1?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/4409d806-812d-548e-b24c-12a9fae769f1?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/4409d806-812d-548e-b24c-12a9fae769f1?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Rapper Rick Ross stands charged with battery after a woman alleges domestic violence">
+						</div>
+									
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/e72be-rapper-rick-ross-charged-with-battery-after-domestic-violence-accusation/">Rapper Rick Ross stands charged with battery after a woman alleges domestic violence</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/ap/45cd1-donor-revives-fraud-claims-against-christian-worship-leader-sean-feucht-over-a-250-000-donation/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/45cd1-donor-revives-fraud-claims-against-christian-worship-leader-sean-feucht-over-a-250-000-donation/">Donor revives fraud claims against Christian worship leader Sean Feucht over a $250,000 donation</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/ap/8ba46-a-plumber-and-a-dentist-are-praised-as-heroes-in-flydubai-near-disaster/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/8ba46-a-plumber-and-a-dentist-are-praised-as-heroes-in-flydubai-near-disaster/">A plumber and a dentist are praised as heroes in FlyDubai near-disaster</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/news/ap/cc89d-no-longer-a-secret-nathan-fielders-elizabeth-holmes-doc-you-can-see-everything-lands-in-new-york/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/news/ap/cc89d-no-longer-a-secret-nathan-fielders-elizabeth-holmes-doc-you-can-see-everything-lands-in-new-york/">No longer a secret, Nathan Fielder's Elizabeth Holmes doc 'You Can See Everything' lands in New York</a></h4>
+									
+								</article-asset>
+							
+								<article-asset href="https://www.wral.com/video/warl-sponsors-pullen-park-holiday-express/">
+					
+									<h4 slot="title"><a href="https://www.wral.com/video/warl-sponsors-pullen-park-holiday-express/">WRAL sponsors Pullen Park's Holiday Express</a></h4>
+									
+								</article-asset>
+							
+						</li>
+					
+				</ul>
+			</section>
+		
+
+			<!-- DEV-1087: removed the extra standalone Mobile_In_Content below Video Central (relocated above; the "directly beneath" desktop+mobile cluster remains) -->
+
+			
+
+			
+
+
+			
+
+			
+
+	
+
+		
+
+		
+
+		<!-- DEV-1087: Homepage mobile in-content ABOVE the Video Central section -->
+		
+
+		<!-- DEV-1087: Section-front mobile in-content ABOVE each layout-b section (e.g. Local & State) -->
+		
+
+				
+
+				
+					
+				
+				
+				
+				
+					<!-- Default section of up to 5 items -->
+					<div id="section-10" class="section-wrapper content-wrapper">
+				
+					<h2 class="section-title">
+						
+							<a href="https://www.wral.com/cbc-podcast/">Podcasts</a>
+						
+						
+					</h2>
+				
+					
+					
+						
+							<ul class="grid-5 podcast-grid" style="margin: 1rem 0;">
+								
+									<li>
+										<article-asset href="https://www.wral.com/about/wral-daily-download/" date="">
+										<h3 slot="title"><a href="https://www.wral.com/about/wral-daily-download/">WRAL Daily Download</a></h3>
+										
+										<div slot="thumbnail" class="aspect-16x9">
+											<img src="https://images.wral.com/8a2a83c4-78fa-4f0e-9157-ec755482abca?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/8a2a83c4-78fa-4f0e-9157-ec755482abca?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/8a2a83c4-78fa-4f0e-9157-ec755482abca?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/8a2a83c4-78fa-4f0e-9157-ec755482abca?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="WRAL Daily Download">
+										</div>
+										</article-asset>
+									</li>
+								
+									<li>
+										<article-asset href="https://www.wral.com/about/recent-wral-newscasts/" date="">
+										<h3 slot="title"><a href="https://www.wral.com/about/recent-wral-newscasts/">Recent WRAL Newscasts</a></h3>
+										
+										<div slot="thumbnail" class="aspect-16x9">
+											<img src="https://images.wral.com/42b4c878-67ed-44b1-ba96-2e8b8f3d62b7?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/42b4c878-67ed-44b1-ba96-2e8b8f3d62b7?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/42b4c878-67ed-44b1-ba96-2e8b8f3d62b7?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/42b4c878-67ed-44b1-ba96-2e8b8f3d62b7?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Recent WRAL Newscasts">
+										</div>
+										</article-asset>
+									</li>
+								
+									<li>
+										<article-asset href="https://www.wral.com/sports/canes-corner-adam-gold-carolina-hurricanes-podcast/" date="">
+										<h3 slot="title"><a href="https://www.wral.com/sports/canes-corner-adam-gold-carolina-hurricanes-podcast/">Canes Corner with Adam Gold</a></h3>
+										
+										<div slot="thumbnail" class="aspect-16x9">
+											<img src="https://images.wral.com/b85850f3-2600-45d7-847d-f9da95565085?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/b85850f3-2600-45d7-847d-f9da95565085?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/b85850f3-2600-45d7-847d-f9da95565085?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/b85850f3-2600-45d7-847d-f9da95565085?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Canes Corner with Adam Gold">
+										</div>
+										</article-asset>
+									</li>
+								
+									<li>
+										<article-asset href="https://www.wral.com/about/mix-mornings-101-5/" date="">
+										<h3 slot="title"><a href="https://www.wral.com/about/mix-mornings-101-5/">MIX Mornings</a></h3>
+										
+										<div slot="thumbnail" class="aspect-16x9">
+											<img src="https://images.wral.com/9ddfa6ca-6f26-47d3-9bac-a719297e13ca?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/9ddfa6ca-6f26-47d3-9bac-a719297e13ca?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/9ddfa6ca-6f26-47d3-9bac-a719297e13ca?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/9ddfa6ca-6f26-47d3-9bac-a719297e13ca?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="MIX Mornings">
+										</div>
+										</article-asset>
+									</li>
+								
+									<li>
+										<article-asset href="https://www.wral.com/sports/panthers-playbook-podcast/" date="">
+										<h3 slot="title"><a href="https://www.wral.com/sports/panthers-playbook-podcast/">Exclusive insights: Join the Panthers Playbook Podcast for game-changing tactics and strategies</a></h3>
+										
+										<div slot="thumbnail" class="aspect-16x9">
+											<img src="https://images.wral.com/84afc168-3bcd-420a-a0e9-1a1f2b8f7997?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/84afc168-3bcd-420a-a0e9-1a1f2b8f7997?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/84afc168-3bcd-420a-a0e9-1a1f2b8f7997?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/84afc168-3bcd-420a-a0e9-1a1f2b8f7997?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Exclusive insights: Join the Panthers Playbook Podcast for game-changing tactics and strategies">
+										</div>
+										</article-asset>
+									</li>
+								
+									<li>
+										<article-asset href="https://www.wral.com/sports/adam-gold-show-podcast/" date="">
+										<h3 slot="title"><a href="https://www.wral.com/sports/adam-gold-show-podcast/">The Adam Gold Show Podcast</a></h3>
+										
+										<div slot="thumbnail" class="aspect-16x9">
+											<img src="https://images.wral.com/e24ce6a1-0801-4f79-bef1-14bdb60cbbe1?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/e24ce6a1-0801-4f79-bef1-14bdb60cbbe1?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/e24ce6a1-0801-4f79-bef1-14bdb60cbbe1?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/e24ce6a1-0801-4f79-bef1-14bdb60cbbe1?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="The Adam Gold Show Podcast">
+										</div>
+										</article-asset>
+									</li>
+								
+							</ul>
+						
+						
+						
+					
+			</div>
+			
+		
+
+		
+
+		
+
+			
+
+			<!-- DEV-1087: section-front desktop 970x250 leaderboard below each layout-d section (e.g. WRAL Investigates) -->
+			
+
+			
+
+			<!-- DEV-1087: removed the extra standalone Mobile_In_Content below Video Central (relocated above; the "directly beneath" desktop+mobile cluster remains) -->
+
+			
+
+			
+
+
+			
+
+			
+
+	
+
+	<!-- DEV-1087: removed the generic bottom-of-page section-front ad block — superseded by the specific
+	     placements (300x250 below Listen Live, 970x250 below WRAL Investigates, mobile in-content above the
+	     content sections); it was redundant and stacked extra ad slots at the page bottom. -->
+
+	
+		<!-- Triangle Area Special Offers (TASO) -->
+		<section class="section-wrapper content-wrapper">
+			<h2 class="section-title">Triangle Special Offers</h2>
+			<wral-taso></wral-taso>
+		</section>
+	
+
+	<!-- Taboola: Below Category Thumbnails (section fronts only) -->
+	
+
+	<!-- HTL targeting -->
+	<script>
+		window.opscobid = window.opscobid || {};
+		opscobid.cmd = opscobid.cmd || [];
+		opscobid.cmd.push(function () {
+			const currentUrl = new URL(window.location.href);
+			opscobid.setTargeting('is_testing', currentUrl.hostname === 'www.wral.com' ? 'no' : 'yes');
+			opscobid.setTargeting('is_home', currentUrl.pathname === '/' || currentUrl.pathname.includes('/home') ? 'yes' : 'no');
+			opscobid.setTargeting('category', 'section_front');
+			opscobid.layout();
+		});
+	</script>
+
+		<!-- DEV-1087: bottom-of-page footer ad (Desktop leaderboard + Mobile in-content) removed from the
+		     homepage; mid-page units replace it. Retained for section fronts, which still gate it via hideFooterAd. -->
+		
+	</main>
+
+	<footer>
+		<wral-footer></wral-footer>
+	</footer>
+	
+	<script>
+		(() => {
+			const pageType = (globalThis.pageType || globalThis.templateType || globalThis.template || '').toString().toLowerCase();
+			const isSectionFront = Boolean(globalThis.isSectionFront) || pageType.includes('section-front');
+			const assetType = isSectionFront ? 'section_front' : 'home';
+			window.dataLayer = window.dataLayer || [];
+			window.dataLayer.push({
+				event: 'core-page-view',
+				currentPageUrl: window.location.href,
+				assetType,
+				template: 'wral-web.section-index',
+				articleTitle: document.title,
+				articleHeadline: document.querySelector('h1')?.textContent,
+				siteVersion: 5,
+			});
+		})();
+	</script>
+
+	<script id="chartbeat">
+    (function() {
+      setTimeout(function () {
+        var _sf_async_config = window._sf_async_config = (window._sf_async_config || {});
+        _sf_async_config.uid = 20531;
+        _sf_async_config.domain = 'wral.com';
+        _sf_async_config.useCanonical = true;
+        _sf_async_config.useCanonicalDomain = true;
+        _sf_async_config.sections = "home";
+        _sf_async_config.authors = "WRAL";
+        _sf_async_config.flickerControl = false;
+        function loadChartbeat() {
+            var e = document.createElement('script');
+            var n = document.getElementsByTagName('script')[0];
+            e.type = 'text/javascript';
+            e.async = true;
+            e.src = '//static.chartbeat.com/js/chartbeat.js';
+            n.parentNode.insertBefore(e, n);
+        }
+        loadChartbeat();
+      }, 5000);
+    })();
+  </script>
+  <script async id="chartbeat_mab" src="//static.chartbeat.com/js/chartbeat_mab.js"></script>
+	<script type="text/javascript">
+		window._taboola = window._taboola || [];
+		_taboola.push({flush: true});
+	</script>
+	
+	
+</body></html>

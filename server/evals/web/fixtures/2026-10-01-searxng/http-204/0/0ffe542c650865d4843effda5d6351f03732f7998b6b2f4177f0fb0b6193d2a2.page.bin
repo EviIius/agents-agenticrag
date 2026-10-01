@@ -1,0 +1,1549 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="profile" href="https://gmpg.org/xfn/11">
+	<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+	<link rel="preconnect" href="https://voyager.postman.com" crossorigin>
+	<link rel="dns-prefetch" href="//www.postman.com">
+	<link rel="preload" href="https://blog.postman.com/wp-content/themes/postmodern/postmodern/fonts/degular/Degular_Display-Semibold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+	<link rel="preload" href="https://blog.postman.com/wp-content/themes/postmodern/postmodern/fonts/inter/inter-v3-latin-regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+	<link rel="preload" href="https://blog.postman.com/wp-content/themes/postmodern/postmodern/fonts/plexMono/ibm-plex-mono-v7-latin-regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+	<meta name='robots' content='index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' />
+
+	<!-- This site is optimized with the Yoast SEO Premium plugin v28.2 (Yoast SEO v28.6) - https://yoast.com/product/yoast-seo-premium-wordpress/ -->
+	<title>HTTP 204 No Content - Status Code Guide | Postman Blog</title>
+	<meta name="description" content="This guide explains what the 204 response code means, when to use it, how it differs from other success codes, and how to test with Postman." />
+	<link rel="canonical" href="https://blog.postman.com/http-204-no-content/" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="og:title" content="HTTP 204 No Content: Meaning, Use Cases, and Best Practices" />
+	<meta property="og:description" content="This guide explains what the 204 response code means, when to use it, how it differs from other success codes, and how to test with Postman." />
+	<meta property="og:url" content="https://blog.postman.com/http-204-no-content/" />
+	<meta property="og:site_name" content="Postman Blog" />
+	<meta property="article:publisher" content="https://www.facebook.com/getpostman/" />
+	<meta property="article:published_time" content="2025-11-15T00:33:11+00:00" />
+	<meta property="og:image" content="https://blog.postman.com/wp-content/uploads/2023/08/What-are-HTTP-status-codes.jpg" />
+	<meta property="og:image:width" content="2560" />
+	<meta property="og:image:height" content="1355" />
+	<meta property="og:image:type" content="image/jpeg" />
+	<meta name="author" content="The Postman Team" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:creator" content="@getpostman" />
+	<meta name="twitter:site" content="@getpostman" />
+	<meta name="twitter:label1" content="Written by" />
+	<meta name="twitter:data1" content="The Postman Team" />
+	<meta name="twitter:label2" content="Est. reading time" />
+	<meta name="twitter:data2" content="6 minutes" />
+	<script type="application/ld+json" class="yoast-schema-graph">{"@context":"https:\/\/schema.org","@graph":[{"@type":"Article","@id":"https:\/\/blog.postman.com\/http-204-no-content\/#article","isPartOf":{"@id":"https:\/\/blog.postman.com\/http-204-no-content\/"},"author":{"name":"The Postman Team","@id":"https:\/\/blog.postman.com\/#\/schema\/person\/9e646b334fe75e7405eed0b8567ad7f4"},"headline":"HTTP 204 No Content: Meaning, Use Cases, and Best Practices","datePublished":"2025-11-15T00:33:11+00:00","mainEntityOfPage":{"@id":"https:\/\/blog.postman.com\/http-204-no-content\/"},"wordCount":1040,"commentCount":0,"publisher":{"@id":"https:\/\/blog.postman.com\/#organization"},"image":{"@id":"https:\/\/blog.postman.com\/http-204-no-content\/#primaryimage"},"thumbnailUrl":"https:\/\/blog.postman.com\/wp-content\/uploads\/2023\/08\/What-are-HTTP-status-codes.jpg","keywords":["API 101"],"articleSection":["API 101"],"inLanguage":"en-US","potentialAction":[{"@type":"CommentAction","name":"Comment","target":["https:\/\/blog.postman.com\/http-204-no-content\/#respond"]}]},{"@type":"WebPage","@id":"https:\/\/blog.postman.com\/http-204-no-content\/","url":"https:\/\/blog.postman.com\/http-204-no-content\/","name":"HTTP 204 No Content - Status Code Guide | Postman Blog","isPartOf":{"@id":"https:\/\/blog.postman.com\/#website"},"primaryImageOfPage":{"@id":"https:\/\/blog.postman.com\/http-204-no-content\/#primaryimage"},"image":{"@id":"https:\/\/blog.postman.com\/http-204-no-content\/#primaryimage"},"thumbnailUrl":"https:\/\/blog.postman.com\/wp-content\/uploads\/2023\/08\/What-are-HTTP-status-codes.jpg","datePublished":"2025-11-15T00:33:11+00:00","description":"This guide explains what the 204 response code means, when to use it, how it differs from other success codes, and how to test with Postman.","breadcrumb":{"@id":"https:\/\/blog.postman.com\/http-204-no-content\/#breadcrumb"},"inLanguage":"en-US","potentialAction":[{"@type":"ReadAction","target":["https:\/\/blog.postman.com\/http-204-no-content\/"]}]},{"@type":"ImageObject","inLanguage":"en-US","@id":"https:\/\/blog.postman.com\/http-204-no-content\/#primaryimage","url":"https:\/\/blog.postman.com\/wp-content\/uploads\/2023\/08\/What-are-HTTP-status-codes.jpg","contentUrl":"https:\/\/blog.postman.com\/wp-content\/uploads\/2023\/08\/What-are-HTTP-status-codes.jpg","width":2560,"height":1355},{"@type":"BreadcrumbList","@id":"https:\/\/blog.postman.com\/http-204-no-content\/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https:\/\/blog.postman.com\/"},{"@type":"ListItem","position":2,"name":"HTTP 204 No Content: Meaning, Use Cases, and Best Practices"}]},{"@type":"WebSite","@id":"https:\/\/blog.postman.com\/#website","url":"https:\/\/blog.postman.com\/","name":"Postman Blog","description":"The official Postman blog","publisher":{"@id":"https:\/\/blog.postman.com\/#organization"},"potentialAction":[{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https:\/\/blog.postman.com\/?s={search_term_string}"},"query-input":{"@type":"PropertyValueSpecification","valueRequired":true,"valueName":"search_term_string"}}],"inLanguage":"en-US"},{"@type":"Organization","@id":"https:\/\/blog.postman.com\/#organization","name":"Postman","url":"https:\/\/blog.postman.com\/","logo":{"@type":"ImageObject","inLanguage":"en-US","@id":"https:\/\/blog.postman.com\/#\/schema\/logo\/image\/","url":"https:\/\/blog.postman.com\/wp-content\/uploads\/2019\/02\/pm-logo-vert.jpg","contentUrl":"https:\/\/blog.postman.com\/wp-content\/uploads\/2019\/02\/pm-logo-vert.jpg","width":551,"height":551,"caption":"Postman"},"image":{"@id":"https:\/\/blog.postman.com\/#\/schema\/logo\/image\/"},"sameAs":["https:\/\/www.facebook.com\/getpostman\/","https:\/\/x.com\/getpostman","https:\/\/www.linkedin.com\/company\/postman-platform\/","https:\/\/www.youtube.com\/channel\/UCocudCGVb3MmhWQ1aoIgUQw"]},{"@type":"Person","@id":"https:\/\/blog.postman.com\/#\/schema\/person\/9e646b334fe75e7405eed0b8567ad7f4","name":"The Postman Team","image":{"@type":"ImageObject","inLanguage":"en-US","@id":"https:\/\/secure.gravatar.com\/avatar\/573f4b6edb0f489da6a791474935ad1fd443825a82d943bd7d02fa52ad995ef7?s=96&d=https%3A%2F%2Fblog.postman.com%2Fwp-content%2Fuploads%2F2021%2F11%2Favatars-04.png&r=g","url":"https:\/\/secure.gravatar.com\/avatar\/573f4b6edb0f489da6a791474935ad1fd443825a82d943bd7d02fa52ad995ef7?s=96&d=https%3A%2F%2Fblog.postman.com%2Fwp-content%2Fuploads%2F2021%2F11%2Favatars-04.png&r=g","contentUrl":"https:\/\/secure.gravatar.com\/avatar\/573f4b6edb0f489da6a791474935ad1fd443825a82d943bd7d02fa52ad995ef7?s=96&d=https%3A%2F%2Fblog.postman.com%2Fwp-content%2Fuploads%2F2021%2F11%2Favatars-04.png&r=g","caption":"The Postman Team"},"description":"Postman is the single platform for designing, building, and scaling APIs—together. Join over 40 million users who have consolidated their workflows and leveled up their API game—all in one powerful platform.","sameAs":["https:\/\/www.linkedin.com\/company\/postman-platform","https:\/\/x.com\/getpostman","https:\/\/www.youtube.com\/channel\/UCocudCGVb3MmhWQ1aoIgUQw","https:\/\/twitter.com\/getpostman"],"url":"https:\/\/blog.postman.com\/author\/thepostmanteam\/"}]}</script>
+	<!-- / Yoast SEO Premium plugin. -->
+
+
+<link rel='dns-prefetch' href='//cdn.amplitude.com' />
+<link rel='dns-prefetch' href='//www.postman.com' />
+<link rel='dns-prefetch' href='//cdn.jsdelivr.net' />
+<link rel="alternate" type="application/rss+xml" title="Postman Blog &raquo; Feed" href="https://blog.postman.com/feed/" />
+<link rel="alternate" type="application/rss+xml" title="Postman Blog &raquo; Comments Feed" href="https://blog.postman.com/comments/feed/" />
+<link rel="alternate" type="application/rss+xml" title="Postman Blog &raquo; HTTP 204 No Content: Meaning, Use Cases, and Best Practices Comments Feed" href="https://blog.postman.com/http-204-no-content/feed/" />
+<style id="wp-img-auto-sizes-contain-inline-css">
+img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
+/*# sourceURL=wp-img-auto-sizes-contain-inline-css */
+</style>
+<style id="wp-block-library-inline-css">
+:root{--wp-block-synced-color:#7a00df;--wp-block-synced-color--rgb:122,0,223;--wp-bound-block-color:var(--wp-block-synced-color);--wp-editor-canvas-background:#ddd;--wp-admin-theme-color:#007cba;--wp-admin-theme-color--rgb:0,124,186;--wp-admin-theme-color-darker-10:#006ba1;--wp-admin-theme-color-darker-10--rgb:0,107,160.5;--wp-admin-theme-color-darker-20:#005a87;--wp-admin-theme-color-darker-20--rgb:0,90,135;--wp-admin-border-width-focus:2px}@media (min-resolution:192dpi){:root{--wp-admin-border-width-focus:1.5px}}.wp-element-button{cursor:pointer}:root .has-very-light-gray-background-color{background-color:#eee}:root .has-very-dark-gray-background-color{background-color:#313131}:root .has-very-light-gray-color{color:#eee}:root .has-very-dark-gray-color{color:#313131}:root .has-vivid-green-cyan-to-vivid-cyan-blue-gradient-background{background:linear-gradient(135deg,#00d084,#0693e3)}:root .has-purple-crush-gradient-background{background:linear-gradient(135deg,#34e2e4,#4721fb 50%,#ab1dfe)}:root .has-hazy-dawn-gradient-background{background:linear-gradient(135deg,#faaca8,#dad0ec)}:root .has-subdued-olive-gradient-background{background:linear-gradient(135deg,#fafae1,#67a671)}:root .has-atomic-cream-gradient-background{background:linear-gradient(135deg,#fdd79a,#004a59)}:root .has-nightshade-gradient-background{background:linear-gradient(135deg,#330968,#31cdcf)}:root .has-midnight-gradient-background{background:linear-gradient(135deg,#020381,#2874fc)}:root{--wp--preset--font-size--normal:16px;--wp--preset--font-size--huge:42px}.has-regular-font-size{font-size:1em}.has-larger-font-size{font-size:2.625em}.has-normal-font-size{font-size:var(--wp--preset--font-size--normal)}.has-huge-font-size{font-size:var(--wp--preset--font-size--huge)}:root .has-text-align-center{text-align:center}:root .has-text-align-left{text-align:left}:root .has-text-align-right{text-align:right}.has-fit-text{white-space:nowrap!important}#end-resizable-editor-section{display:none}.aligncenter{clear:both}.items-justified-left{justify-content:flex-start}.items-justified-center{justify-content:center}.items-justified-right{justify-content:flex-end}.items-justified-space-between{justify-content:space-between}.screen-reader-text{word-wrap:normal!important;border:0;clip-path:inset(50%);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px;word-break:normal!important}.screen-reader-text:focus{background-color:#ddd;clip-path:none;color:#444;display:block;font-size:1em;height:auto;left:5px;line-height:normal;padding:15px 23px 14px;text-decoration:none;top:5px;width:auto;z-index:100000}html :where(.has-border-color){border-style:solid}html :where([style^=border-color],[style*=";border-color"],[style*="; border-color"]){border-style:solid}html :where([style^=border-top-color],[style*=";border-top-color"],[style*="; border-top-color"]){border-top-style:solid}html :where([style^=border-right-color],[style*=";border-right-color"],[style*="; border-right-color"]){border-right-style:solid}html :where([style^=border-bottom-color],[style*=";border-bottom-color"],[style*="; border-bottom-color"]){border-bottom-style:solid}html :where([style^=border-left-color],[style*=";border-left-color"],[style*="; border-left-color"]){border-left-style:solid}html :where([style^=border-width],[style*=";border-width"],[style*="; border-width"]){border-style:solid}html :where([style^=border-top-width],[style*=";border-top-width"],[style*="; border-top-width"]){border-top-style:solid}html :where([style^=border-right-width],[style*=";border-right-width"],[style*="; border-right-width"]){border-right-style:solid}html :where([style^=border-bottom-width],[style*=";border-bottom-width"],[style*="; border-bottom-width"]){border-bottom-style:solid}html :where([style^=border-left-width],[style*=";border-left-width"],[style*="; border-left-width"]){border-left-style:solid}html :where(img[class*=wp-image-]){height:auto;max-width:100%}:where(figure){margin:0 0 1em}html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:var(--wp-admin--admin-bar--height,0px)}@media screen and (max-width:600px){html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:0px}}
+
+/*# sourceURL=/wp-includes/css/dist/block-library/common.min.css */
+</style>
+<style id="classic-theme-styles-inline-css">
+/*! This file is auto-generated */
+.wp-block-button__link{color:#fff;background-color:#32373c;border-radius:9999px;box-shadow:none;text-decoration:none;padding:calc(.667em + 2px) calc(1.333em + 2px);font-size:1.125em}.wp-block-file__button{background:#32373c;color:#fff;text-decoration:none}
+/*# sourceURL=/wp-includes/css/classic-themes.min.css */
+</style>
+
+<style id="global-styles-inline-css">
+:root{--wp--preset--aspect-ratio--square: 1;--wp--preset--aspect-ratio--4-3: 4/3;--wp--preset--aspect-ratio--3-4: 3/4;--wp--preset--aspect-ratio--3-2: 3/2;--wp--preset--aspect-ratio--2-3: 2/3;--wp--preset--aspect-ratio--16-9: 16/9;--wp--preset--aspect-ratio--9-16: 9/16;--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgb(6,147,227) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgb(252,185,0) 0%,rgb(255,105,0) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgb(255,105,0) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 36px;--wp--preset--font-size--x-large: 42px;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgb(255, 255, 255), 6px 6px rgb(0, 0, 0);--wp--preset--shadow--crisp: 6px 6px 0px rgb(0, 0, 0);}.wp-block-button{--wp--preset--dimension--25: 25%;--wp--preset--dimension--50: 50%;--wp--preset--dimension--75: 75%;--wp--preset--dimension--100: 100%;}:where(body) { margin: 0; }:where(.is-layout-flex){gap: 0.5em;}:where(.is-layout-grid){gap: 0.5em;}body .is-layout-flex{display: flex;}.is-layout-flex{flex-wrap: wrap;align-items: center;}.is-layout-flex > :is(*, div){margin: 0;}body .is-layout-grid{display: grid;}.is-layout-grid > :is(*, div){margin: 0;}body{padding-top: 0px;padding-right: 0px;padding-bottom: 0px;padding-left: 0px;}:root :where(.wp-element-button, .wp-block-button__link){background-color: #32373c;border-width: 0;color: #fff;font-family: inherit;font-size: inherit;font-style: inherit;font-weight: inherit;letter-spacing: inherit;line-height: inherit;padding-top: calc(0.667em + 2px);padding-right: calc(1.333em + 2px);padding-bottom: calc(0.667em + 2px);padding-left: calc(1.333em + 2px);text-decoration: none;text-transform: inherit;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}
+/*# sourceURL=global-styles-inline-css */
+</style>
+
+<style id="prismatic-custom-inline-css">
+pre[class*=language-] {
+    background: #eee;
+font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}
+
+code, code[class*=language-], {
+font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}
+/*# sourceURL=prismatic-custom-inline-css */
+</style>
+<link rel='stylesheet' id='rp-public-styles-css' href='https://blog.postman.com/wp-content/plugins/reading-progress-bar/public/css/rp-public.css?ver=7.1.2' media='all' />
+<link rel='stylesheet' id='wp-postman-button-styles-css' href='https://blog.postman.com/wp-content/plugins/run-in-postman-button//styles/wp_postman_button_styles.css?ver=1.0.0' media='1' />
+<link rel='stylesheet' id='wp-ulike-css' href='https://blog.postman.com/wp-content/plugins/wp-ulike/assets/css/wp-ulike.min.css?ver=5.2.3' media='all' />
+<style id="jetpack-stats-inline-css">
+img#wpstats{display:none}
+/*# sourceURL=jetpack-stats-inline-css */
+</style>
+<link rel='stylesheet' id='postmodern-styles-css' href='https://blog.postman.com/wp-content/themes/postmodern/postmodern/style.css?ver=2.196.1' media='all' />
+<link rel='stylesheet' id='bootstrap-css' href='https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css?ver=7.1.2' media='all' />
+<script id="jetpack_related-posts-js-extra">
+var related_posts_js_options = {"post_heading":"h4"};
+//# sourceURL=jetpack_related-posts-js-extra
+</script>
+<script id="jetpack_related-posts-js" src="https://blog.postman.com/wp-content/plugins/jetpack/_inc/build/related-posts/related-posts.min.js?ver=20240116"></script>
+<script id="jquery-core-js" src="https://blog.postman.com/wp-includes/js/jquery/jquery.min.js?ver=3.7.1"></script>
+<script id="rp-public-scripts-js" src="https://blog.postman.com/wp-content/plugins/reading-progress-bar/public/js/rp-public.js?ver=7.1.2"></script>
+<script data-wp-strategy="defer" defer id="stop-user-enumeration-js" src="https://blog.postman.com/wp-content/plugins/stop-user-enumeration/frontend/js/frontend.js?ver=1.7.8"></script>
+<script id="aampli_plg_scr_web_experiment-js" src="https://cdn.amplitude.com/script/56d4a7f42486e1c4ec95a892fd96c402.experiment.js?ver=7.1.2"></script>
+<script id="aampli_plg_scr_setup-js" src="https://cdn.amplitude.com/libs/analytics-browser-2.32.2-min.js.gz?ver=7.1.2"></script>
+<script id="aampli_plg_scr_configure-js-extra">
+var aampliPlgScrPayload = {"apiKey":"56d4a7f42486e1c4ec95a892fd96c402","sessionReplay":"0","sampleRate":"100","shouldChangeLibrary":"1","isEuServerZone":"0"};
+//# sourceURL=aampli_plg_scr_configure-js-extra
+</script>
+<script id="aampli_plg_scr_configure-js" src="https://blog.postman.com/wp-content/plugins/amplitude/scripts/amplitude-configure.js?ver=7.1.2"></script>
+<script id="wp-hooks-js" src="https://blog.postman.com/wp-includes/js/dist/hooks.min.js?ver=f0f188028580e8dc1255"></script>
+<script id="pmw-js-before">
+window.pmw = Object.assign(window.pmw || {}, {"ajax_url":"https://blog.postman.com/wp-admin/admin-ajax.php","root":"https://blog.postman.com/wp-json/","nonce_wp_rest":"886433a035","nonce_ajax":"8ff335d686"});
+//# sourceURL=pmw-js-before
+</script>
+<script id="pmw-js" src="https://blog.postman.com/wp-content/plugins/woocommerce-google-adwords-conversion-tracking-tag/js/public/free/pmw-public.p1.min.js?ver=1.69.1"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-821881030"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-821881030');
+</script>
+
+		<!-- GA Google Analytics @ https://m0n.co/ga -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-CX7P9K6W67"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+			gtag('config', 'G-CX7P9K6W67');
+		</script>
+
+	<!-- LinkedIn Insight Base Code --><script type='text/javascript'>_linkedin_partner_id = '4496132';window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];window._linkedin_data_partner_ids.push(_linkedin_partner_id);</script><script type='text/javascript'>(function(l){if(!l){window.lintrk=function(a,b){window.lintrk.q.push([a,b])};window.lintrk.q=[]}var s=document.getElementsByTagName('script')[0];var b=document.createElement('script');b.type='text/javascript';b.async=true;b.src='https://snap.licdn.com/li.lms-analytics/insight.min.js';s.parentNode.insertBefore(b,s)})(window.lintrk);</script><noscript><img height='1' width='1' style='display:none;' alt='' src='https://dc.ads.linkedin.com/collect/?pid=4496132&#038;fmt=gif' /></noscript><!-- End LinkedIn Insight Base Code -->
+<link rel="alternate" type="text/markdown" href="https://blog.postman.com/http-204-no-content.md">
+<link rel="llms-sitemap" href="https://blog.postman.com/llms.txt" />
+<link rel="pingback" href="https://blog.postman.com/xmlrpc.php"><link rel="alternate" type="text/markdown" href="https://blog.postman.com/http-204-no-content.md">
+
+<!-- START Pixel Manager for WooCommerce -->
+
+		<script>
+
+			window.pmwDataLayer = window.pmwDataLayer || {};
+			window.pmwDataLayer = Object.assign(window.pmwDataLayer, {"cart":{},"cart_item_keys":{},"version":{"number":"1.69.1","schema":1,"pro":false,"eligible_for_updates":false,"distro":"fms","beta":false,"show":true},"pixels":{"facebook":{"pixel_id":"402119569597383","pixel_ids":["402119569597383"],"dynamic_remarketing":{"id_type":"post_id"},"capi":false,"advanced_matching":false,"exclusion_patterns":[],"fbevents_js_url":"https://connect.facebook.net/en_US/fbevents.js"}},"page":{"id":19356,"title":"HTTP 204 No Content: Meaning, Use Cases, and Best Practices","type":"post","categories":[{"term_id":168,"name":"API 101","slug":"api-101","term_group":0,"term_taxonomy_id":168,"taxonomy":"category","description":"","parent":0,"count":36,"filter":"raw","cat_ID":168,"category_count":36,"category_description":"","cat_name":"API 101","category_nicename":"api-101","category_parent":0}],"parent":{"id":0,"title":"HTTP 204 No Content: Meaning, Use Cases, and Best Practices","type":"post","categories":[{"term_id":168,"name":"API 101","slug":"api-101","term_group":0,"term_taxonomy_id":168,"taxonomy":"category","description":"","parent":0,"count":36,"filter":"raw","cat_ID":168,"category_count":36,"category_description":"","cat_name":"API 101","category_nicename":"api-101","category_parent":0}]}},"general":{"user_logged_in":false,"scroll_tracking_thresholds":[],"page_id":19356,"exclude_domains":[],"server_2_server":{"active":false,"skip_empty_events":true,"always_send_s2s":false,"user_agent_exclude_patterns":[],"ip_exclude_list":[],"pageview_event_s2s":{"is_active":false,"pixels":["facebook"]}},"ssp":{"active":false,"events_url":"","fallback_to_wc":true,"domain_token":"","session_id":"","quota_exceeded":false},"consent_management":{"explicit_consent":false},"lazy_load_pmw":false,"chunk_base_path":"https://blog.postman.com/wp-content/plugins/woocommerce-google-adwords-conversion-tracking-tag/js/public/free/","modules":{"load_deprecated_functions":true}}});
+
+		</script>
+
+		
+<!-- END Pixel Manager for WooCommerce -->
+<link rel="icon" href="https://blog.postman.com/wp-content/uploads/2021/11/cropped-favicon-32x32.png" sizes="32x32" />
+<link rel="icon" href="https://blog.postman.com/wp-content/uploads/2021/11/cropped-favicon-192x192.png" sizes="192x192" />
+<link rel="apple-touch-icon" href="https://blog.postman.com/wp-content/uploads/2021/11/cropped-favicon-180x180.png" />
+<meta name="msapplication-TileImage" content="https://blog.postman.com/wp-content/uploads/2021/11/cropped-favicon-270x270.png" />
+</head>
+
+<body class="wp-singular post-template-default single single-post postid-19356 single-format-standard wp-theme-postmodernpostmodern">
+<a class="skip-link screen-reader-text" href="#primary">Skip to content</a>
+<div id="page" class="site">
+
+	<header id="masthead" class="site-header">
+		
+<nav class="navbar-v6 navbar navbar-expand-xl navbar-light nav-primary" aria-label="Main" style="z-index: 10000">
+  <a class="navbar-brand" href="https://www.postman.com/" aria-label="Home" data-wpel-link="exclude">
+    <div class="navbar-logo-container">
+      <img src="https://voyager.postman.com/logo/postman-logo-icon-orange.svg" alt="Postman" width="32" height="32" />
+    </div>
+  </a>
+  <button
+    id="globalNav"
+    class="mobile-icon-button navbar-toggler"
+    type="button"
+    data-test="navbar-mobile-icon"
+    data-toggle="collapse"
+    data-target="#navbarSupportedContent"
+    aria-controls="navbarSupportedContent"
+    aria-expanded="false"
+    aria-label="Toggle navigation menu">
+    <span class="navbar-toggler-icon mobile-icon_span">
+      <div id="icon-wrap-one" class="icon-bar mobile-icon" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+
+      <!-- Product -->
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="##" id="Nav-Product" data-toggle="dropdown" aria-expanded="false" aria-haspopup="true">
+          Product
+          <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="#6b6b6b">
+            <g><path d="M10.375,3.219,6,6.719l-4.375-3.5A1,1,0,1,0,.375,4.781l5,4a1,1,0,0,0,1.25,0l5-4a1,1,0,0,0-1.25-1.562Z" /></g>
+          </svg>
+        </a>
+        <div class="dropdown-menu dropdown-menu-with-brands" aria-labelledby="Nav-Product">
+          <div class="dropdown-with-brands">
+            <div class="dropdown-inner">
+              <!-- Inner panel -->
+              <div class="dropdown-right-column dropdown-col-menu dropdown-col-menu-wide">
+                <div class="dropdown-right-col-items">
+
+                  <div class="right-col">
+                    <p class="h6 dropdown-header mb-0">DESIGN &amp; BUILD</p>
+                    <a class="dropdown-item dropdown-item-icon" href="https://www.postman.com/product/spec-hub/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;spec-hub&#039;);" data-wpel-link="exclude">
+                      <span class="nav-icon" style="background-image: url('https://voyager.postman.com/icon/spec-hub-icon-2.svg');" aria-hidden="true"></span>
+                      <span class="nav-item-text">
+                        <span class="nav-item-title">Spec Hub</span>
+                        <span class="dropdown-description">Manage specifications</span>
+                      </span>
+                    </a>
+                    <a class="dropdown-item dropdown-item-icon" href="https://www.postman.com/product/workspaces/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;collaborate-in-workspaces&#039;);" data-wpel-link="exclude">
+                      <span class="nav-icon" style="background-image: url('https://voyager.postman.com/icon/workspaces-icon-2.svg');" aria-hidden="true"></span>
+                      <span class="nav-item-text">
+                        <span class="nav-item-title">Workspaces</span>
+                        <span class="dropdown-description">Collaborate with teams</span>
+                      </span>
+                    </a>
+                    <a class="dropdown-item dropdown-item-icon" href="https://www.postman.com/product/mock-servers/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;mock-servers&#039;);" data-wpel-link="exclude">
+                      <span class="nav-icon" style="background-image: url('https://voyager.postman.com/icon/local-mock-servers-icon-2.svg');" aria-hidden="true"></span>
+                      <span class="nav-item-text">
+                        <span class="nav-item-title">Mock Servers</span>
+                        <span class="dropdown-description">Simulate API behavior</span>
+                      </span>
+                    </a>
+                    <a class="dropdown-item dropdown-item-icon" href="https://www.postman.com/product/sdk-generator/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;sdk-generator&#039;);" data-wpel-link="exclude">
+                      <span class="nav-icon" style="background-image: url('https://voyager.postman.com/icon/sdk-generator-icon-2.svg');" aria-hidden="true"></span>
+                      <span class="nav-item-text">
+                        <span class="nav-item-title">SDK Generator</span>
+                        <span class="dropdown-description">Create SDKs instantly</span>
+                      </span>
+                    </a>
+                    <a class="dropdown-item dropdown-item-icon" href="https://www.postman.com/product/flows/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;flows&#039;);" data-wpel-link="exclude">
+                      <span class="nav-icon" style="background-image: url('https://voyager.postman.com/icon/flows-local-icon-2.svg');" aria-hidden="true"></span>
+                      <span class="nav-item-text">
+                        <span class="nav-item-title">Flows</span>
+                        <span class="dropdown-description">Create visual workflows</span>
+                      </span>
+                    </a>
+                  </div>
+
+                  <div class="right-col">
+                    <p class="h6 dropdown-header mb-0">TEST &amp; VALIDATE</p>
+                    <a class="dropdown-item dropdown-item-icon" href="https://www.postman.com/product/api-client/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;product-api-client&#039;);" data-wpel-link="exclude">
+                      <span class="nav-icon" style="background-image: url('https://voyager.postman.com/icon/api-client-2.svg');" aria-hidden="true"></span>
+                      <span class="nav-item-text">
+                        <span class="nav-item-title">API Client</span>
+                        <span class="dropdown-description">Send API requests</span>
+                      </span>
+                    </a>
+                    <a class="dropdown-item dropdown-item-icon" href="https://www.postman.com/product/collection-runner/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;collection-runner&#039;);" data-wpel-link="exclude">
+                      <span class="nav-icon" style="background-image: url('https://voyager.postman.com/icon/collection-runner-2.svg');" aria-hidden="true"></span>
+                      <span class="nav-item-text">
+                        <span class="nav-item-title">Collection Runner</span>
+                        <span class="dropdown-description">Automate API workflows</span>
+                      </span>
+                    </a>
+                    <a class="dropdown-item dropdown-item-icon" href="https://www.postman.com/product/monitors/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;api-monitoring&#039;);" data-wpel-link="exclude">
+                      <span class="nav-icon" style="background-image: url('https://voyager.postman.com/icon/monitors-icon-2.svg');" aria-hidden="true"></span>
+                      <span class="nav-item-text">
+                        <span class="nav-item-title">Monitors</span>
+                        <span class="dropdown-description">Validate performance</span>
+                      </span>
+                    </a>
+                    <a class="dropdown-item dropdown-item-icon" href="https://www.postman.com/product/webhooks/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;webhooks&#039;);" data-wpel-link="exclude">
+                      <span class="nav-icon" style="background-image: url('https://voyager.postman.com/icon/webhooks-icon.svg');" aria-hidden="true"></span>
+                      <span class="nav-item-text">
+                        <span class="nav-item-title">Webhooks</span>
+                        <span class="dropdown-description">First-class webhook support</span>
+                      </span>
+                    </a>
+                  </div>
+
+                  <div class="right-col">
+                    <p class="h6 dropdown-header mb-0">MANAGE &amp; OPERATE</p>
+                    <a class="dropdown-item dropdown-item-icon" href="https://www.postman.com/product/api-catalog/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;api-catalog&#039;);" data-wpel-link="exclude">
+                      <span class="nav-icon" style="background-image: url('https://voyager.postman.com/icon/api-catalog-2.svg');" aria-hidden="true"></span>
+                      <span class="nav-item-text">
+                        <span class="nav-item-title">API Catalog</span>
+                        <span class="dropdown-description">Know every API and service</span>
+                      </span>
+                    </a>
+                    <a class="dropdown-item dropdown-item-icon" href="https://www.postman.com/product/postman-insights/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;postman-insights&#039;);" data-wpel-link="exclude">
+                      <span class="nav-icon" style="background-image: url('https://voyager.postman.com/icon/insights-icon-2.svg');" aria-hidden="true"></span>
+                      <span class="nav-item-text">
+                        <span class="nav-item-title">Insights</span>
+                        <span class="dropdown-description">Track every endpoint</span>
+                      </span>
+                    </a>
+                  </div>
+
+                  <!-- Platform -->
+                  <aside class="dropdown-left-column">
+                    <p class="h6 dropdown-header mb-0">PLATFORM</p>
+                    <a class="dropdown-item" href="https://www.postman.com/new-postman/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;whats-new&#039;);" data-wpel-link="exclude">
+                      What's New
+                      <span class="gradient"></span>
+                    </a>
+                    <a class="dropdown-item" href="https://www.postman.com/security/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;security&#039;);" data-wpel-link="exclude">
+                      Security
+                    </a>
+                    <a class="dropdown-item" href="https://www.postman.com/product/integrations/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;integrations&#039;);" data-wpel-link="exclude">
+                      Integrations
+                    </a>
+
+                    <p class="h6 dropdown-header mb-0">EXPLORE</p>
+                    <a class="dropdown-item" href="https://www.postman.com/explore" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;explore&#039;);" data-wpel-link="exclude">
+                      Postman API Network
+                    </a>
+                    <a class="dropdown-item" href="https://www.postman.com/explore/mcp-servers" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;mcp-servers&#039;);" data-wpel-link="exclude">
+                      MCP Server Catalog
+                    </a>
+                    <a class="dropdown-item app-cta" href="https://www.postman.com/downloads/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;download-postman&#039;);" data-wpel-link="exclude">
+                      Download Postman →
+                    </a>
+                  </aside>
+
+                </div>
+
+                <!-- Footer cards -->
+                <div class="nav-footer-block">
+                  <div class="nav-footer-row product-footer-row">
+                    <a class="footer-card footer-card--pink" href="https://www.postman.com/product/ai-engineer/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;ai-engineer&#039;);" data-wpel-link="exclude">
+                      <span class="footer-card-bg" aria-hidden="true"></span>
+                      <span class="footer-card-content">
+                        <span class="nav-icon nav-icon--dark" style="background-image: url('https://voyager.postman.com/icon/postman-ai-engineer-icon-3.svg');" aria-hidden="true"></span>
+                        <span class="nav-item-text">
+                          <span class="nav-item-title">AI Engineer</span>
+                          <span class="dropdown-description">AI Engineer is ready to help</span>
+                        </span>
+                      </span>
+                    </a>
+                    <a class="footer-card footer-card--orange" href="https://www.postman.com/product/agent-mode/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;agent-mode&#039;);" data-wpel-link="exclude">
+                      <span class="footer-card-bg" aria-hidden="true"></span>
+                      <span class="footer-card-content">
+                        <span class="nav-icon nav-icon--dark" style="background-image: url('https://voyager.postman.com/icon/postman-agent-mode-icon-2.svg');" aria-hidden="true"></span>
+                        <span class="nav-item-text">
+                          <span class="nav-item-title">Agent Mode</span>
+                          <span class="dropdown-description">Automate API workflows with native AI</span>
+                        </span>
+                      </span>
+                    </a>
+                    <a class="footer-card footer-card--yellow" href="https://www.postman.com/product/postman-cli/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;postman-cli&#039;);" data-wpel-link="exclude">
+                      <span class="footer-card-bg" aria-hidden="true"></span>
+                      <span class="footer-card-content">
+                        <span class="nav-icon nav-icon--dark" style="background-image: url('https://voyager.postman.com/icon/postman-cli-icon-2.svg');" aria-hidden="true"></span>
+                        <span class="nav-item-text">
+                          <span class="nav-item-title">Postman CLI</span>
+                          <span class="dropdown-description">Work with Postman from the command line</span>
+                        </span>
+                      </span>
+                    </a>
+                    <a class="footer-card footer-card--purple" href="https://www.postman.com/product/mcp-server/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;mcp-server&#039;);" data-wpel-link="exclude">
+                      <span class="footer-card-bg" aria-hidden="true"></span>
+                      <span class="footer-card-content">
+                        <span class="nav-icon nav-icon--dark" style="background-image: url('https://voyager.postman.com/icon/postman-mcp-icon-2.svg');" aria-hidden="true"></span>
+                        <span class="nav-item-text">
+                          <span class="nav-item-title">Postman MCP Server</span>
+                          <span class="dropdown-description">Give API context to your AI agents</span>
+                        </span>
+                      </span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Brands -->
+            <aside class="dropdown-brands-panel">
+              <p class="h6 dropdown-header dropdown-brands-header mb-0">MORE FROM POSTMAN</p>
+              <a class="brand-item" href="https://www.postman.com/fabric-gateway/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;fabric-gateway&#039;);" data-wpel-link="exclude">
+                <span class="nav-icon nav-icon--passthrough" style="background-image: url('https://voyager.postman.com/logo/fabric-gateway-mark-gradient.svg');" aria-hidden="true"></span>
+                <span class="nav-item-text">
+                  <span class="nav-item-title">
+                    Fabric Gateway
+                    <span class="brand-arrow" aria-hidden="true">
+                      <span class="brand-arrow-bar"></span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="5" height="9" viewBox="9 0 5 8" fill="currentColor" class="brand-arrow-chevron">
+                        <path d="M13.3536 4.03553C13.5488 3.84027 13.5488 3.52369 13.3536 3.32843L10.1716 0.146447C9.97631 -0.0488155 9.65973 -0.0488155 9.46447 0.146447C9.2692 0.341709 9.2692 0.658291 9.46447 0.853554L12.2929 3.68198L9.46447 6.51041C9.2692 6.70567 9.2692 7.02225 9.46447 7.21751C9.65973 7.41278 9.97631 7.41278 10.1716 7.21751L13.3536 4.03553Z"/>
+                      </svg>
+                    </span>
+                  </span>
+                  <span class="dropdown-description">Route, govern, and observe your AI traffic</span>
+                </span>
+              </a>
+              <a class="brand-item" href="https://buildwithfern.com/" rel="noopener noreferrer external" target="_blank" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;fern&#039;);" data-wpel-link="external">
+                <span class="nav-icon nav-icon--passthrough" style="background-image: url('https://voyager.postman.com/icon/external/fern-docs-leaf-icon.svg');" aria-hidden="true"></span>
+                <span class="nav-item-text">
+                  <span class="nav-item-title">
+                    Fern
+                    <span class="brand-arrow" aria-hidden="true">
+                      <span class="brand-arrow-bar"></span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="5" height="9" viewBox="9 0 5 8" fill="currentColor" class="brand-arrow-chevron">
+                        <path d="M13.3536 4.03553C13.5488 3.84027 13.5488 3.52369 13.3536 3.32843L10.1716 0.146447C9.97631 -0.0488155 9.65973 -0.0488155 9.46447 0.146447C9.2692 0.341709 9.2692 0.658291 9.46447 0.853554L12.2929 3.68198L9.46447 6.51041C9.2692 6.70567 9.2692 7.02225 9.46447 7.21751C9.65973 7.41278 9.97631 7.41278 10.1716 7.21751L13.3536 4.03553Z"/>
+                      </svg>
+                    </span>
+                  </span>
+                  <span class="dropdown-description">Instantly generate API docs and SDKs</span>
+                </span>
+              </a>
+              <a class="brand-item" href="https://astropods.com/" rel="noopener noreferrer external" target="_blank" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;astro-ai&#039;);" data-wpel-link="external">
+                <span class="nav-icon nav-icon--passthrough" style="background-image: url('https://voyager.postman.com/icon/external/astro-ai-logo-icon.svg');" aria-hidden="true"></span>
+                <span class="nav-item-text">
+                  <span class="nav-item-title">
+                    Astro AI
+                    <span class="brand-arrow" aria-hidden="true">
+                      <span class="brand-arrow-bar"></span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="5" height="9" viewBox="9 0 5 8" fill="currentColor" class="brand-arrow-chevron">
+                        <path d="M13.3536 4.03553C13.5488 3.84027 13.5488 3.52369 13.3536 3.32843L10.1716 0.146447C9.97631 -0.0488155 9.65973 -0.0488155 9.46447 0.146447C9.2692 0.341709 9.2692 0.658291 9.46447 0.853554L12.2929 3.68198L9.46447 6.51041C9.2692 6.70567 9.2692 7.02225 9.46447 7.21751C9.65973 7.41278 9.97631 7.41278 10.1716 7.21751L13.3536 4.03553Z"/>
+                      </svg>
+                    </span>
+                  </span>
+                  <span class="dropdown-description">Manage and control AI agents in production</span>
+                </span>
+              </a>
+            </aside>
+
+          </div>
+        </div>
+      </li>
+
+      <!-- Solutions -->
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="##" id="Nav-Solutions" data-toggle="dropdown" aria-expanded="false" aria-haspopup="true">
+          Solutions
+          <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="#6b6b6b">
+            <g><path d="M10.375,3.219,6,6.719l-4.375-3.5A1,1,0,1,0,.375,4.781l5,4a1,1,0,0,0,1.25,0l5-4a1,1,0,0,0-1.25-1.562Z" /></g>
+          </svg>
+        </a>
+        <div class="dropdown-menu dropdown-menu-solutions" aria-labelledby="Nav-Solutions">
+          <div class="solutions-grid">
+            <a class="dropdown-item" href="https://www.postman.com/solutions/api-governance/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;api-governance&#039;);" data-wpel-link="exclude">
+              <span class="nav-item-title">API Governance</span>
+              <span class="dropdown-description">Enforce API standards at scale</span>
+            </a>
+            <a class="dropdown-item" href="https://www.postman.com/solutions/api-lifecycle-management/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;api-lifecycle-management&#039;);" data-wpel-link="exclude">
+              <span class="nav-item-title">API Lifecycle Management</span>
+              <span class="dropdown-description">Run every stage as one connected system</span>
+            </a>
+            <a class="dropdown-item" href="https://www.postman.com/solutions/partner-api-management/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;partner-api-management&#039;);" data-wpel-link="exclude">
+              <span class="nav-item-title">Partner API Management</span>
+              <span class="dropdown-description">Onboard partners in days, not months</span>
+            </a>
+            <a class="dropdown-item" href="https://www.postman.com/solutions/sdlc-automation/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;sdlc-automation&#039;);" data-wpel-link="exclude">
+              <span class="nav-item-title">SDLC Automation</span>
+              <span class="dropdown-description">Embed quality into every delivery stage</span>
+            </a>
+          </div>
+        </div>
+      </li>
+
+      <!-- Pricing -->
+      <li class="nav-item">
+        <a class="nav-link" id="Nav-Pricing" href="https://www.postman.com/pricing/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;pricing&#039;);" data-wpel-link="exclude">
+          Pricing
+        </a>
+      </li>
+
+      <!-- Enterprise -->
+      <li class="nav-item">
+        <a class="nav-link" id="Nav-Enterprise" href="https://www.postman.com/postman-enterprise/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;postman-enterprise&#039;);" data-wpel-link="exclude">
+          Enterprise
+        </a>
+      </li>
+
+      <!-- Resources -->
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="##" id="Nav-Resources" data-toggle="dropdown" aria-expanded="false" aria-haspopup="true">
+          Resources
+          <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="#6b6b6b">
+            <g><path d="M10.375,3.219,6,6.719l-4.375-3.5A1,1,0,1,0,.375,4.781l5,4a1,1,0,0,0,1.25,0l5-4a1,1,0,0,0-1.25-1.562Z" /></g>
+          </svg>
+        </a>
+        <div class="dropdown-menu" aria-labelledby="Nav-Resources">
+          <div class="row dropdown-col-menu">
+            <div class="col-sm-6 col-md-3 dropdown-col">
+              <p class="h6 dropdown-header mb-0">LEARN</p>
+              <a class="dropdown-item" href="https://www.postman.com/learn/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;learn&#039;);" data-wpel-link="exclude">Learning Hub</a>
+              <a class="dropdown-item" href="https://learning.postman.com/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;docs&#039;);" data-wpel-link="exclude">Docs</a>
+              <a class="dropdown-item" href="https://academy.postman.com/page/enterprise-implementation-onboarding-guide" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;enterprise-onboarding&#039;);" rel="noreferrer" target="_blank" data-wpel-link="exclude">Enterprise Onboarding</a>
+              <a class="dropdown-item" href="https://academy.postman.com/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;postman-academy&#039;);" rel="noreferrer" target="_blank" data-wpel-link="exclude">Postman Academy</a>
+              <a class="dropdown-item" href="https://www.postman.com/templates/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;postman-templates&#039;);" rel="noreferrer" target="_blank" data-wpel-link="exclude">Templates</a>
+              <a class="dropdown-item" href="https://www.postman.com/customer-stories/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;customer-stories&#039;);" rel="noreferrer" target="_blank" data-wpel-link="exclude">Customer Stories</a>
+              <a class="dropdown-item" href="https://www.postman.com/postman-best-practices/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;postman-best-practices&#039;);" rel="noreferrer" target="_blank" data-wpel-link="exclude">Postman Best Practices</a>
+            </div>
+            <div class="col-sm-6 col-md-3 dropdown-col">
+              <p class="h6 dropdown-header mb-0">CONNECT</p>
+              <a class="dropdown-item" href="https://community.postman.com/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;community&#039;);" data-wpel-link="exclude">Community</a>
+              <a class="dropdown-item" href="https://www.postman.com/events/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;events&#039;);" data-wpel-link="exclude">Events</a>
+              <a class="dropdown-item" href="https://discord.com/invite/58aNNsRBGR" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;discord&#039;);" rel="noreferrer noopener external" target="_blank" data-wpel-link="external">Discord</a>
+              <a class="dropdown-item" href="https://www.postman.com/product/mcp-server/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;mcp-server&#039;);" data-wpel-link="exclude">Postman MCP Server</a>
+            </div>
+            <div class="col-sm-6 col-md-3 dropdown-col">
+              <p class="h6 dropdown-header mb-0">GET SUPPORT</p>
+              <a class="dropdown-item" href="https://support.postman.com/hc/en-us/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;support-center&#039;);" data-wpel-link="exclude">Support Center</a>
+              <a class="dropdown-item" href="https://www.postman.com/release-notes/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;release-notes&#039;);" data-wpel-link="exclude">Release Notes</a>
+              <a class="dropdown-item" href="https://status.postman.com/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;postman-status&#039;);" target="_blank" rel="noreferrer" data-wpel-link="exclude">Postman Status</a>
+              <a class="dropdown-item" href="https://www.postman.com/security/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;trust-and-security&#039;);" id="Nav-Resources-Security" target="_blank" rel="noreferrer" data-wpel-link="exclude">Security</a>
+            </div>
+            <div class="col-sm-6 col-md-3 dropdown-col">
+              <p class="h6 dropdown-header mb-0">POSTMAN</p>
+              <a class="dropdown-item" href="/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;blog&#039;);" data-wpel-link="internal" target="_self">Blog</a>
+              <a class="dropdown-item" href="https://www.postman.com/company/press-media/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;press-media&#039;);" data-wpel-link="exclude">Press and Media</a>
+              <a class="dropdown-item" href="https://www.postman.com/company/about-postman/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;about-postman&#039;);" data-wpel-link="exclude">About Postman</a>
+            </div>
+          </div>
+        </div>
+      </li>
+
+    </ul>
+
+    <!-- Auth buttons -->
+    <div class="form-inline my-2 my-lg-0 ml-0">
+      <a class="button-secondary nav-link uber-nav-link uber-nav_right contact-sales-button" href="https://www.postman.com/company/contact-sales/" title="Contact Sales" aria-label="Contact Sales" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;contact-sales&#039;);" data-wpel-link="exclude">
+        Contact Sales
+      </a>
+      <a class="button-secondary nav-link uber-nav-link pingdom-transactional-check__sign-in-button uber-nav_right" href="https://identity.getpostman.com/login?continue=https%3A%2F%2Fgo.postman.co%2Fhome" title="Sign In" aria-label="Sign In" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;sign-in&#039;);" data-wpel-link="exclude">
+        Sign In
+      </a>
+      <a class="button-primary nav-link uber-nav-link pingdom-transactional-check__register-button uber-nav_right" title="Sign Up for Free" aria-label="Sign Up for Free" href="https://identity.getpostman.com/signup?continue=https%3A%2F%2Fgo.postman.co%2Fbuild" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;sign-up&#039;);" style="white-space: nowrap;" data-wpel-link="exclude">
+        Sign Up for Free
+      </a>
+      <a class="d-none button-primary nav-link uber-nav-link pingdom-transactional-check__launch-button uber-nav_right" title="Launch Postman" aria-label="Launch Postman" href="https://go.postman.co/home" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;launch-postman&#039;);" data-wpel-link="external" target="_blank" rel="external noopener">
+        Launch Postman
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- Secondary blog navbar -->
+<nav class="navbar-v6 navbar sticky-top navbar-expand-xl navbar-light nav-secondary">
+  <div class="dropdown position-static">
+    <a class="nav-link navbar-brand secondary-nav-header pl-0" href="/" id="secondary-nav-header" data-toggle="dropdown" aria-expanded="false" data-wpel-link="internal" target="_self">
+      Blog
+      <svg class="arrow-icon topic-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="#212121">
+        <g><path d="M10.375,3.219,6,6.719l-4.375-3.5A1,1,0,1,0,.375,4.781l5,4a1,1,0,0,0,1.25,0l5-4a1,1,0,0,0-1.25-1.562Z" /></g>
+      </svg>
+    </a>
+    <div class="dropdown-menu lc-iconic">
+      <a href="https://learning.postman.com/" class="dropdown-item topic-item mb-3" data-wpel-link="exclude">
+        <div class="row p-2">
+          <div class="col-1 mx-auto mt-2 pr-0 pl-0">
+            <img class="img-fluid" src='https://voyager.postman.com/icon/learning-documentation-icon-postman.svg' loading='lazy' style='color: transparent; width: 100%; height: 25px;' />
+          </div>
+          <div class="col-11">
+            <p class="dropdown-item-link strong mb-0">Postman Docs<svg class="arrow-icon arrow-topic-icon " xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="#212121">
+                <g><path d="M10.375,3.219,6,6.719l-4.375-3.5A1,1,0,1,0,.375,4.781l5,4a1,1,0,0,0,1.25,0l5-4a1,1,0,0,0-1.25-1.562Z"></path></g>
+              </svg></p>
+            <p class="dropdown-item-text-wrap dropdown-item-text-wrap small">Learn about how to get started using Postman, and read more in the product docs.</p>
+          </div>
+        </div>
+      </a>
+      <a href="https://support.postman.com" class="dropdown-item topic-item mb-3" data-wpel-link="exclude">
+        <div class="row p-2">
+          <div class="col-1 mx-auto mt-2 pr-0 pl-0">
+            <img class="img-fluid" src="https://voyager.postman.com/icon/support-life-ring-icon-postman.svg" loading='lazy' style="color: transparent; width: 100%; height: 25px;" />
+          </div>
+          <div class="col-11">
+            <p class="dropdown-item-link strong mb-0">Support Center<svg class="arrow-icon arrow-topic-icon " xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="#212121">
+                <g><path d="M10.375,3.219,6,6.719l-4.375-3.5A1,1,0,1,0,.375,4.781l5,4a1,1,0,0,0,1.25,0l5-4a1,1,0,0,0-1.25-1.562Z"></path></g>
+              </svg></p>
+            <p class="dropdown-item-text-wrap dropdown-item-text-wrap small">Need help? Check out our FAQ, documentation or submit a request.</p>
+          </div>
+        </div>
+      </a>
+      <a href="/" class="dropdown-item topic-item mb-3" data-wpel-link="internal" target="_self">
+        <div class="row p-2">
+          <div class="col-1 mx-auto mt-2 pr-0 pl-0 p">
+            <img class="img-fluid" src="https://voyager.postman.com/icon/api-data-contract-icon-postman.svg" loading='lazy' style='color: transparent; width: 100%; height: 25px;' />
+          </div>
+          <div class="col-11">
+            <p class="dropdown-item-link strong mb-0">Blog<svg class="arrow-icon arrow-topic-icon " xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="#212121">
+                <g><path d="M10.375,3.219,6,6.719l-4.375-3.5A1,1,0,1,0,.375,4.781l5,4a1,1,0,0,0,1.25,0l5-4a1,1,0,0,0-1.25-1.562Z"></path></g>
+              </svg></p>
+            <p class="dropdown-item-text-wrap dropdown-item-text-wrap small">The Postman blog is your hub for API resources, news, and community. Learn about the Postman API Platform and much more.</p>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+  <button
+    id="secondaryNav"
+    class="mobile-icon-button_caret mobile-icon-button navbar-toggler"
+    type="button"
+    data-test="mobileNavTogglerBottom"
+    data-toggle="collapse"
+    data-target="#navbarSupportedContentBottom"
+    aria-controls="navbarSupportedContentBottom"
+    aria-expanded="false"
+    aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon">
+      <div id="icon-wrap-two" aria-expanded="false">
+        <svg id="navbar-chevron-icons" width="20" height="11" viewBox="0 0 20 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 1L10 10L19 1" stroke="#6B6B6B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+    </span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarSupportedContentBottom">
+    <ul class="property-context-menu navbar-nav ml-auto">
+      <li class="nav-item">
+        <a class="nav-link uber-nav" href="/tag/ai/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;ai&#039;);" data-wpel-link="internal" target="_self">AI</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link uber-nav" href="/tag/api-first/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;api-first&#039;);" data-wpel-link="internal" target="_self">API-First</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link uber-nav" href="/tag/product-updates/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;product-updates&#039;);" data-wpel-link="internal" target="_self">Product Updates</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link uber-nav" href="https://blog.postman.com/engineering/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;engineering&#039;);" data-wpel-link="internal" target="_self">Engineering</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link uber-nav" href="/tag/company-news/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;company-news&#039;);" data-wpel-link="internal" target="_self">Company News</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link uber-nav" href="/tag/tutorials/" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-navbar&#039;, &#039;Click&#039;, &#039;tutorials&#039;);" data-wpel-link="internal" target="_self">Tutorials</a>
+      </li>
+    </ul>
+    <!-- search form start -->
+<form class="form-inline my-lg-0" method="get" action="/" >
+  <label for="search-lc" class="search-label">
+    <svg class="nav-search__icon" width="16" height="16" viewBox="0 0 16 16" fill="#6b6b6b" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.87147 9.16437C10.5768 8.30243 11 7.20063 11 6C11 3.23858 8.76142 1 6 1C3.23858 1 1 3.23858 1 6C1 8.76142 3.23858 11 6 11C7.20063 11 8.30243 10.5768 9.16437 9.87147L9.89648 10.6036L9.64648 10.8536L13.5758 14.7829C13.8101 15.0172 14.19 15.0172 14.4243 14.7829L14.7829 14.4243C15.0172 14.19 15.0172 13.8101 14.7829 13.5758L10.8536 9.64648L10.6036 9.89648L9.87147 9.16437ZM6 10C8.20914 10 10 8.20914 10 6C10 3.79086 8.20914 2 6 2C3.79086 2 2 3.79086 2 6C2 8.20914 3.79086 10 6 10Z"></path></svg>
+  </label>
+  <input
+    class="form-control"
+    id="search-lc"
+    type="search"
+    placeholder="Search Postman Blog"
+    aria-label="Search"
+    name="s"
+    autocomplete="off"
+    spellcheck="false"
+    dir="auto"
+  value=""
+  />
+  <button type="submit" class="screen-reader-text">Search</button>
+</form>
+<!-- search form end -->
+  </div>
+</nav>
+	</header><!-- #masthead -->
+
+	<main id="primary" class="site-main container-fluid">
+		
+<section id="post-container" class="mt-5">
+	<article class="container" id="post-19356" class="post-19356 post type-post status-publish format-standard has-post-thumbnail hentry category-api-101 tag-api-101">
+		<header class="entry-header">
+			<div class="row">
+				<div class="col-lg-8 offset-lg-2"><img width="1024" height="542" src="https://blog.postman.com/wp-content/uploads/2023/08/What-are-HTTP-status-codes.jpg" class="w-100 img-fluid wp-post-image" alt="HTTP 204 No Content: Meaning, Use Cases, and Best Practices" fetchpriority="high" decoding="async" srcset="https://blog.postman.com/wp-content/uploads/2023/08/What-are-HTTP-status-codes.jpg 2560w, https://blog.postman.com/wp-content/uploads/2023/08/What-are-HTTP-status-codes-300x159.jpg 300w, https://blog.postman.com/wp-content/uploads/2023/08/What-are-HTTP-status-codes-768x407.jpg 768w, https://blog.postman.com/wp-content/uploads/2023/08/What-are-HTTP-status-codes-1536x813.jpg 1536w, https://blog.postman.com/wp-content/uploads/2023/08/What-are-HTTP-status-codes-2048x1084.jpg 2048w" sizes="(max-width: 1024px) 100vw, 1024px" /></div>			</div>
+		</header><!-- .content.php header -->
+		<div class="row">
+			<div class="entry-content col-lg-9">
+															<h1 class="entry-title">HTTP 204 No Content: Meaning, Use Cases, and Best Practices</h1>										<div class="d-flex align-items-center mb-4">
+						<div class="avatar-post">
+							<img src="https://blog.postman.com/wp-content/uploads/2021/11/avatars-08.png" alt="User Avatar" width="96" height="96" class="avatar avatar-96 photo" loading="lazy" />						</div>
+						<div>
+							<div class="postman-entry-meta">
+								<a class="post-author-link" href="https://blog.postman.com/author/thepostmanteam/" aria-label="Posts by The Postman Team" data-wpel-link="internal" target="_self">The Postman Team</a>
+							</div>
+							<div class="postman-entry-meta">
+								<span class="posted-on"><span aria-label="date published"><time class="entry-date published updated" datetime="2025-11-14T16:33:11-08:00">November 14, 2025</time></span></span>							</div>
+						</div>
+					</div>
+				
+				<p><!-- ANSWER BOX START --></p>
+<div style="border: 2px solid #e0e0e0; background-color: #f9f9f9; padding: 16px 20px; border-radius: 8px; margin: 20px 0; font-family: Arial, sans-serif;">
+<h3 style="margin-top: 0; color: #333;" style="margin-top: 0; color: #333;" id="what-is-http-204-no-content">What is HTTP 204 No Content?</h3>
+<p style="margin: 0 0 12px 0; line-height: 1.5; color: #444;">The 204 No Content is an HTTP status code that indicates a request succeeded, but the server intentionally returns no message body. The server has successfully processed the requested resource and isn&#8217;t returning any content because there&#8217;s nothing meaningful to send back.</p>
+<p style="margin: 0 0 12px 0; line-height: 1.5; color: #444;">Think of it like a CI run that ends with “Build succeeded.” The job’s done, everything passed, and there’s nothing more to report.</p>
+<p data-renderer-start-pos="1378">Unlike redirect codes (301, 302) that send the client to a new URL, 204 is a terminal response that requires no further action. The HTTP response completes immediately without any HTML content or data payload.</p>
+<p data-renderer-start-pos="1589"><strong>A 204 tells the client:</strong></p>
+<ul style="margin: 0 0 12px 20px; padding: 0; color: #444; line-height: 1.5;">
+<li>Your request was successful.</li>
+<li>The operation completed as expected.</li>
+<li>There&#8217;s no content to display or process.</li>
+</ul>
+<p style="margin: 0; color: #444;"><a style="color: #ff6c37; text-decoration: none; font-weight: bold;" href="https://identity.getpostman.com/signup" target="_blank" rel="noopener noreferrer" data-wpel-link="exclude"><br />
+Try Postman today →</a></p>
+</div>
+<p><!-- ANSWER BOX END --></p>
+<p><!-- TABLE OF CONTENTS START --></p>
+<div style="border: 2px solid #e0e0e0; background-color: #f9f9f9; padding: 16px 20px; border-radius: 8px; margin: 20px 0; font-family: Arial, sans-serif;">
+<h3 style="margin-top: 0; color: #333;" style="margin-top: 0; color: #333;" id="table-of-contents">Table of Contents</h3>
+<ul style="margin: 0; padding-left: 20px; color: #444; line-height: 1.6;">
+<li><a style="color: #ff6c37; text-decoration: none;" href="#what-is-http-204-no-content">What is HTTP 204 No Content?</a></li>
+<li><a style="color: #ff6c37; text-decoration: none;" href="#when-to-use-204">When to use 204</a></li>
+<li><a style="color: #ff6c37; text-decoration: none;" href="#204-vs-other-success-codes">204 vs other success codes</a></li>
+<li><a style="color: #ff6c37; text-decoration: none;" href="#real-world-examples">Real-world examples</a></li>
+<li><a style="color: #ff6c37; text-decoration: none;" href="#headers-with-204-responses">Headers with 204 responses</a></li>
+<li><a style="color: #ff6c37; text-decoration: none;" href="#testing-204-responses-in-postman">Testing 204 responses in Postman</a></li>
+<li><a style="color: #ff6c37; text-decoration: none;" href="#best-practices">Best practices</a></li>
+<li><a style="color: #ff6c37; text-decoration: none;" href="#common-mistakes-to-avoid">Common mistakes to avoid</a></li>
+<li><a style="color: #ff6c37; text-decoration: none;" href="#client-side-handling">Client-side handling</a></li>
+<li><a style="color: #ff6c37; text-decoration: none;" href="#faqs">FAQs</a></li>
+</ul>
+</div>
+<p><!-- TABLE OF CONTENTS END --></p>
+<p data-renderer-start-pos="535">When an operation succeeds but has nothing to say back, that&#8217;s where status code 204 comes in. It&#8217;s one of the most elegant HTTP status codes, providing a way to say, &#8220;I did what you asked, and everything&#8217;s fine,&#8221; without sending a response payload.</p>
+<p data-renderer-start-pos="786">This guide explains what the 204 response code means, when to use it, how it differs from other success codes, and how to test it effectively in Postman.</p>
+<h2 data-renderer-start-pos="1789" data-renderer-start-pos="1789" id="when-to-use-204">When to use 204</h2>
+<h3 data-renderer-start-pos="1806" data-renderer-start-pos="1806" id="delete-requests">DELETE requests</h3>
+<p data-renderer-start-pos="1823">When deleting a resource, there&#8217;s typically no content response to return:</p>
+<pre><code class="" data-line="">DELETE /api/users/12345 HTTP/1.1
+Authorization: Bearer token123</code></pre>
+<pre><code class="" data-line="">HTTP/1.1 204 No Content</code></pre>
+<p data-renderer-start-pos="1989">The resource is gone, and the status code itself confirms success.</p>
+<h3 data-renderer-start-pos="2057" data-renderer-start-pos="2057" id="put-and-patch-updates">PUT and PATCH updates</h3>
+<p data-renderer-start-pos="2080">When updating a resource, if the client already knows the final state, returning it would be redundant:</p>
+<pre><code class="" data-line="">PUT /api/settings/notifications HTTP/1.1
+Content-Type: application/json
+
+{
+  &quot;email_notifications&quot;: false,
+  &quot;push_notifications&quot;: true
+}</code></pre>
+<pre><code class="" data-line="">HTTP/1.1 204 No Content</code></pre>
+<p data-renderer-start-pos="2349">The client just sent the data, so echoing it back adds no value.</p>
+<h3 data-renderer-start-pos="2415" data-renderer-start-pos="2415" id="other-common-uses">Other common uses</h3>
+<ul data-indent-level="1">
+<li>
+<p data-renderer-start-pos="2436"><strong data-renderer-mark="true">Batch operations</strong>: Processing multiple items where individual results aren&#8217;t needed.</p>
+</li>
+<li>
+<p data-renderer-start-pos="2523"><strong data-renderer-mark="true">Preference updates</strong>: User settings and configuration changes.</p>
+</li>
+<li>
+<p data-renderer-start-pos="2587"><strong data-renderer-mark="true">Dismissing notifications</strong>: Marking items as read or clearing alerts.</p>
+</li>
+</ul>
+<h2 data-renderer-start-pos="2658" data-renderer-start-pos="2658" id="204-vs-other-success-codes">204 vs other success codes</h2>
+<p data-renderer-start-pos="2686">Understanding when to use 204 instead of other 2xx codes is key to good API design.</p>
+<table style="border-collapse: collapse; width: 100%; margin-top: 12px;">
+<thead>
+<tr>
+<th style="padding: 12px; border: 1px solid #e5e7eb; text-align: left;">Status code</th>
+<th style="padding: 12px; border: 1px solid #e5e7eb; text-align: left;">Response body</th>
+<th style="padding: 12px; border: 1px solid #e5e7eb; text-align: left;">Use case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">200 OK</td>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">Yes</td>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">Successful request with data to return</td>
+</tr>
+<tr>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">201 Created</td>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">Usually</td>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">New resource created</td>
+</tr>
+<tr>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">202 Accepted</td>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">Usually</td>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">Request accepted for async processing</td>
+</tr>
+<tr>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">204 No Content</td>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">No</td>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">Successful request with nothing to return</td>
+</tr>
+</tbody>
+</table>
+<h3 data-renderer-start-pos="3073" data-renderer-start-pos="3073" id="204-vs-200-ok">204 vs 200 OK</h3>
+<p data-renderer-start-pos="3088">200 OK returns a response body with data. 204 returns no body at all.</p>
+<p data-renderer-start-pos="3159">Use 200 when the client needs information:</p>
+<pre><code class="" data-line="">GET /api/users/12345 HTTP/1.1</code></pre>
+<pre><code class="" data-line="">HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  &quot;id&quot;: &quot;12345&quot;,
+  &quot;name&quot;: &quot;Pat Postman&quot;,
+  &quot;email&quot;: &quot;<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1f6f7e6b5f7a677e726f737a317c7072">[email&#160;protected]</a>&quot;
+}
+</code></pre>
+<p data-renderer-start-pos="3359">Use 204 when there&#8217;s nothing to return, such as after a successful delete request:</p>
+<pre><code class="" data-line="">DELETE /api/users/12345 HTTP/1.1</code></pre>
+<pre><code class="" data-line="">HTTP/1.1 204 No Content</code></pre>
+<h3 data-renderer-start-pos="3502" data-renderer-start-pos="3502" id="204-vs-201-created">204 vs 201 Created</h3>
+<p data-renderer-start-pos="3522">201 Created indicates a new resource was created and typically includes a <code class="" data-line="">Location</code> header pointing to it. 204 confirms success without creating anything new.</p>
+<p data-renderer-start-pos="3681">Use 201 for resource creation:</p>
+<pre><code class="" data-line="">POST /api/users HTTP/1.1
+Content-Type: application/json
+
+{
+  &quot;name&quot;: &quot;Pat Postman&quot;,
+  &quot;email&quot;: &quot;<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="3a4a5b4e7a5f425b574a565f14595557">[email&#160;protected]</a>&quot;
+}</code></pre>
+<pre><code class="" data-line="">HTTP/1.1 201 Created
+Location: /api/users/12345</code></pre>
+<p data-renderer-start-pos="3878">Use 204 for actions that don&#8217;t create resources:</p>
+<pre><code class="" data-line="">DELETE /api/sessions/current HTTP/1.1</code></pre>
+<pre><code class="" data-line="">HTTP/1.1 204 No Content</code></pre>
+<h3 data-renderer-start-pos="3992" data-renderer-start-pos="3992" id="204-vs-202-accepted">204 vs 202 Accepted</h3>
+<p data-renderer-start-pos="4013">202 Accepted means the request was received, but processing has not yet been completed. 204 means processing is complete and successful.</p>
+<p data-renderer-start-pos="4151">Use 202 for asynchronous operations:</p>
+<pre><code class="" data-line="">POST /api/reports/generate HTTP/1.1</code></pre>
+<pre><code class="" data-line="">HTTP/1.1 202 Accepted
+Content-Type: application/json
+
+{
+  &quot;status&quot;: &quot;processing&quot;,
+  &quot;check_url&quot;: &quot;/api/reports/789/status&quot;
+}</code></pre>
+<p data-renderer-start-pos="4352">Use 204 when the operation completes immediately:</p>
+<pre><code class="" data-line="">PATCH /api/settings HTTP/1.1
+Content-Type: application/json
+
+{
+  &quot;timezone&quot;: &quot;America/Los_Angeles&quot;
+}</code></pre>
+<pre><code class="" data-line="">HTTP/1.1 204 No Content</code></pre>
+<h2 data-renderer-start-pos="4530" data-renderer-start-pos="4530" id="real-world-examples">Real-world examples</h2>
+<h3 data-renderer-start-pos="4551" data-renderer-start-pos="4551" id="e-commerce">E-commerce</h3>
+<ul data-indent-level="1">
+<li>
+<p data-renderer-start-pos="4565"><code class="" data-line="">POST /cart/items</code> → Add item to cart (might use 204 if cart state is managed client-side)</p>
+</li>
+<li>
+<p data-renderer-start-pos="4657"><code class="" data-line="">DELETE /cart/items/789</code> → Remove item from cart</p>
+</li>
+</ul>
+<h3 data-renderer-start-pos="4707" data-renderer-start-pos="4707" id="social-media">Social media</h3>
+<ul data-indent-level="1">
+<li>
+<p data-renderer-start-pos="4723"><code class="" data-line="">POST /posts/456/like</code> → Like a post</p>
+</li>
+<li>
+<p data-renderer-start-pos="4761"><code class="" data-line="">DELETE /following/789</code> → Unfollow a user</p>
+</li>
+</ul>
+<h3 data-renderer-start-pos="4804" data-renderer-start-pos="4804" id="task-management">Task management</h3>
+<ul data-indent-level="1">
+<li>
+<p data-renderer-start-pos="4823"><code class="" data-line="">PATCH /tasks/456</code> → Mark task as complete</p>
+</li>
+<li>
+<p data-renderer-start-pos="4867"><code class="" data-line="">DELETE /notifications/123</code> → Dismiss notification</p>
+</li>
+</ul>
+<h2 data-renderer-start-pos="4919" data-renderer-start-pos="4919" id="headers-with-204-responses">Headers with 204 responses</h2>
+<p data-renderer-start-pos="4947">Even though 204 responses have no body, they can and should include meaningful HTTP headers for caching and rate limiting.</p>
+<p data-renderer-start-pos="5071"><strong data-renderer-mark="true">Recommended headers:</strong></p>
+<pre><code class="" data-line="">HTTP/1.1 204 No Content
+Cache-Control: no-cache
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+ETag: &quot;33a64df551425fcc55e4d42a148795d9f25f89d4&quot;</code></pre>
+<p data-renderer-start-pos="5240"><strong data-renderer-mark="true">Avoid these:</strong></p>
+<ul data-indent-level="1">
+<li>
+<p data-renderer-start-pos="5256"><strong data-renderer-mark="true">Content-Type:</strong> Since there&#8217;s no body, content type is meaningless.</p>
+</li>
+<li>
+<p data-renderer-start-pos="5325"><strong data-renderer-mark="true">Content-Length:</strong> Should be zero or omitted entirely.</p>
+</li>
+</ul>
+<h2 data-renderer-start-pos="5380" data-renderer-start-pos="5380" id="testing-204-responses-in-postman">Testing 204 responses in Postman</h2>
+<p data-renderer-start-pos="5414">Postman makes it straightforward to test 204 responses.</p>
+<h3 data-renderer-start-pos="5471" data-renderer-start-pos="5471" id="basic-test">Basic test</h3>
+<ol start="1" data-indent-level="1">
+<li>
+<p data-renderer-start-pos="5485">Create a new request in Postman.</p>
+</li>
+<li>
+<p data-renderer-start-pos="5521">Set the method to DELETE (or PUT/PATCH).</p>
+</li>
+<li>
+<p data-renderer-start-pos="5565">Enter your endpoint URL.</p>
+</li>
+<li>
+<p data-renderer-start-pos="5593">Add any required headers or authentication.</p>
+</li>
+<li>
+<p data-renderer-start-pos="5640">Click <strong data-renderer-mark="true">Send.</strong></p>
+</li>
+<li>
+<p data-renderer-start-pos="5655">Verify the status shows <strong data-renderer-mark="true">204 No Content.</strong></p>
+</li>
+<li>
+<p data-renderer-start-pos="5698">Confirm the body is empty.</p>
+</li>
+</ol>
+<h3 data-renderer-start-pos="5728" data-renderer-start-pos="5728" id="writing-test-scripts">Writing test scripts</h3>
+<p data-renderer-start-pos="5750">Add automated tests to verify 204 behavior:</p>
+<pre><code class="" data-line="">pm.test(&quot;Status code is 204&quot;, function () {
+    pm.response.to.have.status(204);
+});
+
+pm.test(&quot;Response has no body&quot;, function () {
+    pm.expect(pm.response.text()).to.equal(&quot;&quot;);
+});
+
+pm.test(&quot;Content-Length is zero or absent&quot;, function () {
+    const contentLength = pm.response.headers.get(&quot;Content-Length&quot;);
+    if (contentLength) {
+        pm.expect(contentLength).to.equal(&quot;0&quot;);
+    }
+});</code></pre>
+<h3 data-renderer-start-pos="6191" data-renderer-start-pos="6191" id="mock-servers">Mock servers</h3>
+<p data-renderer-start-pos="6205">Create a mock server to simulate 204 responses during development:</p>
+<ol start="1" data-indent-level="1">
+<li>
+<p data-renderer-start-pos="6275">Create a new collection.</p>
+</li>
+<li>
+<p data-renderer-start-pos="6303">Add an example response to your request.</p>
+</li>
+<li>
+<p data-renderer-start-pos="6347">Set the status code to <strong data-renderer-mark="true">204 No Content.</strong></p>
+</li>
+<li>
+<p data-renderer-start-pos="6389">Leave the body empty.</p>
+</li>
+<li>
+<p data-renderer-start-pos="6414">Add relevant headers.</p>
+</li>
+<li>
+<p data-renderer-start-pos="6439">Create a mock server from the collection.</p>
+</li>
+</ol>
+<p data-renderer-start-pos="6484">This lets you develop against the API before the backend is ready.</p>
+<h2 data-renderer-start-pos="6552" data-renderer-start-pos="6552" id="best-practices">Best practices</h2>
+<p data-renderer-start-pos="6568">Following these guidelines ensures your API uses 204 appropriately.</p>
+<h3 data-renderer-start-pos="6637" data-renderer-start-pos="6637" id="when-to-return-204">When to return 204</h3>
+<p data-renderer-start-pos="6657">Return 204 when:</p>
+<ul data-indent-level="1">
+<li>
+<p data-renderer-start-pos="6677">The operation succeeded.</p>
+</li>
+<li>
+<p data-renderer-start-pos="6705">There&#8217;s genuinely nothing useful to return.</p>
+</li>
+<li>
+<p data-renderer-start-pos="6752">The client already knows the outcome.</p>
+</li>
+<li>
+<p data-renderer-start-pos="6793">Returning data would be redundant.</p>
+</li>
+</ul>
+<h3 data-renderer-start-pos="6831" data-renderer-start-pos="6831" id="when-not-to-return-204">When NOT to return 204</h3>
+<p data-renderer-start-pos="6855">Don&#8217;t use 204 when:</p>
+<ul data-indent-level="1">
+<li>
+<p data-renderer-start-pos="6878">The client needs confirmation details.</p>
+</li>
+<li>
+<p data-renderer-start-pos="6920">A new resource was created (use 201).</p>
+</li>
+<li>
+<p data-renderer-start-pos="6961">Partial results or status updates are valuable.</p>
+</li>
+<li>
+<p data-renderer-start-pos="7012">Error information needs to be conveyed.</p>
+</li>
+</ul>
+<h3 data-renderer-start-pos="7055" data-renderer-start-pos="7055" id="keep-responses-truly-empty">Keep responses truly empty</h3>
+<p data-renderer-start-pos="7083">When returning 204, the body must be empty. Don&#8217;t send:</p>
+<pre><code class="" data-line="">❌ HTTP/1.1 204 No Content
+Content-Type: application/json
+
+{
+  &quot;message&quot;: &quot;Successfully deleted&quot;
+}</code></pre>
+<p data-renderer-start-pos="7239">This violates the HTTP specification. If you need to send a message, use 200:</p>
+<pre><code class="" data-line="">✅ HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  &quot;message&quot;: &quot;Successfully deleted&quot;,
+  &quot;deleted_at&quot;: &quot;2024-11-13T10:30:00Z&quot;
+}</code></pre>
+<h3 data-renderer-start-pos="7449" data-renderer-start-pos="7449" id="be-consistent-across-your-api">Be consistent across your API</h3>
+<p data-renderer-start-pos="7480">Establish clear patterns for when you return 204 versus 200. Document these decisions and apply them consistently across all endpoints.</p>
+<h2 data-renderer-start-pos="7617" data-renderer-start-pos="7617" id="common-mistakes-to-avoid">Common mistakes to avoid</h2>
+<h3 data-renderer-start-pos="7643" data-renderer-start-pos="7643" id="returning-a-body-with-204">Returning a body with 204</h3>
+<p data-renderer-start-pos="7670">The most common mistake is including content in a 204 response. This confuses clients and violates the HTTP specification. If you need to send data, use 200.</p>
+<h3 data-renderer-start-pos="7829" data-renderer-start-pos="7829" id="using-204-for-errors">Using 204 for errors</h3>
+<p data-renderer-start-pos="7851">Never use 204 for errors or failures. If a resource doesn&#8217;t exist, return 404, not 204.</p>
+<h3 data-renderer-start-pos="7940" data-renderer-start-pos="7940" id="inconsistent-status-codes">Inconsistent status codes</h3>
+<p data-renderer-start-pos="7967">Don&#8217;t alternate between 200 and 204 for the same operation. Pick one and use it consistently.</p>
+<h3 data-renderer-start-pos="8062" data-renderer-start-pos="8062" id="overusing-204">Overusing 204</h3>
+<p data-renderer-start-pos="8077">Not every successful operation needs a 204. If returning data adds value for the client, use 200:</p>
+<pre><code class="" data-line="">PATCH /api/users/123 HTTP/1.1
+Content-Type: application/json
+
+{
+  &quot;email&quot;: &quot;<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="bad4dfcddfd7dbd3d6fadfc2dbd7cad6df94d9d5d7">[email&#160;protected]</a>&quot;
+}</code></pre>
+<pre><code class="" data-line="">✅ HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  &quot;id&quot;: &quot;123&quot;,
+  &quot;email&quot;: &quot;<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="ec82899b89818d8580ac89948d819c8089c28f8381">[email&#160;protected]</a>&quot;,
+  &quot;updated_at&quot;: &quot;2024-11-13T10:30:00Z&quot;
+}</code></pre>
+<p data-renderer-start-pos="8421">This confirms the update and shows the new timestamp.</p>
+<h2 data-renderer-start-pos="8476" data-renderer-start-pos="8476" id="client-side-handling">Client-side handling</h2>
+<p data-renderer-start-pos="8498">When your application receives a 204, handle it appropriately.</p>
+<h3 data-renderer-start-pos="8562" data-renderer-start-pos="8562" id="javascript-fetch-example">JavaScript fetch example</h3>
+<pre><code class="" data-line="">fetch(&#039;https://example.com/notifications/123/dismiss&#039;, {
+  method: &#039;DELETE&#039;,
+  headers: {
+    &#039;Authorization&#039;: &#039;Bearer token123&#039;
+  }
+})
+.then(response =&gt; {
+  if (response.status === 204) {
+    console.log(&#039;Notification dismissed successfully&#039;);
+    updateUI();
+  } else if (response.ok) {
+    return response.json();
+  } else {
+    throw new Error(&#039;Request failed&#039;);
+  }
+})
+.catch(error =&gt; {
+  console.error(&#039;Error:&#039;, error);
+});</code></pre>
+<h3 data-renderer-start-pos="9019" data-renderer-start-pos="9019" id="axios-example">Axios example</h3>
+<pre><code class="" data-line="">axios.delete(&#039;https://example.com/sessions/current&#039;)
+  .then(response =&gt; {
+    if (response.status === 204) {
+      console.log(&#039;Logged out successfully&#039;);
+      redirectToLogin();
+    }
+  })
+  .catch(error =&gt; {
+    console.error(&#039;Logout failed:&#039;, error);
+  });</code></pre>
+<h2 data-renderer-start-pos="9297" data-renderer-start-pos="9297" id="faqs">FAQs</h2>
+<table style="border-collapse: collapse; width: 100%; margin-top: 12px;">
+<thead>
+<tr>
+<th style="padding: 12px; border: 1px solid #e5e7eb; text-align: left;">Question</th>
+<th style="padding: 12px; border: 1px solid #e5e7eb; text-align: left;">Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">What does 204 mean?</td>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">Request succeeded with no content to return</td>
+</tr>
+<tr>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">When should I use 204?</td>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">For successful DELETE, PUT, or PATCH requests where no data needs to be returned</td>
+</tr>
+<tr>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">Can 204 have a response body?</td>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">No, it must be empty</td>
+</tr>
+<tr>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">Is 204 an error?</td>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">No, it&#8217;s a success code (2xx family)</td>
+</tr>
+<tr>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">Should I use 204 or 200?</td>
+<td style="padding: 12px; border: 1px solid #e5e7eb;">Use 204 when there&#8217;s nothing to return, 200 when returning data adds value</td>
+</tr>
+</tbody>
+</table>
+<p data-renderer-start-pos="9313">The 204 response code communicates success without unnecessary data transfer, reducing bandwidth and simplifying client-side processing. Use it thoughtfully for operations where silence is the best response, ensuring your endpoints remain both performant and semantically correct.</p>
+<p data-renderer-start-pos="9595">When designing your endpoints, consider what information your clients actually need. Sometimes the most elegant response is no response at all, just a simple 204 to confirm everything worked perfectly.</p>
+		<div class="wpulike wpulike-heart " ><div class="wp_ulike_general_class wp_ulike_is_not_liked"><button type="button"
+					aria-label="Like Button"
+					data-ulike-id="19356"
+					data-ulike-nonce="36ba5a6c2a"
+					data-ulike-type="post"
+					data-ulike-template="wpulike-heart"
+					data-ulike-display-likers=""
+					data-ulike-likers-style="popover"
+					class="wp_ulike_btn wp_ulike_put_image wp_post_btn_19356"></button><span class="count-box wp_ulike_counter_up" data-ulike-counter-value="+1"></span>			</div></div>
+				</div><!-- .entry-content -->
+
+			<div class="sidebar-content col-lg-3">
+				<div class="toc-sticky">
+					<div class="post-toc">
+						<h2 class="h4 mt-3 mb-3">In this post</h2>
+						<ul id="toc-list" style="list-style: none; padding-left: 0;">
+							<!-- TOC will be injected here -->
+						</ul>
+						<hr style="margin-top: 2rem !important;" />
+
+					</div>
+				   				</div>
+			</div>
+		</div>
+
+		<div class="container">
+			<div class="row">
+				<div class="mt-3">
+					<span class="tags-links"> Tags: <a href="https://blog.postman.com/tag/api-101/" rel="tag" data-wpel-link="internal" target="_self">API 101</a></span> <!-- categories and tags -->
+				</div>
+			</div>
+		</div>
+
+		<div class="col-12 col-lg-9 pt-4 pr-3 pl-3 pb-0 entry-meta-global">
+  <div class="row mt-2 mb-4 author-container">
+    <div class="col-sm-2 col-4 author-img">
+      <img src="https://blog.postman.com/wp-content/uploads/2021/11/avatars-01.png" alt="User Avatar" width="80" height="80" class="avatar avatar-80 photo" loading="lazy" />    </div>
+    <div class="col-sm-10">
+      <div class="row justify-content-between">
+          <p class="entry-meta_global h4 mb-3 col-sm-6 pl-0">
+          <span class="byline"> The Postman Team</span>        </p>
+                
+          <ul class="column__links list-inline  mb-2 col-sm-6 pl-0 text-sm-right" aria-label="Author social links">
+            		<li class="list-inline-item list-inline-item_social"><a id="twitter_icon" href="https://twitter.com/getpostman" target="_blank" rel="noopener noreferrer nofollow external" class="social-icon" data-wpel-link="external"><img src="https://voyager.postman.com/logo/external/x-social-icon-black.svg" width="16" height="16" alt="X (Twitter)" style="display:inline-block;vertical-align:middle;" loading="lazy"></a></li>
+			<li class="list-inline-item list-inline-item_social"><a id="linkedin_icon" href="https://www.linkedin.com/company/postman-platform" target="_blank" rel="noopener noreferrer nofollow external" class="social-icon" data-wpel-link="external"><img src="https://voyager.postman.com/logo/external/lnkdin-icon.svg" width="16" height="16" alt="LinkedIn" style="display:inline-block;vertical-align:middle;" loading="lazy"></a></li>
+	          </ul>
+
+            </div>
+      
+      <div class="row">
+        <p class="entry-meta_global mb-1 col-lg-10 pl-0">
+          <span class="byline"> Postman is the single platform for designing, building, and scaling APIs—together. Join over 40 million users who have consolidated their workflows and leveled up their API game—all in one powerful platform.</span>        </p>
+        <p>
+          <a class="postman-link" href="https://blog.postman.com/author/thepostmanteam/" aria-label="The Postman Team" data-wpel-link="internal" target="_self">View all posts by The Postman Team →</a>
+        </p>
+      </div>
+    </div>
+  </div>
+		<!-- <footer class="entry-footer">
+
+		</footer> -->
+	</article>
+</section><!-- #post-19356 -->
+
+<div class="container">
+	<div class="row">
+		<div class="col-12 col-lg-9 comment-form_wrapper">
+			<div class="cta-comment-box">
+				<div class="cta-comment-text h4 mb-0"><p>What do you think about this topic? Tell us in a comment below.</p>
+</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div id="comments" class="comments-area">
+	
+	<div class="container">
+		<div class="row">
+			<div class="col-12 col-lg-9 comment-form_wrapper">
+					<div id="respond" class="comment-respond">
+		<h3 id="reply-title" class="comment-reply-title">Comment <small><a rel="nofollow" id="cancel-comment-reply-link" href="/http-204-no-content/#respond" style="display:none;" data-wpel-link="internal" target="_self">Cancel reply</a></small></h3><form action="https://blog.postman.com/wp-comments-post.php" method="post" id="commentform" class="comment-form"><p class="comment-notes"><span id="email-notes">Your email address will not be published.</span> <span class="required-field-message">Required fields are marked <span class="required">*</span></span></p><p class="comment-form-author"><label for="author">Your name</label><br /><input class="form-control" id="author" name="author" aria-required="true"></input></p>
+<p class="comment-form-email"><label for="email">Your email</label><br /><input class="form-control" id="email" name="email"></input></p>
+<p class="comment-form-comment"><label for="comment">Write a public comment</label><textarea class="form-control" id="comment" name="comment" aria-required="true"></textarea></p><p class="form-submit"><input name="submit" type="submit" id="comment-submit" class="submit btn btn__primary" value="Post Comment"> <input type='hidden' name='comment_post_ID' value='19356' id='comment_post_ID' />
+<input type='hidden' name='comment_parent' id='comment_parent' value='0' />
+</p><p style="display: none;"><input type="hidden" id="akismet_comment_nonce" name="akismet_comment_nonce" value="3c25156ae0" /></p><p style="display: none !important;" class="akismet-fields-container" data-prefix="ak_"><label>&#916;<textarea name="ak_hp_textarea" cols="45" rows="8" maxlength="100"></textarea></label><input type="hidden" id="ak_js_1" name="ak_js" value="197"/><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+document.getElementById( "ak_js_1" ).setAttribute( "value", ( new Date() ).getTime() );
+</script>
+</p></form>	</div><!-- #respond -->
+	<p class="akismet_comment_form_privacy_notice">This site uses Akismet to reduce spam. <a href="https://akismet.com/privacy/" target="_blank" rel="nofollow noopener external" data-wpel-link="external">Learn how your comment data is processed.</a></p>			</div>
+		</div>
+	</div>
+
+	</div><!-- #comments -->
+		<div class="jetpack-related-section">
+	<div class="container">
+		<div class="row justify-content-center">
+			<div class="col-12 text-left">
+				<h2 class="mb-4">You might also like</h2>
+			</div>
+										<div class="col-xs-12 col-md-6 col-lg-4 mb-5">
+					<div class="related-posts-card h-100">
+						<div class="squared-up-thumbnail-wrapper mb-4">
+							<a href="https://blog.postman.com/introducing-orbit-turn-any-task-into-the-right-api-calls/" class="you-might-also-like-link" tabindex="-1" aria-hidden="true" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;you-might-also-like-section&#039;, &#039;Click&#039;, &#039;suggested-post&#039;);" data-wpel-link="internal" target="_self">
+								<img width="768" height="407" src="https://blog.postman.com/wp-content/uploads/2026/08/Orbit-Launch-Blog-768x407.jpg" class="card-thumbnail-img" alt="" loading="lazy" sizes="auto, (max-width: 767px) 100vw, (max-width: 991px) 50vw, 33vw" decoding="async" srcset="https://blog.postman.com/wp-content/uploads/2026/08/Orbit-Launch-Blog-768x407.jpg 768w, https://blog.postman.com/wp-content/uploads/2026/08/Orbit-Launch-Blog-300x159.jpg 300w, https://blog.postman.com/wp-content/uploads/2026/08/Orbit-Launch-Blog-1024x542.jpg 1024w, https://blog.postman.com/wp-content/uploads/2026/08/Orbit-Launch-Blog-1536x814.jpg 1536w, https://blog.postman.com/wp-content/uploads/2026/08/Orbit-Launch-Blog-2048x1085.jpg 2048w" />							</a>
+						</div>
+						<h3>
+							<a href="https://blog.postman.com/introducing-orbit-turn-any-task-into-the-right-api-calls/" class="you-might-also-like-link" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;you-might-also-like-section&#039;, &#039;Click&#039;, &#039;suggested-post&#039;);" data-wpel-link="internal" target="_self">
+								Introducing Orbit: Turn Any Task Into the Right API Calls							</a>
+						</h3>
+						<div class="d-flex align-items-center mb-3">
+							<div class="avatar-post">
+								<img src="https://blog.postman.com/wp-content/uploads/2025/11/abhinav-asthana-postman-150x150.jpg" width="96" height="96" srcset="https://blog.postman.com/wp-content/uploads/2025/11/abhinav-asthana-postman-300x300.jpg 2x" alt="Abhinav Asthana" class="avatar avatar-96 wp-user-avatar wp-user-avatar-96 alignnone photo" />							</div>
+							<div>
+								<div class="postman-entry-meta">
+									<span class="post-author-link"><a href="https://blog.postman.com/author/abhinav/" rel="author" data-wpel-link="internal" target="_self">Abhinav Asthana</a></span>
+								</div>
+							</div>
+						</div>
+						<p>Orbit is a free API discovery tool for AI agents. Describe a task, get the endpoints that fit, then get a task brief to integrate them. No account, no auth.</p>
+						<a href="https://blog.postman.com/introducing-orbit-turn-any-task-into-the-right-api-calls/" class="postman-link you-might-also-like-link" aria-label="Read Introducing Orbit: Turn Any Task Into the Right API Calls" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;you-might-also-like-section&#039;, &#039;Click&#039;, &#039;suggested-post&#039;);" data-wpel-link="internal" target="_self">
+							Read more →
+						</a>
+					</div>
+				</div>
+							<div class="col-xs-12 col-md-6 col-lg-4 mb-5">
+					<div class="related-posts-card h-100">
+						<div class="squared-up-thumbnail-wrapper mb-4">
+							<a href="https://blog.postman.com/finding-three-way-api-drift-with-the-ai-engineer/" class="you-might-also-like-link" tabindex="-1" aria-hidden="true" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;you-might-also-like-section&#039;, &#039;Click&#039;, &#039;suggested-post&#039;);" data-wpel-link="internal" target="_self">
+								<img width="768" height="407" src="https://blog.postman.com/wp-content/uploads/2026/08/Detecting-Three-Way-Drift-between-your-spec-collections-and-server-768x407.jpg" class="card-thumbnail-img" alt="" loading="lazy" sizes="auto, (max-width: 767px) 100vw, (max-width: 991px) 50vw, 33vw" decoding="async" srcset="https://blog.postman.com/wp-content/uploads/2026/08/Detecting-Three-Way-Drift-between-your-spec-collections-and-server-768x407.jpg 768w, https://blog.postman.com/wp-content/uploads/2026/08/Detecting-Three-Way-Drift-between-your-spec-collections-and-server-300x159.jpg 300w, https://blog.postman.com/wp-content/uploads/2026/08/Detecting-Three-Way-Drift-between-your-spec-collections-and-server-1024x542.jpg 1024w, https://blog.postman.com/wp-content/uploads/2026/08/Detecting-Three-Way-Drift-between-your-spec-collections-and-server-1536x814.jpg 1536w, https://blog.postman.com/wp-content/uploads/2026/08/Detecting-Three-Way-Drift-between-your-spec-collections-and-server-2048x1085.jpg 2048w" />							</a>
+						</div>
+						<h3>
+							<a href="https://blog.postman.com/finding-three-way-api-drift-with-the-ai-engineer/" class="you-might-also-like-link" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;you-might-also-like-section&#039;, &#039;Click&#039;, &#039;suggested-post&#039;);" data-wpel-link="internal" target="_self">
+								Finding three-way API drift with the AI Engineer							</a>
+						</h3>
+						<div class="d-flex align-items-center mb-3">
+							<div class="avatar-post">
+								<img src="https://blog.postman.com/wp-content/uploads/2026/05/Profile_Pic-150x150.jpg" width="96" height="96" srcset="https://blog.postman.com/wp-content/uploads/2026/05/Profile_Pic-scaled.jpg 2x" alt="Talia Kohan" class="avatar avatar-96 wp-user-avatar wp-user-avatar-96 alignnone photo" />							</div>
+							<div>
+								<div class="postman-entry-meta">
+									<span class="post-author-link"><a href="https://blog.postman.com/author/talia-kohan/" rel="author" data-wpel-link="internal" target="_self">Talia Kohan</a></span>
+								</div>
+							</div>
+						</div>
+						<p>Find three-way API drift with Postman AI Engineer and the Context Graph. Compares your OpenAPI spec, collection requests, and live server responses.</p>
+						<a href="https://blog.postman.com/finding-three-way-api-drift-with-the-ai-engineer/" class="postman-link you-might-also-like-link" aria-label="Read Finding three-way API drift with the AI Engineer" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;you-might-also-like-section&#039;, &#039;Click&#039;, &#039;suggested-post&#039;);" data-wpel-link="internal" target="_self">
+							Read more →
+						</a>
+					</div>
+				</div>
+							<div class="col-xs-12 col-md-6 col-lg-4 mb-5">
+					<div class="related-posts-card h-100">
+						<div class="squared-up-thumbnail-wrapper mb-4">
+							<a href="https://blog.postman.com/build-and-dynamicallytest-a-banking-api-with-agent-mode-and-postman-mcp-server/" class="you-might-also-like-link" tabindex="-1" aria-hidden="true" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;you-might-also-like-section&#039;, &#039;Click&#039;, &#039;suggested-post&#039;);" data-wpel-link="internal" target="_self">
+								<img width="768" height="407" src="https://blog.postman.com/wp-content/uploads/2026/03/Build-an-AI-Powered-API-MCP-Server-from-Scratch-768x407.jpg" class="card-thumbnail-img" alt="" loading="lazy" sizes="auto, (max-width: 767px) 100vw, (max-width: 991px) 50vw, 33vw" decoding="async" srcset="https://blog.postman.com/wp-content/uploads/2026/03/Build-an-AI-Powered-API-MCP-Server-from-Scratch-768x407.jpg 768w, https://blog.postman.com/wp-content/uploads/2026/03/Build-an-AI-Powered-API-MCP-Server-from-Scratch-300x159.jpg 300w, https://blog.postman.com/wp-content/uploads/2026/03/Build-an-AI-Powered-API-MCP-Server-from-Scratch-1024x542.jpg 1024w, https://blog.postman.com/wp-content/uploads/2026/03/Build-an-AI-Powered-API-MCP-Server-from-Scratch-1536x813.jpg 1536w, https://blog.postman.com/wp-content/uploads/2026/03/Build-an-AI-Powered-API-MCP-Server-from-Scratch.jpg 1700w" />							</a>
+						</div>
+						<h3>
+							<a href="https://blog.postman.com/build-and-dynamicallytest-a-banking-api-with-agent-mode-and-postman-mcp-server/" class="you-might-also-like-link" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;you-might-also-like-section&#039;, &#039;Click&#039;, &#039;suggested-post&#039;);" data-wpel-link="internal" target="_self">
+								Build and DynamicallyTest a Banking API with Agent Mode and Postman MCP Server							</a>
+						</h3>
+						<div class="d-flex align-items-center mb-3">
+							<div class="avatar-post">
+								<img src="https://blog.postman.com/wp-content/uploads/2026/03/1736783970297-150x150.jpeg" width="96" height="96" srcset="https://blog.postman.com/wp-content/uploads/2026/03/1736783970297-300x300.jpeg 2x" alt="Pooja Mistry" class="avatar avatar-96 wp-user-avatar wp-user-avatar-96 alignnone photo" />							</div>
+							<div>
+								<div class="postman-entry-meta">
+									<span class="post-author-link"><a href="https://blog.postman.com/author/pooja-mistry/" rel="author" data-wpel-link="internal" target="_self">Pooja Mistry</a></span>
+								</div>
+							</div>
+						</div>
+						<p>What if you could build an API, generate tests with AI, and connect the whole thing to Claude—all in one workflow? That&#8217;s&#8230;</p>
+						<a href="https://blog.postman.com/build-and-dynamicallytest-a-banking-api-with-agent-mode-and-postman-mcp-server/" class="postman-link you-might-also-like-link" aria-label="Read Build and DynamicallyTest a Banking API with Agent Mode and Postman MCP Server" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;you-might-also-like-section&#039;, &#039;Click&#039;, &#039;suggested-post&#039;);" data-wpel-link="internal" target="_self">
+							Read more →
+						</a>
+					</div>
+				</div>
+					</div>
+	</div>
+</div>
+	</main>
+	<!-- #main -->
+
+<div id="sidebar-prefooter" class="prefooter-widget">
+    <section id="sidebar-prefooter" class="widget widget_prefooter_widget"><div class="widget-callout-section widget-dark-mode" style="background:#140b1e"><div class="container"><div class="row text-center text-md-left"><div class="col-12 col-lg-7 align-content-center justify-content-center mb-lg-0 text-center text-lg-left order-lg-0 order-1"><h2 class="widget-title h1">The world&#039;s APIs are built and shipped on Postman.</h2><p class="subtitle mt-4" style="font-size: 22px;"></p><p class="mt-0"></p><span><a href="https://identity.getpostman.com/signup" class="widget-link-dark-mode" target="_self" data-wpel-link="exclude">Sign Up for Free →</a></span></div><div class="col-12 offset-0 col-lg-5 mb-lg-0 mb-5 mb-lg-0 order-lg-1 order-0 d-flex align-content-center justify-content-center"><img src="https://voyager.postman.com/graphics/home/postman-v12-world.svg" class="img-fluid" alt="API Design Example in Postman." loading="lazy"></div></div></div></div></div></section></div>
+
+
+<footer id="colophon" class="site-footer">
+    <div class="site-info">
+        <section id="Footer" class="section">
+            <div class="container">
+                <div class="row ">
+                    <div class="col-sm-8 offset-sm-2 col-md-12 offset-md-0">
+                        <div class="row">
+                            <!-- First Column -->
+                            <div class="col-12 text-center text-lg-left col-md-2 col-lg-2 order-lg-first order-last">
+                                <img width="174" height="auto" class="footer-img"
+                                    src="https://voyager.postman.com/logo/postman-logo-orange-stacked.svg"
+                                    alt="Postman logo" loading="lazy" />
+                            </div>
+                            <!-- Second column  -->
+                            <div class="col-6 col-md-4 col-lg-2 mb-2 mb-md-0">
+                                <nav aria-labelledby="product">
+                                    <h2 class="footer-col-title" id="product">
+                                        Product
+                                    </h2>
+                                    <ul class="footer-column">
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/product/" id="postman-overview" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;postman-overview&#039;);" data-wpel-link="exclude">Postman Overview</a></li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/postman-enterprise/" id="enterprise" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;enterprise&#039;);" data-wpel-link="exclude">Enterprise</a>
+                                        </li>
+
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/product/spec-hub/" id="spec-hub" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;spec-hub&#039;);" data-wpel-link="exclude">Spec Hub</a>
+                                        </li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/product/flows/" id="flows" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;flows&#039;);" data-wpel-link="exclude">Flows</a>
+                                        </li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/product/agent-mode/" id="agent-mode" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;agent-mode&#039;);" data-wpel-link="exclude">Agent Mode</a>
+                                        </li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/product/api-catalog/" id="api-catalog" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;api-catalog&#039;);" data-wpel-link="exclude">API Catalog</a></li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://buildwithfern.com/" id="fern" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;fern&#039;);" data-wpel-link="external" target="_blank" rel="external noopener">Fern</a></li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/downloads/#work-with-postman-in-your-existing-tools" id="postman-cli" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;postman-cli&#039;);" data-wpel-link="exclude">Postman
+                                                CLI</a></li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/product/integrations/" id="integrations" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;integrations&#039;);" data-wpel-link="exclude">Integrations</a>
+                                        </li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/product/workspaces/" id="workspaces" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;workspaces&#039;);" data-wpel-link="exclude">Workspaces</a>
+                                        </li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/pricing/" id="pricing" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;pricing&#039;);" data-wpel-link="exclude">Plans
+                                                and Pricing</a></li>
+                                    </ul>
+                                </nav>
+                            </div>
+                            <!-- Third Column API Network -->
+                            <div class="col-6 col-md-4 col-lg-2 ">
+                                <nav aria-labelledby="api-network" class="mb-2">
+                                    <h2 class="footer-col-title" id="api-network">
+                                        API Network
+                                    </h2>
+                                    <ul class="footer-column">
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/category/app-security/" id="api-security" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;api-security&#039;);" data-wpel-link="exclude">App
+                                                Security</a></li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/category/artificial-intelligence/" id="artificial-intelligence" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;artificial-intelligence&#039;);" data-wpel-link="exclude">Artificial
+                                                Intelligence</a></li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/category/communication/" id="communication" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;communication&#039;);" data-wpel-link="exclude">
+                                                Communication</a></li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/category/data-analytics/" id="data-analytics" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;data-analytics&#039;);" data-wpel-link="exclude">Data
+                                                Analytics</a></li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/category/database-apis/" id="database" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;database&#039;);" data-wpel-link="exclude">Database</a>
+                                        </li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/category/developer-productivity/" id="developer-productivity" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;developer-productivity&#039;);" data-wpel-link="exclude">Developer
+                                                Productivity</a></li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/category/devops/" id="dev-ops" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;dev-ops&#039;);" data-wpel-link="exclude">DevOps</a>
+                                        </li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/category/e-commerce-apis/" id="ecommerce" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;ecommerce&#039;);" data-wpel-link="exclude">E-Commerce</a>
+                                        </li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/category/e-signature-apis/" id="esignature" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;esignature&#039;);" data-wpel-link="exclude">eSignature</a>
+                                        </li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/category/financial-services/" id="financial-services" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;financial-services&#039;);" data-wpel-link="exclude">Financial
+                                                Services</a></li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/category/payments/" id="payments" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;payments&#039;);" data-wpel-link="exclude">Payments</a>
+                                        </li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/category/travel-apis/" id="travel-apis" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;travel-apis&#039;);" data-wpel-link="exclude">Travel</a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>
+                            <!-- Fourth Column  Resources-->
+                            <div class="col-6 col-md-4 col-lg-2  no-select">
+                                <nav aria-labelledby="resources" class="mb-5">
+                                    <h2 class="footer-col-title" id="resources">
+                                        Resources
+                                    </h2>
+                                    <ul class="footer-column">
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://learning.postman.com/docs/introduction/overview/" id="postman-docs" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;postman-docs&#039;);" data-wpel-link="exclude">Postman
+                                                Docs</a></li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://academy.postman.com/" id="postman-academy" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;postman-academy&#039;);" data-wpel-link="exclude">Academy</a>
+                                        </li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://community.postman.com/" id="community" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;community&#039;);" data-wpel-link="exclude">Community</a>
+                                        </li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/templates/" id="postman-templates" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;postman-templates&#039;);" data-wpel-link="exclude">Templates</a>
+                                        </li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/events/intergalactic/" id="postman-intergalactic" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;postman-intergalactic&#039;);" data-wpel-link="exclude">Intergalactic</a>
+                                        </li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.youtube.com/postman/" id="postman-videos" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;postman-videos&#039;);" data-wpel-link="external" target="_blank" rel="external noopener">Videos</a>
+                                        </li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/explore/mcp-servers" id="mcp-servers" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;mcp-servers&#039;);" data-wpel-link="exclude">MCP Servers</a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>
+                            <!-- Fifth Column Legal and Security -->
+                            <div class="col-6 col-md-4 col-lg-2  no-select">
+                                <nav aria-labelledby="legal-and-security" class="mb-5">
+                                    <h2 class="footer-col-title" id="legal-and-security">
+                                        Legal and Security
+                                    </h2>
+                                    <ul class="footer-column">
+                                          <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/legal/" id="legal-terms-hub" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;legal-terms-hub&#039;);" data-wpel-link="exclude">Legal Terms Hub</a></li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/legal/terms/" id="terms-of-service" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;terms-of-service&#039;);" data-wpel-link="exclude">Terms
+                                                of Service</a></li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/legal/postman-product-terms/" id="product-terms" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;product-terms&#039;);" data-wpel-link="exclude">Postman Product Terms</a></li>        
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/security/" id="security" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;security&#039;);" data-wpel-link="exclude">Security</a></li>
+                                         <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/legal/postman-website-terms-of-use/" id="website-terms-of-use" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;website-terms-of-use&#039;);" data-wpel-link="exclude">Website Terms of Use</a></li>
+                                    </ul>
+                                </nav>
+                            </div>
+                            <!-- Sixth Column Company  -->
+                            <div class="col-6 col-md-4 col-lg-2 no-select">
+                                <nav aria-labelledby="company" class="mb-5">
+                                    <h2 class="footer-col-title" id="company">
+                                        Company
+                                    </h2>
+                                    <ul class="footer-column">
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/company/about-postman/" id="about" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;about&#039;);" data-wpel-link="exclude">About</a>
+                                        </li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/company/careers/" id="careets-and-culture" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;careets-and-culture&#039;);" data-wpel-link="exclude">Careers
+                                                and Culture</a></li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/company/contact-us/" id="contact-us" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;contact-us&#039;);" data-wpel-link="exclude">Contact
+                                                Us</a></li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/partner-program/" id="partner-program" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;partner-program&#039;);" data-wpel-link="exclude">Partner
+                                                Program</a></li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/customer-stories/" id="customer-stories" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;customer-stories&#039;);" data-wpel-link="exclude">Customer
+                                                Stories</a></li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/company/press-media/" id="press-and-media" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;press-and-media&#039;);" data-wpel-link="exclude">Press
+                                                and Media</a></li>
+                                        <li class="footer-column-row"><a class="dynamic-link__external footer-column__link" href="https://www.postman.com/events/" id="events" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;events&#039;);" data-wpel-link="exclude">Events</a></li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 mt-3 mt-lg-0">
+                    <nav class="row justify-content-center justify-content-lg-end" aria-label="Postman social media">
+
+                        <a class="dynamic-link__external footer-column__link social-svg mr-2" href="https://x.com/getpostman" id="X" aria-label="Postman on X (Twitter)" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;X&#039;);" data-wpel-link="external" target="_blank" rel="external noopener">
+
+                            <svg xmlns='http://www.w3.org/2000/svg' width="16" height="16" viewBox='0 0 1200 1227' fill='none'>
+                                <path d='M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.854V687.828Z' fill='#010000' />
+                            </svg>
+
+                        </a>
+
+                        <a class="dynamic-link__external footer-column__link social-svg mr-2 ml-2" href="https://www.linkedin.com/company/postman-platform" id="linkedin" aria-label="Postman on LinkedIn" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;linkedin&#039;);" data-wpel-link="external" target="_blank" rel="external noopener">
+                            <svg width="16" height="16" viewBox="0 0 25 25"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M5.134 7.363H.537v14.044h4.597zM5.437 3.019C5.407 1.642 4.44.593 2.866.593 1.293.593.265 1.642.265 3.019c0 1.348.998 2.427 2.541 2.427h.03c1.603 0 2.601-1.079 2.601-2.427zM21.714 13.354c0-4.313-2.268-6.32-5.293-6.32-2.44 0-3.534 1.362-4.144 2.319v-1.99H7.68c.06 1.318 0 14.044 0 14.044h4.598v-7.843c0-.42.03-.839.151-1.139.333-.839 1.09-1.707 2.36-1.707 1.664 0 2.329 1.288 2.329 3.175v7.514h4.597v-8.053z"
+                                    fill="#0e76a8" fillRule="evenodd"></path>
+                            </svg>
+                        </a>
+
+                        <a class="dynamic-link__external footer-column__link social-svg mr-2 ml-2" href="https://github.com/postmanlabs" id="github" aria-label="Postman on GitHub" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;github&#039;);" data-wpel-link="external" target="_blank" rel="external noopener">
+                            <svg height="16" class="octicon octicon-mark-github" viewBox="0 0 16 16"
+                                version="1.1" width="16" aria-hidden="true">
+                                <path fill="#24292f" fillRule="evenodd"
+                                    d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z">
+                                </path>
+                            </svg>
+                        </a>
+
+                        <a class="dynamic-link__external footer-column__link social-svg mr-2 ml-2" href="https://www.youtube.com/postman" id="youtube" aria-label="Postman on YouTube" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;youtube&#039;);" data-wpel-link="external" target="_blank" rel="external noopener">
+                            <svg height='16' width='16' enable-background='new 0 0 30 21.14'
+                                viewBox='0 0 30 21.14' xmlns='http://www.w3.org/2000/svg'>
+                                <path
+                                    d='m29.37 3.3c-.35-1.3-1.36-2.32-2.65-2.67-2.34-.63-11.72-.63-11.72-.63s-9.38 0-11.72.63c-1.29.35-2.31 1.37-2.65 2.67-.63 2.36-.63 7.27-.63 7.27s0 4.91.63 7.27c.35 1.3 1.36 2.32 2.65 2.67 2.34.63 11.72.63 11.72.63s9.38 0 11.72-.63c1.29-.35 2.31-1.37 2.65-2.67.63-2.36.63-7.27.63-7.27s0-4.91-.63-7.27zm-17.44 11.73v-8.92l7.84 4.46z'
+                                    fill='#c4302b'></path>
+                            </svg>
+                        </a>
+                        <a class="dynamic-link__external footer-column__link social-svg mr-2 ml-2" href="https://www.instagram.com/getpostman/" id="instagram" aria-label="Postman on Instagram" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;instagram&#039;);" data-wpel-link="external" target="_blank" rel="external noopener">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-instagram" viewBox="0 0 16 16">
+                                <path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.917 3.917 0 0 0-1.417.923A3.927 3.927 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.916 3.916 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.926 3.926 0 0 0-.923-1.417A3.911 3.911 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0h.003zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599.28.28.453.546.598.92.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.47 2.47 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.478 2.478 0 0 1-.92-.598 2.48 2.48 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233 0-2.136.008-2.388.046-3.231.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92.28-.28.546-.453.92-.598.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045v.002zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92zm-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217zm0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334z"></path>
+                            </svg>
+                        </a>
+                        <a class="dynamic-link__external footer-column__link social-svg mr-2 ml-2" href="https://discord.com/invite/58aNNsRBGR" id="discord" aria-label="Postman on Discord" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;discord&#039;);" data-wpel-link="external" target="_blank" rel="external noopener">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="18" width="18" fill="currentColor"
+                                class="bi bi-discord"
+                                viewBox="0 0 127.14 96.36">
+                                <defs></defs>
+                                <g>
+                                    <g id="Discord_Logos" data-name="Discord Logos">
+                                        <g id="Discord_Logo_-_Large_-_White" data-name="Discord Logo - Large - White">
+                                            <path class="cls-1" d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z" />
+                                        </g>
+                                    </g>
+                                </g>
+                            </svg>
+                        </a>
+
+
+                        </nav>
+                    </div>
+                <hr class="footer-hr mt-4" />
+                    <div class="row align-items-start px-3">
+                        <div class="col-12 col-lg-3 text-center text-lg-left mb-2 mb-lg-0 pl-0">
+                            <a href="https://www.postman.com/downloads/" class="dynamic-link__external" onClick="ga(&#039;send&#039;, &#039;event&#039;, &#039;global-footer&#039;, &#039;Click&#039;, &#039;download-postman&#039;);" data-wpel-link="exclude">Download
+                                Postman</a>
+                        </div>
+
+                                                <div class="col-12 col-lg-6 text-center mb-2 mb-lg-0 footer-privacy-group" role="region" aria-label="Privacy notice">
+                            <p class="mb-1">
+                                <button type="button" class="privacy-consent-btn" data-privacy-prefs
+                                    aria-label="Manage your cookie and privacy preferences">Cookie Preferences</button>
+                                <span aria-hidden="true">|</span>
+                                <span data-privacy-status>Tracking Cookies Used.</span>
+                            </p>
+                            <p class="mb-1">
+                                <button type="button" class="privacy-consent-btn" data-privacy-dnss
+                                    aria-label="Manage your privacy settings">Do Not Sell or Share My Personal Information</button>
+                            </p>
+                            <p class="mb-0">
+                                <a href="https://privacy.postman.com/policies/" target="_blank" rel="noopener noreferrer" aria-label="Read more about how Postman collects, uses, and shares your information" data-wpel-link="exclude">Privacy Policy</a>
+                            </p>
+                        </div>
+
+                        <div id="copyright-container" class="col-12 col-lg-3 text-center text-lg-right pr-0">
+                            <span class="copyright">
+                                <p class="mb-0">© <span id="current-year">2024</span> Postman, Inc.</p>
+                            </span>
+                        </div>
+                    </div><!-- .row legal -->
+            </div><!-- .container -->
+        </section>
+    </div><!-- .site-info -->
+</footer><!-- #colophon -->
+
+</div> <!-- #page opens in header -->
+
+<script type="speculationrules">
+{"prefetch":[{"source":"document","where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":["/wp-*.php","/wp-admin/*","/wp-content/uploads/*","/wp-content/*","/wp-content/plugins/*","/wp-content/themes/postmodern/postmodern/*","/*\\?(.+)"]}},{"not":{"selector_matches":"a[rel~=\"nofollow\"]"}},{"not":{"selector_matches":".no-prefetch, .no-prefetch a"}}]},"eagerness":"conservative"}]}
+</script>
+<script id="wp-postman-button-script-js" src="https://blog.postman.com/wp-content/plugins/run-in-postman-button//scripts/wp_postman_button_script.js?ver=1.0.0"></script>
+<script id="wp_ulike-js-before">
+var wp_ulike_params = {"ajax_url":"https:\/\/blog.postman.com\/wp-admin\/admin-ajax.php","notifications":"1","ajax_error":"Could not save your vote. Please refresh the page and try again."};
+//# sourceURL=wp_ulike-js-before
+</script>
+<script data-wp-strategy="defer" defer id="wp_ulike-js" src="https://blog.postman.com/wp-content/plugins/wp-ulike/assets/js/wp-ulike.min.js?ver=5.2.3"></script>
+<script data-wp-strategy="defer" id="pmt-js" src="https://www.postman.com/mkapi/pmt.js"></script>
+<script id="pmt-js-after">
+(function () {
+    // Transcend consent manager
+    var transcendEnv = location.hostname === 'blog.postman.com' ? 'cm' : 'cm-test';
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://transcend-cdn.com/' + transcendEnv + '/1f0cf102-c592-4eb4-834f-e07f2fe68ef1/airgap.js';
+    s.setAttribute('data-cfasync', 'false');
+    s.setAttribute('data-local-sync', 'allow-network-observable');
+    s.setAttribute('data-sites', 'postman.com api-first-world.com');
+    s.setAttribute('data-more-choices-view', 'CompleteOptionsToggles');
+    s.onerror = function () {
+        console.log('[Transcend] airgap.js failed to load, proceeding without consent management');
+    };
+    document.head.appendChild(s);
+})();
+
+//# sourceURL=pmt-js-after
+</script>
+<script id="scripts-js" src="https://blog.postman.com/wp-content/themes/postmodern/postmodern/scripts.js?ver=2.196.1"></script>
+<script id="postmodern-footer-privacy-js" src="https://blog.postman.com/wp-content/themes/postmodern/postmodern/js/footer-privacy.js?ver=2.196.1"></script>
+<script id="postmodern-toc-js" src="https://blog.postman.com/wp-content/themes/postmodern/postmodern/js/toc.js?ver=1781194702"></script>
+<script id="jetpack-stats-js-before">
+_stq = window._stq || [];
+_stq.push([ "view", {"v":"ext","blog":"199676833","post":"19356","tz":"-7","srv":"blog.postman.com","j":"1:16.2"} ]);
+_stq.push([ "clickTrackerInit", "199676833", "19356" ]);
+//# sourceURL=jetpack-stats-js-before
+</script>
+<script data-wp-strategy="defer" defer fetchpriority="low" id="jetpack-stats-js" src="https://stats.wp.com/e-202640.js"></script>
+<script defer id="akismet-frontend-js" src="https://blog.postman.com/wp-content/plugins/akismet/_inc/akismet-frontend.js?ver=1787129480"></script>
+<progress class="readingProgressbar" 
+							data-height="4" 
+							data-position="top" 
+							data-custom-position="" 
+							data-foreground="#ff6c37" 
+							data-background="" 
+							value="0"></progress>
+<!-- copywrite year update  -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var yearSpan = document.getElementById('current-year');
+        if (yearSpan) {
+            yearSpan.textContent = new Date().getFullYear();
+        }
+    });
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"57e9d8dd0f3b45508baff3b7acf735f6","spa":2}' crossorigin="anonymous"></script>
+</body>
+
+</html>

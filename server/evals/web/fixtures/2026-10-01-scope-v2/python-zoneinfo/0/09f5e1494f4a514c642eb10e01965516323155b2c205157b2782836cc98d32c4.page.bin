@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script>
+        (function () {
+            try {
+                var savedTheme = localStorage.getItem('universo-python-theme') || 'system';
+                if (!['system', 'light', 'dark'].includes(savedTheme)) savedTheme = 'system';
+                var resolvedTheme = savedTheme === 'system'
+                    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                    : savedTheme;
+                document.documentElement.dataset.themePreference = savedTheme;
+                document.documentElement.dataset.theme = resolvedTheme;
+            } catch (error) {
+                document.documentElement.dataset.theme = 'dark';
+            }
+        }());
+    </script>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3CQ7WPZSY4"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-3CQ7WPZSY4');
+        gtag('config', 'G-Z65STX2GLG');
+    </script>
+
+    <!-- SEO Meta Tags -->
+        <title>Python zoneinfo: Time Zones and DST | Universo Python</title>
+    <meta name="description" content="Use ZoneInfo with Python datetime, convert UTC and IANA zones, handle daylight-saving ambiguity, and store instants correctly.">
+    <meta name="author" content="Universo Python">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://universopython.com/en/blog/python-zoneinfo-time-zones">
+    <meta property="og:title" content="Python zoneinfo: Time Zones and DST">
+    <meta property="og:description" content="Use ZoneInfo with Python datetime, convert UTC and IANA zones, handle daylight-saving ambiguity, and store instants correctly.">
+    <meta property="og:image" content="https://universopython.com/public/images/og/category-8-en.png">
+    <meta property="og:image:secure_url" content="https://universopython.com/public/images/og/category-8-en.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Python zoneinfo: Handle Time Zones Correctly">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://universopython.com/en/blog/python-zoneinfo-time-zones">
+    <meta name="twitter:title" content="Python zoneinfo: Time Zones and DST">
+    <meta name="twitter:description" content="Use ZoneInfo with Python datetime, convert UTC and IANA zones, handle daylight-saving ambiguity, and store instants correctly.">
+    <meta name="twitter:image" content="https://universopython.com/public/images/og/category-8-en.png">
+    <meta name="twitter:image:alt" content="Python zoneinfo: Handle Time Zones Correctly">
+
+    <!-- OpenGraph Locale -->
+        <meta property="og:locale" content="en_US">
+            <meta property="og:locale:alternate" content="pt_BR">
+            <meta property="og:locale:alternate" content="es_ES">
+        <meta property="og:site_name" content="Universo Python">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#0b1020">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="https://universopython.com/public/images/favicon/site.webmanifest">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="https://universopython.com/public/images/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://universopython.com/public/images/favicon/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://universopython.com/public/images/favicon/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://universopython.com/public/images/favicon/apple-touch-icon.png">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://universopython.com/en/blog/python-zoneinfo-time-zones">
+        
+            <meta property="article:published_time" content="2026-08-14T15:00:00-03:00">
+        <meta property="article:modified_time" content="2026-08-14T15:00:00-03:00">
+                    <meta property="article:section" content="Best Practices">
+            
+    <!-- Multilingual SEO (Hreflang) -->
+            <link rel="alternate" hreflang="pt" href="https://universopython.com/blog/zoneinfo-python-fusos-horarios" />
+            <link rel="alternate" hreflang="en" href="https://universopython.com/en/blog/python-zoneinfo-time-zones" />
+            <link rel="alternate" hreflang="es" href="https://universopython.com/es/blog/zoneinfo-python-zonas-horarias" />
+            <link rel="alternate" hreflang="x-default" href="https://universopython.com/blog/zoneinfo-python-fusos-horarios" />
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://universopython.com/public/css/style.css?v=1.0.15">
+
+    <!-- Preconnect para fontes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Poppins:wght@600;700;800&amp;display=swap">
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","@id":"https://universopython.com/en/blog/python-zoneinfo-time-zones#article","url":"https://universopython.com/en/blog/python-zoneinfo-time-zones","headline":"Python zoneinfo: Handle Time Zones Correctly","description":"Use ZoneInfo with Python datetime, convert UTC and IANA zones, handle daylight-saving ambiguity, and store instants correctly.","image":"https://universopython.com/public/images/og/category-8-en.png","author":{"@type":"Organization","@id":"https://universopython.com/#organization","name":"Universo Python","url":"https://universopython.com/en/sobre"},"publisher":{"@type":"Organization","@id":"https://universopython.com/#organization","name":"Universo Python","url":"https://universopython.com/","logo":{"@type":"ImageObject","url":"https://universopython.com/public/images/universo-python-logo.png","width":300,"height":96}},"datePublished":"2026-08-14T15:00:00-03:00","dateModified":"2026-08-14T15:00:00-03:00","inLanguage":"en-US","wordCount":1207,"articleSection":"Best Practices","isAccessibleForFree":true,"isPartOf":{"@id":"https://universopython.com/#website"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://universopython.com/en/blog/python-zoneinfo-time-zones"},"keywords":["python zoneinfo","python time zone","python timezone","python daylight saving"]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://universopython.com/en/"},{"@type":"ListItem","position":2,"name":"Blog","item":"https://universopython.com/en/blog"},{"@type":"ListItem","position":3,"name":"Best Practices","item":"https://universopython.com/en/category/best-practices"},{"@type":"ListItem","position":4,"name":"Python zoneinfo: Handle Time Zones Correctly","item":"https://universopython.com/en/blog/python-zoneinfo-time-zones"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Should timestamps be stored in UTC?","acceptedAnswer":{"@type":"Answer","text":"Usually yes for occurred instants, while preserving the business timezone when future local rules matter."}},{"@type":"Question","name":"What is a naive datetime?","acceptedAnswer":{"@type":"Answer","text":"It has no tzinfo, so its timezone is not explicit and may be interpreted incorrectly."}},{"@type":"Question","name":"Where does zoneinfo get data?","acceptedAnswer":{"@type":"Answer","text":"It uses system timezone data or the tzdata package. Add tzdata when the deployment does not guarantee a database."}}]}</script>
+
+            <!-- Prism.js - carregado apenas em páginas de artigo -->
+        <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css">
+    
+    <!-- Custom Prism Styles -->
+    <style>
+        /* Prism.js customizado para tema espacial */
+        pre[class*="language-"] {
+            background: #1a1f35 !important;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        code[class*="language-"] {
+            font-family: 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+            font-size: 0.9rem;
+        }
+
+        /* Inline code */
+        :not(pre)>code {
+            background: rgba(99, 102, 241, 0.15);
+            color: #a78bfa;
+            padding: 0.2em 0.5em;
+            border-radius: 4px;
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+
+        /* Line numbers */
+        pre[class*="language-"].line-numbers {
+            padding-left: 3.5rem;
+        }
+
+        .line-numbers .line-numbers-rows {
+            border-right: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        /* Scrollbar customizada */
+        pre[class*="language-"]::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        pre[class*="language-"]::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        pre[class*="language-"]::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.5);
+            border-radius: 4px;
+        }
+
+        pre[class*="language-"]::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.7);
+        }
+
+        /* Language Switcher */
+        .lang-switcher {
+            position: relative;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .lang-btn {
+            background: var(--bg-btn-secondary);
+            border: 1px solid var(--border-light);
+            color: var(--color-star-white);
+            padding: 0.5rem 0.8rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.3s ease;
+        }
+
+        .lang-btn:hover {
+            background: var(--bg-btn-secondary-hover);
+            border-color: var(--color-galaxy-purple);
+        }
+
+        .lang-chevron {
+            width: 0.42rem;
+            height: 0.42rem;
+            margin-left: 0.2rem;
+            color: var(--color-moon-gray);
+            border: solid currentColor;
+            border-width: 0 1.5px 1.5px 0;
+            transform: rotate(45deg);
+            transform-origin: center;
+            transition: transform var(--transition-fast);
+        }
+
+        .lang-btn[aria-expanded="true"] .lang-chevron {
+            transform: rotate(-135deg);
+        }
+
+        .lang-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            padding-top: 12px; /* Espaço invisível para manter o hover */
+            z-index: 10000;
+            min-width: 160px;
+        }
+
+        .lang-dropdown-inner {
+            background: var(--color-dark-matter);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+        }
+
+        .lang-switcher:hover .lang-dropdown {
+            display: block;
+        }
+
+        .lang-dropdown.active {
+            display: block;
+        }
+
+        .lang-dropdown a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--color-moon-gray);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .lang-dropdown a:hover {
+            background: var(--bg-btn-secondary);
+            color: var(--color-star-white);
+        }
+
+        .lang-dropdown a.active {
+            color: var(--color-comet-cyan);
+            background: rgba(6, 182, 212, 0.05);
+        }
+
+        @media (max-width: 768px) {
+            .lang-switcher {
+                margin-right: 0;
+                margin-bottom: 1rem;
+            }
+            .lang-dropdown {
+                position: static;
+                display: none;
+                box-shadow: none;
+                border: none;
+                background: var(--bg-alt);
+                margin-top: 0.5rem;
+                padding-top: 0;
+            }
+
+            .lang-switcher:hover .lang-dropdown {
+                display: none;
+            }
+
+            .lang-switcher .lang-dropdown.active {
+                display: block;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Overlay para fechar menu mobile -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="https://universopython.com/en/" class="logo">
+                    <img src="https://universopython.com/public/images/universo-python-logo.png" width="125" height="40" alt="Universo Python - Explore o infinito da programação" style="height: 40px; vertical-align: middle;">
+                </a>
+
+                <nav aria-label="Main navigation">
+                    <ul class="nav-menu" id="navMenu">
+                        <li><a href="https://universopython.com/en/" class="">Home</a></li>
+                        <li><a href="https://universopython.com/en/blog" class="">Blog</a></li>
+                        <li><a href="https://universopython.com/en/online-python-compiler" class="">Compiler</a></li>
+                        <li>
+                            <div class="lang-switcher" id="langSwitcher">
+                                <button class="lang-btn" id="langToggle" type="button" aria-haspopup="menu" aria-controls="langDropdown" aria-expanded="false">
+                                    🇺🇸 EN                                    <span class="lang-chevron" aria-hidden="true"></span>
+                                </button>
+                                <div class="lang-dropdown" id="langDropdown" role="menu">
+                                    <div class="lang-dropdown-inner">
+                                        <a href="https://universopython.com/blog/zoneinfo-python-fusos-horarios" role="menuitem" class="">🇧🇷 Português</a>
+                                        <a href="https://universopython.com/en/blog/python-zoneinfo-time-zones" role="menuitem" class="active">🇺🇸 English</a>
+                                        <a href="https://universopython.com/es/blog/zoneinfo-python-zonas-horarias" role="menuitem" class="">🇪🇸 Español</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="nav-theme-item">
+                                                        <div class="theme-switcher" id="themeSwitcher">
+                                <button class="theme-toggle" id="themeToggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Theme">
+                                    <span class="theme-toggle-icon" id="themeToggleIcon" aria-hidden="true">◐</span>
+                                    <span class="theme-toggle-text" id="themeToggleText">System</span>
+                                    <span class="theme-toggle-chevron" aria-hidden="true"></span>
+                                </button>
+                                <div class="theme-menu" id="themeMenu" role="menu" aria-label="Theme">
+                                    <button type="button" role="menuitemradio" aria-checked="true" data-theme-value="system" data-theme-label="System"><span aria-hidden="true">◐</span>System</button>
+                                    <button type="button" role="menuitemradio" aria-checked="false" data-theme-value="light" data-theme-label="Light"><span aria-hidden="true">☀</span>Light</button>
+                                    <button type="button" role="menuitemradio" aria-checked="false" data-theme-value="dark" data-theme-label="Dark"><span aria-hidden="true">☾</span>Dark</button>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                                                        <a href="https://universopython.com/en/blog/best-python-courses" class="btn btn-primary btn-small" style="color: white;">Best Courses</a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <button class="mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-label="Menu" aria-controls="navMenu" aria-expanded="false">
+                    <span id="menuIcon">☰</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+<section class="py-5">
+    <div class="container container-narrow">
+        <!-- Breadcrumb -->
+        <nav style="margin-bottom: 2rem; font-size: 0.875rem;">
+            <a href="https://universopython.com/en/" style="color: var(--color-moon-gray);">Home</a>
+            <span style="color: var(--color-moon-gray); margin: 0 0.5rem;">/</span>
+            <a href="https://universopython.com/en/blog" style="color: var(--color-moon-gray);">Blog</a>
+                            <span style="color: var(--color-moon-gray); margin: 0 0.5rem;">/</span>
+                <a href="https://universopython.com/en/category/best-practices" style="color: var(--color-moon-gray);">
+                    Best Practices                </a>
+                    </nav>
+
+        <!-- Categoria -->
+                    <a href="https://universopython.com/en/category/best-practices">
+                <span class="badge badge-primary" style="margin-bottom: 1.5rem; display: inline-block;">
+                    Best Practices                </span>
+            </a>
+        
+        <!-- Título -->
+        <h1 style="font-size: 2.75rem; line-height: 1.2; margin-bottom: 1.5rem;">
+            Python zoneinfo: Handle Time Zones Correctly        </h1>
+
+        <!-- Meta Info -->
+        <div style="display: flex; flex-wrap: wrap; gap: 1rem 2rem; padding-bottom: 2rem; margin-bottom: 2rem; border-bottom: 2px solid var(--color-nebula); font-size: 0.95rem; color: var(--color-moon-gray);">
+            <span class="meta-with-icon"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg> <time datetime="2026-08-14">August 14, 2026</time></span>
+            <span class="meta-with-icon"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16.5 12"/></svg> 7 min read</span>
+                                    <span>By <a href="https://universopython.com/en/sobre">Universo Python</a></span>
+        </div>
+
+        <figure style="margin: 0 0 2.5rem;">
+            <img src="https://universopython.com/public/images/og/category-8-en.png"
+                 width="1200"
+                 height="630"
+                 fetchpriority="high"
+                 alt="Python zoneinfo: Handle Time Zones Correctly"
+                 style="display:block; width:100%; height:auto; aspect-ratio:1200/630; object-fit:cover; border-radius:18px; border:1px solid var(--border-light);">
+        </figure>
+
+        <!-- Tabela de Conteúdo (ToC) -->
+                                <nav class="toc-container" aria-labelledby="article-toc-9b4d2cd8-title">
+                <h4 id="article-toc-9b4d2cd8-title">
+                    <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/></svg> Article contents                </h4>
+                <div class="toc-list-wrapper" id="article-toc-9b4d2cd8">
+                    <ul>
+                                                    <li class="toc-level-2">
+                                <a href="#instants-and-wall-clock-values">
+                                    Instants and wall-clock values                                </a>
+                            </li>
+                                                    <li class="toc-level-2">
+                                <a href="#convert-instead-of-reinterpreting">
+                                    Convert instead of reinterpreting                                </a>
+                            </li>
+                                                    <li class="toc-level-2">
+                                <a href="#this-means-15-00-on-new-york-s-clock-it-is-not-a-conversion">
+                                    This means 15:00 on New York&#039;s clock; it is not a conversion.                                </a>
+                            </li>
+                                                    <li class="toc-level-2">
+                                <a href="#handle-gaps-overlaps-and-fold">
+                                    Handle gaps, overlaps, and `fold`                                </a>
+                            </li>
+                                                    <li class="toc-level-2">
+                                <a href="#store-enough-information">
+                                    Store enough information                                </a>
+                            </li>
+                                                    <li class="toc-level-2">
+                                <a href="#parse-and-serialize-deliberately">
+                                    Parse and serialize deliberately                                </a>
+                            </li>
+                                                    <li class="toc-level-2">
+                                <a href="#ship-and-update-the-database">
+                                    Ship and update the database                                </a>
+                            </li>
+                                                    <li class="toc-level-2">
+                                <a href="#test-transition-boundaries">
+                                    Test transition boundaries                                </a>
+                            </li>
+                                                    <li class="toc-level-2">
+                                <a href="#review-an-end-to-end-flow">
+                                    Review an end-to-end flow                                </a>
+                            </li>
+                                            </ul>
+                </div>
+                <button
+                    type="button"
+                    class="toc-toggle"
+                    aria-expanded="false"
+                    aria-controls="article-toc-9b4d2cd8"
+                    data-label-more="Show more"
+                    data-label-less="Show less"
+                    hidden
+                >
+                    <span class="toc-toggle-label">Show more</span>
+                    <span class="toc-toggle-icon" aria-hidden="true"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+                </button>
+            </nav>
+        
+        <!-- Conteúdo do Post -->
+        <article class="post-content" style="font-size: 1.125rem; line-height: 1.8;">
+            <p>A local date and time does not always identify one instant. Daylight-saving transitions can repeat or skip wall-clock values. Standard-library <code>zoneinfo</code> applies historical rules through IANA names such as <code>America/New_York</code>.</p>
+<pre><code class="language-python">from datetime import UTC, datetime
+from zoneinfo import ZoneInfo
+
+now_utc = datetime.now(UTC)
+new_york = now_utc.astimezone(ZoneInfo("America/New_York"))
+london = now_utc.astimezone(ZoneInfo("Europe/London"))</code></pre>
+<p>Convert an instant with <code>astimezone()</code>. Do not mechanically replace <code>tzinfo</code> on a datetime that already represents another zone because that reinterprets rather than converts it.</p>
+<p>Store occurred instants as aware UTC values. For “every day at 9 AM in London,” preserve the IANA zone too because its UTC offset can change. During repeated local times, <code>fold</code> distinguishes the two occurrences. Validate ambiguous input for critical schedules.</p>
+<p>The <a href="/en/blog/python-apscheduler-jobs">APScheduler guide</a> shows why schedulers need an explicit timezone.</p>
+<p>The <a href="https://docs.python.org/3/library/zoneinfo.html" target="_blank" rel="noopener noreferrer external">official zoneinfo documentation</a>, accessed July 22, 2026, covers IANA data, <code>fold</code>, and the <code>tzdata</code> fallback. Test actual transition dates for every supported business zone.</p>
+<h2 id="instants-and-wall-clock-values">Instants and wall-clock values</h2>
+<p>An instant is one point on the global timeline; a wall-clock value is what people see in a region. An aware <code>datetime</code> has a <code>tzinfo</code> capable of determining its UTC offset. A naive value has <code>tzinfo=None</code>, so Python cannot know whether it means UTC, server time, or a user's local time. Require that context at system boundaries instead of guessing.</p>
+<p>Use IANA identifiers such as <code>America/Toronto</code>, <code>Europe/London</code>, and <code>Asia/Tokyo</code>. Abbreviations such as <code>CST</code> are ambiguous, while a fixed offset cannot describe seasonal and historical rules. Validate identifiers received from clients:</p>
+<pre><code class="language-python">from zoneinfo import ZoneInfoNotFoundError
+
+def get_zone(name: str) -&gt; ZoneInfo:
+    allowed = {"America/New_York", "Europe/London", "Asia/Tokyo"}
+    if name not in allowed:
+        raise ValueError("unsupported time zone")
+    try:
+        return ZoneInfo(name)
+    except ZoneInfoNotFoundError as exc:
+        raise RuntimeError("time zone data is unavailable") from exc</code></pre>
+<p>An allowlist suits products with defined markets. If users can choose any zone, build the selector from <code>zoneinfo.available_timezones()</code> and reject values outside that set.</p>
+<h2 id="convert-instead-of-reinterpreting">Convert instead of reinterpreting</h2>
+<p><code>astimezone()</code> preserves the instant and changes its local representation. By contrast, <code>replace(tzinfo=...)</code> keeps the clock fields and assigns them a new meaning:</p>
+<pre><code class="language-python">meeting_utc = datetime(2026, 10, 20, 15, 0, tzinfo=UTC)
+meeting_ny = meeting_utc.astimezone(ZoneInfo("America/New_York"))
+
+## This means 15:00 on New York's clock; it is not a conversion.
+different_instant = meeting_utc.replace(
+    tzinfo=ZoneInfo("America/New_York")
+)</code></pre>
+<p>Attaching a zone with <code>replace()</code> can be correct when trusted input explicitly represents local time and another field supplies the zone. It is not correct for changing the display zone of an existing instant.</p>
+<h2 id="handle-gaps-overlaps-and-fold">Handle gaps, overlaps, and <code>fold</code></h2>
+<p>When clocks move forward, some local values do not exist. When clocks move backward, an interval occurs twice. PEP 495 introduced <code>fold</code>: zero chooses the offset before the backward transition and one chooses the offset after it.</p>
+<pre><code class="language-python">zone = ZoneInfo("America/New_York")
+first = datetime(2026, 11, 1, 1, 30, tzinfo=zone, fold=0)
+second = datetime(2026, 11, 1, 1, 30, tzinfo=zone, fold=1)
+assert first.timestamp() != second.timestamp()</code></pre>
+<p>Constructing a value with <code>ZoneInfo</code> does not automatically reject nonexistent or ambiguous local input. For bookings, payroll cutoffs, and medical reminders, make the policy explicit: ask which occurrence is intended, shift according to a documented rule, or reject the value. One validation technique converts a candidate to UTC and back, then compares its clock fields and <code>fold</code>.</p>
+<h2 id="store-enough-information">Store enough information</h2>
+<p>Store occurred instants as aware UTC values or an unambiguous epoch representation, then convert only for display. APIs should normally emit ISO 8601 timestamps containing <code>Z</code> or a numeric offset.</p>
+<p>Future civil schedules need different data. For “weekdays at 09:00 in London,” retain the local time and the IANA zone. Turning the first occurrence into UTC and adding 24 hours can make the event appear at 08:00 or 10:00 after a transition. A fixed offset cannot follow rule changes.</p>
+<pre><code class="language-text">local_start = 09:00
+time_zone = Europe/London
+recurrence = weekdays</code></pre>
+<p>Resolve each occurrence with the rules available when the schedule is calculated. Where legal or financial reproducibility matters, also save the resolved UTC instant and define whether updated time-zone data changes occurrences already generated.</p>
+<h2 id="parse-and-serialize-deliberately">Parse and serialize deliberately</h2>
+<p><code>datetime.fromisoformat()</code> parses an offset-bearing timestamp, but an offset is not an IANA zone. If an API receives a local value and zone separately, validate both:</p>
+<pre><code class="language-python">local = datetime.fromisoformat("2026-12-03T09:00:00")
+if local.tzinfo is not None:
+    raise ValueError("expected local time without offset")
+
+aware = local.replace(tzinfo=get_zone("Europe/London"))
+instant = aware.astimezone(UTC)</code></pre>
+<p>Use <code>isoformat()</code> for interoperable output and do not strip the offset for convenience. UTC makes logs easier to correlate; retaining the original zone lets the interface show the date and label users expect.</p>
+<h2 id="ship-and-update-the-database">Ship and update the database</h2>
+<p><code>zoneinfo</code> first searches the operating system database and then the first-party <code>tzdata</code> package. Some Windows installations and minimal containers lack IANA data. Add <code>tzdata</code> when deployment cannot guarantee it, and exercise a representative lookup in a health check.</p>
+<p><code>ZoneInfo</code> objects are cached. Changing the database beneath a running process does not guarantee existing objects use the new rules. After a system or <code>tzdata</code> update, restart the application normally and regression-test affected schedules.</p>
+<h2 id="test-transition-boundaries">Test transition boundaries</h2>
+<p>Tests using only ordinary January dates miss difficult behavior. Include a forward gap, a backward overlap, a region without seasonal changes, and zones whose transitions occur on different dates. Assert UTC instants rather than abbreviations:</p>
+<pre><code class="language-python">def test_overlap_represents_two_instants():
+    zone = ZoneInfo("America/New_York")
+    a = datetime(2026, 11, 1, 1, 30, tzinfo=zone, fold=0)
+    b = datetime(2026, 11, 1, 1, 30, tzinfo=zone, fold=1)
+    assert b.timestamp() - a.timestamp() == 3600</code></pre>
+<p>Governments can change rules, so do not encode today's offset as a permanent assumption. Tests verify business policy for chosen dates, while dependency maintenance keeps the data current.</p>
+<p>Before release, confirm that every input is classified as an instant or local value, UTC values are aware, conversions use <code>astimezone()</code>, and future civil events retain an IANA identifier. Document policies for gaps and overlaps, provide <code>tzdata</code> where needed, and test real transition dates.</p>
+<p>The <a href="https://peps.python.org/pep-0495/" target="_blank" rel="noopener noreferrer external">PEP 495 specification</a>, accessed July 28, 2026, explains ambiguous local times and <code>fold</code>.</p>
+<h2 id="review-an-end-to-end-flow">Review an end-to-end flow</h2>
+<p>Consider a meeting form with <code>2026-11-01 01:30</code> and <code>America/New_York</code>. The controller first validates the exact input format and allowed zone. The domain layer notices that the clock value occurs twice and asks for the intended occurrence rather than selecting silently. After that choice, it creates an aware value, converts it to UTC, and saves both the instant and original IANA name. Responses carry an offset-bearing timestamp, while the interface converts from the saved instant to the viewer's selected zone.</p>
+<p>This flow also prevents a common mistake: applying the server's local zone because the client omitted one. Rejecting incomplete data is more reliable than making the result depend on where a container happens to run.</p>
+<p>For recurring events, test generation rather than only the first occurrence. Generate dates across at least one transition and verify local clock time, UTC instant, and <code>fold</code> policy. If the product lets a user change zones, define whether that means “same instant, different display” or “same local time in a new region”; those are different operations.</p>
+<p>Operational monitoring should use UTC instants in structured logs and include the relevant IANA name as a separate field. When investigating a discrepancy, record the application version and installed <code>tzdata</code> version. This evidence distinguishes a conversion defect from an intentional database-rule update.</p>        </article>
+
+        <!-- Compartilhar -->
+        <div class="post-share">
+            <h3 style="margin-bottom: 1rem;">Share this article</h3>
+            <div class="post-share-actions">
+                <a href="#" class="btn btn-secondary btn-small" onclick="window.open('https://twitter.com/intent/tweet?url=https%3A%2F%2Funiversopython.com%2Fen%2Fblog%2Fpython-zoneinfo-time-zones&text=Python+zoneinfo%3A+Handle+Time+Zones+Correctly', '_blank', 'width=600,height=400'); return false;">
+                    <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg> Twitter
+                </a>
+                <a href="#" class="btn btn-secondary btn-small" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Funiversopython.com%2Fen%2Fblog%2Fpython-zoneinfo-time-zones', '_blank', 'width=600,height=400'); return false;">
+                    <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 21a8 8 0 0 0-16 0"/><circle cx="10" cy="8" r="5"/><path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/></svg> Facebook
+                </a>
+                <a href="#" class="btn btn-secondary btn-small" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Funiversopython.com%2Fen%2Fblog%2Fpython-zoneinfo-time-zones', '_blank', 'width=600,height=400'); return false;">
+                    <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12h.01"/><path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><path d="M22 13a18.15 18.15 0 0 1-20 0"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg> LinkedIn
+                </a>
+            </div>
+        </div>
+
+        <!-- CTA Ranking -->
+                <div class="card" style="margin-top: 3rem; background: var(--gradient-cosmic); text-align: center; padding: 2.5rem;">
+            <h2 style="color: white; margin-bottom: 1rem;">
+                Want to deepen your Python knowledge?            </h2>
+            <p style="color: rgba(255, 255, 255, 0.9); font-size: 1.125rem; margin-bottom: 1.5rem;">
+                Check out our updated ranking of the best Python courses on the market to accelerate your career.            </p>
+            <a href="https://universopython.com/en/blog/best-python-courses" class="btn btn-large" style="background: white; color: var(--color-galaxy-purple);">
+                View course ranking                <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>            </a>
+        </div>
+
+    </div> <!-- Close container-narrow -->
+
+    <!-- Artigos Relacionados -->
+            <section class="container" style="margin-top: 4rem;">
+            <h2 style="margin-bottom: 2rem;">Related articles</h2>
+
+            <div class="grid grid-3">
+                                    <article class="card" style="display: flex; flex-direction: column; height: 100%;">
+                        <div style="flex: 1;">
+                                                            <span class="badge badge-primary" style="margin-bottom: 1rem;">
+                                    Best Practices                                </span>
+                            
+                            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem; line-height: 1.4;">
+                                <a href="https://universopython.com/en/blog/python-freezegun-time-tests" style="color: var(--color-star-white);">
+                                    Freezegun in Python: Deterministic Date and Time Tests                                </a>
+                            </h3>
+
+                            <p style="color: var(--color-moon-gray); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">
+                                Control the clock in expiration and scheduling tests without waiting for real time or depending on the...                            </p>
+                        </div>
+
+                        <div style="font-size: 0.875rem; color: var(--color-moon-gray); padding-top: 1rem; border-top: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between;">
+                            <span class="meta-with-icon"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg> <time datetime="2026-08-20">August 20, 2026</time></span>
+                            <span class="meta-with-icon"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16.5 12"/></svg> 7 min read</span>
+                        </div>
+                    </article>
+                                    <article class="card" style="display: flex; flex-direction: column; height: 100%;">
+                        <div style="flex: 1;">
+                                                            <span class="badge badge-primary" style="margin-bottom: 1rem;">
+                                    Data Science                                </span>
+                            
+                            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem; line-height: 1.4;">
+                                <a href="https://universopython.com/en/blog/python-datetime-manipulation-dates" style="color: var(--color-star-white);">
+                                    Python datetime: Dates, Times, and Time Zones                                </a>
+                            </h3>
+
+                            <p style="color: var(--color-moon-gray); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">
+                                Master the Python datetime module to manipulate dates, times and timezones. Complete tutorial with practical...                            </p>
+                        </div>
+
+                        <div style="font-size: 0.875rem; color: var(--color-moon-gray); padding-top: 1rem; border-top: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between;">
+                            <span class="meta-with-icon"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg> <time datetime="2026-05-13">May 13, 2026</time></span>
+                            <span class="meta-with-icon"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16.5 12"/></svg> 8 min read</span>
+                        </div>
+                    </article>
+                                    <article class="card" style="display: flex; flex-direction: column; height: 100%;">
+                        <div style="flex: 1;">
+                                                            <span class="badge badge-primary" style="margin-bottom: 1rem;">
+                                    Best Practices                                </span>
+                            
+                            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem; line-height: 1.4;">
+                                <a href="https://universopython.com/en/blog/python-pytest-caplog-test-logging" style="color: var(--color-star-white);">
+                                    pytest caplog: Test Python Logging Reliably                                </a>
+                            </h3>
+
+                            <p style="color: var(--color-moon-gray); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">
+                                Assert meaningful log events without depending on timestamps or unstable formatting.                            </p>
+                        </div>
+
+                        <div style="font-size: 0.875rem; color: var(--color-moon-gray); padding-top: 1rem; border-top: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between;">
+                            <span class="meta-with-icon"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg> <time datetime="2026-09-06">September 6, 2026</time></span>
+                            <span class="meta-with-icon"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16.5 12"/></svg> 1 min read</span>
+                        </div>
+                    </article>
+                            </div>
+        </section>
+    
+    <div class="container container-narrow">
+        <!-- Navegação Anterior/Próximo -->
+                    <div class="post-nav" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-light);">
+                                    <div style="text-align: left;">
+                        <span class="meta-with-icon" style="font-size: 0.875rem; color: var(--color-moon-gray);"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Previous article</span>
+                        <a href="https://universopython.com/en/blog/python-subprocess-security" style="display: block; margin-top: 0.5rem; color: var(--color-star-white); font-weight: 600; font-size: 1rem; line-height: 1.4;">
+                            Python subprocess: Run Commands Safely                        </a>
+                    </div>
+                                
+                                    <div style="text-align: right;">
+                        <span class="meta-with-icon" style="font-size: 0.875rem; color: var(--color-moon-gray);">Next article <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></span>
+                        <a href="https://universopython.com/en/blog/python-cprofile-performance" style="display: block; margin-top: 0.5rem; color: var(--color-star-white); font-weight: 600; font-size: 1rem; line-height: 1.4;">
+                            Python cProfile: Find Performance Bottlenecks                        </a>
+                    </div>
+                            </div>
+        
+        <!-- Navegação Voltar -->
+        <div style="margin-top: 3rem; text-align: center;">
+            <a href="https://universopython.com/en/blog" class="btn btn-secondary">
+                <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>                Back to Blog            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Estilos específicos para conteúdo do post -->
+<style>
+    .meta-with-icon {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.42rem;
+    }
+
+    .meta-with-icon .icon,
+    .toc-container h4 .icon {
+        color: var(--color-comet-cyan);
+    }
+
+    .toc-container h4 {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+    .editorial-list-icon {
+        display: inline-flex;
+        margin-right: 0.55rem;
+        vertical-align: -0.12em;
+    }
+
+    .editorial-list-icon .icon {
+        width: 1.1em;
+        height: 1.1em;
+    }
+
+    .editorial-list-icon--positive { color: #22c55e; }
+    .editorial-list-icon--negative { color: #ef4444; }
+
+    .post-content .audience-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        color: var(--color-comet-cyan);
+    }
+
+    .post-content .audience-label .icon {
+        width: 1.05em;
+        height: 1.05em;
+    }
+
+    .post-content .course-cta {
+        margin: 1.1rem 0 1.75rem;
+    }
+
+    .post-content .course-cta a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        min-height: 2.65rem;
+        padding: 0.65rem 1rem;
+        color: var(--color-star-white);
+        font-size: 0.9rem;
+        font-weight: 700;
+        line-height: 1.2;
+        text-decoration: none;
+        border: 1px solid var(--border-light);
+        border-radius: 10px;
+        background: var(--bg-card);
+        transition: transform var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+    }
+
+    .post-content .course-cta a .icon {
+        width: 1rem;
+        height: 1rem;
+        transition: transform var(--transition-fast);
+    }
+
+    .post-content .course-cta a:hover {
+        color: var(--color-star-white);
+        border-color: var(--color-comet-cyan);
+        background: var(--bg-btn-secondary-hover);
+        transform: translateY(-1px);
+    }
+
+    .post-content .course-cta a:hover .icon {
+        transform: translateX(2px);
+    }
+
+    .post-content .course-cta--featured a {
+        color: white;
+        border-color: transparent;
+        background: var(--gradient-cosmic);
+        box-shadow: 0 8px 22px rgba(99, 102, 241, 0.22);
+    }
+
+    .post-content .course-cta--featured a:hover {
+        color: white;
+        border-color: rgba(255, 255, 255, 0.2);
+        background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 52%, #0891b2 100%);
+        box-shadow: 0 12px 30px rgba(99, 102, 241, 0.34), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+        filter: none;
+        transform: translateY(-2px);
+    }
+
+    .post-content .course-cta--featured a:focus-visible {
+        color: white;
+        border-color: rgba(255, 255, 255, 0.45);
+        background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 52%, #0891b2 100%);
+        outline: 3px solid var(--focus-ring);
+        outline-offset: 3px;
+        box-shadow: 0 12px 30px rgba(99, 102, 241, 0.34);
+    }
+
+    [data-theme="light"] .post-content .course-cta--featured a {
+        box-shadow: 0 8px 22px rgba(79, 70, 229, 0.2);
+    }
+
+    [data-theme="light"] .post-content .course-cta--featured a:hover,
+    [data-theme="light"] .post-content .course-cta--featured a:focus-visible {
+        background: linear-gradient(135deg, #6d28d9 0%, #4338ca 52%, #0e7490 100%);
+        box-shadow: 0 12px 28px rgba(67, 56, 202, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.14) inset;
+    }
+
+    .post-content .course-cta--unavailable span {
+        display: inline-block;
+        color: var(--color-moon-gray);
+        font-size: 0.85rem;
+        font-style: italic;
+    }
+
+    .post-content .editorial-score {
+        display: inline-block;
+        width: auto;
+        min-width: min(100%, 19rem);
+        max-width: 100%;
+        margin: 0.85rem 0 1.35rem;
+        padding: 0.65rem 0.8rem;
+        border: 1px solid var(--border-light);
+        border-radius: 11px;
+        background: var(--bg-card);
+        box-shadow: 0 5px 18px rgba(15, 23, 42, 0.06);
+    }
+
+    .editorial-score__heading {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+    .editorial-score__icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.75rem;
+        height: 1.75rem;
+        color: #f59e0b;
+        border-radius: 7px;
+        background: rgba(245, 158, 11, 0.12);
+    }
+
+    .editorial-score__icon .icon {
+        width: 0.95rem;
+        height: 0.95rem;
+        fill: currentColor;
+    }
+
+    .editorial-score__label {
+        color: var(--color-star-white);
+        font-size: 0.88rem;
+        font-weight: 600;
+    }
+
+    .post-content .editorial-score__value {
+        color: var(--color-star-white);
+        font-size: 1.18rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+    }
+
+    .post-content .editorial-score__value small {
+        color: var(--color-moon-gray);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0;
+    }
+
+    .post-content h2 {
+        font-size: 2rem;
+        margin-top: 2.5rem;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--color-nebula);
+    }
+
+    .post-content h3 {
+        font-size: 1.5rem;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .post-content p {
+        margin-bottom: 1.5rem;
+        line-height: 1.8;
+    }
+
+    .post-content ul,
+    .post-content ol {
+        margin-bottom: 1.5rem;
+        padding-left: 2rem;
+    }
+
+    .post-content li {
+        margin-bottom: 0.75rem;
+        color: var(--color-moon-gray);
+    }
+
+    .post-content a {
+        color: var(--color-comet-cyan);
+        text-decoration: underline;
+    }
+
+    .post-content a:hover {
+        color: var(--color-galaxy-purple);
+    }
+
+    .post-content blockquote {
+        border-left: 4px solid var(--color-galaxy-purple);
+        padding-left: 1.5rem;
+        margin: 2rem 0;
+        font-style: italic;
+        color: var(--color-moon-gray);
+    }
+
+    .post-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: var(--radius-lg);
+        margin: 2rem 0;
+    }
+
+    .post-content pre {
+        margin: 2rem 0;
+    }
+
+    .post-content code {
+        font-size: 0.95em;
+    }
+
+    .post-content strong {
+        color: var(--color-star-white);
+        font-weight: 600;
+    }
+
+    .video-reference {
+        margin: 2.75rem 0;
+        overflow: hidden;
+        border: 1px solid var(--border-light);
+        border-radius: 18px;
+        color: var(--color-moon-gray);
+        background: var(--bg-card);
+        box-shadow: var(--shadow-card);
+        transition: background-color var(--transition-base), border-color var(--transition-base), color var(--transition-base);
+    }
+
+    .video-reference__player {
+        position: relative;
+        aspect-ratio: 16 / 9;
+        background: #080b1a;
+    }
+
+    .video-reference__player iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+
+    .video-reference__body {
+        padding: 1.5rem;
+    }
+
+    .post-content .video-reference__eyebrow {
+        margin: 0 0 0.35rem;
+        color: var(--color-comet-cyan);
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .post-content .video-reference h3 {
+        margin: 0 0 0.75rem;
+        color: var(--color-star-white);
+        font-size: 1.35rem;
+    }
+
+    .post-content .video-reference__body > p:not(.video-reference__eyebrow) {
+        margin-bottom: 0.8rem;
+    }
+
+    .post-content .video-reference__credit {
+        color: var(--color-moon-gray);
+        font-size: 0.92rem;
+    }
+
+    .post-content .video-reference__credit:last-child {
+        margin-bottom: 0;
+    }
+</style>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-about">
+                    <a href="https://universopython.com/en/" class="logo" style="margin-bottom: 1.5rem; display: block;">
+                        <img src="https://universopython.com/public/images/universo-python-logo.png" width="109" height="35" loading="lazy" alt="Universo Python" style="height: 35px; vertical-align: middle;">
+                    </a>
+                    <p style="color: var(--color-moon-gray); line-height: 1.8; margin-bottom: 2rem;">
+                        The ultimate portal for those who want to master the fastest-growing programming language in the world. From zero to advanced, with simplified teaching and focus on practice.                    </p>
+                </div>
+
+                <div class="footer-links">
+                    <h4 style="font-size: 1.2rem; margin-bottom: 1.5rem;">Explore</h4>
+                    <ul style="list-style: none;">
+                        <li style="margin-bottom: 0.8rem;"><a href="https://universopython.com/en/" style="color: var(--color-moon-gray); transition: color 0.3s;">Home</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="https://universopython.com/en/blog" style="color: var(--color-moon-gray); transition: color 0.3s;">Articles</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="https://universopython.com/en/online-python-compiler" style="color: var(--color-moon-gray); transition: color 0.3s;">Compiler</a></li>
+                        <li style="margin-bottom: 0.8rem;">
+                                                        <a href="https://universopython.com/en/blog/best-python-courses" style="color: var(--color-moon-gray); transition: color 0.3s;">Best Courses</a>
+                        </li>
+                        <li style="margin-bottom: 0.8rem;"><a href="https://universopython.com/en/busca" style="color: var(--color-moon-gray); transition: color 0.3s;">Search</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="https://universopython.com/en/sobre" style="color: var(--color-moon-gray); transition: color 0.3s;">About</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="https://universopython.com/en/politica-editorial" style="color: var(--color-moon-gray); transition: color 0.3s;">Editorial Policy</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="https://universopython.com/en/politica-privacidade" style="color: var(--color-moon-gray); transition: color 0.3s;">Privacy Policy</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-categories">
+                    <h4 style="font-size: 1.2rem; margin-bottom: 1.5rem;">Categories</h4>
+                    <ul style="list-style: none;">
+                                                <li style="margin-bottom: 0.8rem;"><a href="https://universopython.com/en/category/fundamentals" style="color: var(--color-moon-gray); transition: color 0.3s;">Fundamentals</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="https://universopython.com/en/category/web-development" style="color: var(--color-moon-gray); transition: color 0.3s;">Web Development</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="https://universopython.com/en/category/data-science" style="color: var(--color-moon-gray); transition: color 0.3s;">Data Science</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="https://universopython.com/en/category/automation" style="color: var(--color-moon-gray); transition: color 0.3s;">Automation</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 Universo Python. All rights reserved. Produced by people who love Python.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="https://universopython.com/public/js/main.js?v=1.0.15" defer></script>
+
+    
+            <!-- Prism.js - Syntax Highlighting -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js" defer></script>
+
+        <script>
+        // Auto-detectar linguagem Python em blocos <code> sem classe
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('pre code:not([class])').forEach(function(block) {
+                block.classList.add('language-python');
+                block.parentElement.classList.add('language-python');
+            });
+
+            // Re-highlight após adicionar classes
+            if (typeof Prism !== 'undefined') {
+                Prism.highlightAll();
+            }
+        });
+        </script>
+        <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"8f5291d3cf0046ddbab811d2de520a51","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body>
+
+    </html>

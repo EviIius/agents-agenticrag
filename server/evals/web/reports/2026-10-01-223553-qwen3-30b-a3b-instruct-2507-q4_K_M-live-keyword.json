@@ -1,0 +1,1957 @@
+{
+  "model": "qwen3:30b-a3b-instruct-2507-q4_K_M",
+  "providers": [
+    "searxng",
+    "ddgs"
+  ],
+  "cases_file": "evals/web/jake-cases.json",
+  "mode": "record",
+  "ranking": "keyword",
+  "planner_trial": "spec",
+  "planner_prompt_sha256": "7663cef54c64ab1a615fcc3d70d60a6a68839caf1fd03667b49d6c385b9faf64",
+  "planner_prompt": "You write web search queries for an assistant. Today is {Weekday, Month D, YYYY}.\nDecide whether searching the web would help answer the user's latest message, and if so write up to 3 queries.\n\nRules:\n- search=false only for small talk, requests to rewrite/translate/summarize text already in this conversation, creative writing, or pure math/code with no facts to look up.\n- Queries must stand alone: resolve pronouns and references from the conversation (e.g. \"what about 2019?\" → \"2019 NBA Finals result\").\n- Write keywords a search engine understands, not full sentences. Keep names, numbers, versions and quoted phrases exact.\n- 1 query for a simple lookup. 2–3 only for questions with separate parts or comparisons.\n- freshness: \"day\" or \"week\" for news, prices, scores, releases, weather; \"month\" or \"year\" for recent developments; otherwise \"any\".\nReply with JSON only.",
+  "fixture_root": null,
+  "metrics": {
+    "cases": 6,
+    "cases_passed": 6,
+    "search_decision_accuracy": 1.0,
+    "required_fact_case_accuracy": 1.0,
+    "forbidden_cases": [],
+    "uncited_cases": [],
+    "citation_validity": 1.0,
+    "searched_turns": 6,
+    "successful_web_turns": 6,
+    "failed_web_turns": 0,
+    "successful_web_ttft_p50_ms": 5119.536665995838,
+    "successful_web_ttft_p90_ms": 9935.284667000815,
+    "stage_latency_ms": {
+      "plan": {
+        "p50": 607.8017090039793,
+        "p90": 763.1238750036573
+      },
+      "search": {
+        "p50": 775.1863750017947,
+        "p90": 1349.2727920020116
+      },
+      "fetch": {
+        "p50": 2027.04470900062,
+        "p90": 6366.252457999508
+      },
+      "rank": {
+        "p50": 5.510208000487182,
+        "p90": 9.899500000756234
+      },
+      "total": {
+        "p50": 8162.4958330066875,
+        "p90": 14796.638167004858
+      }
+    },
+    "citation_support_mean": 0.8706349206349207,
+    "ttft_p50_ms": 5119.536665995838,
+    "ttft_p90_ms": 9935.284667000815,
+    "gates": {
+      "search_decisions": true,
+      "required_facts": true,
+      "forbidden_output": true,
+      "citation_validity": true,
+      "citation_support": true,
+      "web_evidence_available": true,
+      "injection_exercised": true
+    }
+  },
+  "results": [
+    {
+      "id": "jake-ww2",
+      "passed": true,
+      "required_facts": true,
+      "search_decisions_match": true,
+      "freshness_matches": true,
+      "query_scope_matches": true,
+      "injection_exercised": null,
+      "forbidden": [],
+      "citations": 4,
+      "turns": [
+        {
+          "question": "Who won ww2",
+          "message": {
+            "id": "0d900bf10f8a43bd8bd01df041b9162f",
+            "chat_id": "eb2c9adf7c454e428114376f0bbf6cb7",
+            "parent_id": "163c278af6b04259af5bb641eb2f4b59",
+            "role": "assistant",
+            "content": "The Allies won World War II. The war ended in 1945 with the defeat of the Axis Powers—Nazi Germany, Fascist Italy, and Imperial Japan—by the Allied Powers [2]. The principal Allied nations, often referred to as the \"Big Four,\" were the United Kingdom, the Soviet Union, the United States, and China [3][4]. Other significant Allied nations included Free France, which was led by Charles de Gaulle after France fell to Nazi Germany in 1940 [3], and various other countries that joined the coalition, such as Australia, Canada, India, and Ethiopia, which declared war on the Axis powers in 1942 [1][4]. The victory led to the occupation of Germany, Austria, Japan, and Korea, and the prosecution of Axis leaders for war crimes [2].",
+            "reasoning": null,
+            "status": "complete",
+            "error": null,
+            "model": {
+              "connection_id": "1885319fc76446d28413b08ca59a03ef",
+              "model_id": "qwen3:30b-a3b-instruct-2507-q4_K_M",
+              "display_name": "qwen3:30b-a3b-instruct-2507-q4_K_M"
+            },
+            "attachments": [],
+            "stats": {
+              "reasoning_ms": null,
+              "ttft_ms": 6022.251333000895,
+              "total_ms": 8153.037332995154,
+              "prompt_tokens": 2860,
+              "completion_tokens": 175,
+              "tokens_per_sec": 82.17428461415652,
+              "tokens_estimated": false,
+              "load_ms": 5.571458,
+              "finish_reason": "stop",
+              "context_length": 16384,
+              "dropped_message_count": 0,
+              "params": {}
+            },
+            "web": {
+              "status": "used",
+              "freshness": "any",
+              "notice": null,
+              "queries": [
+                "World War 2 winners Allied powers"
+              ],
+              "timings": {
+                "plan": 607.8017090039793,
+                "search": 775.1863750017947,
+                "fetch": 2387.1198339984403,
+                "rank": 9.899500000756234
+              },
+              "source_count": 5,
+              "plan_fallback": false,
+              "providers": [
+                "SearXNG"
+              ],
+              "ranking": "keyword"
+            },
+            "created_at": "2026-10-01T22:34:58.163472+00:00"
+          },
+          "sources": [
+            {
+              "n": 1,
+              "url": "https://mapsofworld.com/answers/history/countries-won-world-war-ii",
+              "title": "Which Countries Won World War II? - Answers",
+              "site_name": "Answers",
+              "domain": "mapsofworld.com",
+              "published_at": "2017-04-27",
+              "fetched_at": "2026-10-01T22:34:59.550433+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://mapsofworld.com/answers/history/countries-won-world-war-ii",
+                  "heading": "Which Countries Won World War II?",
+                  "ord": 0,
+                  "text": "# Which Countries Won World War II?\n\nTwo major alliances formed the basis of polarization during World War II. The war ended in a clear victory for the Allied Powers. The chief nations that made up the Allies are Great Britain, the Soviet Union, the United States, and China. France was also a significant Allied Nation but remained under Axis occupation between 1940 and 1944. The major Axis nations – Germany, Italy, and Japan were bound by strategic alliances such as the Anti-Comintern Pact and the Molotov–Ribbentrop Pact (Nazi-Soviet Pact). Several client states also supported the Axis powers."
+                },
+                {
+                  "source_url": "https://mapsofworld.com/answers/history/countries-won-world-war-ii",
+                  "heading": "Which Countries Won World War II?",
+                  "ord": 1,
+                  "text": "By the start of World War II in 1939, the Allied nations included the United Kingdom and France (and their colonies), and Poland. Australia, Canada, New Zealand, and South Africa – the Dominions of the British Commonwealth soon joined hands with the Allies. The Soviet Union joined in June 1941. The US had been supporting the Allies with finances and arms but after the bombing of Pearl Harbor, joined the war in December 1941. China also joined the alliance that year. By this time, France and Poland had been defeated and occupied.\n\nThe Allied nations generally refer to all those who signed the Declaration of the United Nations during World War II. The first countries to sign the declaration on January 1, 1942, were –\n\n• Australia\n\n• Belgium\n\n• Canada\n\n• China\n\n• Costa Rica\n\n• Cuba\n\n• Czechoslovakia\n\n• Dominican Republic\n\n• El Salvador\n\n• Greece\n\n• Guatemala\n\n• Haiti\n\n• Honduras\n\n• India"
+                },
+                {
+                  "source_url": "https://mapsofworld.com/answers/history/countries-won-world-war-ii",
+                  "heading": "Which Countries Won World War II?",
+                  "ord": 3,
+                  "text": "The Indian Army comprising over 2.5 million troops, for example, was one of the largest contingents that fought for the Allied forces. Indian soldiers received 4,000 gallantry awards and 31 Victoria Crosses during World War II. The contribution of the British and French colonies in Africa, too, cannot be undermined. Military bases were set up in many African nations, and apart from supplying troops and labor, African countries provided enormous quantities of rations and minerals.\n\n**Related Links:**\n\n- What was the role of women in WW II?\n- Was Germany responsible for WW II?\n- What was Holocaust?\n- What was the life of Adolf Hitler?\n\n**Related Maps and Info**"
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 2,
+              "url": "https://en.wikipedia.org/wiki/World_War_II",
+              "title": "World War II - Wikipedia",
+              "site_name": "Wikimedia Foundation, Inc.",
+              "domain": "en.wikipedia.org",
+              "published_at": "2001-11-10",
+              "fetched_at": "2026-10-01T22:34:59.550449+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://en.wikipedia.org/wiki/World_War_II",
+                  "heading": "World War II",
+                  "ord": 0,
+                  "text": "# World War II\n\n| World War II |  | \n|---|---|\n| German Stuka dive bombers on the Eastern Front, 1943 British Matilda II tanks during the North African campaign, 1941 US atomic bombing of Nagasaki in Japan, 1945 Soviet troops at the Battle of Stalingrad, 1943 Soviet soldier raising a flag over the Reichstag after the Battle of Berlin, 1945 US warships in Lingayen Gulf in the Philippines, 1945 |  | \n| Belligerents |  | \n| Allies | Axis | \n| Commanders and leaders |  | \n| **Main Allied leaders** : | **Main Axis leaders** : | \n| Casualties and losses |  | \n| 60–75 million deaths (military and civilian) |  | \n\n| Date | 1 September 1939 – 2 September 1945 <sup>[a]</sup>(6 years, 1 day) | \n|---|---|\n| Location |  | \n| Result | Allied victory | \n\n| World War II | \n|---|\n| Navigation | \n|  | "
+                },
+                {
+                  "source_url": "https://en.wikipedia.org/wiki/World_War_II",
+                  "heading": "World War II",
+                  "ord": 1,
+                  "text": "**World War II**,<sup>[b]</sup> or the **Second World War** (1 September 1939 – 2 September 1945), was a global conflict between two coalitions: the Allies and the Axis powers. Nearly all of the world's countries participated, with many engaging in total war on an unprecedented scale. World War II was the deadliest conflict in history, causing the deaths of 60 to 75 million people, a majority of whom were civilians. Millions died as a result of massacres, starvation, disease, and genocides including the Holocaust. After the Allied victory, Germany, Austria, Japan, and Korea were occupied, and German and Japanese leaders were tried for war crimes."
+                },
+                {
+                  "source_url": "https://en.wikipedia.org/wiki/World_War_II",
+                  "heading": "Spanish Civil War (1936–1939)",
+                  "ord": 22,
+                  "text": "When civil war broke out in Spain, Hitler and Mussolini lent military support to the Nationalist rebels, led by General Francisco Franco. Italy supported the Nationalists to a greater extent than the Nazis: Mussolini sent more than 70,000 ground troops, 6,000 aviation personnel, and 720 aircraft to Spain.<sup>[34]</sup> The Soviet Union supported the existing government of the Spanish Republic. More than 30,000 foreign volunteers, known as the International Brigades, also fought against the Nationalists. Both Germany and the Soviet Union used this proxy war as an opportunity to test in combat their most advanced weapons and tactics. The Nationalists won the civil war in April 1939; Franco, now dictator, remained officially neutral during World War II but generally favoured the Axis.<sup>[35]</sup> His largest collaboration with Germany was the sending of volunteers to fight on the Eastern Front.<sup>[36]</sup>"
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 3,
+              "url": "https://historycrunch.com/allied-powers-of-world-war-ii",
+              "title": "Allied Powers of World War II: A Detailed Summary - History Crunch",
+              "site_name": "History Crunch",
+              "domain": "historycrunch.com",
+              "published_at": "2020-03-18",
+              "fetched_at": "2026-10-01T22:34:59.550464+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://historycrunch.com/allied-powers-of-world-war-ii",
+                  "heading": "",
+                  "ord": 0,
+                  "text": "The Allied Powers of World War II were Britain, the Soviet Union, the United States and China. Together, these four nations are often called the ‘Big Four’ of the Allied Powers. With that said, Free France, led by Charles de Gaulle, also became an important part of the Allied cause after France fell to Nazi Germany in 1940. Together, these nations formed the coalition that ultimately defeated the Axis Powers of World War II, which included Nazi Germany, fascist Italy and Imperial Japan."
+                },
+                {
+                  "source_url": "https://historycrunch.com/allied-powers-of-world-war-ii",
+                  "heading": "ALLIED POWERS OF WORLD WAR II – HISTORY AND MEMBER NATIONS",
+                  "ord": 2,
+                  "text": "## ALLIED POWERS OF WORLD WAR II – HISTORY AND MEMBER NATIONS\n\nThe Allied Powers were a military and political coalition of countries that opposed the Axis Powers during World War II, and their shared purpose was to defeat the aggressive expansion of Nazi Germany, Italy and Imperial Japan. However, the Allies were not united because they all believed the same things or shared a united vision for the world. In fact, the alliance brought together democracies such as Britain and the United States, the communist Soviet Union under Joseph Stalin, and Nationalist China under Chiang Kai-shek. These countries often disagreed with one another and sometimes deeply distrusted one another, but they understood that none of them could defeat the Axis Powers alone."
+                },
+                {
+                  "source_url": "https://historycrunch.com/allied-powers-of-world-war-ii",
+                  "heading": "ALLIED POWERS OF WORLD WAR II – SIGNIFICANCE",
+                  "ord": 13,
+                  "text": "## ALLIED POWERS OF WORLD WAR II – SIGNIFICANCE\n\nThe Allied Powers were significant because they defeated the Axis Powers and prevented Nazi Germany, fascist Italy, and Imperial Japan from gaining lasting control over large parts of Europe, Africa, Asia and the Pacific. Their victory brought an end to some of the most aggressive and destructive regimes in modern history, and it also made possible the liberation of many countries that had been conquered and occupied during the war. As well, the Allied Powers helped put an end to terrible atrocities such as the Holocaust."
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 4,
+              "url": "https://en.wikipedia.org/wiki/Allies_of_World_War_II",
+              "title": "Allies of World War II - Wikipedia",
+              "site_name": "Wikimedia Foundation, Inc.",
+              "domain": "en.wikipedia.org",
+              "published_at": "2005-07-09",
+              "fetched_at": "2026-10-01T22:34:59.550399+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://en.wikipedia.org/wiki/Allies_of_World_War_II",
+                  "heading": "Allies of World War II",
+                  "ord": 0,
+                  "text": "# Allies of World War II\n\n| Allies of World War II |  | \n|---|---|\n| 1939–1945 |  | \n| Status | Military alliance | \n| Historical era | World War II | \n|  | 21 February 1921 | \n|  | August 1939 | \n|  | September 1939 – June 1940 | \n|  | June 1941 | \n|  | July 1941 | \n|  | August 1941 | \n|  | January 1942 | \n|  | May 1942 | \n|  | November–December 1943 | \n|  | 1–15 July 1944 | \n|  | 4–11 February 1945 | \n|  | April–June 1945 | \n|  | July–August 1945 | \n|  |  | \n\n| **Preceded by** | **Succeeded by** | \n|  |  | \n\n|  | League of Nations | \n\n| United Nations |  | \n\nThe **Allies**, or **Allied powers**, formally referred to as the **United Nations** from 1942, were an international military coalition formed during World War II (1939–1945) to oppose the Axis powers. Its principal members were the \"Big Four\"<sup>[1]</sup>—the United Kingdom, the Soviet Union, the United States, and China."
+                },
+                {
+                  "source_url": "https://en.wikipedia.org/wiki/Allies_of_World_War_II",
+                  "heading": "United Kingdom and British Empire",
+                  "ord": 35,
+                  "text": "Britain’s colonies also made a significant contribution to the allied military effort. By 1945, 25% of the allied South-East Asia Command was African <sup>[39]</sup><sup>: 2</sup>  and about 4% of the empire's military dead were from the colonies other than India.<sup>[41]</sup><sup>: 148</sup> "
+                },
+                {
+                  "source_url": "https://en.wikipedia.org/wiki/Allies_of_World_War_II",
+                  "heading": "Ethiopia",
+                  "ord": 94,
+                  "text": "### Ethiopia\n\nThe Ethiopian Empire was invaded by Italy on 3 October 1935. On 2 May 1936, Emperor Haile Selassie I fled into exile, just before the Italian occupation on 7 May. After the outbreak of World War II, the Ethiopian government-in-exile cooperated with the British during the British Invasion of Italian East Africa beginning in June 1940. Haile Selassie returned to his rule on 18 January 1941. Ethiopia declared war on Germany, Italy and Japan in December 1942."
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 5,
+              "url": "https://history.state.gov/milestones/1937-1945/lend-lease",
+              "title": "Lend-Lease and Military Aid to the Allies in the Early Years of World War II",
+              "site_name": "Milestones in the History of U.S. Foreign Relations",
+              "domain": "history.state.gov",
+              "published_at": null,
+              "fetched_at": "2026-10-01T22:34:59.866168+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://history.state.gov/milestones/1937-1945/lend-lease",
+                  "heading": "Lend-Lease and Military Aid to the Allies in the Early Years of World War II",
+                  "ord": 1,
+                  "text": "# Lend-Lease and Military Aid to the Allies in the Early Years of World War II\n\nDuring World War II, the United States began to provide significant military supplies and other assistance to the Allies in September 1940, even though the United States did not enter the war until December 1941. Much of this aid flowed to the United Kingdom and other nations already at war with Germany and Japan through an innovative program known as Lend-Lease."
+                },
+                {
+                  "source_url": "https://history.state.gov/milestones/1937-1945/lend-lease",
+                  "heading": "Lend-Lease and Military Aid to the Allies in the Early Years of World War II",
+                  "ord": 4,
+                  "text": "On September 2, 1940, President Roosevelt signed a “Destroyers for Bases” agreement. Under the terms of the agreement, the United States gave the British more than 50 obsolete destroyers, in exchange for 99-year leases to territory in Newfoundland and the Caribbean, which would be used as U.S. air and naval bases. British Prime Minister Winston Churchill had originally requested that Roosevelt provide the destroyers as a gift, but the President knew that the American public and Congress would oppose such a deal. He therefore decided that a deal that gave the United States long-term access to British bases could be justified as essential to the security of the Western Hemisphere—thereby assuaging the concerns of the public and the U.S. military"
+                },
+                {
+                  "source_url": "https://history.state.gov/milestones/1937-1945/lend-lease",
+                  "heading": "Lend-Lease and Military Aid to the Allies in the Early Years of World War II",
+                  "ord": 6,
+                  "text": "Instead, the United States would “lend” the supplies to the British, deferring payment. When payment eventually did take place, the emphasis would not be on payment in dollars. The tensions and instability engendered by inter-allied war debts in the 1920s and 1930s had demonstrated that it was unreasonable to expect that virtually bankrupt European nations would be able to pay for every item they had purchased from the United States. Instead, payment would primarily take the form of a “consideration” granted by Britain to the United States. After many months of negotiation, the United States and Britain agreed, in Article VII of the Lend-Lease agreement they signed, that this consideration would primarily consist of joint action directed towards the creation of a liberalized international economic order in the postwar world."
+                }
+              ],
+              "cited": false
+            }
+          ],
+          "reads": [
+            {
+              "url": "https://britannica.com/topic/Allied-powers-World-War-II",
+              "title": "Allied powers | World War II, Definition, & Countries - Britannica",
+              "site_name": "britannica.com",
+              "status": "failed",
+              "reason": "HTTP 403"
+            },
+            {
+              "url": "https://completeera.com/who-won-world-war-ii",
+              "title": "Who won World War II? – CompleteEra",
+              "site_name": "completeera.com",
+              "status": "failed",
+              "reason": "HTTP 403"
+            },
+            {
+              "url": "https://en.wikipedia.org/wiki/Allies_of_World_War_II",
+              "title": "Allies of World War II - Wikipedia",
+              "site_name": "Wikimedia Foundation, Inc.",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://en.wikipedia.org/wiki/World_War_II",
+              "title": "World War II - Wikipedia",
+              "site_name": "Wikimedia Foundation, Inc.",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://history.state.gov/milestones/1937-1945/lend-lease",
+              "title": "Lend-Lease and Military Aid to the Allies in the Early Years of World War II",
+              "site_name": "Milestones in the History of U.S. Foreign Relations",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://historycrunch.com/allied-powers-of-world-war-ii",
+              "title": "Allied Powers of World War II: A Detailed Summary - History Crunch",
+              "site_name": "History Crunch",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://mapsofworld.com/answers/history/countries-won-world-war-ii",
+              "title": "Which Countries Won World War II? - Answers",
+              "site_name": "Answers",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://quora.com/Which-WWII-allied-power-was-most-responsible-for-winning-the-war-in-Europe",
+              "title": "Which WWII allied power was most responsible for winning the war ...",
+              "site_name": "quora.com",
+              "status": "failed",
+              "reason": "HTTP 403"
+            },
+            {
+              "url": "https://reddit.com/r/MilitaryHistory/comments/18fy727/who_was_the_most_important_allied_nation_in_ww2",
+              "title": "Who was the most important Allied Nation in WW2? - Reddit",
+              "site_name": "reddit.com",
+              "status": "failed",
+              "reason": "too little readable text"
+            }
+          ],
+          "elapsed_ms": 8162.4958330066875,
+          "web": {
+            "status": "used",
+            "freshness": "any",
+            "notice": null,
+            "queries": [
+              "World War 2 winners Allied powers"
+            ],
+            "timings": {
+              "plan": 607.8017090039793,
+              "search": 775.1863750017947,
+              "fetch": 2387.1198339984403,
+              "rank": 9.899500000756234
+            },
+            "source_count": 5,
+            "plan_fallback": false,
+            "providers": [
+              "SearXNG"
+            ],
+            "ranking": "keyword"
+          }
+        }
+      ]
+    },
+    {
+      "id": "jake-ramen",
+      "passed": true,
+      "required_facts": true,
+      "search_decisions_match": true,
+      "freshness_matches": true,
+      "query_scope_matches": true,
+      "injection_exercised": null,
+      "forbidden": [],
+      "citations": 4,
+      "turns": [
+        {
+          "question": "what is the best way to make ramen",
+          "message": {
+            "id": "74019ab9e7cc46339b43411f78bc7ddf",
+            "chat_id": "731fdbaaeb1241b588d0ea5f2a881e1e",
+            "parent_id": "3c4c1e4ffc3a4f3189d747a3faa92843",
+            "role": "assistant",
+            "content": "The \"best\" way to make ramen depends on your goals—whether you prioritize authenticity, flavor, convenience, or the experience of making it from scratch.\n\nFor **authentic, restaurant-quality ramen noodles**, the best approach involves specialized ingredients and tools. According to Serious Eats, using a digital scale to measure ingredients precisely is essential because small variations significantly affect the final texture [4]. The noodles are made with an alkaline agent (like lye water, or \"kansui,\" which is traditional) and require specific equipment like a pasta machine or even industrial machinery to achieve the ideal chewy, springy texture [2][4]. While a pasta machine can help with rolling and cutting, the best results come from professional-grade equipment and expertise [4].\n\nFor **making ramen from scratch at home**, you can use a simple recipe with just three ingredients: all-purpose flour, water, and an alkaline agent like baking soda (which must be baked first to activate it) or lye water [2]. This method is accessible and produces noodles with a chewy, authentic texture [2].\n\nFor a **quick, flavorful, and homemade-style ramen** that’s still satisfying and fresh, you can use packaged ramen noodles (like Maruchan) but upgrade them by making a homemade broth from scratch [1]. This approach uses simple ingredients like chicken or vegetable broth, garlic, ginger, dried shiitake mushrooms, and fresh vegetables, creating a light, flavorful base in about 20 minutes [1][3]. You can further enhance this with toppings like a soft-boiled \"ramen egg,\" chili oil, or panko [1].\n\nFor **the most flavorful and customizable ramen**, The Flavor Bender recommends a classic chicken shoyu ramen made with a soy sauce-based broth, caramelized soy chicken, and a ramen egg, which can be prepared in 30 to 45 minutes [3]. This version uses store-bought stock but boosts flavor with ginger, spring onions, chili, and dried shiitake mushrooms for umami [3].\n\nIn summary:\n- For **authentic, chewy noodles**: Use a precise recipe with an alkaline agent (like kansui) and a pasta machine [2][4].\n- For **quick, flavorful ramen**: Use packaged noodles with a homemade broth made from simple ingredients [1][3].\n- For **a balance of flavor and authenticity**: Make a shoyu broth with soy chicken and a ramen egg [3].\n\nThe best method depends on your time, tools, and desired outcome.",
+            "reasoning": null,
+            "status": "complete",
+            "error": null,
+            "model": {
+              "connection_id": "1885319fc76446d28413b08ca59a03ef",
+              "model_id": "qwen3:30b-a3b-instruct-2507-q4_K_M",
+              "display_name": "qwen3:30b-a3b-instruct-2507-q4_K_M"
+            },
+            "attachments": [],
+            "stats": {
+              "reasoning_ms": null,
+              "ttft_ms": 7041.642624993983,
+              "total_ms": 13469.963583993376,
+              "prompt_tokens": 2505,
+              "completion_tokens": 530,
+              "tokens_per_sec": 82.44715603979864,
+              "tokens_estimated": false,
+              "load_ms": 5.4885,
+              "finish_reason": "stop",
+              "context_length": 16384,
+              "dropped_message_count": 0,
+              "params": {}
+            },
+            "web": {
+              "status": "used",
+              "freshness": "any",
+              "notice": null,
+              "queries": [
+                "best way to make ramen at home with broth",
+                "homemade ramen recipe with egg and toppings",
+                "how to make ramen noodles from scratch"
+              ],
+              "timings": {
+                "plan": 749.6367919957265,
+                "search": 1349.2727920020116,
+                "fetch": 3017.0456250052666,
+                "rank": 5.510208000487182
+              },
+              "source_count": 5,
+              "plan_fallback": false,
+              "providers": [
+                "SearXNG"
+              ],
+              "ranking": "keyword"
+            },
+            "created_at": "2026-10-01T22:35:06.335524+00:00"
+          },
+          "sources": [
+            {
+              "n": 1,
+              "url": "https://pinchofyum.com/quick-homemade-ramen",
+              "title": "Quick Homemade Ramen",
+              "site_name": "Pinch of Yum",
+              "domain": "pinchofyum.com",
+              "published_at": "2021-03-15",
+              "fetched_at": "2026-10-01T22:35:08.437982+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://pinchofyum.com/quick-homemade-ramen",
+                  "heading": "",
+                  "ord": 0,
+                  "text": "##### Featured comment\n\nFresh vegetables? Quick and easy homemade broth? A soft-boiled egg and a pile of our favorite curly-cue packaged ramen noodles that remind us of college? That’s this homemade ramen.\n\nIf today is your day for an authentic Japanese cooking adventure, I highly recommend Nami’s amazing blog Just One Cookbook.\n\nOn the flip side, this recipe leans more in the direction of I-have-a-package-of-ramen-and-some-vegetables-can-we-make-lunch practical. Sort of healthy and fast and a little nostalgic (packaged ramen!) but also fresh-ly delicious with a ton of flavor."
+                },
+                {
+                  "source_url": "https://pinchofyum.com/quick-homemade-ramen",
+                  "heading": "The Classic Packaged Ramen, Reimagined",
+                  "ord": 3,
+                  "text": "## The Classic Packaged Ramen, Reimagined\n\nControversial opinion alert, but there is a time and a place for a big warm pot o’ ramen noodles, complete with – I’m going to say it – the ramen seasoning packet. For me, that would be circa 2007 sitting on the floor of a small dorm room with millions of Christmas lights hanging up for no reason whatsoever, or on the couch at home during a rainy sick day home from work when that extra-salty broth hits just right.\n\nBut I’d like to try to encourage you to go to the Packaged Ramen + level with this recipe. I mean, when you can make your own yummy broth in 20 minutes? And it’s delicate and light and full of flavor, in a more fresh and veg-heavy way? That is the way to do it, says Adult Me.\n\nIf you are looking for homemade ramen noodles, here is a great recipe for the ramen noodles made from scratch."
+                },
+                {
+                  "source_url": "https://pinchofyum.com/quick-homemade-ramen",
+                  "heading": "Ingredients You’ll Need For This Recipe",
+                  "ord": 4,
+                  "text": "## Ingredients You’ll Need For This Recipe\n\nIt’s short one! It wouldn’t be easy homemade ramen without it.\n\n- Ramen noodles (our classic Maruchan package is all we need, sans the flavor packet!)\n- Garlic and ginger\n- Broth (chicken or veg)\n- Dried shiitake mushrooms\n- Veggies like carrots or kale\n- All your favorite toppings like some panko, egg, chili oil, etc.\n\nNow let’s get cooking!"
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 2,
+              "url": "https://gingerandscotch.com/homemade-ramen-noodles-from-scratch",
+              "title": "Ramen Noodles From Scratch (the No-Knead Easy Way)",
+              "site_name": "Ginger and Scotch",
+              "domain": "gingerandscotch.com",
+              "published_at": "2017-07-10",
+              "fetched_at": "2026-10-01T22:35:08.438025+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://gingerandscotch.com/homemade-ramen-noodles-from-scratch",
+                  "heading": "Ramen Noodles From Scratch (the No-Knead Easy Way)",
+                  "ord": 2,
+                  "text": "What helped a lot was using our pasta machine. We have two of these **Italian-made pasta machines from Marcato** to make things easier for us. One in our Dubai home and one in my parents’ home for when we visit. I was unsure of it at first but now I can’t imagine making noodles without it (bonus: it comes in 9 different colors so you can color-coordinate your kitchen.)\n\nYou just feed the dough into the machine and crank the handle to flatten the dough until the desired thinness. And then you cut the flattened dough into thin strands. The machine does all the hard work and this becomes a **no-knead Ramen noodles from scratch recipe**.\n\nWondering which pasta machine is best to buy? Click here to read my review of two popular Italian-made brands: the Marcato Atlas versus the Cucina Pro Imperia."
+                },
+                {
+                  "source_url": "https://gingerandscotch.com/homemade-ramen-noodles-from-scratch",
+                  "heading": "**Can Ramen Noodles Be Made Successfully at Home?**",
+                  "ord": 4,
+                  "text": "## **Can Ramen Noodles Be Made Successfully at Home?**\n\nYes!\n\nYou most likely have all the ingredients in your pantry to make homemade ramen noodles from scratch. This is an eggless Japanese ramen noodle recipe and needs only 3 ingredients.\n\nTo make fresh ramen at home, all you need is:\n\n- All-purpose flour\n- Water\n- Alkaline agent: either **lye water** (aka**“kansui”** and can be purchased from an Asian grocery store) or**baking soda** .\n\nTo use baking soda to make ramen noodles, you must first ***bake*** it in the oven for one hour. Click here for my instructions on how to make **baked** baking soda and why alkaline agents are essential to making ramen noodles.\n\nAfter you’ve mastered making ramen noodles from scratch, you can serve it with my Tonkotsu ramen with braised pork belly."
+                },
+                {
+                  "source_url": "https://gingerandscotch.com/homemade-ramen-noodles-from-scratch",
+                  "heading": "**How to Make Homemade Ramen Noodles From Scratch**",
+                  "ord": 5,
+                  "text": "## **How to Make Homemade Ramen Noodles From Scratch**\n\nContinue reading below for **detailed instructions** (with step-by-step photos) on how to make ramen noodles from scratch or you can **click here to jump to the print-friendly recipe**.\n\nEnjoy and have fun with this!"
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 3,
+              "url": "https://theflavorbender.com/easy-homemade-chicken-ramen",
+              "title": "The Best Homemade Chicken Ramen (Easy Ramen Recipe)",
+              "site_name": "The Flavor Bender",
+              "domain": "theflavorbender.com",
+              "published_at": "2019-01-09",
+              "fetched_at": "2026-10-01T22:35:08.582060+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://theflavorbender.com/easy-homemade-chicken-ramen",
+                  "heading": "",
+                  "ord": 0,
+                  "text": "Looking for an **easy homemade chicken ramen** that’s brimming with flavor and can be customized to your taste? Then this is the recipe for you! I show you how to make a comforting, flavor-packed shoyu ramen bowl with a soy sauce chicken broth, topped with caramelized soy chicken, a ramen egg, and other optional flavorful toppings.\n\nThis well-loved, reader-favorite recipe makes authentic chicken ramen as accessible as possible for home cooks, and can be made in 30 minutes (easy version) or 45 minutes (with caramelized chicken)."
+                },
+                {
+                  "source_url": "https://theflavorbender.com/easy-homemade-chicken-ramen",
+                  "heading": "Why this recipe works",
+                  "ord": 6,
+                  "text": "- This is a**classic chicken shoyu ramen bowl** , with a delicious soy sauce chicken broth, topped with caramelized soy chicken, a ramen egg, and other flavorful toppings.\n- So, it’s an incredibly flavorful ramen bowl that tastes like an authentic shoyu ramen. This chicken ramen recipe has been developed to be as**accessible as possible for home cooks, while retaining authentic flavors** .\n- You can**easily adapt this ramen bowl** to use ramen ingredients you have at home. And I show you how.\n- You can use store-bought stock, but add additional flavor. I’ll show you**how to add extra umami flavor** to your shoyu broth too!\n- This ramen looks amazing with the lacquered chicken served on the side.\n- You can make this upgraded chicken ramen version with the chicken cooked separately, OR make it easier by cooking the chicken IN the shoyu broth.\n- **Top it with a classic ramen egg** that completes the authenticity of this shoyu ramen."
+                },
+                {
+                  "source_url": "https://theflavorbender.com/easy-homemade-chicken-ramen",
+                  "heading": "How to make the best chicken ramen",
+                  "ord": 12,
+                  "text": "## How to make the best chicken ramen\n\nThis is my favorite way to make homemade chicken ramen – Japanese noodles (straight or wavy) in a delicious soy sauce chicken broth (shoyu broth), topped with a jammy egg marinated in a sweet soy marinade (i.e. ramen egg), with flavor-packed caramelized soy chicken and vegetables!\n\nI prefer using homemade chicken stock for ramen, but I don’t always have homemade chicken stock at hand.\n\nSo, I use store-bought in a pinch. To upgrade the store-bought chicken stock, I simmer it with ginger, spring onions, and some chili (because we like it a little spicy).\n\nIf you’d like to add more umami flavor to your broth, add a few pieces of dried shiitake mushrooms to the stock as well. As the mushrooms reconstitute and soften in the stock, they will impart their earthy umami flavor to the stock."
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 4,
+              "url": "https://seriouseats.com/the-ultimate-guide-to-making-ramen-noodles-at-home",
+              "title": "How to Make Ramen Noodles From Scratch",
+              "site_name": "Serious Eats",
+              "domain": "seriouseats.com",
+              "published_at": "2018-11-29",
+              "fetched_at": "2026-10-01T22:35:08.438041+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://seriouseats.com/the-ultimate-guide-to-making-ramen-noodles-at-home",
+                  "heading": "",
+                  "ord": 3,
+                  "text": "If you want the very best noodles, your best bet is to buy from a noodle manufacturer, like Sun Noodle or Shimamoto Noodle. The machinery they have at their disposal, as well as their expertise, cannot be matched by a home cook with a pasta machine. But for those home cooks who want to explore the wide world of alkaline noodles, we've come up with a basic recipe that is relatively simple to make and uses fairly common ingredients and equipment."
+                },
+                {
+                  "source_url": "https://seriouseats.com/the-ultimate-guide-to-making-ramen-noodles-at-home",
+                  "heading": "Essential Tools for Making Ramen at Home",
+                  "ord": 26,
+                  "text": "## Essential Tools for Making Ramen at Home\n\nBefore we get into the actual process, there are a few tools that are absolutely necessary for making ramen (the noodles) at home.\n\nThe first is a digital scale that can accurately measure gram quantities. Small deviations in ingredient quantities will have profound effects on the noodle you produce, so using an accurate scale is absolutely imperative. I have listed the ingredient quantities solely in grams, so there's no way to try to fudge your way around this requirement."
+                },
+                {
+                  "source_url": "https://seriouseats.com/the-ultimate-guide-to-making-ramen-noodles-at-home",
+                  "heading": "Cooking the Noodles",
+                  "ord": 48,
+                  "text": "The best way to do this is to take a single noodle strand and cut it up into relatively equal lengths. Bring a pot of water to boil and dump the noodle bits in, and fish them out at defined intervals. A good starting point is one minute and 30 seconds; take out a noodle bit every 10 seconds until you get a noodle that is the consistency you like, then repeat the process. Once you confirm the time it takes to get the noodle to your preferred doneness, shave off 10 seconds, and that is the cook time—this is to account for any carry-over cooking that may occur after transferring the noodles to a hot broth and adding garnishes to your bowl."
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 5,
+              "url": "https://tasteofhome.com/recipes/homemade-ramen-noodles",
+              "title": "Homemade Ramen Noodles",
+              "site_name": "Taste of Home",
+              "domain": "tasteofhome.com",
+              "published_at": "2025-02-11",
+              "fetched_at": "2026-10-01T22:35:08.575052+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://tasteofhome.com/recipes/homemade-ramen-noodles",
+                  "heading": "Homemade Ramen Noodles",
+                  "ord": 0,
+                  "text": "# Homemade Ramen Noodles\n\nWant to make chewy homemade ramen noodles like you find in Japanese soup shops? With a few special tools and a block of free time, these noodles are worth the extra effort.\n\nAs a 12-year-old, long before I learned how to make ramen noodles from scratch, I was confident that I made the best ramen in the world. Going rogue, I tore open the foil sachets from store-bought soup packages and tapped the powdered seasoning into the cooking water *before* the dry noodles had their boiling three-minute bath, even though the instructions said to flavor them afterward. I enhanced the broth with tidbits of frozen corn and peas and, on luxurious days, leftover meat from the fridge."
+                },
+                {
+                  "source_url": "https://tasteofhome.com/recipes/homemade-ramen-noodles",
+                  "heading": "Homemade Ramen Noodles",
+                  "ord": 1,
+                  "text": "It was more than a decade before I learned that you could make ramen at home from fresh ingredients. Armed with that knowledge, I learned to make fresh, chewy noodles and developed my takes on broth and garnishes. In the following years, I won first place in a ramen-making competition and occasionally served unusual variations in my restaurant (duck soup, anyone?). No matter which broth I’m using, the noodles made with the recipe below go into the bowl."
+                },
+                {
+                  "source_url": "https://tasteofhome.com/recipes/homemade-ramen-noodles",
+                  "heading": "What to Add to Ramen Noodles",
+                  "ord": 11,
+                  "text": "## What to Add to Ramen Noodles\n\nThese homemade ramen noodles will make an excellent accompaniment to any ramen broth, whether you make yours with miso, soy sauce or salt. When you don’t have time to make noodles from scratch, these creative upgrades to packaged ramen will make your dish feel homemade. Not in a soup mood? Here are some of our favorite ramen noodles recipes without the broth."
+                }
+              ],
+              "cited": false
+            }
+          ],
+          "reads": [
+            {
+              "url": "https://damndelicious.net/2014/10/13/easy-homemade-ramen",
+              "title": "Easy Homemade Ramen - Damn Delicious",
+              "site_name": "damndelicious.net",
+              "status": "failed",
+              "reason": "HTTP 403"
+            },
+            {
+              "url": "https://gingerandscotch.com/homemade-ramen-noodles-from-scratch",
+              "title": "Ramen Noodles From Scratch (the No-Knead Easy Way)",
+              "site_name": "Ginger and Scotch",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://pinchofyum.com/quick-homemade-ramen",
+              "title": "Quick Homemade Ramen",
+              "site_name": "Pinch of Yum",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://seriouseats.com/the-ultimate-guide-to-making-ramen-noodles-at-home",
+              "title": "How to Make Ramen Noodles From Scratch",
+              "site_name": "Serious Eats",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://sudachirecipes.com/homemade-ramen-noodles",
+              "title": "Homemade Ramen Noodles 101: Everything You Need To ... - Sudachi",
+              "site_name": "sudachirecipes.com",
+              "status": "failed",
+              "reason": "HTTP 403"
+            },
+            {
+              "url": "https://tasteofhome.com/recipes/homemade-ramen-noodles",
+              "title": "Homemade Ramen Noodles",
+              "site_name": "Taste of Home",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://thecozycook.com/homemade-ramen",
+              "title": "Homemade Ramen - The Cozy Cook",
+              "site_name": "thecozycook.com",
+              "status": "failed",
+              "reason": "HTTP 403"
+            },
+            {
+              "url": "https://theflavorbender.com/easy-homemade-chicken-ramen",
+              "title": "The Best Homemade Chicken Ramen (Easy Ramen Recipe)",
+              "site_name": "The Flavor Bender",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://therecipecritic.com/easy-homemade-ramen",
+              "title": "Easy Homemade Ramen - The Recipe Critic",
+              "site_name": "therecipecritic.com",
+              "status": "failed",
+              "reason": "HTTP 403"
+            },
+            {
+              "url": "https://youtube.com/watch?v=7z1Ygygfquw",
+              "title": "Authentic Japanese Ramen At Home - YouTube",
+              "site_name": "youtube.com",
+              "status": "failed",
+              "reason": "too little readable text"
+            }
+          ],
+          "elapsed_ms": 13483.57683300128,
+          "web": {
+            "status": "used",
+            "freshness": "any",
+            "notice": null,
+            "queries": [
+              "best way to make ramen at home with broth",
+              "homemade ramen recipe with egg and toppings",
+              "how to make ramen noodles from scratch"
+            ],
+            "timings": {
+              "plan": 749.6367919957265,
+              "search": 1349.2727920020116,
+              "fetch": 3017.0456250052666,
+              "rank": 5.510208000487182
+            },
+            "source_count": 5,
+            "plan_fallback": false,
+            "providers": [
+              "SearXNG"
+            ],
+            "ranking": "keyword"
+          }
+        }
+      ]
+    },
+    {
+      "id": "jake-president",
+      "passed": true,
+      "required_facts": true,
+      "search_decisions_match": true,
+      "freshness_matches": true,
+      "query_scope_matches": true,
+      "injection_exercised": null,
+      "forbidden": [],
+      "citations": 3,
+      "turns": [
+        {
+          "question": "who is the president currently",
+          "message": {
+            "id": "aae31c0d0d6544f0a30915b65f2d994a",
+            "chat_id": "0170ed48e18a45589f36923546919433",
+            "parent_id": "23a9cbcd4a1c4dd8939455f29db1fd5f",
+            "role": "assistant",
+            "content": "Based on the provided information, Donald Trump is the current President of the United States. He began his second term on January 20, 2025, following his re-election in 2024 [2]. This is confirmed by multiple sources, including the Wikipedia entry for Donald Trump, which lists his current term as starting January 20, 2025 [1], and a news article from October 1, 2026, which refers to him as \"President Trump\" [3].",
+            "reasoning": null,
+            "status": "complete",
+            "error": null,
+            "model": {
+              "connection_id": "1885319fc76446d28413b08ca59a03ef",
+              "model_id": "qwen3:30b-a3b-instruct-2507-q4_K_M",
+              "display_name": "qwen3:30b-a3b-instruct-2507-q4_K_M"
+            },
+            "attachments": [],
+            "stats": {
+              "reasoning_ms": null,
+              "ttft_ms": 4581.498209001438,
+              "total_ms": 5834.229084000981,
+              "prompt_tokens": 1854,
+              "completion_tokens": 110,
+              "tokens_per_sec": 87.86517966831694,
+              "tokens_estimated": false,
+              "load_ms": 2.275083,
+              "finish_reason": "stop",
+              "context_length": 16384,
+              "dropped_message_count": 0,
+              "params": {}
+            },
+            "web": {
+              "status": "used",
+              "freshness": "day",
+              "notice": null,
+              "queries": [
+                "current president of the United States October 2026"
+              ],
+              "timings": {
+                "plan": 519.0273330008495,
+                "search": 659.804458002327,
+                "fetch": 2027.04470900062,
+                "rank": 9.036165996803902
+              },
+              "source_count": 4,
+              "plan_fallback": false,
+              "providers": [
+                "SearXNG"
+              ],
+              "ranking": "keyword"
+            },
+            "created_at": "2026-10-01T22:35:19.820277+00:00"
+          },
+          "sources": [
+            {
+              "n": 1,
+              "url": "https://en.wikipedia.org/wiki/Donald_Trump",
+              "title": "Donald Trump - Wikipedia",
+              "site_name": "Wikimedia Foundation, Inc.",
+              "domain": "en.wikipedia.org",
+              "published_at": "2004-01-09",
+              "fetched_at": "2026-10-01T22:35:21.001798+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://en.wikipedia.org/wiki/Donald_Trump",
+                  "heading": "Donald Trump",
+                  "ord": 0,
+                  "text": "# Donald Trump\n\n| Donald Trump |  | \n|---|---|\n| 45th & 47th President of the United States |  | \n| **Assumed office**January 20, 2025 |  | \n| Vice President | JD Vance | \n| Preceded by | Joe Biden | \n| **In office**January 20, 2017 – January 20, 2021 |  | \n| Vice President | Mike Pence | \n| Preceded by | Barack Obama | \n| Succeeded by | Joe Biden | \n| Personal details |  | \n| Born | Donald John Trump June 14, 1946 Queens, New York City, U.S. | \n| Party | Republican (1969–1978, 1987–1999, 2009–2011, 2012–present) | \n| Other political affiliations | Reform (1999–2001) Democratic (2001–2009) Independent (2011–2012) | \n| Spouses |  | \n| Children |  | \n| Parents |  | \n| Relatives | Trump family | \n| Education | University of Pennsylvania (BS) | \n| Occupation |  | \n| Signature |  | \n| Website |  | "
+                },
+                {
+                  "source_url": "https://en.wikipedia.org/wiki/Donald_Trump",
+                  "heading": "Donald Trump",
+                  "ord": 1,
+                  "text": "| Life and business 45th and 47th President of the United States Tenure First 100 days Executive actions \n\nExecutive orders proclamations Pardons Trips Opinion polling Legal affairs Protests Social media (X) Corruption allegations 2026 RNC Domestic Economic Environment Foreign Government shutdowns Immigration Infrastructure Social Space Impeachments | \n\n|  | This article is part of Donald Trump a series about | \n\n**Donald John Trump** (born June 14, 1946) is an American politician, media personality, and businessman who is the 47th president of the United States. A member of the Republican Party, he served as the 45th president from 2017 to 2021."
+                },
+                {
+                  "source_url": "https://en.wikipedia.org/wiki/Donald_Trump",
+                  "heading": "Latin America",
+                  "ord": 106,
+                  "text": "#### Latin America\n\nTrump pursued legally controversial military strikes against alleged drug boats in international waters,<sup>[524]</sup> and ordered a large military buildup in the Caribbean.<sup>[525]</sup> In November 2025, Trump pardoned former Honduran president Juan Orlando Hernández, who had been extradited to the U.S. in 2022 and sentenced to 45 years in prison for drug trafficking. In January 2026, the U.S. captured Venezuelan president Nicolás Maduro in a military raid in Venezuela and took him to New York, where he was charged with drug trafficking.<sup>[526]</sup> Following the raid, the United States de facto controlled Venezuela, including its domestic finances, foreign policy, government appointments, revenues, and oil reserves.<sup>[527]</sup><sup>[528]</sup>"
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 2,
+              "url": "https://en.wikipedia.org/wiki/Second_presidency_of_Donald_Trump",
+              "title": "Second presidency of Donald Trump - Wikipedia",
+              "site_name": "Wikimedia Foundation, Inc.",
+              "domain": "en.wikipedia.org",
+              "published_at": "2024-11-06",
+              "fetched_at": "2026-10-01T22:35:21.001841+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://en.wikipedia.org/wiki/Second_presidency_of_Donald_Trump",
+                  "heading": "Second presidency of Donald Trump",
+                  "ord": 1,
+                  "text": "Donald Trump's second and current tenure as the president of the United States began upon his inauguration as the 47th president on January 20, 2025. Trump, a Republican, previously served as the 45th president from 2017 to 2021. He lost re-election to Democratic nominee Joe Biden in 2020, and then won against Democratic nominee Kamala Harris in 2024. Trump is the second former U.S. president to return to office.<sup>[a]</sup> Alongside Trump's second presidency, the Republican Party also currently holds simple majorities in the House of Representatives and the Senate, thereby attaining an overall federal government trifecta."
+                },
+                {
+                  "source_url": "https://en.wikipedia.org/wiki/Second_presidency_of_Donald_Trump",
+                  "heading": "Argentina",
+                  "ord": 109,
+                  "text": "#### Argentina\n\nOn October 20, the United States and Argentina agreed to a currency swap for up to $20 billion. About President Javier Milei of Argentina and his upcoming October 26 mid-term elections, President Trump said, \"If he loses, we are not going to be generous with Argentina.\"<sup>[318]</sup>"
+                },
+                {
+                  "source_url": "https://en.wikipedia.org/wiki/Second_presidency_of_Donald_Trump",
+                  "heading": "Ukraine",
+                  "ord": 125,
+                  "text": "In September 2025, the Trump administration approved the delivery of the first two packages of weapons to Ukraine from US stockpiles totalling approximately $1 billion, which would be paid for by NATO allies, under the new mechanism called Prioritized Ukraine Requirements List (PURL). The mechanism aims to deliver aid worth up to $10 billion.<sup>[389]</sup> On September 27, 2025, President Zelenskyy announced a $90 billion arms agreement with the United States in works.<sup>[390]</sup>\n\nOn October 22, 2025, the United States imposed sanctions on Russian energy companies Rosneft and Lu"
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 3,
+              "url": "https://nypost.com/tag/donald-trump",
+              "title": "donald trump | Latest News | New York Post",
+              "site_name": "New York Post",
+              "domain": "nypost.com",
+              "published_at": "2026-10-01",
+              "fetched_at": "2026-10-01T22:35:21.112606+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://nypost.com/tag/donald-trump",
+                  "heading": "White House releases behind-the-scenes photos of Chinese President Xi Jinping’s state visit",
+                  "ord": 1,
+                  "text": "### White House releases behind-the-scenes photos of Chinese President Xi Jinping’s state visit\n\nOctober 1, 2026 | 5:49pm\nPresident Trump welcomed the Chinese President to the White House for events on September 23-25, 2026."
+                },
+                {
+                  "source_url": "https://nypost.com/tag/donald-trump",
+                  "heading": "Trump goes off on his three Supreme Court picks, says at least Obama and Biden judges stay loyal",
+                  "ord": 3,
+                  "text": "### Trump goes off on his three Supreme Court picks, says at least Obama and Biden judges stay loyal\n\nOctober 1, 2026 | 4:25pm\nPresident Trump vented about his three nominees to the Supreme Court in a new interview."
+                },
+                {
+                  "source_url": "https://nypost.com/tag/donald-trump",
+                  "heading": "Trump defends his White House renovations, says it was a ‘disgraceful dump’ before changes",
+                  "ord": 8,
+                  "text": "### Trump defends his White House renovations, says it was a ‘disgraceful dump’ before changes\n\nOctober 1, 2026 | 1:45pm\nThe president told Time magazine the White House \"was just a disgraceful dump\" when he started his second term."
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 4,
+              "url": "https://locatetrump.com/schedule",
+              "title": "Trump's Schedule Today - Live Timeline & Movements",
+              "site_name": "LocateTrump",
+              "domain": "locatetrump.com",
+              "published_at": "2026-09-24",
+              "fetched_at": "2026-10-01T22:35:21.001830+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://locatetrump.com/schedule",
+                  "heading": "Today's Confirmed Movements",
+                  "ord": 1,
+                  "text": "## Today's Confirmed Movements\n\nMovement events confirmed so far today (October 1, 2026), listed chronologically in Eastern Time.\n\n| Time (ET) | Venue | City / State | Event Type | Confidence | \n|---|---|---|---|---|\n| 3:00 PM | Dallas | Dallas, Texas | Travel | 92% | \n| 3:30 PM | White House | Washington, D.C. | Official Business | 100% | "
+                },
+                {
+                  "source_url": "https://locatetrump.com/schedule",
+                  "heading": "What time of day does the schedule update?",
+                  "ord": 10,
+                  "text": "## ### What time of day does the schedule update?\n\nThere is no fixed publishing hour. Ingestion jobs check source feeds around the clock, roughly every five minutes, so newly confirmed movements can appear at any time of day or night. The stamp at the top of this page shows when the current version was last generated, in Eastern Time."
+                },
+                {
+                  "source_url": "https://locatetrump.com/schedule",
+                  "heading": "Where can I see where Trump is right now?",
+                  "ord": 12,
+                  "text": "## ### Where can I see where Trump is right now?\n\nThe live map on the LocateTrump home page shows the most recently confirmed location with real-time confidence context. This schedule page is the day-by-day movement view; the home page is the best place to check the current position at a glance.\n\nOpen the live map →\n## Keep Researching\n\nMove from today's timeline into the current position, the deeper archive, and pattern-level views."
+                }
+              ],
+              "cited": false
+            }
+          ],
+          "reads": [
+            {
+              "url": "https://en.wikipedia.org/wiki/Donald_Trump",
+              "title": "Donald Trump - Wikipedia",
+              "site_name": "Wikimedia Foundation, Inc.",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://en.wikipedia.org/wiki/Second_presidency_of_Donald_Trump",
+              "title": "Second presidency of Donald Trump - Wikipedia",
+              "site_name": "Wikimedia Foundation, Inc.",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://locatetrump.com/schedule",
+              "title": "Trump's Schedule Today - Live Timeline & Movements",
+              "site_name": "LocateTrump",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://msn.com/en-us/news/other/donald-trump-mocked-by-critics-after-his-super-intelligence-memo-misspells-united-states-the-jokes-write-themselves/vi-AA2dn3tN",
+              "title": "Donald Trump mocked by critics after his 'super intelligence ...",
+              "site_name": "msn.com",
+              "status": "failed",
+              "reason": "too little readable text"
+            },
+            {
+              "url": "https://natesilver.net/p/nate-silver-2026-midterm-election-polls-model",
+              "title": "2026 Midterm Election Forecast: Senate & House | Silver Bulletin",
+              "site_name": "natesilver.net",
+              "status": "failed",
+              "reason": "not a public address"
+            },
+            {
+              "url": "https://nypost.com/tag/donald-trump",
+              "title": "donald trump | Latest News | New York Post",
+              "site_name": "New York Post",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://rollcall.com/factbase/trump/calendar",
+              "title": "October 2026 - President's Public Schedule | Factba.se - Roll Call",
+              "site_name": "rollcall.com",
+              "status": "failed",
+              "reason": "not a public address"
+            },
+            {
+              "url": "https://rollcall.com/factbase/trump/calendar/map",
+              "title": "Presidential Visits by State | Trump White House Map | Factba.se",
+              "site_name": "rollcall.com",
+              "status": "failed",
+              "reason": "not a public address"
+            }
+          ],
+          "elapsed_ms": 5847.981791994243,
+          "web": {
+            "status": "used",
+            "freshness": "day",
+            "notice": null,
+            "queries": [
+              "current president of the United States October 2026"
+            ],
+            "timings": {
+              "plan": 519.0273330008495,
+              "search": 659.804458002327,
+              "fetch": 2027.04470900062,
+              "rank": 9.036165996803902
+            },
+            "source_count": 4,
+            "plan_fallback": false,
+            "providers": [
+              "SearXNG"
+            ],
+            "ranking": "keyword"
+          }
+        }
+      ]
+    },
+    {
+      "id": "jake-charlotte",
+      "passed": true,
+      "required_facts": true,
+      "search_decisions_match": true,
+      "freshness_matches": true,
+      "query_scope_matches": true,
+      "injection_exercised": null,
+      "forbidden": [],
+      "citations": 5,
+      "turns": [
+        {
+          "question": "What are the best resturants in charlotte NC",
+          "message": {
+            "id": "d81066ba136f4d389efaddcb0e8a64f6",
+            "chat_id": "a63742f9e88c42f48efb98b3a3e31990",
+            "parent_id": "e44ebce931824f54b279db7ebb0d9e84",
+            "role": "assistant",
+            "content": "Based on the provided search results, here are some of the best restaurants in Charlotte, NC as of late 2026:\n\n*   **L’Ostrica:** A highly regarded, small restaurant known for its precise and personal cooking. It offers a six-course tasting menu that changes with the seasons, and also provides à la carte options and a unique Sunday Supper experience [4].\n*   **Maiz Agua Sal:** Praised for its vibrant and flavorful Mexican cuisine, particularly its trio of salsas. It's noted for making traditional ingredients accessible and enjoyable in a casual setting [2].\n*   **Spaghett:** An Italian restaurant in Uptown’s Fourth Ward, known for its historic setting, spirited ambiance, and handmade pastas. It offers a three-course prix fixe menu at $60 [1].\n*   **Shake Shack Blakeney:** A popular spot for a quick, satisfying meal with a variety of burgers, fries, and a standout Korean BBQ Burger & Fries. It features a casual atmosphere and outdoor seating [2].\n*   **Curry Gate 2:** A moderately priced restaurant offering both Indian standards (like Butter Chicken and Chicken Biryani) and distinctive Nepali cooking, particularly noted for its Vegetable Momos [5].\n*   **Prime Fish Cellar:** Mentioned as a destination seafood spot and one of the new restaurants in Charlotte [1].\n*   **Birch Restaurant:** Highlighted in a local dining guide as one of the city's defining dining experiences [3].\n\nThe results also note that Charlotte has earned its first Michelin star in 2025 and has produced James Beard Award semifinalists in 2024, 2025, and 2026, although no Charlotte restaurant has yet won a James Beard Award [3]. The city's food scene is recognized for its Southern roots, international kitchens, craft beer, and fine dining [3].",
+            "reasoning": null,
+            "status": "complete",
+            "error": null,
+            "model": {
+              "connection_id": "1885319fc76446d28413b08ca59a03ef",
+              "model_id": "qwen3:30b-a3b-instruct-2507-q4_K_M",
+              "display_name": "qwen3:30b-a3b-instruct-2507-q4_K_M"
+            },
+            "attachments": [],
+            "stats": {
+              "reasoning_ms": null,
+              "ttft_ms": 9935.284667000815,
+              "total_ms": 14782.595332995697,
+              "prompt_tokens": 2521,
+              "completion_tokens": 403,
+              "tokens_per_sec": 83.09992838559522,
+              "tokens_estimated": false,
+              "load_ms": 5.743583,
+              "finish_reason": "stop",
+              "context_length": 16384,
+              "dropped_message_count": 0,
+              "params": {}
+            },
+            "web": {
+              "status": "used",
+              "freshness": "month",
+              "notice": null,
+              "queries": [
+                "best restaurants in Charlotte NC 2026",
+                "top-rated dining in Charlotte North Carolina this year",
+                "Charlotte NC restaurants with highest ratings on Yelp and Google"
+              ],
+              "timings": {
+                "plan": 763.1238750036573,
+                "search": 846.4908750029281,
+                "fetch": 6366.252457999508,
+                "rank": 6.742208999639843
+              },
+              "source_count": 6,
+              "plan_fallback": false,
+              "providers": [
+                "SearXNG"
+              ],
+              "ranking": "keyword"
+            },
+            "created_at": "2026-10-01T22:35:25.669214+00:00"
+          },
+          "sources": [
+            {
+              "n": 1,
+              "url": "https://carolinas.eater.com/maps/best-new-restaurants-charlotte",
+              "title": "17 Best New Restaurants in Charlotte Right Now",
+              "site_name": "Eater Carolinas",
+              "domain": "carolinas.eater.com",
+              "published_at": "2020-03-05",
+              "fetched_at": "2026-10-01T22:35:27.282187+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://carolinas.eater.com/maps/best-new-restaurants-charlotte",
+                  "heading": "17 Best New Restaurants in Charlotte Right Now",
+                  "ord": 1,
+                  "text": "# 17 Best New Restaurants in Charlotte Right Now\n\nCharlotte heats up with a destination seafood spot, sushi cellar, and an instant-hit neighborhood wine bar\n\n*New to the list: Seaboy, Emmy Lou’s, DŌZO, Prime Fish Cellar, and the Story of Mi Cariño. Locations are listed geographically from north to south.*\n\n# 17 Best New Restaurants in Charlotte Right Now\n\nCharlotte heats up with a destination seafood spot, sushi cellar, and an instant-hit neighborhood wine bar\n\nMore often than not, tipsters, readers, friends, and family of Eater ask: Where should I eat right now? What’s new? Have you been yet? While the Eater 18 covers the Queen City’s old standbys and essentials, it is not a chronicle of the “it” places of the moment. Enter this Eater Heatmap, which highlights new spots under a year old and has crowds flocking and people talking. Try one of these today."
+                },
+                {
+                  "source_url": "https://carolinas.eater.com/maps/best-new-restaurants-charlotte",
+                  "heading": "Eso Artisanal Pasta",
+                  "ord": 9,
+                  "text": "- Get there with Lyft\n- 1115 North Brevard Street, STE D, Charlotte, North Carolina 28206, United States\n- (980) 517-0230\n- Visit Website"
+                },
+                {
+                  "source_url": "https://carolinas.eater.com/maps/best-new-restaurants-charlotte",
+                  "heading": "Spaghett",
+                  "ord": 10,
+                  "text": "## Spaghett\n\nMixologist Amanda Britton and chef Kendall Moore are the dynamic duo running Spaghett, an Italian restaurant in Uptown’s Fourth Ward. Setting up in a historic 19th-century home, the spirited ambiance and decor are standouts — think moss green walls adorned with Campari art from local North Carolina artists. While a cozier front dining room with an ornate fireplace feels perfect for intimate, private conversations, a neon-lit dining area toward the back feels right for convivial, louder conversations. Ask the server what is the freshest that day — be it a crisp salad of hyper-local produce, or one of Moore’s delightful, satisfying handmade pastas cooked perfectly al dente. A three-course prix fixe menu is an excellent value at $60.\n\n- Get there with Lyft\n- 224 West 10th Street, Charlotte, North Carolina 28202, United States\n- +19802021088\n- Visit Website"
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 2,
+              "url": "https://restaurantobserver.com/restaurants-in-charlotte-nc",
+              "title": "7 Best Restaurants in Charlotte, NC [2026 Updated] - Restaurant Observer",
+              "site_name": "Birch Restaurant | Local Restaurants to Eat",
+              "domain": "restaurantobserver.com",
+              "published_at": "2026-09-27",
+              "fetched_at": "2026-10-01T22:35:27.424378+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://restaurantobserver.com/restaurants-in-charlotte-nc",
+                  "heading": "",
+                  "ord": 0,
+                  "text": "Charlotte is a city that knows how to serve up flavor, and nowhere is that more evident than in its top restaurants. From bold bites to comforting classics, these spots deliver the best of what’s on the menu. Here are the 7 best places to experience Charlotte’s vibrant food scene."
+                },
+                {
+                  "source_url": "https://restaurantobserver.com/restaurants-in-charlotte-nc",
+                  "heading": "Maiz Agua Sal",
+                  "ord": 4,
+                  "text": "## Maiz Agua Sal\n\n$$ | (704) 910-6010 | WEBSITE\n\nThe average price for a meal at Maiz Agua Sal is around $18, which feels just right for the kind of vibrant, flavorful experience you’re getting. We know this because it’s physically impossible to take a bite of the trio of salsas without developing an intense curiosity for the source of the bold, smoky flavors you’re consuming. Except this merry expedition down a flavor hole is driven on by an infatuation for a naughty and tender little mouthful of food.\n\nHighly-addictive yet gloriously simple, Maiz Agua Sal have effectively looked at traditional Mexican ingredients and thought ‘how do we make them socially acceptable to serve in a casual, welcoming dining room’. The answer? Present them with care and confidence. We salute them."
+                },
+                {
+                  "source_url": "https://restaurantobserver.com/restaurants-in-charlotte-nc",
+                  "heading": "Shake Shack Blakeney",
+                  "ord": 7,
+                  "text": "## Shake Shack Blakeney\n\n$ | (980) 221-1821 | WEBSITE\n\nFamilies seeking a quick yet satisfying meal in Charlotte will find a reliable spot at Shake Shack Blakeney. The menu offers a variety of burgers, fries, and Korean chicken sandwiches, with the Korean BBQ Burger & Fries standing out as a must-try. While the ordering is done via a self-serve kiosk, the staff—led by a friendly server named Daniel—still manages to provide fast and attentive service, often explaining the menu with a smile.\n\nThe atmosphere is casual and welcoming, with outdoor seating that makes it ideal for a relaxed lunch or dinner. A nearby play area adds to its appeal for parents looking for a place where kids can burn off some energy while they eat. It’s not a fine dining experience, but for a quick bite with a side of convenience, it hits all the right notes."
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 3,
+              "url": "https://cltdaily.com/best-restaurants-in-charlotte",
+              "title": "Best Restaurants in Charlotte, NC: The Local Dining Guide",
+              "site_name": "CLT Daily",
+              "domain": "cltdaily.com",
+              "published_at": "2026-10-01",
+              "fetched_at": "2026-10-01T22:35:27.449272+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://cltdaily.com/best-restaurants-in-charlotte",
+                  "heading": "The Essentials: Charlotte’s Best Restaurants",
+                  "ord": 4,
+                  "text": "## The Essentials: Charlotte’s Best Restaurants\n\nIf you only work through one list on this page, make it this one. These are the best restaurants in Charlotte, NC in our book — the rooms that define how this city eats, from a Michelin-starred tasting counter to a Vietnamese institution where regulars get remembered by their order."
+                },
+                {
+                  "source_url": "https://cltdaily.com/best-restaurants-in-charlotte",
+                  "heading": "Michelin Star Restaurants in Charlotte",
+                  "ord": 21,
+                  "text": "The 2026 selection is announced **October 21, 2026** in Nashville. We’ll update this section the same day.\n\n**And one correction worth making:** Charlotte has produced James Beard Award semifinalists in 2024, 2025 and 2026, and a finalist in 2023 — but the city has never produced a winner. If you see a Charlotte restaurant described as “James Beard Award-winning,” it’s wrong.\n\n**Worth knowing:** North Carolina tourism offices paid Michelin $345,000 to have the state included in the guide, and the Charlotte Regional Visitors Authority separately spent $1.2 million — plus $2.5 million in state film incentives — to bring *Top Chef* to Charlotte and Greenville.\n\nThat’s not a scandal. It’s how destination marketing works, and cities do it everywhere. But Charlotte’s arrival on the national food map was partly purchased, and you should know that when you read any list. Including this one."
+                },
+                {
+                  "source_url": "https://cltdaily.com/best-restaurants-in-charlotte",
+                  "heading": "What food is Charlotte, NC known for?",
+                  "ord": 75,
+                  "text": "## What food is Charlotte, NC known for?\n\nSouthern cooking is the backbone — fried chicken, shrimp and grits, and Carolina barbecue (Midwood Smokehouse is the standard-bearer), plus regional oddities like livermush. But modern Charlotte is just as much about its international kitchens along Central Avenue and South Boulevard, a craft-brewery scene in the dozens, and a fine-dining class that earned the city its first Michelin star in 2025."
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 4,
+              "url": "https://theadventuristmagazine.com/city-guides/the-south/north-carolina/best-charlotte-restaurants",
+              "title": "The Best Restaurants in Charlotte’s Thriving Dining Scene",
+              "site_name": "The Adventurist Magazine",
+              "domain": "theadventuristmagazine.com",
+              "published_at": "2026-01-01",
+              "fetched_at": "2026-10-01T22:35:27.282215+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://theadventuristmagazine.com/city-guides/the-south/north-carolina/best-charlotte-restaurants",
+                  "heading": "CITY GUIDES | NORTH CAROLINA",
+                  "ord": 1,
+                  "text": "#### CITY GUIDES | NORTH CAROLINA"
+                },
+                {
+                  "source_url": "https://theadventuristmagazine.com/city-guides/the-south/north-carolina/best-charlotte-restaurants",
+                  "heading": "By Eric Barton",
+                  "ord": 5,
+                  "text": "Three decades later, Charlotte knows what to do after five. Uptown stays busy after dark, while NoDa, Plaza Midwood, Elizabeth, and Dilworth have all developed their own gravitational pull. The best restaurants in Charlotte are scattered among them: a six-seat omakase counter, tasting menus built around Radiohead, naturally leavened pizza, and scallop crudo at a neighborhood wine bar.\n\nThe restaurant scene finally feels proportional to the city around it. Charlotte still shows off its ambition in steel and glass. These days, it also serves it for dinner.\n\nThese are the best restaurants in Charlotte right now."
+                },
+                {
+                  "source_url": "https://theadventuristmagazine.com/city-guides/the-south/north-carolina/best-charlotte-restaurants",
+                  "heading": "$$$$$ | MAP | WEBSITE | INSTAGRAM",
+                  "ord": 25,
+                  "text": "#### $$$$$ | MAP | WEBSITE | INSTAGRAM\n\nEric Ferguson and Cat Carter built L’Ostrica around the kind of precise, personal cooking that makes a small restaurant feel like a destination. The six-course tasting menu changes with the seasons, but the restaurant now also offers à la carte dining on Wednesdays and Thursdays, plus à la carte options at the bar and on the patio on Fridays and Saturdays. Sunday Supper remains its own single-seating experience, giving regulars another way into one of Charlotte’s most thoughtful restaurants.\n\n**Best for:** A small, serious dinner with people who care about food"
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 5,
+              "url": "https://topofcharlotte.com/top-rated",
+              "title": "The 49 Best Restaurants in Charlotte (2026) · Top of Charlotte",
+              "site_name": "Top Rated Network LLC",
+              "domain": "topofcharlotte.com",
+              "published_at": "2026-10-01",
+              "fetched_at": "2026-10-01T22:35:27.282204+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://topofcharlotte.com/top-rated",
+                  "heading": "Curry Gate 2",
+                  "ord": 0,
+                  "text": "### Curry Gate 2\n\n**8.1**\n\nCharlotte's Indian restaurant count has grown alongside the city's South Asian professional community, and Curry Gate 2 sits in that everyday tier: a moderately priced room that covers both Indian standards and Nepali cooking, which is still a short list in the 704.\n\nWhat to orderButter ChickenChicken BiryaniVegetable Momos Call Directions\n## Read the full review & visiting detailsFull review & visiting details"
+                },
+                {
+                  "source_url": "https://topofcharlotte.com/top-rated",
+                  "heading": "Indian and Nepali Cooking, Honest Prices",
+                  "ord": 1,
+                  "text": "#### Indian and Nepali Cooking, Honest Prices\n\n**Butter Chicken**\n\nThe kitchen's rich tomato-cream curry, milder than the tikka masala and best for those easing into the menu.\n\n**Chicken Biryani**\n\nBiryani arrives in generous portions, the rice volume a recurring note among regulars who order delivery.\n\n**Vegetable Momos**\n\nSteamed dumplings that signal the Nepali side of a menu that stretches well beyond standard Indian fare."
+                },
+                {
+                  "source_url": "https://topofcharlotte.com/top-rated",
+                  "heading": "Indian and Nepali Cooking, Honest Prices",
+                  "ord": 2,
+                  "text": "Charlotte's Indian restaurant count has grown alongside the city's South Asian professional community, and Curry Gate 2 sits in that everyday tier: a moderately priced room that covers both Indian standards and Nepali cooking, which is still a short list in the 704. The Nepali side of the menu is the more distinctive half. Vegetable momos turn up as a signature, and the kitchen's reach into that tradition gives the place a different profile than a straight-subcontinental curry house. The Indian anchor dishes, butter chicken and chicken biryani, are the volume workhorses. The biryani arrives in generous portions; rice quantity is not a complaint anyone has made here."
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 6,
+              "url": "https://tripadvisor.ca/Restaurants-g49022-Charlotte_North_Carolina.html",
+              "title": "THE 10 BEST Restaurants in Charlotte Updated October 2026",
+              "site_name": "Tripadvisor",
+              "domain": "tripadvisor.ca",
+              "published_at": "2026-01-01",
+              "fetched_at": "2026-10-01T22:35:28.157852+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://tripadvisor.ca/Restaurants-g49022-Charlotte_North_Carolina.html",
+                  "heading": "",
+                  "ord": 0,
+                  "text": "This is the version of our website addressed to speakers of English in Canada. If you are a resident of another country or region, please select the appropriate version of Tripadvisor for your country or region in the drop-down menu.\n\nTripadvisor   LLC makes no guarantees for availability of prices advertised on our sites and applications. Listed prices may require a stay of a particular length or have blackout dates, qualifications or other applicable restrictions. Tripadvisor   LLC is not responsible for any content on external web sites that are not owned or operated by Tripadvisor  .\n\nTripadvisor LLC is not a booking agent or tour operator. When you book with one of our partners, please be sure to check their site for a full disclosure of all applicable fees."
+                }
+              ],
+              "cited": false
+            }
+          ],
+          "reads": [
+            {
+              "url": "https://carolinas.eater.com/maps/best-new-restaurants-charlotte",
+              "title": "17 Best New Restaurants in Charlotte Right Now",
+              "site_name": "Eater Carolinas",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://charlotteobserver.com/charlottefive/c5-food-drink/article317282310.html",
+              "title": "Charlotte restaurants top OpenTable’s most-booked list ...",
+              "site_name": "charlotteobserver.com",
+              "status": "failed",
+              "reason": "timeout"
+            },
+            {
+              "url": "https://cltdaily.com/best-restaurants-in-charlotte",
+              "title": "Best Restaurants in Charlotte, NC: The Local Dining Guide",
+              "site_name": "CLT Daily",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://opentable.com/metro/charlotte-restaurants",
+              "title": "The best restaurants in Charlotte | (Updated 2026) - OpenTable",
+              "site_name": "opentable.com",
+              "status": "failed",
+              "reason": "timeout"
+            },
+            {
+              "url": "https://restaurantobserver.com/restaurants-in-charlotte-nc",
+              "title": "7 Best Restaurants in Charlotte, NC [2026 Updated] - Restaurant Observer",
+              "site_name": "Birch Restaurant | Local Restaurants to Eat",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://theadventuristmagazine.com/city-guides/the-south/north-carolina/best-charlotte-restaurants",
+              "title": "The Best Restaurants in Charlotte’s Thriving Dining Scene",
+              "site_name": "The Adventurist Magazine",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://topofcharlotte.com/top-rated",
+              "title": "The 49 Best Restaurants in Charlotte (2026) · Top of Charlotte",
+              "site_name": "Top Rated Network LLC",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://tripadvisor.ca/Restaurants-g49022-Charlotte_North_Carolina.html",
+              "title": "THE 10 BEST Restaurants in Charlotte Updated October 2026",
+              "site_name": "Tripadvisor",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://yelp.com/search?cflt=restaurants&find_loc=Charlotte%2C+NC+28271",
+              "title": "THE BEST 10 RESTAURANTS NEAR CHARLOTTE, NC 28271 - Yelp",
+              "site_name": "yelp.com",
+              "status": "failed",
+              "reason": "HTTP 403"
+            },
+            {
+              "url": "https://yelp.com/search?find_desc=Restaurants&find_loc=Charlotte%2C+NC+28202",
+              "title": "TOP 10 BEST Restaurants near Charlotte, NC 28202 - Yelp",
+              "site_name": "yelp.com",
+              "status": "failed",
+              "reason": "HTTP 403"
+            }
+          ],
+          "elapsed_ms": 14796.638167004858,
+          "web": {
+            "status": "used",
+            "freshness": "month",
+            "notice": null,
+            "queries": [
+              "best restaurants in Charlotte NC 2026",
+              "top-rated dining in Charlotte North Carolina this year",
+              "Charlotte NC restaurants with highest ratings on Yelp and Google"
+            ],
+            "timings": {
+              "plan": 763.1238750036573,
+              "search": 846.4908750029281,
+              "fetch": 6366.252457999508,
+              "rank": 6.742208999639843
+            },
+            "source_count": 6,
+            "plan_fallback": false,
+            "providers": [
+              "SearXNG"
+            ],
+            "ranking": "keyword"
+          }
+        }
+      ]
+    },
+    {
+      "id": "jake-raleigh",
+      "passed": true,
+      "required_facts": true,
+      "search_decisions_match": true,
+      "freshness_matches": true,
+      "query_scope_matches": true,
+      "injection_exercised": null,
+      "forbidden": [],
+      "citations": 1,
+      "turns": [
+        {
+          "question": "Tell me the temperature currently in Ralleigh",
+          "message": {
+            "id": "f7ca980b10744425b38acb1deb69c6e7",
+            "chat_id": "6b5e903fd564449e8e182602d5f87b67",
+            "parent_id": "172d3d05b6e7440fb0610bc08e011d65",
+            "role": "assistant",
+            "content": "The current temperature in Raleigh is 80°F, as reported at 6:31 PM EDT on October 1, 2026 [4].",
+            "reasoning": null,
+            "status": "complete",
+            "error": null,
+            "model": {
+              "connection_id": "1885319fc76446d28413b08ca59a03ef",
+              "model_id": "qwen3:30b-a3b-instruct-2507-q4_K_M",
+              "display_name": "qwen3:30b-a3b-instruct-2507-q4_K_M"
+            },
+            "attachments": [],
+            "stats": {
+              "reasoning_ms": null,
+              "ttft_ms": 3712.4261249991832,
+              "total_ms": 4110.749041996314,
+              "prompt_tokens": 2139,
+              "completion_tokens": 35,
+              "tokens_per_sec": 88.04411261596667,
+              "tokens_estimated": false,
+              "load_ms": 6.4355,
+              "finish_reason": "stop",
+              "context_length": 16384,
+              "dropped_message_count": 0,
+              "params": {}
+            },
+            "web": {
+              "status": "used",
+              "freshness": "day",
+              "notice": null,
+              "queries": [
+                "current temperature Raleigh NC"
+              ],
+              "timings": {
+                "plan": 445.20170799660264,
+                "search": 740.9057499971823,
+                "fetch": 807.2906669985969,
+                "rank": 2.0050000021001324
+              },
+              "source_count": 6,
+              "plan_fallback": false,
+              "providers": [
+                "SearXNG"
+              ],
+              "ranking": "keyword"
+            },
+            "created_at": "2026-10-01T22:35:40.469734+00:00"
+          },
+          "sources": [
+            {
+              "n": 1,
+              "url": "https://abc11.com/weather",
+              "title": "First Alert Weather | Raleigh, Durham, Fayetteville, NC Weather Forecast, Doppler Radar, Conditions in North Carolina Today",
+              "site_name": "ABC11 Raleigh-Durham",
+              "domain": "abc11.com",
+              "published_at": "2024-03-09",
+              "fetched_at": "2026-10-01T22:35:41.659695+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://abc11.com/weather",
+                  "heading": "AccuWeather",
+                  "ord": 0,
+                  "text": "# AccuWeather\n\nDownload the ABC11 North Carolina streaming app\n\nThe new ABC11 streaming app gives you complete access to Raleigh-Durham-Fayetteville news and your favorite ABC11 Eyewitness News content.\n\nACCUWEATHER FORECAST\n\n There will be cooler temperatures this weekend and a chance of rain.MORE\n\nWeather Maps\n\nCentral NC First Alert Doppler Radar\n\n Weather News\n\n Follow Us\n\nDownload the ABC11 North Carolina streaming app\n\n Weather Team"
+                }
+              ],
+              "cited": false
+            },
+            {
+              "n": 2,
+              "url": "https://foxweather.com/local-weather/north-carolina/raleigh",
+              "title": "Raleigh, NC Weather Forecast | Local Weather Updates for North Carolina by FOX Weather",
+              "site_name": "FOX Weather",
+              "domain": "foxweather.com",
+              "published_at": "2026-10-01",
+              "fetched_at": "2026-10-01T22:35:41.659776+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://foxweather.com/local-weather/north-carolina/raleigh",
+                  "heading": "Raleigh, NC",
+                  "ord": 0,
+                  "text": "## Raleigh, NC\n\nSee Radar\n# Current Weather Forecast for Raleigh\n\nNC 27602 | 6:34pm"
+                },
+                {
+                  "source_url": "https://foxweather.com/local-weather/north-carolina/raleigh",
+                  "heading": "Local Weather Radar - Raleigh, NC",
+                  "ord": 5,
+                  "text": "## Local Weather Radar - Raleigh, NC\n\nLive Raleigh Local Radar Forecast by FOX Weather"
+                },
+                {
+                  "source_url": "https://foxweather.com/local-weather/north-carolina/raleigh",
+                  "heading": "Next 12 Hours Forecast in Raleigh",
+                  "ord": 6,
+                  "text": "## Next 12 Hours Forecast in Raleigh"
+                }
+              ],
+              "cited": false
+            },
+            {
+              "n": 3,
+              "url": "https://wral.com/weather",
+              "title": "WRAL Weather | Raleigh weather this week",
+              "site_name": "WRAL News",
+              "domain": "wral.com",
+              "published_at": "2026-06-17",
+              "fetched_at": "2026-10-01T22:35:41.659742+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://wral.com/weather",
+                  "heading": "",
+                  "ord": 0,
+                  "text": "WRAL Weather, Raleigh NC forecast, radar, alerts and almanac\nWeather\nHourly\n7 Day\nWeekend\nMap Center\nWeather Alerts\nHurricanes\nClosings\nAlmanac\nWebcams\nResources\nLive DUALDoppler5000\nWRAL WeatherCenter Forecast\nOther WRAL Top Stories\nMap Center\nWeekend cold front brings a good chance for rain\nTracking the tropics: Will Fay develop again\nAsk the Meteorologist: How warm was September, and when do we cool off?\nTwo years since Helene: The 'predecessor rain event' that made the storm even more devastating\nHow Starlink satellites could become a barometer for Earth’s upper atmosphere\nAsk the Meteorologist: How long does the cooler air stick around?\nAsk the Meteorologist: What this week's nor'easter means for North Carolina's coast\nAsk the Meteorologist: What is the unique pattern causing this week's big cooldown?\nView more top stories"
+                }
+              ],
+              "cited": false
+            },
+            {
+              "n": 4,
+              "url": "https://wunderground.com/weather/us/nc/raleigh",
+              "title": "Raleigh, NC",
+              "site_name": "wunderground.com",
+              "domain": "wunderground.com",
+              "published_at": "2026-10-01",
+              "fetched_at": "2026-10-01T22:35:41.949465+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://wunderground.com/weather/us/nc/raleigh",
+                  "heading": "",
+                  "ord": 0,
+                  "text": "Help shape the future of Weather Underground. Join our Discord!\n          You are currently viewing the new Weather Underground website. To go back to the old site, .\n\n    Updated: **6:31 PM EDT on October 1, 2026 (GMT -4)**\n\n      4 minutes ago\n\n    89°\n\n                62°\n\n              80\n\n              Feels Like 80\n\n            Sunny\n\n              N\n\n                  4\n\n          Similar temperature is expected tomorrow\n\n        Loading nearby stations…\n\n            Radar\n            ·\n            Now\n\n          Hyper-local data from Weather Underground's network of \n\n400,000+ personal weather stations worldwide\n\n                400,000+ personal weather stations worldwide\n\nTonight\n\n      Low 62°f\n\n          Mostly clear. Low 62F. Winds light and variable.\n\n      Tomorrow\n\n      High 90°f"
+                },
+                {
+                  "source_url": "https://wunderground.com/weather/us/nc/raleigh",
+                  "heading": "",
+                  "ord": 1,
+                  "text": "          Sunshine along with some cloudy intervals. Hot. High around 90F. Winds SW at 5 to 10 mph.\n\n      Tomorrow night\n\n      Low 69°f\n\n          Partly cloudy skies early will give way to occasional showers later during the night. Low 69F. Winds light and variable. Chance of rain 50%.\n\n      Hourly Forecast\n\n        Now\n\n        83°\n\n      6:58PM\n\n        Sunset\n\n      7PM\n\n        80°\n\n      8PM\n\n        76°\n\n      9PM\n\n        73°\n\n      10PM\n\n        71°\n\n      11PM\n\n        70°\n\n      12AM\n\n        68°\n\n      1AM\n\n        67°\n\n      2AM\n\n        66°\n\n      3AM\n\n        65°\n\n      4AM\n\n        64°\n\n      5AM\n\n        6AM\n\n        63°\n\n      7AM\n\n        7:10AM\n\n        Sunrise\n\n      8AM\n\n        9AM\n\n        10AM\n\n        11AM\n\n        78°\n\n      12PM\n\n        82°\n\n      1PM\n\n        85°\n\n      2PM\n\n        87°\n\n      3PM\n\n        4PM\n\n        5PM\n\n        88°\n\n      6PM"
+                },
+                {
+                  "source_url": "https://wunderground.com/weather/us/nc/raleigh",
+                  "heading": "",
+                  "ord": 2,
+                  "text": "        Additional Conditions\n\n          1. Pressure **30.07** in\n2. Visibility **10** miles\n3. Clouds **Partly Cloudy**\n4. Dew Point**57** °F\n5. Humidity **42** %\n6. Rainfall **0** in\n7. Snow Depth **0** in\n\nAlmanac for October 1, 2026\n\n        1. Forecast Average Record\n2. Temperature\n3. High **89** °F**78** °F**90** °F 1954\n4. Low **62** °F**57** °F**39** °F 1993\n5. Rain/Snow Depth\n6. Precipitation **0** in**2.9** in -\n7. Snow **0** in**-** in -\n\nAlmanac for October 2, 2026\n\n        1. Forecast Average Record\n2. Temperature\n3. High **90** °F**77** °F**93** °F\n4. Low **62** °F**57** °F**37** °F\n\nAstronomy\n\n        1. Sun Rise Set\n2. Actual Time **7:09** AM**6:58** PM\n3. Civil Twilight **6:44** AM**7:23** PM\n4. Nautical Twilight **6:14** AM**7:53** PM\n5. Astronomical Twilight **5:44** AM**8:22** PM"
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 5,
+              "url": "https://wral.com/",
+              "title": "WRAL | News and Weather in Raleigh NC",
+              "site_name": "WRAL News",
+              "domain": "wral.com",
+              "published_at": "2026-10-01",
+              "fetched_at": "2026-10-01T22:35:41.781288+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://wral.com/",
+                  "heading": "After murders of Zoe Welsh, Iryna Zarutska, NC lawmakers face questions over mental health funding",
+                  "ord": 0,
+                  "text": "## After murders of Zoe Welsh, Iryna Zarutska, NC lawmakers face questions over mental health funding\n\nSen. Danny Britt, who helped craft Iryna’s Law, said North Carolina has not provided enough funding for the criminal justice and mental health reforms to work as intended."
+                },
+                {
+                  "source_url": "https://wral.com/",
+                  "heading": "Video Central",
+                  "ord": 1,
+                  "text": "## Video Central\n\n- \n\t\t\t\t\t\t## NC Market Watch\n- \n\t\t\t\t\t\t## Lottery"
+                }
+              ],
+              "cited": false
+            },
+            {
+              "n": 6,
+              "url": "https://wunderground.com/hourly/us/nc/raleigh",
+              "title": "Raleigh, NC Hourly Weather Forecaststar_ratehome",
+              "site_name": "wunderground.com",
+              "domain": "wunderground.com",
+              "published_at": "2026-10-01",
+              "fetched_at": "2026-10-01T22:35:41.659727+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://wunderground.com/hourly/us/nc/raleigh",
+                  "heading": "",
+                  "ord": 0,
+                  "text": "Hourly Forecast for Today, Thursday 10/01Hourly for Today, Thu 10/01\n\nTonight 10/01\n\nGenerally clear skies. Low 62F. Winds light and variable.\n\nTomorrow     10/02 \n\nA few clouds early, otherwise mostly sunny. Hot. High around 90F. Winds SW at 5 to 10 mph.\n\nSun\n\n7:10AM\n\n7:00PM\n\nMoon\n\n10:15PM\n\n12:47PM\n\n**Waning Gibbous, 72**% visible\n\nAdditional Conditions\n\nPressure\n\nVisibility\n\nClouds\n\nPartly Cloudy\n\nDew Point\n\nHumidity\n\nRainfall\n\nSnow Depth\n\nAstronomy\n\nSun\n\nRise\n\nSet\n\nActual Time\n\n7:10 AM \n\n7:00 PM\n\n Civil Twilight \n\n6:45 AM\n\n7:25 PM\n\n Nautical Twilight \n\n6:15 AM\n\n7:55 PM\n\n Astronomical Twilight \n\n5:45 AM\n\n8:25 PM\n\n Length of Visible Light \n\n12 h 40 m \n\n Length of Day \n\n11 h 49 m \n\n Tomorrow will be 2 minutes 14 seconds shorter \n\nMoon\n\n10:15 PM\n\n12:47 PM\n\nwaning gibbous\n\n72% of the Moon is Illuminated Oct 3\n\nWaning Half Last Qtr\n\nOct 10\n\nNew Moon\n\nOct 18\n\nWaxing Half First Qtr\n\nOct 26"
+                },
+                {
+                  "source_url": "https://wunderground.com/hourly/us/nc/raleigh",
+                  "heading": "",
+                  "ord": 1,
+                  "text": "Full Moon"
+                }
+              ],
+              "cited": false
+            }
+          ],
+          "reads": [
+            {
+              "url": "https://abc11.com/weather",
+              "title": "First Alert Weather | Raleigh, Durham, Fayetteville, NC Weather Forecast, Doppler Radar, Conditions in North Carolina Today",
+              "site_name": "ABC11 Raleigh-Durham",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://cbs17.com/weather",
+              "title": "Raleigh Weather | 7 Day & Hourly Forecast | WNCN CBS17.com",
+              "site_name": "cbs17.com",
+              "status": "failed",
+              "reason": "HTTP 403"
+            },
+            {
+              "url": "https://foxweather.com/local-weather/north-carolina/raleigh",
+              "title": "Raleigh, NC Weather Forecast | Local Weather Updates for North Carolina by FOX Weather",
+              "site_name": "FOX Weather",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://theweathernetwork.com/en/city/us/north-carolina/raleigh/current",
+              "title": "Raleigh, NC Current Weather - The Weather Network",
+              "site_name": "The Weather Network",
+              "status": "unused",
+              "reason": null
+            },
+            {
+              "url": "https://wral.com/",
+              "title": "WRAL | News and Weather in Raleigh NC",
+              "site_name": "WRAL News",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://wral.com/weather",
+              "title": "WRAL Weather | Raleigh weather this week",
+              "site_name": "WRAL News",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://wunderground.com/hourly/us/nc/raleigh",
+              "title": "Raleigh, NC Hourly Weather Forecaststar_ratehome",
+              "site_name": "wunderground.com",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://wunderground.com/weather/us/nc/raleigh",
+              "title": "Raleigh, NC",
+              "site_name": "wunderground.com",
+              "status": "used",
+              "reason": null
+            }
+          ],
+          "elapsed_ms": 4125.176291003299,
+          "web": {
+            "status": "used",
+            "freshness": "day",
+            "notice": null,
+            "queries": [
+              "current temperature Raleigh NC"
+            ],
+            "timings": {
+              "plan": 445.20170799660264,
+              "search": 740.9057499971823,
+              "fetch": 807.2906669985969,
+              "rank": 2.0050000021001324
+            },
+            "source_count": 6,
+            "plan_fallback": false,
+            "providers": [
+              "SearXNG"
+            ],
+            "ranking": "keyword"
+          }
+        }
+      ]
+    },
+    {
+      "id": "jake-burger",
+      "passed": true,
+      "required_facts": true,
+      "search_decisions_match": true,
+      "freshness_matches": true,
+      "query_scope_matches": true,
+      "injection_exercised": null,
+      "forbidden": [],
+      "citations": 5,
+      "turns": [
+        {
+          "question": "What is the best cut of meat for a burger?",
+          "message": {
+            "id": "54958fe27b5d4952b2f95a95b37cfeab",
+            "chat_id": "f5b00b7d92e74346aeeae2892854f2fc",
+            "parent_id": "ec6fc57dcd49472596e0f41c0abb2873",
+            "role": "assistant",
+            "content": "The best cut of meat for a burger is generally considered to be **ground chuck**, primarily because of its optimal balance of fat and flavor. Ground chuck typically has a fat content of around 20% (80% lean), which provides the juiciness and rich, buttery beef flavor that many associate with a classic, satisfying burger [2][3]. This higher fat content helps prevent the patty from drying out during cooking and enhances overall flavor [3].\n\nWhile other cuts like **ground brisket** (with 30% fat) can add deep flavor and richness, they are often used in blends rather than alone due to their coarser texture and very high fat content [1]. **Ground sirloin** is leaner (around 10% fat, 90% lean) and produces a firmer, less juicy patty, which some prefer for a healthier, lower-calorie option, but it lacks the juiciness and classic burger flavor [2][5].\n\nBlending different cuts, such as chuck with brisket or even incorporating less common cuts like short rib or flap meat, can create a more complex flavor and improved texture, as the fat from marbled cuts like chuck and brisket blends with the lean, savory meat from others [1][4]. However, for most people seeking a traditional, juicy, flavorful burger, **ground chuck** is the top choice due to its ideal fat-to-lean ratio and widespread availability [2][3].",
+            "reasoning": null,
+            "status": "complete",
+            "error": null,
+            "model": {
+              "connection_id": "1885319fc76446d28413b08ca59a03ef",
+              "model_id": "qwen3:30b-a3b-instruct-2507-q4_K_M",
+              "display_name": "qwen3:30b-a3b-instruct-2507-q4_K_M"
+            },
+            "attachments": [],
+            "stats": {
+              "reasoning_ms": null,
+              "ttft_ms": 5119.536665995838,
+              "total_ms": 8929.98112499481,
+              "prompt_tokens": 2881,
+              "completion_tokens": 304,
+              "tokens_per_sec": 79.79972369345671,
+              "tokens_estimated": false,
+              "load_ms": 6.701833,
+              "finish_reason": "stop",
+              "context_length": 16384,
+              "dropped_message_count": 0,
+              "params": {}
+            },
+            "web": {
+              "status": "used",
+              "freshness": "any",
+              "notice": null,
+              "queries": [
+                "best cut of meat for burger beef",
+                "ground chuck vs ground sirloin for burgers",
+                "top beef cuts for homemade burgers"
+              ],
+              "timings": {
+                "plan": 694.7616249963176,
+                "search": 1030.2926669974113,
+                "fetch": 931.1051670010784,
+                "rank": 5.092874998808838
+              },
+              "source_count": 6,
+              "plan_fallback": false,
+              "providers": [
+                "SearXNG"
+              ],
+              "ranking": "keyword"
+            },
+            "created_at": "2026-10-01T22:35:44.597335+00:00"
+          },
+          "sources": [
+            {
+              "n": 1,
+              "url": "https://schweidandsons.com/blog/best-cuts-of-beef-for-burgers",
+              "title": "Best Cuts of Beef for Burgers: Expert Guide to Juicy, Flavorful Patties",
+              "site_name": "Schweid & Sons",
+              "domain": "schweidandsons.com",
+              "published_at": "2025-08-14",
+              "fetched_at": "2026-10-01T22:35:46.326670+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://schweidandsons.com/blog/best-cuts-of-beef-for-burgers",
+                  "heading": "Fat vs. Function: The Best Beef For Burgers",
+                  "ord": 1,
+                  "text": "## Fat vs. Function: The Best Beef For Burgers\n\nCows, like people, use different muscles in different ways. Overworked muscles—like those from the shoulder (chuck) or hindquarter (round)—are naturally tougher due to their dense muscle fibers. They often have a bolder flavor but need to be balanced with more tender, fatty cuts to keep the Burger juicy and palatable.\n\nOn the other hand, underused muscles—like those near the ribs or belly—are typically more tender and carry more intramuscular fat (marbling). These are ideal for grinding because they create a Burger that’s both flavorful and juicy."
+                },
+                {
+                  "source_url": "https://schweidandsons.com/blog/best-cuts-of-beef-for-burgers",
+                  "heading": "Fat vs. Function: The Best Beef For Burgers",
+                  "ord": 2,
+                  "text": "This is where the art of blending comes into play. By combining different cuts of beef—i.e. lean, flavorful cuts with fattier, tender ones—you get a balanced Burger that’s juicy, meaty, and satisfying. So remember: choosing the best meat for Burgers isn’t just about fat percentage—it’s about *where* that fat comes from and how it works with the lean."
+                },
+                {
+                  "source_url": "https://schweidandsons.com/blog/best-cuts-of-beef-for-burgers",
+                  "heading": "Common Cuts Used in Burger Blends",
+                  "ord": 3,
+                  "text": "## Common Cuts Used in Burger Blends\n\nLet’s dive into the best meat for grinding Burgers that’ll wow your guests:\n\n- **Chuck** is the backbone of many Burger blends. When ground, the cut works well alone, or can be elevated when blended with another cut of beef. It’s high marbling gives the Burger a rich and buttery beef flavor.\n\n- **Brisket** is a hardworking muscle from the lower chest. Brisket has two main muscles, the flat and the point. The flat is relatively lean, but it has a strong beefy flavor and a coarse grind texture that adds a hearty bite. The point muscle has more marbling, leading to a rich flavor in your Burger. When balanced with other cuts, brisket becomes a powerful backbone in a blend."
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 2,
+              "url": "https://franksbutchershop.com/blogs/news/ground-chuck-vs-ground-sirloin-which-makes-the-best-burgers",
+              "title": "Ground Chuck vs. Ground Sirloin: Which Makes the Best Burgers?",
+              "site_name": "Frank's Butcher Shop",
+              "domain": "franksbutchershop.com",
+              "published_at": "2025-09-10",
+              "fetched_at": "2026-10-01T22:35:46.326761+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://franksbutchershop.com/blogs/news/ground-chuck-vs-ground-sirloin-which-makes-the-best-burgers",
+                  "heading": "Ground Chuck vs. Ground Sirloin:",
+                  "ord": 5,
+                  "text": "## Ground Chuck vs. Ground Sirloin:\n\nHere’s a simple chart comparing the two so you can easily see the differences:\n\n| **Feature** | **Ground Chuck** | **Ground Sirloin** | \n| Cut Origin | Shoulder (chuck primal) | Lower back (sirloin section) | \n| Average Fat Content | 20% (80% lean) | 10% (90% lean) | \n| Flavor | Rich, classic beef flavor | Lean, concentrated beef taste | \n| Texture | Juicy, soft, tender | Firm, dense, less juicy | \n| Cooking Preference | Medium to medium-well | Medium-rare to medium | \n| Best For | Juicy burgers, meatloaf, chili | Lean burgers, protein-rich meals | "
+                },
+                {
+                  "source_url": "https://franksbutchershop.com/blogs/news/ground-chuck-vs-ground-sirloin-which-makes-the-best-burgers",
+                  "heading": "Frank’s Butcher Shop: Bringing You the Best in Beef",
+                  "ord": 10,
+                  "text": "## Frank’s Butcher Shop: Bringing You the Best in Beef\n\nAt Frank’s Butcher Shop, each piece of Wyoming beef is carefully hand-cut and dry-aged to bring out the best flavor and tenderness. Whether you choose the juicy, flavorful ground chuck or the leaner, protein-rich ground sirloin, you’re getting quality meat that’s handled with care.\n\nWe are ready to help you pick the right cut for any recipe, from everyday burgers to special meals. Because the beef is processed locally and aged at least 14 days, the taste and texture are naturally improved, making a real difference in every bite."
+                },
+                {
+                  "source_url": "https://franksbutchershop.com/blogs/news/ground-chuck-vs-ground-sirloin-which-makes-the-best-burgers",
+                  "heading": "Wrapping It Up: Making Your Perfect Burger Choice",
+                  "ord": 11,
+                  "text": "## Wrapping It Up: Making Your Perfect Burger Choice\n\nChoosing between ground chuck and ground sirloin is all about your priorities.\n\n• If you want a juicy, flavorful classic burger, ground chuck is the way.\n\n• If you prefer a leaner, firmer patty with clean beef flavor and fewer calories, ground sirloin fits.\n\nBoth benefit greatly from freshness, expert butchering, and proper cooking techniques.\n\nTo truly enjoy top-tier ground beef, consider Wyoming-raised, hand-cut, and dry-aged beef like at Frank’s Butcher Shop. Our choices will bring flavor, texture, and satisfaction into your kitchen.\n\nEnjoy burgers that are exactly what you want, just delicious beef that you’ll love."
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 3,
+              "url": "https://butchershoppedirect.com/blogs/recipes-guides/ground-chuck-vs-ground-beef",
+              "title": "Ground Chuck vs Ground Beef | Which One Should You Buy?",
+              "site_name": "The Butcher Shoppe",
+              "domain": "butchershoppedirect.com",
+              "published_at": "2023-02-02",
+              "fetched_at": "2026-10-01T22:35:46.326749+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://butchershoppedirect.com/blogs/recipes-guides/ground-chuck-vs-ground-beef",
+                  "heading": "Price",
+                  "ord": 4,
+                  "text": "### Price\n\nGround chuck typically costs slightly more than regular ground beef. This is because ground chuck is made exclusively from the chuck roast, a cut of beef from the shoulder and neck area of the cow.\n\nThis particular cut has more marbling and flavor, making it the premium choice compared to ground beef. Regular ground beef can contain meat from the chuck roast but usually consists of less marbled, less juicy cuts like the round steak and the sirloin in a mix. It can even contain organ tissue from the heart and other offal."
+                },
+                {
+                  "source_url": "https://butchershoppedirect.com/blogs/recipes-guides/ground-chuck-vs-ground-beef",
+                  "heading": "Fat Content Breakdown of Different Types of Ground Beef",
+                  "ord": 6,
+                  "text": "#### Fat Content Breakdown of Different Types of Ground Beef\n\nA good way to frame the ground chuck vs. ground beef debate is to look at the fat content.\n\nThough many ground beef options you find at grocery stores are a mix of different cuts, if you were to grind up meat from the chuck roast, the round steak, the sirloin, and other cuts, the lean-to-fat muscle ratio would naturally be as follows*—\n\n- Ground Sirloin: 90% lean to 10% fat\n- Ground Round Steak: 85% lean to 15% fat\n- Ground Chuck: 80% lean to 20% fat\n- Ground Brisket: 70% lean to 30% fat\n\n**Note skilled butchers can produce different lean-to-fat ratios with different cuts at the customer’s request.* "
+                },
+                {
+                  "source_url": "https://butchershoppedirect.com/blogs/recipes-guides/ground-chuck-vs-ground-beef",
+                  "heading": "Ground beef or ground chuck for burger patties?",
+                  "ord": 10,
+                  "text": "### Ground beef or ground chuck for burger patties?\n\nGround chuck is usually a better burger option if you want a traditional, juicy, fatty burger. It has a higher fat content, which gives the ground chuck burgers more flavor and juiciness.\n\nGround beef, on the other hand, can be leaner. As a result, you’ll get drier hamburger meat but a healthier one if you try to cut down on fat.\n\nAlso, ground beef from leaner cuts is less expensive than ground chuck, so it is the better choice for those on a budget."
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 4,
+              "url": "https://seriouseats.com/the-burger-lab-best-burger-blend-profiles-of-eight-cuts-of-beef",
+              "title": "Mastering the Art of Burger Blending with Eight Cuts of Beef | The Food Lab",
+              "site_name": "Serious Eats",
+              "domain": "seriouseats.com",
+              "published_at": "2009-10-02",
+              "fetched_at": "2026-10-01T22:35:46.326706+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://seriouseats.com/the-burger-lab-best-burger-blend-profiles-of-eight-cuts-of-beef",
+                  "heading": "",
+                  "ord": 0,
+                  "text": "There's nothing new about blending different cuts of meat to make a better burger. But despite all I've read, and despite the fact that I've been fiddling with burger blends at least a few times a week for the past couple of years, I've yet to see **a good, thorough, scientific analysis** of what actually makes the best burger. Is it fat content? Texture? Flavor? Presumably all three, but what does one cut have to offer over another? Why mix three cuts instead of two? Would a fourth cut make it even better?"
+                },
+                {
+                  "source_url": "https://seriouseats.com/the-burger-lab-best-burger-blend-profiles-of-eight-cuts-of-beef",
+                  "heading": "",
+                  "ord": 3,
+                  "text": " In choosing cuts of beef that could go into the burger, I first made a broad decision: **This was to be an everyman's burger.** Fancy-pants burgers exist, but they are contrary to the spirit of the sandwich. There would be no dry-aged cuts, no special breed cows, and nothing that is more suited for a steakhouse in my blend. Burgers, like good charcuterie, are about taking the cheap and ordinary, and converting it into the sublime. For this reason, I set an upper limit of $8 a pound for the cuts in my mix, which narrowed down my options to eight cuts: sirloin, chuck, short rib, skirt steak, hanger steak, flap meat, brisket, and a surprise entry—oxtail."
+                },
+                {
+                  "source_url": "https://seriouseats.com/the-burger-lab-best-burger-blend-profiles-of-eight-cuts-of-beef",
+                  "heading": "Flap Meat ($6/pound)",
+                  "ord": 8,
+                  "text": "### Flap Meat ($6/pound)\n\n **Location:** From the back of the short loin—where porterhouse and T-bones come from—but closer to the belly of the animal.**Alternatives:** Top sirloin tips, beef sirloin tips, sirloin tip steak, bavette d'aloyau.**Fat Content:** Moderate.**Flavor:** One of the most savory cuts around, with a substantial, chewy texture. Like short ribs, it lacks offsetting grassy notes, but unlike short ribs, it also lacks fat. Ground on its own, it has a grainy texture that crumbles more easily than some finer-grained cuts."
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 5,
+              "url": "https://webstaurantstore.com/blog/4432/types-of-ground-beef.html",
+              "title": "Types of Ground Beef",
+              "site_name": "WebstaurantStore",
+              "domain": "webstaurantstore.com",
+              "published_at": "2026-01-14",
+              "fetched_at": "2026-10-01T22:35:46.713984+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://webstaurantstore.com/blog/4432/types-of-ground-beef.html",
+                  "heading": "What Is Ground Beef?",
+                  "ord": 1,
+                  "text": "## What Is Ground Beef?\n\nGround beef is meat sourced from cattle and ground into fine pieces to tenderize tougher cuts. It’s one of the most frequently purchased proteins in the US because it's versatile and affordable. You can make everything from tacos to bolognese sauce with ground hamburger meat.\n\n When it comes to labeling, there are different types of ground beef with a range of fat percentages. Primal source ground beef comes from a specific **type of beef cut**, like chuck, round, or sirloin. You’ll also see the generic label \"ground beef\" or \"ground hamburger\" on some packages of beef. Any products labeled ground beef or hamburger are blends of beef from different parts of the steer, sometimes with fatty cuts added to increase the fat content."
+                },
+                {
+                  "source_url": "https://webstaurantstore.com/blog/4432/types-of-ground-beef.html",
+                  "heading": "4. Ground Sirloin (90/10)",
+                  "ord": 13,
+                  "text": "## 4. Ground Sirloin (90/10)\n\nGround sirloin is considered the leanest type of ground beef. It comes from the sirloin primal, which is located in the mid-back region of the steer. If you were cutting steaks, this area would produce a tri-tip steak, top sirloin, and a tenderloin (filet mignon). These cuts are more expensive, making ground sirloin the most costly option on the list. So why would you want to take a delicious, expensive steak and grind it up? The meat from the loin primal is very lean, so it produces ground beef with the healthiest lean point. You will often hear ground sirloin called extra-lean ground beef."
+                },
+                {
+                  "source_url": "https://webstaurantstore.com/blog/4432/types-of-ground-beef.html",
+                  "heading": "Ground Sirloin vs Ground Beef",
+                  "ord": 15,
+                  "text": "### Ground Sirloin vs Ground Beef\n\nGround sirloin is the leanest type of ground beef, which makes it appealing as a healthy protein option. Ground beef, on the other hand, has a higher fat content which makes it a better choice for hamburger patties. To tell the difference on the labels, ground meat from the sirloin portion will always be labeled ground sirloin. Any product labeled just ground beef or ground hamburger is sourced from a blend of leftover trimmings."
+                }
+              ],
+              "cited": true
+            },
+            {
+              "n": 6,
+              "url": "https://tasteofhome.com/article/which-ground-beef-is-best-for-burgers",
+              "title": "Which Ground Beef is Best for Burgers?",
+              "site_name": "Taste of Home",
+              "domain": "tasteofhome.com",
+              "published_at": "2020-09-16",
+              "fetched_at": "2026-10-01T22:35:46.326725+00:00",
+              "kind": "page",
+              "passages": [
+                {
+                  "source_url": "https://tasteofhome.com/article/which-ground-beef-is-best-for-burgers",
+                  "heading": "Which Ground Beef is Best for Burgers?",
+                  "ord": 0,
+                  "text": "# Which Ground Beef is Best for Burgers?\n\nMaking the perfect burger starts with picking the right blend of beef and that doesn’t always mean the one with the highest fat content.\n\nEver since we started cooking outdoors, man has been on the hunt for the perfect burger. In our search, we quickly realized many tricks and tips on forming and cooking beef patties. But let’s be honest, even following all that advice can’t help you if you start off on the wrong foot. If you’re truly serious about your quest for the elusive Perfect Burger, then we need to have a frank discussion about beef."
+                },
+                {
+                  "source_url": "https://tasteofhome.com/article/which-ground-beef-is-best-for-burgers",
+                  "heading": "Where You Get Your Beef Matters",
+                  "ord": 2,
+                  "text": "## Where You Get Your Beef Matters\n\nAs it is with most things in life, if you’re looking for the best of anything, you have to know where to go to get it. Grocery stores are great for ground beef you’re going to put in one of Grandma’s best casseroles because there are a lot of other ingredients that are going to help make it shine. While these are delicious and I love them, the ground beef isn’t necessarily the star of the show.\n\nWhen it comes to burgers, the beef is going to take center stage, so it stands to reason not every package of ground beef is going to make the cut. For this reason alone, I firmly believe you should seek out a good butcher or meat market. Yes, you’ll probably pay a little more but all things considered, what you’ll end up getting will be far superior to what you could get anywhere else."
+                },
+                {
+                  "source_url": "https://tasteofhome.com/article/which-ground-beef-is-best-for-burgers",
+                  "heading": "Our Editors Found the Best Meat Delivery Services",
+                  "ord": 5,
+                  "text": "### Our Editors Found the Best Meat Delivery Services\n\nSkip the lengthy grocery trip. Instead, try the best meat delivery services and get fresh cuts delivered directly to your door! We tested every service to find premium options."
+                }
+              ],
+              "cited": false
+            }
+          ],
+          "reads": [
+            {
+              "url": "https://butchershoppedirect.com/blogs/recipes-guides/ground-chuck-vs-ground-beef",
+              "title": "Ground Chuck vs Ground Beef | Which One Should You Buy?",
+              "site_name": "The Butcher Shoppe",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://coolmomeats.com/2017/06/12/best-cuts-of-beef-for-burgers-tips-from-a-professional-butcher",
+              "title": "The best cuts of beef for burgers: Tips from a professional butcher",
+              "site_name": "coolmomeats.com",
+              "status": "failed",
+              "reason": "not a public address"
+            },
+            {
+              "url": "https://franksbutchershop.com/blogs/news/best-beef-for-burgers-a-simple-guide-to-finding-your-perfect-cut",
+              "title": "Best Beef for Burgers: A Simple Guide to Finding Your Perfect Cut",
+              "site_name": "Frank's Butcher Shop",
+              "status": "unused",
+              "reason": null
+            },
+            {
+              "url": "https://franksbutchershop.com/blogs/news/ground-chuck-vs-ground-sirloin-which-makes-the-best-burgers",
+              "title": "Ground Chuck vs. Ground Sirloin: Which Makes the Best Burgers?",
+              "site_name": "Frank's Butcher Shop",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://reddit.com/r/meat/comments/hyzb94/beef_chuck_or_sirloin_for_burgers",
+              "title": "Beef chuck or sirloin for burgers? : r/meat - Reddit",
+              "site_name": "reddit.com",
+              "status": "failed",
+              "reason": "too little readable text"
+            },
+            {
+              "url": "https://schweidandsons.com/blog/best-cuts-of-beef-for-burgers",
+              "title": "Best Cuts of Beef for Burgers: Expert Guide to Juicy, Flavorful Patties",
+              "site_name": "Schweid & Sons",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://seriouseats.com/the-burger-lab-best-burger-blend-profiles-of-eight-cuts-of-beef",
+              "title": "Mastering the Art of Burger Blending with Eight Cuts of Beef | The Food Lab",
+              "site_name": "Serious Eats",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://tasteofhome.com/article/which-ground-beef-is-best-for-burgers",
+              "title": "Which Ground Beef is Best for Burgers?",
+              "site_name": "Taste of Home",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://webstaurantstore.com/blog/4432/types-of-ground-beef.html",
+              "title": "Types of Ground Beef",
+              "site_name": "WebstaurantStore",
+              "status": "used",
+              "reason": null
+            },
+            {
+              "url": "https://webstaurantstore.com/blog/5334/best-ground-beef-for-burgers.html",
+              "title": "Best Ground Beef for Burgers",
+              "site_name": "WebstaurantStore",
+              "status": "unused",
+              "reason": null
+            }
+          ],
+          "elapsed_ms": 8945.809374999953,
+          "web": {
+            "status": "used",
+            "freshness": "any",
+            "notice": null,
+            "queries": [
+              "best cut of meat for burger beef",
+              "ground chuck vs ground sirloin for burgers",
+              "top beef cuts for homemade burgers"
+            ],
+            "timings": {
+              "plan": 694.7616249963176,
+              "search": 1030.2926669974113,
+              "fetch": 931.1051670010784,
+              "rank": 5.092874998808838
+            },
+            "source_count": 6,
+            "plan_fallback": false,
+            "providers": [
+              "SearXNG"
+            ],
+            "ranking": "keyword"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html itemscope="itemscope" itemtype="http://schema.org/Article" lang="en-US">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+	<link rel="profile" href="http://gmpg.org/xfn/11" />
+	<link rel="pingback" href="https://jefframnani.com/xmlrpc.php" />
+	<!--[if lt IE 9]>
+	<script src="https://jefframnani.com/wp-content/themes/independent-publisher/js/html5.js" type="text/javascript"></script>
+	<![endif]-->
+	<meta name='robots' content='index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' />
+
+	<!-- This site is optimized with the Yoast SEO plugin v28.6 - https://yoast.com/product/yoast-seo-wordpress/ -->
+	<title>Getting Nice URLs in Tailscale - Jeff Ramnani</title>
+	<meta name="description" content="How to get pretty URLs when running multiple services on a single host in your tailnet." />
+	<link rel="canonical" href="https://jefframnani.com/2024/01/getting-nice-urls-in-tailscale/" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="og:title" content="Getting Nice URLs in Tailscale - Jeff Ramnani" />
+	<meta property="og:description" content="How to get pretty URLs when running multiple services on a single host in your tailnet." />
+	<meta property="og:url" content="https://jefframnani.com/2024/01/getting-nice-urls-in-tailscale/" />
+	<meta property="og:site_name" content="Jeff Ramnani" />
+	<meta property="article:published_time" content="2024-01-26T23:56:46+00:00" />
+	<meta property="article:modified_time" content="2024-05-10T00:46:03+00:00" />
+	<meta property="og:image" content="https://jefframnani.com/wp-content/uploads/2024/01/BrowserAddressBar-by-Cubosh-scaled.jpg" />
+	<meta property="og:image:width" content="2560" />
+	<meta property="og:image:height" content="1440" />
+	<meta property="og:image:type" content="image/jpeg" />
+	<meta name="author" content="jramnani" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:label1" content="Written by" />
+	<meta name="twitter:data1" content="jramnani" />
+	<meta name="twitter:label2" content="Est. reading time" />
+	<meta name="twitter:data2" content="5 minutes" />
+	<script type="application/ld+json" class="yoast-schema-graph">{"@context":"https:\/\/schema.org","@graph":[{"@type":"Article","@id":"https:\/\/jefframnani.com\/2024\/01\/getting-nice-urls-in-tailscale\/#article","isPartOf":{"@id":"https:\/\/jefframnani.com\/2024\/01\/getting-nice-urls-in-tailscale\/"},"author":{"name":"jramnani","@id":"https:\/\/jefframnani.com\/#\/schema\/person\/35a9b3b441e1b59a2c0727aec8328fe1"},"headline":"Getting Nice URLs in Tailscale","datePublished":"2024-01-26T23:56:46+00:00","dateModified":"2024-05-10T00:46:03+00:00","mainEntityOfPage":{"@id":"https:\/\/jefframnani.com\/2024\/01\/getting-nice-urls-in-tailscale\/"},"wordCount":1040,"image":{"@id":"https:\/\/jefframnani.com\/2024\/01\/getting-nice-urls-in-tailscale\/#primaryimage"},"thumbnailUrl":"https:\/\/jefframnani.com\/wp-content\/uploads\/2024\/01\/BrowserAddressBar-by-Cubosh-scaled.jpg","keywords":["containers","vpn"],"articleSection":["Sysadmin"],"inLanguage":"en-US"},{"@type":"WebPage","@id":"https:\/\/jefframnani.com\/2024\/01\/getting-nice-urls-in-tailscale\/","url":"https:\/\/jefframnani.com\/2024\/01\/getting-nice-urls-in-tailscale\/","name":"Getting Nice URLs in Tailscale - Jeff Ramnani","isPartOf":{"@id":"https:\/\/jefframnani.com\/#website"},"primaryImageOfPage":{"@id":"https:\/\/jefframnani.com\/2024\/01\/getting-nice-urls-in-tailscale\/#primaryimage"},"image":{"@id":"https:\/\/jefframnani.com\/2024\/01\/getting-nice-urls-in-tailscale\/#primaryimage"},"thumbnailUrl":"https:\/\/jefframnani.com\/wp-content\/uploads\/2024\/01\/BrowserAddressBar-by-Cubosh-scaled.jpg","datePublished":"2024-01-26T23:56:46+00:00","dateModified":"2024-05-10T00:46:03+00:00","author":{"@id":"https:\/\/jefframnani.com\/#\/schema\/person\/35a9b3b441e1b59a2c0727aec8328fe1"},"description":"How to get pretty URLs when running multiple services on a single host in your tailnet.","breadcrumb":{"@id":"https:\/\/jefframnani.com\/2024\/01\/getting-nice-urls-in-tailscale\/#breadcrumb"},"inLanguage":"en-US","potentialAction":[{"@type":"ReadAction","target":["https:\/\/jefframnani.com\/2024\/01\/getting-nice-urls-in-tailscale\/"]}]},{"@type":"ImageObject","inLanguage":"en-US","@id":"https:\/\/jefframnani.com\/2024\/01\/getting-nice-urls-in-tailscale\/#primaryimage","url":"https:\/\/jefframnani.com\/wp-content\/uploads\/2024\/01\/BrowserAddressBar-by-Cubosh-scaled.jpg","contentUrl":"https:\/\/jefframnani.com\/wp-content\/uploads\/2024\/01\/BrowserAddressBar-by-Cubosh-scaled.jpg","width":2560,"height":1440,"caption":""},{"@type":"BreadcrumbList","@id":"https:\/\/jefframnani.com\/2024\/01\/getting-nice-urls-in-tailscale\/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https:\/\/jefframnani.com\/"},{"@type":"ListItem","position":2,"name":"Getting Nice URLs in Tailscale"}]},{"@type":"WebSite","@id":"https:\/\/jefframnani.com\/#website","url":"https:\/\/jefframnani.com\/","name":"Jeff Ramnani","description":"My homestead on the Internets","potentialAction":[{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https:\/\/jefframnani.com\/?s={search_term_string}"},"query-input":{"@type":"PropertyValueSpecification","valueRequired":true,"valueName":"search_term_string"}}],"inLanguage":"en-US"},{"@type":"Person","@id":"https:\/\/jefframnani.com\/#\/schema\/person\/35a9b3b441e1b59a2c0727aec8328fe1","name":"jramnani","image":{"@type":"ImageObject","inLanguage":"en-US","@id":"https:\/\/secure.gravatar.com\/avatar\/5cb9c56d80823aae21be27c176265cc53114c759b219c4697371ca6f97c15883?s=96&d=mm&r=g","url":"https:\/\/secure.gravatar.com\/avatar\/5cb9c56d80823aae21be27c176265cc53114c759b219c4697371ca6f97c15883?s=96&d=mm&r=g","contentUrl":"https:\/\/secure.gravatar.com\/avatar\/5cb9c56d80823aae21be27c176265cc53114c759b219c4697371ca6f97c15883?s=96&d=mm&r=g","caption":"jramnani"},"description":"A former comedian. Now I make compilers laugh all day.","sameAs":["https:\/\/jefframnani.com"],"url":"https:\/\/jefframnani.com"}]}</script>
+	<!-- / Yoast SEO plugin. -->
+
+
+<script>
+window.koko_analytics = {"url":"https:\/\/jefframnani.com\/","site_url":"https:\/\/jefframnani.com","post_id":205,"path":"\/2024\/01\/getting-nice-urls-in-tailscale\/","method":"cookie","use_cookie":true};
+</script>
+<link rel="alternate" type="application/rss+xml" title="Jeff Ramnani &raquo; Feed" href="https://jefframnani.com/feed/" />
+<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="https://jefframnani.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fjefframnani.com%2F2024%2F01%2Fgetting-nice-urls-in-tailscale%2F" />
+<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="https://jefframnani.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fjefframnani.com%2F2024%2F01%2Fgetting-nice-urls-in-tailscale%2F&#038;format=xml" />
+<style id="wp-img-auto-sizes-contain-inline-css">
+img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
+/*# sourceURL=wp-img-auto-sizes-contain-inline-css */
+</style>
+<style id="wp-emoji-styles-inline-css">
+
+	img.wp-smiley, img.emoji {
+		display: inline !important;
+		border: none !important;
+		box-shadow: none !important;
+		height: 1em !important;
+		width: 1em !important;
+		margin: 0 0.07em !important;
+		vertical-align: -0.1em !important;
+		background: none !important;
+		padding: 0 !important;
+	}
+/*# sourceURL=wp-emoji-styles-inline-css */
+</style>
+<style id="wp-block-library-inline-css">
+:root{--wp-block-synced-color:#7a00df;--wp-block-synced-color--rgb:122,0,223;--wp-bound-block-color:var(--wp-block-synced-color);--wp-editor-canvas-background:#ddd;--wp-admin-theme-color:#007cba;--wp-admin-theme-color--rgb:0,124,186;--wp-admin-theme-color-darker-10:#006ba1;--wp-admin-theme-color-darker-10--rgb:0,107,160.5;--wp-admin-theme-color-darker-20:#005a87;--wp-admin-theme-color-darker-20--rgb:0,90,135;--wp-admin-border-width-focus:2px}@media (min-resolution:192dpi){:root{--wp-admin-border-width-focus:1.5px}}.wp-element-button{cursor:pointer}:root .has-very-light-gray-background-color{background-color:#eee}:root .has-very-dark-gray-background-color{background-color:#313131}:root .has-very-light-gray-color{color:#eee}:root .has-very-dark-gray-color{color:#313131}:root .has-vivid-green-cyan-to-vivid-cyan-blue-gradient-background{background:linear-gradient(135deg,#00d084,#0693e3)}:root .has-purple-crush-gradient-background{background:linear-gradient(135deg,#34e2e4,#4721fb 50%,#ab1dfe)}:root .has-hazy-dawn-gradient-background{background:linear-gradient(135deg,#faaca8,#dad0ec)}:root .has-subdued-olive-gradient-background{background:linear-gradient(135deg,#fafae1,#67a671)}:root .has-atomic-cream-gradient-background{background:linear-gradient(135deg,#fdd79a,#004a59)}:root .has-nightshade-gradient-background{background:linear-gradient(135deg,#330968,#31cdcf)}:root .has-midnight-gradient-background{background:linear-gradient(135deg,#020381,#2874fc)}:root{--wp--preset--font-size--normal:16px;--wp--preset--font-size--huge:42px}.has-regular-font-size{font-size:1em}.has-larger-font-size{font-size:2.625em}.has-normal-font-size{font-size:var(--wp--preset--font-size--normal)}.has-huge-font-size{font-size:var(--wp--preset--font-size--huge)}:root .has-text-align-center{text-align:center}:root .has-text-align-left{text-align:left}:root .has-text-align-right{text-align:right}.has-fit-text{white-space:nowrap!important}#end-resizable-editor-section{display:none}.aligncenter{clear:both}.items-justified-left{justify-content:flex-start}.items-justified-center{justify-content:center}.items-justified-right{justify-content:flex-end}.items-justified-space-between{justify-content:space-between}.screen-reader-text{word-wrap:normal!important;border:0;clip-path:inset(50%);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px;word-break:normal!important}.screen-reader-text:focus{background-color:#ddd;clip-path:none;color:#444;display:block;font-size:1em;height:auto;left:5px;line-height:normal;padding:15px 23px 14px;text-decoration:none;top:5px;width:auto;z-index:100000}html :where(.has-border-color){border-style:solid}html :where([style^=border-color],[style*=";border-color"],[style*="; border-color"]){border-style:solid}html :where([style^=border-top-color],[style*=";border-top-color"],[style*="; border-top-color"]){border-top-style:solid}html :where([style^=border-right-color],[style*=";border-right-color"],[style*="; border-right-color"]){border-right-style:solid}html :where([style^=border-bottom-color],[style*=";border-bottom-color"],[style*="; border-bottom-color"]){border-bottom-style:solid}html :where([style^=border-left-color],[style*=";border-left-color"],[style*="; border-left-color"]){border-left-style:solid}html :where([style^=border-width],[style*=";border-width"],[style*="; border-width"]){border-style:solid}html :where([style^=border-top-width],[style*=";border-top-width"],[style*="; border-top-width"]){border-top-style:solid}html :where([style^=border-right-width],[style*=";border-right-width"],[style*="; border-right-width"]){border-right-style:solid}html :where([style^=border-bottom-width],[style*=";border-bottom-width"],[style*="; border-bottom-width"]){border-bottom-style:solid}html :where([style^=border-left-width],[style*=";border-left-width"],[style*="; border-left-width"]){border-left-style:solid}html :where(img[class*=wp-image-]){height:auto;max-width:100%}:where(figure){margin:0 0 1em}html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:var(--wp-admin--admin-bar--height,0px)}@media screen and (max-width:600px){html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:0px}}
+
+/*# sourceURL=/wp-includes/css/dist/block-library/common.min.css */
+</style>
+<style id="wp-block-heading-inline-css">
+h1:where(.wp-block-heading).has-background,h2:where(.wp-block-heading).has-background,h3:where(.wp-block-heading).has-background,h4:where(.wp-block-heading).has-background,h5:where(.wp-block-heading).has-background,h6:where(.wp-block-heading).has-background{padding:1.25em 2.375em}h1.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h1.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h2.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h2.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h3.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h3.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h4.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h4.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h5.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h5.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h6.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h6.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]){rotate:180deg}
+/*# sourceURL=https://jefframnani.com/wp-includes/blocks/heading/style.min.css */
+</style>
+<style id="wp-block-list-inline-css">
+ol,ul{box-sizing:border-box}:root :where(.wp-block-list.has-background){padding:1.25em 2.375em}
+/*# sourceURL=https://jefframnani.com/wp-includes/blocks/list/style.min.css */
+</style>
+<style id="wp-block-paragraph-inline-css">
+.is-small-text{font-size:.875em}.is-regular-text{font-size:1em}.is-large-text{font-size:2.25em}.is-larger-text{font-size:3em}.has-drop-cap:not(:focus):first-letter{float:left;font-size:8.4em;font-style:normal;font-weight:100;line-height:.68;margin:.05em .1em 0 0;text-transform:uppercase}body.rtl .has-drop-cap:not(:focus):first-letter{float:none;margin-left:.1em}p.has-drop-cap.has-background{overflow:hidden}:root :where(p.has-background){padding:1.25em 2.375em}:where(p.has-text-color:not(.has-link-color)) a{color:inherit}p.has-text-align-left[style*="writing-mode:vertical-lr"],p.has-text-align-right[style*="writing-mode:vertical-rl"]{rotate:180deg}
+/*# sourceURL=https://jefframnani.com/wp-includes/blocks/paragraph/style.min.css */
+</style>
+<style id="wp-block-code-inline-css">
+.wp-block-code{box-sizing:border-box}.wp-block-code code{direction:ltr;display:block;font-family:inherit;overflow-wrap:break-word;text-align:initial;white-space:break-spaces}
+/*# sourceURL=https://jefframnani.com/wp-includes/blocks/code/style.min.css */
+</style>
+<link rel='stylesheet' id='syntax-highlighting-code-block-theme-css' href='https://jefframnani.com/wp-content/plugins/syntax-highlighting-code-block/vendor/scrivo/highlight-php/styles/default.css?ver=1.5.2' media='all' />
+<style id="syntax-highlighting-code-block-inline-css">
+.wp-block-code {
+	border: 0;
+	padding: 0;
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
+}
+
+.wp-block-code > span {
+	display: block;
+	overflow: auto;
+}
+
+.shcb-language {
+	border: 0;
+	clip: rect(1px, 1px, 1px, 1px);
+	-webkit-clip-path: inset(50%);
+	clip-path: inset(50%);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	width: 1px;
+	word-wrap: normal;
+	word-break: normal;
+}
+
+.hljs {
+	box-sizing: border-box;
+}
+
+.hljs.shcb-code-table {
+	display: table;
+	width: 100%;
+}
+
+.hljs.shcb-code-table > .shcb-loc {
+	color: inherit;
+	display: table-row;
+	width: 100%;
+}
+
+.hljs.shcb-code-table .shcb-loc > span {
+	display: table-cell;
+}
+
+.wp-block-code code.hljs:not(.shcb-wrap-lines) {
+	white-space: pre;
+}
+
+.wp-block-code code.hljs.shcb-wrap-lines {
+	white-space: pre-wrap;
+}
+
+.hljs.shcb-line-numbers {
+	border-spacing: 0;
+	counter-reset: line;
+}
+
+.hljs.shcb-line-numbers > .shcb-loc {
+	counter-increment: line;
+}
+
+.hljs.shcb-line-numbers .shcb-loc > span {
+	padding-left: 0.75em;
+}
+
+.hljs.shcb-line-numbers .shcb-loc::before {
+	border-right: 1px solid #ddd;
+	content: counter(line);
+	display: table-cell;
+	padding: 0 0.75em;
+	text-align: right;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	white-space: nowrap;
+	width: 1%;
+}
+
+.hljs > mark.shcb-loc { background-color: #ddf6ff; }
+/*# sourceURL=syntax-highlighting-code-block-inline-css */
+</style>
+<style id="wp-block-separator-inline-css">
+@charset "UTF-8";.wp-block-separator{border:none;border-top:2px solid}:root :where(.wp-block-separator.is-style-dots){height:auto;line-height:1;text-align:center}:root :where(.wp-block-separator.is-style-dots):before{color:currentColor;content:"···";font-family:serif;font-size:1.5em;letter-spacing:2em;padding-left:2em}.wp-block-separator.is-style-dots{background:none!important;border:none!important}
+/*# sourceURL=https://jefframnani.com/wp-includes/blocks/separator/style.min.css */
+</style>
+
+<style id="classic-theme-styles-inline-css">
+/*! This file is auto-generated */
+.wp-block-button__link{color:#fff;background-color:#32373c;border-radius:9999px;box-shadow:none;text-decoration:none;padding:calc(.667em + 2px) calc(1.333em + 2px);font-size:1.125em}.wp-block-file__button{background:#32373c;color:#fff;text-decoration:none}
+/*# sourceURL=/wp-includes/css/classic-themes.min.css */
+</style>
+
+<style id="global-styles-inline-css">
+:root{--wp--preset--aspect-ratio--square: 1;--wp--preset--aspect-ratio--4-3: 4/3;--wp--preset--aspect-ratio--3-4: 3/4;--wp--preset--aspect-ratio--3-2: 3/2;--wp--preset--aspect-ratio--2-3: 2/3;--wp--preset--aspect-ratio--16-9: 16/9;--wp--preset--aspect-ratio--9-16: 9/16;--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgb(6,147,227) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgb(252,185,0) 0%,rgb(255,105,0) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgb(255,105,0) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 36px;--wp--preset--font-size--x-large: 42px;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgb(255, 255, 255), 6px 6px rgb(0, 0, 0);--wp--preset--shadow--crisp: 6px 6px 0px rgb(0, 0, 0);}.wp-block-button{--wp--preset--dimension--25: 25%;--wp--preset--dimension--50: 50%;--wp--preset--dimension--75: 75%;--wp--preset--dimension--100: 100%;}:where(body) { margin: 0; }:where(.is-layout-flex){gap: 0.5em;}:where(.is-layout-grid){gap: 0.5em;}body .is-layout-flex{display: flex;}.is-layout-flex{flex-wrap: wrap;align-items: center;}.is-layout-flex > :is(*, div){margin: 0;}body .is-layout-grid{display: grid;}.is-layout-grid > :is(*, div){margin: 0;}body{padding-top: 0px;padding-right: 0px;padding-bottom: 0px;padding-left: 0px;}:root :where(.wp-element-button, .wp-block-button__link){background-color: #32373c;border-width: 0;color: #fff;font-family: inherit;font-size: inherit;font-style: inherit;font-weight: inherit;letter-spacing: inherit;line-height: inherit;padding-top: calc(0.667em + 2px);padding-right: calc(1.333em + 2px);padding-bottom: calc(0.667em + 2px);padding-left: calc(1.333em + 2px);text-decoration: none;text-transform: inherit;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}
+/*# sourceURL=global-styles-inline-css */
+</style>
+
+<link rel='stylesheet' id='cc-attribution-box-css' href='https://jefframnani.com/wp-content/plugins/creative-commons/css/cc-attribution-box.css?ver=7.1.2' media='all' />
+<link rel='stylesheet' id='genericons-css' href='https://jefframnani.com/wp-content/plugins/jetpack/_inc/genericons/genericons/genericons.css?ver=3.1' media='all' />
+<link rel='stylesheet' id='independent-publisher-style-css' href='https://jefframnani.com/wp-content/themes/independent-publisher/style.css?ver=7.1.2' media='all' />
+<link rel='stylesheet' id='customizer-css' href='https://jefframnani.com/wp-admin/admin-ajax.php?action=independent_publisher_customizer_css&#038;ver=1.7' media='all' />
+<link rel='stylesheet' id='enlighterjs-css' href='https://jefframnani.com/wp-content/plugins/enlighter/cache/enlighterjs.min.css?ver=5WH6xrhws9jcep%2F' media='all' />
+<script id="jquery-core-js" src="https://jefframnani.com/wp-includes/js/jquery/jquery.min.js?ver=3.7.1"></script>
+<script id="jquery-migrate-js" src="https://jefframnani.com/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1"></script>
+<script id="fade-post-title-js" src="https://jefframnani.com/wp-content/themes/independent-publisher/js/fade-post-title.js?ver=7.1.2"></script>
+<script id="enhanced-comment-form-js-js" src="https://jefframnani.com/wp-content/themes/independent-publisher/js/enhanced-comment-form.js?ver=1.0"></script>
+<link rel="https://api.w.org/" href="https://jefframnani.com/wp-json/" /><link rel="alternate" title="JSON" type="application/json" href="https://jefframnani.com/wp-json/wp/v2/posts/205" /><link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://jefframnani.com/xmlrpc.php?rsd" />
+<meta name="generator" content="WordPress 7.1.2" />
+<link rel='shortlink' href='https://jefframnani.com/?p=205' />
+<link rel="alternate" type="application/feed+json" title="Jeff Ramnani &raquo; JSON Feed" href="https://jefframnani.com/feed/json/" />
+<meta property="fediverse:creator" name="fediverse:creator" content="jramnani@jefframnani.com" />
+
+<link rel="alternate" title="ActivityPub (JSON)" type="application/activity+json" href="https://jefframnani.com/2024/01/getting-nice-urls-in-tailscale/" />
+<style id="wp-custom-css">
+.license-wrap {
+	align-content: center;
+	text-align: center;
+}
+</style>
+</head>
+
+<body class="wp-singular post-template-default single single-post postid-205 single-format-standard wp-theme-independent-publisher h-entry hentry" itemscope="itemscope" itemtype="http://schema.org/WebPage">
+
+
+
+<div id="page" class="site">
+	<header id="masthead" class="site-header" role="banner" itemscope itemtype="http://schema.org/WPHeader">
+
+		<div class="site-header-info">
+											
+					<a class="site-logo" href="https://jefframnani.com">
+				<img alt='' src='https://secure.gravatar.com/avatar/5cb9c56d80823aae21be27c176265cc53114c759b219c4697371ca6f97c15883?s=100&#038;d=mm&#038;r=g' srcset='https://secure.gravatar.com/avatar/5cb9c56d80823aae21be27c176265cc53114c759b219c4697371ca6f97c15883?s=200&#038;d=mm&#038;r=g 2x' class='avatar avatar-100 photo u-photo' height='100' width='100' decoding='async'/>			</a>
+		
+		<div class="site-title"><span class="byline"><span class="author p-author vcard h-card"><a class="u-url url fn n" href="https://jefframnani.com" title="View all posts by jramnani" rel="author">jramnani</a></span></span></div>
+		<div class="site-description">A former comedian. Now I make compilers laugh all day.</div>
+
+		
+		<div class="site-published-separator"></div>
+		<h2 class="site-published">Published</h2>
+		<h2 class="site-published-date"><a href="https://jefframnani.com/2024/01/getting-nice-urls-in-tailscale/" title="Getting Nice URLs in Tailscale" rel="bookmark"><time class="entry-date dt-published" datetime="2024-01-26T15:56:46-0800" itemprop="datePublished" pubdate="pubdate">January 26, 2024</time></a></h2>
+				
+									</div>
+
+							<nav role="navigation" class="site-navigation main-navigation">
+				<a class="screen-reader-text skip-link" href="#content" title="Skip to content">Skip to content</a>
+
+													<div class="menu-navigation-container"><ul id="menu-navigation" class="menu"><li id="menu-item-15" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-15"><a href="https://jefframnani.com">Home</a></li>
+<li id="menu-item-19" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-19"><a href="https://jefframnani.com/about/">About</a></li>
+<li id="menu-item-16" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-16"><a href="https://jefframnani.com/archive/">Archive</a></li>
+<li id="menu-item-59" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-59"><a href="/feed/">RSS</a></li>
+</ul></div>				
+			</nav><!-- .site-navigation .main-navigation -->
+		
+			</header>
+	<!-- #masthead .site-header -->
+
+	<div id="main" class="site-main">
+
+	<div id="primary" class="content-area">
+		<main id="content" class="site-content" role="main">
+
+			
+				
+<article id="post-205" class="post-205 post type-post status-publish format-standard has-post-thumbnail category-sysadmin tag-containers tag-vpn" itemscope="itemscope" itemtype="http://schema.org/BlogPosting" itemprop="blogPost">
+			<img width="700" height="394" src="https://jefframnani.com/wp-content/uploads/2024/01/BrowserAddressBar-by-Cubosh-700x394.jpg" class="attachment-independent_publisher_post_thumbnail size-independent_publisher_post_thumbnail wp-post-image" alt="A picture of a browser&#039;s address bar. The picture is taken at an angle to the screen. It is so close that you can see the individual pixels of the screen which says, &quot;www.website.com&quot;" itemprop="image" decoding="async" fetchpriority="high" srcset="https://jefframnani.com/wp-content/uploads/2024/01/BrowserAddressBar-by-Cubosh-700x394.jpg 700w, https://jefframnani.com/wp-content/uploads/2024/01/BrowserAddressBar-by-Cubosh-300x169.jpg 300w, https://jefframnani.com/wp-content/uploads/2024/01/BrowserAddressBar-by-Cubosh-1024x576.jpg 1024w, https://jefframnani.com/wp-content/uploads/2024/01/BrowserAddressBar-by-Cubosh-768x432.jpg 768w, https://jefframnani.com/wp-content/uploads/2024/01/BrowserAddressBar-by-Cubosh-1536x864.jpg 1536w, https://jefframnani.com/wp-content/uploads/2024/01/BrowserAddressBar-by-Cubosh-2048x1152.jpg 2048w" sizes="(max-width: 700px) 100vw, 700px" />		<header class="entry-header">
+					<h2 class="entry-title-meta">
+			<span class="entry-title-meta-author">
+				<span class="byline"><span class="author p-author vcard h-card"><a class="u-url url fn n" href="https://jefframnani.com" title="View all posts by jramnani" rel="author">jramnani</a></span></span>			</span>
+				in <a href="https://jefframnani.com/category/sysadmin/" rel="category tag">Sysadmin</a>				<span class="entry-title-meta-post-date">
+				<span class="sep"> | </span>
+					<a href="https://jefframnani.com/2024/01/getting-nice-urls-in-tailscale/" title="Getting Nice URLs in Tailscale" rel="bookmark"><time class="entry-date dt-published" datetime="2024-01-26T15:56:46-0800" itemprop="datePublished" pubdate="pubdate">January 26, 2024</time></a>			</span>
+							</h2>
+			<h1 class="entry-title p-name" itemprop="name">Getting Nice URLs in Tailscale</h1>
+			</header>
+	<!-- .entry-header -->
+	<div class="entry-content e-content" itemprop="mainContentOfPage">
+		
+<p class="wp-block-paragraph">I&#8217;ve been moving towards self-hosting recently to decouple myself from centralized online services. One issue you have when self-hosting is access to your network while you&#8217;re off-site.  So, I used my self-hosting migration as an excuse to learn more about <a href="https://en.wikipedia.org/wiki/Zero_trust_security_model">Zero Trust Networking</a> and mesh-based VPNs like <a href="https://tailscale.com/">Tailscale</a>.  If you&#8217;re unfamiliar with Tailscale (or tools like it), they have a very good explanation of the concepts titled, <a href="https://tailscale.com/blog/how-tailscale-works">How Tailscale Works</a>.</p>
+
+
+
+<h2 class="wp-block-heading">The Problem</h2>
+
+
+
+<p class="wp-block-paragraph">Tailscale let&#8217;s you choose your machine name in their system.  So I can refer to a host like &#8220;mycloud.yak-bebop.ts.net&#8221;.  But, and this is important, I can only refer to the host in this way.</p>
+
+
+
+<p class="wp-block-paragraph">Now I want to run two services on this host. Let&#8217;s say <a href="http://freshrss.org">FreshRSS</a> and <a href="https://jellyfin.org">Jellyfin</a>.  Note, I&#8217;m using two services in this example, but assume there are more like ten services in practice.</p>
+
+
+
+<p class="wp-block-paragraph">Only one service can listen on TCP port 80 and use a pretty name like &#8220;http://mycloud.yak-bebop.ts.net/&#8221;, the other service will have to listen on a different port like &#8220;http://mycloud.yak-bebop.ts.net:8080/&#8221;.</p>
+
+
+
+<p class="wp-block-paragraph">This isn&#8217;t the end of the world.  I had about 3-4 services running this way for awhile. But remembering the TCP port numbers is annoying. So I set up an <a href="https://dashy.to/">HTML dashboard</a> where I could just click a link to a web app or service and not have to remember what all the different ports were.</p>
+
+
+
+<p class="wp-block-paragraph">But, I wanted prettier URLs. Ones that I could remember and not have to look up on a dashboard. So I dug in and tried again.  The goal is to be able to say:</p>
+
+
+
+<ul class="wp-block-list">
+<li>http://freshrss.yak-bebop.ts.net/</li>
+
+
+
+<li>http://jellyfin.yak-bebop.ts.net/</li>
+</ul>
+
+
+
+<h2 class="wp-block-heading">Attempted Solutions</h2>
+
+
+
+<h3 class="wp-block-heading">Reverse Proxy</h3>
+
+
+
+<p class="wp-block-paragraph">This sounds like a classic use case for a reverse proxy like nginx or apache.  But, I don&#8217;t control the DNS domain of &#8220;yak-bebop.ts.net&#8221; so I couldn&#8217;t use a virtual host configuration like, &#8220;http://jellyfin.yak-bebop.ts.net/&#8221;.</p>
+
+
+
+<p class="wp-block-paragraph">I&#8217;d have to use a domain I controlled, and create the DNS records to point those names to my tailnet&#8217;s 100.x.x.x IP addresses. Or, use a wildcard &#8220;A&#8221; record in a domain I controlled to point to &#8220;mycloud.yak-bebop.net&#8221;.  But this required me to fiddle with an external service.  Before I settle on this, is there an easier way?</p>
+
+
+
+<h3 class="wp-block-heading">Tailscale Serve</h3>
+
+
+
+<p class="wp-block-paragraph"><a href="https://tailscale.com/kb/1312/serve">Tailscale&#8217;s serve command</a> is similar to what I want, but not quite.  I could reverse proxy one service, but it wouldn&#8217;t really help me run multiple services on one host. Plus, it seems this feature is focused on TLS. And I&#8217;m running services on top of Tailscale, which already provides encryption, so I&#8217;m less interested in TLS in this context.</p>
+
+
+
+<h3 class="wp-block-heading">Universal Docker Mods</h3>
+
+
+
+<p class="wp-block-paragraph">I got excited when I saw <a href="https://tailscale.dev/blog/docker-mod-tailscale">this blog post</a> about Tailscale&#8217;s Universal Docker Mods for <a href="https://www.linuxserver.io/">linuxserver.io</a> containers.  I like what linuxserver.io is doing, and I use their image for FreshRSS.</p>
+
+
+
+<p class="wp-block-paragraph">Alas, after trying to work with it for a couple hours, I couldn&#8217;t get it to work with FreshRSS.  I&#8217;m still not sure why, but I kept getting &#8220;Connection Reset&#8221; errors when trying to connect to the app.  I&#8217;m sure the feature works, but I just don&#8217;t understand how to use it yet. Or maybe I didn&#8217;t know how to configure FreshRSS properly while I did this experiment.</p>
+
+
+
+<p class="wp-block-paragraph">Plus linuxserver.io doesn&#8217;t publish an image for Jellyfin.  So even if I used this technique for FreshRSS, I don&#8217;t think I could do the same thing for Jellyfin.</p>
+
+
+
+<h3 class="wp-block-heading">Eureka</h3>
+
+
+
+<p class="wp-block-paragraph">Then I stumbled across <a href="https://www.reddit.com/r/Tailscale/comments/17dex7h/use_tailscale_with_docker_compose/">this Reddit post</a>, where user, thundranos, posted a docker-compose file that had some syntax that I wasn&#8217;t familiar with, <code>network_mode: service:tailscale</code>.  Here is an example docker-compose.yml file for FreshRSS using the same technique.</p>
+
+
+<pre class="wp-block-code" aria-describedby="shcb-language-1" data-shcb-language-name="PHP" data-shcb-language-slug="php"><span><code class="hljs language-php">---
+version: <span class="hljs-string">"2.1"</span>
+services:
+  freshrss:
+    image: <span class="hljs-string">"lscr.io/linuxserver/freshrss:latest"</span>
+    container_name: freshrss
+    environment:
+      - PUID=<span class="hljs-number">1001</span>
+      - PGID=<span class="hljs-number">1001</span>
+      - TZ=America/Los_Angeles
+    volumes:
+      - ./data:/config
+    restart: unless-stopped
+    network_mode: service:tailscale
+    depends_on:
+      - tailscale
+
+  tailscale:
+    image: tailscale/tailscale:latest
+    <span class="hljs-comment"># <span class="hljs-doctag">NOTE:</span> since the container using "network_mode:container_name" shares</span>
+    <span class="hljs-comment"># their network stack with this container, this hostname affects both</span>
+    <span class="hljs-comment"># containers.</span>
+    hostname: <span class="hljs-string">"freshrss"</span>
+    volumes:
+      - ./tailscale:/<span class="hljs-keyword">var</span>/run/tailscale
+    environment:
+      - TS_HOSTNAME=freshrss
+      - TS_USERSPACE=<span class="hljs-keyword">true</span>
+      - TS_STATE_DIR=/<span class="hljs-keyword">var</span>/run/tailscale
+    restart: unless-stopped
+</code></span><small class="shcb-language" id="shcb-language-1"><span class="shcb-language__label">Code language:</span> <span class="shcb-language__name">PHP</span> <span class="shcb-language__paren">(</span><span class="shcb-language__slug">php</span><span class="shcb-language__paren">)</span></small></pre>
+
+
+<p class="wp-block-paragraph">This configuration worked! 🎉  Once I authenticated the tailscale container to my tailnet, I could use the pretty hostname, &#8220;http://freshrss.yak-bebop.ts.net&#8221;. (Plus some application-specific configuration within the FreshRSS application itself.)</p>
+
+
+
+<p class="wp-block-paragraph">I tried to figure out what that setting meant, and why I hadn&#8217;t noticed it before.  Turns out I&#8217;m not the only one who <a href="https://github.com/docker/docs/issues/5325">wishes the docs were better for this setting</a>.  Apparently <code>network_mode: service:tailscale</code> means that the <code>freshrss</code> container shares the same network stack as the <code>tailscale</code> container.  I wasn&#8217;t sure what that meant until I did an experiment where I changed the <code>hostname</code> setting in the tailscale container to say <code>hostname: tailscale</code>, and then used <code>docker-compose exec freshrss /bin/sh</code> to log into the container and see what its hostname was.  When I saw the container named, &#8220;freshrss&#8221;, say its hostname was &#8220;tailscale&#8221;, it clicked for me what &#8220;shared network stack meant&#8221;. It means literally sharing the same network stack.  Sure enough, when I ran <code>ip addr</code> in each container I saw that both containers reported having the same IP addres.  TIL.</p>
+
+
+
+<p class="wp-block-paragraph">Now you can repeat that exercise with a Jellyfin container and the goal is achieved.  Two services, each with their own DNS name, running on a well-known port. And that I can access from anywhere, provided I have an authenticated Tailscale client. So I can finally say:</p>
+
+
+
+<ul class="wp-block-list">
+<li>http://freshrss.yak-bebop.ts.net/</li>
+
+
+
+<li>http://jellyfin.yak-bebop.ts.net/</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">What are the trade-offs?  Tailscale has a limit on their free-tier of 100 &#8220;machines&#8221;.  Each one of these side-car containers running in my docker-compose applications counts as one of those &#8220;machines&#8221;.  </p>
+
+
+
+<h2 class="wp-block-heading">Summary</h2>
+
+
+
+<p class="wp-block-paragraph">Thankfully, I&#8217;m well below that threshold, and I appreciate Tailscale having such a generous free tier. Especially when learning about Zero Trust Networking concepts and mesh overlay networks.  I have a much better idea now of how I would use a side-car container like this when deploying an app in a Kubernetes pod, for example.</p>
+
+
+
+<p class="wp-block-paragraph">So far, I&#8217;m pretty happy with this setup.  Since this took me so long to figure out, I thought I would share what I learned here in case it helps someone else. Is there an easier way?  <a href="https://mastodon.social/@jefframnani">Let me know!</a> 🙂</p>
+
+
+
+<hr class="wp-block-separator has-alpha-channel-opacity"/>
+
+
+
+<p class="wp-block-paragraph">Thanks to the following for their review and feedback prior to publishing: <a href="https://github.com/Middlebrooks314">Malisa Middlebrooks</a>, <a href="https://blog.chris-read.net/">Chris Read</a>, <a href="https://github.com/Aoxian">Ian Gagorik</a>.</p>
+
+
+
+<p class="has-small-font-size wp-block-paragraph">Header image: &#8220;<a href="https://www.flickr.com/photos/39427725@N00/3402955869">macro pixels url cliche</a>&#8221; by Cubosh is licensed under CC BY 2.0.<br>To view a copy of this license, visit <a href="https://creativecommons.org/licenses/by/2.0/?ref=openverse">https://creativecommons.org/licenses/by/2.0/?ref=openverse</a>.</p>
+
+		
+									</div>
+	<!-- .entry-content -->
+
+			<div class="post-author-bottom">
+			<div class="post-author-card">
+				<a class="site-logo" href="https://jefframnani.com">
+					<img alt='' src='https://secure.gravatar.com/avatar/5cb9c56d80823aae21be27c176265cc53114c759b219c4697371ca6f97c15883?s=100&#038;d=mm&#038;r=g' srcset='https://secure.gravatar.com/avatar/5cb9c56d80823aae21be27c176265cc53114c759b219c4697371ca6f97c15883?s=200&#038;d=mm&#038;r=g 2x' class='avatar avatar-100 photo u-photo' height='100' width='100' decoding='async'/>				</a>
+
+				<div class="post-author-info">
+					<div class="site-title">
+						<span class="byline"><span class="author p-author vcard h-card"><a class="u-url url fn n" href="https://jefframnani.com" title="View all posts by jramnani" rel="author">jramnani</a></span></span>					</div>
+
+					<div class="site-description">A former comedian. Now I make compilers laugh all day.</div>
+				</div>
+				<div class="post-published-date">
+					<h2 class="site-published">Published</h2>
+					<h2 class="site-published-date"><a href="https://jefframnani.com/2024/01/getting-nice-urls-in-tailscale/" title="Getting Nice URLs in Tailscale" rel="bookmark"><time class="entry-date dt-published" datetime="2024-01-26T15:56:46-0800" itemprop="datePublished" pubdate="pubdate">January 26, 2024</time></a></h2>
+										
+					
+				</div>
+			</div>
+		</div>
+		<!-- .post-author-bottom -->
+		
+	<footer class="entry-meta">
+		
+		
+			</footer>
+	<!-- .entry-meta -->
+
+</article><!-- #post-205 -->
+
+				
+				
+				<div id="taglist"><ul class="taglist"><li class="taglist-title">Related Content by Tag</li><li><a href="https://jefframnani.com/tag/containers/" rel="tag">containers</a></li><li><a href="https://jefframnani.com/tag/vpn/" rel="tag">vpn</a></li></ul></div>
+			
+		</main>
+		<!-- #content .site-content -->
+	</div><!-- #primary .content-area -->
+
+<div id="secondary" class="widget-area" role="complementary">
+	</div><!-- #secondary .widget-area -->
+
+</div><!-- #main .site-main -->
+
+<footer id="colophon" class="site-footer" itemscope="itemscope" itemtype="http://schema.org/WPFooter" role="contentinfo">
+	<div class="site-info">
+		<a href="http://independentpublisher.me" rel="designer" title="Independent Publisher: A beautiful reader-focused WordPress theme, for you.">Independent Publisher</a> empowered by <a href="http://wordpress.org/" rel="generator" title="WordPress: A free open-source publishing platform">WordPress</a>	</div>
+	<!-- .site-info -->
+</footer><!-- #colophon .site-footer -->
+</div><!-- #page .hfeed .site -->
+
+<script type="speculationrules">
+{"prefetch":[{"source":"document","where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":["/wp-*.php","/wp-admin/*","/wp-content/uploads/*","/wp-content/*","/wp-content/plugins/*","/wp-content/themes/independent-publisher/*","/*\\?(.+)"]}},{"not":{"selector_matches":"a[rel~=\"nofollow\"]"}},{"not":{"selector_matches":".no-prefetch, .no-prefetch a"}}]},"eagerness":"conservative"}]}
+</script>
+<div class='license-wrap'><a rel='license' href='http://creativecommons.org/licenses/by/4.0/'><img alt='Creative Commons License' style='border-width:0' src='https://jefframnani.com/wp-content/plugins/creative-commons/includes/images/by.png' width='88' height='31' loading='lazy'  /></a><br />Except where otherwise noted, the content by <a href="https://www.jefframnani.com">Jeff Ramnani</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International</a> License.</div>
+<!-- Koko Analytics v2.5.3 - https://www.kokoanalytics.com/ -->
+<script>
+(()=>{var e=window.koko_analytics,s=["utm_source","utm_medium","utm_campaign"],d=/bot|crawl|spider|seo|lighthouse|facebookexternalhit|preview|prerender|headless|phantom|scrapy|python|curl|wget|go-http|okhttp|node-fetch|axios|java\/|libwww|http[-_]?client|monitor|uptime|pingdom|statuscake|validator|scanner/i;function u(){let t={},n=new URLSearchParams(window.location.search),c=new URLSearchParams(window.location.hash.substring(1));return s.forEach(a=>{let o=n.get(a)||c.get(a);o&&(t[a]=o)}),t}function h(t,n){if(typeof navigator.sendBeacon=="function"){navigator.sendBeacon(t,n);return}fetch(t,{method:"POST",body:n,keepalive:!0,credentials:"same-origin"}).catch(()=>{})}e.trackPageview=function(t,n){if(d.test(navigator.userAgent)||window._phantom||window.__nightmare||window.navigator.webdriver||window.Cypress){console.debug("Koko Analytics: Ignoring call to trackPageview because user agent is a bot or this is a headless browser.");return}h(e.url,new URLSearchParams({action:"koko_analytics_collect",pa:t,po:n,r:document.referrer.indexOf(e.site_url)==0?"":document.referrer,m:e.use_cookie?"c":e.method[0],...u()}))};function r(){e.trackPageview(e.path,e.post_id)}function i(){e.autotracked||(r(),e.autotracked=!0)}document.prerendering?document.addEventListener("prerenderingchange",i,{once:!0}):document.visibilityState==="hidden"||document.visibilityState==="prerender"?document.addEventListener("visibilitychange",()=>{document.visibilityState==="visible"&&i()}):i();window.addEventListener("pageshow",t=>{t.persisted&&r()});})();
+</script>
+
+<script id="independent-publisher-skip-link-focus-fix-js" src="https://jefframnani.com/wp-content/themes/independent-publisher/js/skip-link-focus-fix.js?ver=20130115"></script>
+<script id="enlighterjs-js" src="https://jefframnani.com/wp-content/plugins/enlighter/cache/enlighterjs.min.js?ver=5WH6xrhws9jcep%2F"></script>
+<script id="enlighterjs-js-after">
+!function(e,n){if("undefined"!=typeof EnlighterJS){var o={"selectors":{"block":"pre.EnlighterJSRAW","inline":"code.EnlighterJSRAW"},"options":{"indent":4,"ampersandCleanup":true,"linehover":true,"rawcodeDbclick":false,"textOverflow":"break","linenumbers":true,"theme":"enlighter","language":"generic","retainCssClasses":false,"collapse":false,"toolbarOuter":"","toolbarTop":"{BTN_RAW}{BTN_COPY}{BTN_WINDOW}{BTN_WEBSITE}","toolbarBottom":""}};(e.EnlighterJSINIT=function(){EnlighterJS.init(o.selectors.block,o.selectors.inline,o.options)})()}else{(n&&(n.error||n.log)||function(){})("Error: EnlighterJS resources not loaded yet!")}}(window,console);
+//# sourceURL=enlighterjs-js-after
+</script>
+<script id="wp-emoji-settings" type="application/json">
+{"baseUrl":"https://s.w.org/images/core/emoji/17.0.2/72x72/","ext":".png","svgUrl":"https://s.w.org/images/core/emoji/17.0.2/svg/","svgExt":".svg","source":{"concatemoji":"https://jefframnani.com/wp-includes/js/wp-emoji-release.min.js?ver=7.1.2"}}
+</script>
+<script type="module">
+/*! This file is auto-generated */
+var e="script#wp-emoji-settings",t=document.querySelector(e);if(!(t instanceof HTMLScriptElement))throw new Error("Element missing: "+e);const r=JSON.parse(t.text),s=(window._wpemojiSettings=r,"wpEmojiSettingsSupports"),o=["flag","emoji"];function i(e){try{var t={supportTests:e,timestamp:(new Date).valueOf()};sessionStorage.setItem(s,JSON.stringify(t))}catch(e){}}function c(e,t,n){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);t=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data);e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(n,0,0);const r=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data);return t.every((e,t)=>e===r[t])}function p(e,t){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);var n=e.getImageData(16,16,1,1);for(let e=0;e<n.data.length;e++)if(0!==n.data[e])return!1;return!0}function u(e,t,n,r){switch(t){case"flag":return n(e,"\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f","\ud83c\udff3\ufe0f\u200b\u26a7\ufe0f")?!1:!n(e,"\ud83c\udde8\ud83c\uddf6","\ud83c\udde8\u200b\ud83c\uddf6")&&!n(e,"\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f","\ud83c\udff4\u200b\udb40\udc67\u200b\udb40\udc62\u200b\udb40\udc65\u200b\udb40\udc6e\u200b\udb40\udc67\u200b\udb40\udc7f");case"emoji":return!r(e,"\ud83e\u1fac8")}return!1}function f(e,t,n,r){let a;const s=(a="undefined"!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?new OffscreenCanvas(300,150):document.createElement("canvas")).getContext("2d",{willReadFrequently:!0}),o=(s.textBaseline="top",s.font="600 32px Arial",{});return e.forEach(e=>{o[e]=t(s,e,n,r)}),o}function a(e){var t=document.createElement("script");t.src=e,t.defer=!0,document.head.appendChild(t)}r.supports={everything:!0,everythingExceptFlag:!0},new Promise(t=>{let n=function(){try{var e=JSON.parse(sessionStorage.getItem(s));if("object"==typeof e&&"number"==typeof e.timestamp&&(new Date).valueOf()<e.timestamp+604800&&"object"==typeof e.supportTests)return e.supportTests}catch(e){}return null}();if(!n){if("undefined"!=typeof Worker&&"undefined"!=typeof OffscreenCanvas&&"undefined"!=typeof URL&&URL.createObjectURL&&"undefined"!=typeof Blob)try{var e="postMessage("+f.toString()+"("+[JSON.stringify(o),u.toString(),c.toString(),p.toString()].join(",")+"));",r=new Blob([e],{type:"text/javascript"});const a=new Worker(URL.createObjectURL(r),{name:"wpTestEmojiSupports"});return void(a.onmessage=e=>{i(n=e.data),a.terminate(),t(n)})}catch(e){}i(n=f(o,u,c,p))}t(n)}).then(e=>{for(const n in e)r.supports[n]=e[n],r.supports.everything=r.supports.everything&&r.supports[n],"flag"!==n&&(r.supports.everythingExceptFlag=r.supports.everythingExceptFlag&&r.supports[n]);var t;r.supports.everythingExceptFlag=r.supports.everythingExceptFlag&&!r.supports.flag,r.supports.everything||((t=r.source||{}).concatemoji?a(t.concatemoji):t.wpemoji&&t.twemoji&&(a(t.twemoji),a(t.wpemoji)))});
+//# sourceURL=https://jefframnani.com/wp-includes/js/wp-emoji-loader.min.js
+</script>
+
+</body>
+</html>

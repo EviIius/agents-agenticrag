@@ -1,0 +1,666 @@
+<!doctype html><html><head>
+	<meta charset="UTF-8">
+	<!--
+		DEV-1215 · CLS · reserve the page chrome's footprint before any JS runs.
+		<wral-header> and <wral-alerts-bar> ship as empty custom-element tags that
+		are upgraded by the deferred core module, so on a slow/cold load first
+		paint lays them out at 0px and everything below jumps down ~131-195px once
+		the library arrives. These min-heights are the pre-upgrade floor; the
+		components set the --wral-*-height variables themselves once defined.
+		Must stay the first tag in <head> (after charset) so it applies to the
+		very first paint. No background rule, by team decision 2026-08-17.
+	-->
+	<style>
+		wral-header {
+			display: block;
+			min-height: var(--wral-header-height, 44px);
+		}
+		wral-alerts-bar {
+			display: block;
+			min-height: var(--wral-alerts-bar-height, 87px);
+		}
+		@media (min-width: 1024px) {
+			wral-header {
+				min-height: var(--wral-header-height, 108px);
+			}
+		}
+		/* DEV-893: hold the radar/conditions row at its upgraded height (600px radar on phones, 518px row on desktop) so nothing below moves */
+		/* DEV-893: needed once ima3.js and wralvideo.js are gone (the template bundle then renders before the library); the desktop floor stays after upgrade, so keep 518px in step with the radar and conditions heights */
+		@media (max-width: 1024px) {
+			.weather-conditions-wrapper > my-interactive-radar:not(:defined) {
+				display: block;
+				min-height: 600px;
+			}
+		}
+		@media (min-width: 1025px) {
+			.weather-conditions-wrapper {
+				min-height: 518px !important;
+			}
+		}
+	</style>
+	<!-- DEV-893: desktop CLS: the rail ad slots and the sub-nav current-link border keep their final size from first paint -->
+	<style id="wx-desktop-cls">
+		/* rail: keep empty rail ad slots in the flow at rail widths, so the ad stack's own 600px right-rail reservation (htlbid opscobid.css) holds from first paint and the Get the app link below never jumps when the slots fill */
+		@media (min-width: 1024px){.layout-a__rail .layout-a__rail-slot:empty{display:block}}
+		/* sub-nav: every link carries the current-page border's 3px (transparent) from first paint, so marking the current link later (index.mjs) does not grow the header */
+		:where(wral-section-header > a[slot=nav]){border-bottom:3px solid transparent}
+	</style>
+	<!-- TEMP local test harness (gated by ?mockHurricane) — remove after verification -->
+	<script>
+	(function () {
+		if (typeof location === 'undefined' || location.search.indexOf('mockHurricane') === -1) return;
+		var canned = {"data":{"generated_at":"2026-06-17T19:15:21.570Z","basin":"atlantic","storms":[{"id":"AL-ARTHUR-2026","name":"Arthur","basin":"atlantic","classification":"tropical_storm","category":null,"position":{"lat":28.8,"lon":-95.5},"movement":{"direction":"NE","speed":9},"winds":{"sustained":46,"gusts":58},"pressure":999,"advisory":{"number":null,"issued_at":"2026-06-17T16:30:00.000Z"}}],"count":1,"season":{"year":2026,"named_storms":1,"hurricanes":0}}};
+		var origFetch = window.fetch.bind(window);
+		window.fetch = function (input, init) {
+			var url = (typeof input === 'string') ? input : (input && input.url) || '';
+			if (url.indexOf('/hurricanes/active') !== -1) {
+				return Promise.resolve(new Response(JSON.stringify(canned), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+			}
+			return origFetch(input, init);
+		};
+		console.log('[mockHurricane] fetch override active');
+	})();
+	</script>
+	<!-- OneTrust Cookies Consent Notice start for wral.com -->
+	<!-- DEV-893: phones that will show the consent banner fetch its SDK now; keep before otSDKStub.js and the path in step with OneTrust's version -->
+	<!-- DEV-893: the consent banner text is the /weather/ phone LCP element until a visitor closes it; with this preload first-visit LCP measured 3.0 s to 1.5 s (lab, live page with ads, 2026-09-29) -->
+	<!-- DEV-893: returning visitors (OptanonAlertBoxClosed cookie) and desktop skip it; keep this script free of backslashes (the plexer strips them); 202310.1.0 must match OneTrust's domain data Version -->
+	<link rel="preconnect" href="https://geolocation.onetrust.com" crossorigin="">
+	<script>(function(){try{if(document.cookie.indexOf('OptanonAlertBoxClosed=')>-1||!window.matchMedia('(max-width: 1024px)').matches)return;var l=document.createElement('link');l.rel='preload';l.as='script';l.fetchPriority='high';l.href='https://cdn.cookielaw.org/scripttemplates/202310.1.0/otBannerSdk.js';document.head.appendChild(l);}catch(e){}})();</script>
+	<script src="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js" type="text/javascript" charset="UTF-8" data-domain-script="6d068f80-e744-46ab-877e-4847983f3ad4"></script>
+	<script type="text/javascript">
+	function OptanonWrapper() { }
+	</script>
+	<!-- OneTrust Cookies Consent Notice end for wral.com -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="sitemap" type="application/xml" href="/sitemap_index.xml">
+	<link rel="preconnect" href="https://securepubads.g.doubleclick.net" crossorigin="">
+	<link rel="preconnect" href="https://images.wral.com" crossorigin="">
+	<link rel="preconnect" href="https://web-components.cdn.wral.com" crossorigin="">
+	<link rel="preconnect" href="https://api.wral.com" crossorigin="">
+	<!-- DEV-893: wral-alerts-bar fetches this on upgrade; its ticker is the phone LCP element when no consent banner shows -->
+	<link rel="preload" as="fetch" crossorigin="" href="https://api.wral.com/alerts/cachedAlerts">
+	<link rel="modulepreload" href="https://web-components.cdn.wral.com/core/v0.15/components.es.js">
+	<link rel="dns-prefetch" href="https://htlbid.com">
+	<link rel="dns-prefetch" href="https://config.aps.amazon-adsystem.com">
+	<link rel="canonical" href="https://www.wral.com/weather/">
+	<meta name="robots" content="index, follow">
+	<meta property="og:type" content="website">
+	<title>WRAL Weather | Raleigh weather this week</title>
+	<link rel="icon" type="image/png" href="https://www.wral.com/favicon-48x48.png" sizes="48x48">
+	<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TV2CD7D" onload="window.dataLayer = window.dataLayer || []; window.dataLayer.push({ &#x27;gtm.start&#x27; : new Date().getTime(), event : &#x27;gtm.js&#x27; });">
+	</script>
+	<meta name="description" content="WRAL Weather: hourly, seven-day, and weekend forecasts for Raleigh, Durham, and the rest of Central North Carolina, plus radar, alerts, hurricanes, and almanac.">
+	<meta name="keywords" content="WRAL Weather,Raleigh weather,NC forecast,radar,hurricane,almanac">
+	<meta name="author" content="WRAL News">
+	<meta property="og:title" content="WRAL Weather | Raleigh weather this week">
+	<meta property="og:description" content="WRAL Weather: hourly, seven-day, and weekend forecasts for Raleigh, Durham, and the rest of Central North Carolina, plus radar, alerts, hurricanes, and almanac.">
+	<meta property="og:image" content="https://assets.wral.com/a1cc0e86-adab-48e9-bd80-703cd2c56aff?w=1200&#x26;h=630">
+	<meta property="og:url" content="https://www.wral.com/weather/">
+	<meta property="og:site_name" content="WRAL News">
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="WRAL Weather | Raleigh weather this week">
+	<meta name="twitter:description" content="WRAL Weather: hourly, seven-day, and weekend forecasts for Raleigh, Durham, and the rest of Central North Carolina, plus radar, alerts, hurricanes, and almanac.">
+	<meta name="twitter:image" content="https://assets.wral.com/a1cc0e86-adab-48e9-bd80-703cd2c56aff?w=1200&#x26;h=630">
+
+	<meta name="ad-unit-path" content="wral-v4/weather">
+	<script>
+		(() => {
+			const define = (root) => {
+				if (!root || typeof root.__WRAL_IS_SPONSORED === 'function') return;
+				root.__WRAL_IS_SPONSORED = (entity) => {
+					if (!entity || typeof entity !== 'object') return false;
+					if (entity.sponsored === true || String(entity.sponsored || '').toLowerCase() === 'true') return true;
+					const tags = Array.isArray(entity.tags) ? entity.tags : [];
+					return tags.some((tag) => {
+						const value = typeof tag === 'string' ? tag : (tag?.name || tag?.displayName || tag?.label || '');
+						return typeof value === 'string' && value.trim().toLowerCase() === 'sponsored';
+					});
+				};
+			};
+			if (typeof window !== 'undefined') define(window);
+		})();
+	</script>
+
+	<!-- DEV-893: no video player on this template (video cards are links, ExCo loads its own SDK), so ima3.js and wralvideo.js are not loaded -->
+	<!-- DEV-893: verified 2026-09-29 that nothing calls window.wralvideo (template, bundle, library, GTM v117); recheck GTM before each release -->
+
+	<script type="application/ld+json">
+[
+	{
+		"@context": "https://schema.org",
+		"@type": "WebSite",
+		"name": "WRAL News",
+		"url": "https://www.wral.com/weather/",
+		"potentialAction": {
+			"@type": "SearchAction",
+			"target": { "@type": "EntryPoint", "urlTemplate": "https://www.wral.com/search/?q={search_term_string}" },
+			"query-input": "required name=search_term_string"
+		}
+	},
+	{
+		"@context": "https://schema.org",
+		"@type": "NewsMediaOrganization",
+		"name": "WRAL News",
+		"url": "https://www.wral.com/",
+		"description": "The official website for WRAL News, bringing you the latest Raleigh, Durham and Fayetteville community news and weather from the Research Triangle in North Carolina and beyond. Owned by the Capitol Broadcasting Company, Inc.",
+		"sameAs": [
+			"https://www.facebook.com/WRALTV/",
+			"https://x.com/WRAL",
+			"https://www.instagram.com/wral/?hl=en",
+			"https://www.youtube.com/channel/UCfmkz6A3aTJwJzox2xhAuRw"
+		],
+		"logo": {
+			"@type": "ImageObject",
+			"url": "https://www.wral.com/presentation/v3/images/content/wralnews_newsschema_logo.jpg",
+			"width": 300,
+			"height": 60
+		}
+	}
+]
+	</script>
+
+	<!-- web-components-wral · core library -->
+	<!--
+		Prod resolves to the frozen minor "v0.15" (DEV-1215 — the CLS fix landed
+		in v0.15.19); staging stays on "v0" (latest) so new core releases get
+		canary coverage before prod is re-pinned. Re-pin prod by changing the
+		fallback minor in the three expressions below. src/fixtures/fixture.json
+		sets publication.site to "wral.com", so local dev renders the prod branch.
+		The loader is `type="module" async` so the upgrade can run as soon as the
+		module lands instead of waiting on the full parse — safe only because the
+		reservation CSS at the top of <head> holds the chrome's space.
+	-->
+	<link rel="stylesheet" href="https://web-components.cdn.wral.com/core/v0.15/styles.css" media="all" onload="this.media=&#x27;all&#x27;">
+  	<script type="module" src="https://web-components.cdn.wral.com/weather/icon/v0/component.es.js"></script>
+	<script type="module" async src="https://web-components.cdn.wral.com/core/v0.15/components.es.js"></script>
+
+	</head><body>
+
+	
+
+	
+		<!--
+			<wral-map-center-lightbox> · DEV-979 · standalone Lit component.
+			Published by web-components.wral-map-center-lightbox on every v*.*.* tag.
+			Bump the version here when a new release ships. Loaded only on pages
+			that mount the Map Center grid (any fixture section with content.lightbox).
+		-->
+		<script src="https://cdn.wral.com/@wral/map-center-lightbox/v0.2.1/define.standalone.js" type="module"></script>
+	
+
+
+	<!-- Hashtag Labs · header bidder -->
+	<link rel="stylesheet" type="text/css" href="https://htlbid.com/v3/wral.com/opscobid.css">
+	<script async src="https://htlbid.com/v3/wral.com/opscobid.js"></script>
+
+	<!-- Nativo ads -->
+	<script type="text/javascript" src="https://s.ntv.io/serve/load.js" async></script>
+
+	<!-- Taboola -->
+	<script type="text/javascript">
+		window._taboola = window._taboola || [];
+		_taboola.push({ category: 'auto' });
+		!function (e, f, u, i) {
+			if (!document.getElementById(i)) {
+				e.async = 1; e.src = u; e.id = i;
+				f.parentNode.insertBefore(e, f);
+			}
+		}(document.createElement('script'),
+			document.getElementsByTagName('script')[0],
+			'//cdn.taboola.com/libtrc/wral-wralnews/loader.js',
+			'tb_loader_script');
+		if (window.performance && typeof window.performance.mark == 'function') { window.performance.mark('tbl_ic'); }
+	</script>
+
+	<!-- Admiral measure -->
+	<script type="text/javascript">
+		!(function(Y, _name) { Y[_name] = Y[_name] || function D() { (D.q = D.q || []).push(arguments) }; Y[_name].v = Y[_name].v || 2; Y[_name].s = "1"; })(window, "admiral");
+		!(function(Y, D, A, U) { A = Y.createElement(D); Y = Y.getElementsByTagName(D)[0]; A.async = 1; A.src = "https://websitesdude.com/files/l1mg4m_15klgw-prod.js"; (U = 0) && U(A); Y.parentNode.insertBefore(A, Y); })(document, "script");
+	</script>
+  <script type="module" crossorigin="" src="https://web-components.cdn.wral.com/weather/v1.1.40/assets/bundle.Bevr2Ami.js"></script>
+  <link rel="stylesheet" crossorigin="" href="https://web-components.cdn.wral.com/weather/v1.1.40/assets/bundle.BvDonjQg.css">
+
+
+	<h1 class="visually-hidden">WRAL Weather, Raleigh NC forecast, radar, alerts and almanac</h1>
+
+	<wral-header style="position: sticky; top: 0; z-index: 99999;"></wral-header>
+	<wral-alerts-bar id="alerts"></wral-alerts-bar>
+
+	<!-- Above-fold ad slots, section-front pattern -->
+	<div class="opscoad-OOP_Leaderboard" data-unit="wral-v4/weather"></div>
+	<div class="opscoad-OOP_Pushdown" data-unit="wral-v4/weather"></div>
+	<div class="opscoad-Mobile_Adhesion" data-unit="wral-v4/weather"></div>
+
+	<main class="weather-main">
+		<wral-section-header>
+			<h1 slot="title">Weather</h1>
+			
+			<a slot="nav" href="/weather/#hourly">Hourly</a>
+			<a slot="nav" href="/weather/#7-day">7 Day</a>
+			<a slot="nav" href="/weather/#weekend">Weekend</a>
+			<a slot="nav" href="/weather_map_center/8106570/">Map Center</a>
+			<a slot="nav" href="/weather/alerts/">Weather Alerts<span class="weather-subnav__badge" data-alerts-badge="" hidden></span></a>
+			<a slot="nav" href="/weather/hurricanes/">Hurricanes</a>
+			<a slot="nav" href="/weather/closings/">Closings</a>
+			<a slot="nav" href="/weather/almanac/">Almanac</a>
+			<a slot="nav" href="/webcams/">Webcams</a>
+			<a slot="nav" href="/weather/resources/">Resources</a>
+		</wral-section-header>
+
+		<!--
+			Page-level layout: when a fixture declares `pageRail.slots[]`, wrap the section
+			list in a CSS grid with a sticky right-rail aside. Without `pageRail` the
+			layout class collapses to a passthrough so other fixtures render unchanged.
+		-->
+		<div class="weather-main__layout">
+			<div class="weather-main__content">
+		
+
+			<!-- ===== layout-a section ===== -->
+			
+				<section id="weather-top" class="section-wrapper content-wrapper layout-a-section">
+					<div class="layout-a__layout">
+						<div class="layout-a__content">
+
+							
+
+							<!-- ===== layout-a__main ===== -->
+							<div class="layout-a__main">
+								
+
+								
+
+								
+									<section style="min-height:316px;padding:0" class="weather-conditions-wrapper">
+										<my-interactive-radar baseurl="https://api.wral.com/user-facts/v1/" weatherversion="latest" weatherqueryparams="layout=mobile&#x26;openMenuOnLoad=false"></my-interactive-radar>
+										<wral-weather-conditions id="weather-conditions" baseurl="https://api.wral.com/user-facts/v1/"></wral-weather-conditions>
+										<my-wral-benefits-modal></my-wral-benefits-modal>
+									</section>
+
+									<!-- DEV-1087: mobile 300x250 above the 7-Day/Hourly/Weekend forecast -->
+									<div class="opscoad-Mobile_In_Content" data-unit="wral-v4/weather"></div>
+
+									<wral-weather-forecast></wral-weather-forecast>
+								
+
+								<!-- DEV-1087: mid-page ad cluster below the weather widgets (desktop leaderboard #1 + mobile in-content) -->
+								<div class="ad-container">
+									<div class="opscoad-Mobile_In_Content" data-unit="wral-v4/weather"></div>
+									<div class="opscoad-Desktop_Leaderboard" data-unit="wral-v4/weather"></div>
+								</div>
+
+								<!-- DEV-893: images.wral.com resizes on request, so video card images ask for 640x360 webp instead of the full original (up to 579 KB; it was the desktop LCP element) -->
+								
+									<ul class="weather-video-links">
+										
+											<li>
+												<article-asset href="https://www.wral.com/video/live-dualdoppler5000-radar/" asset-video-is-live="true" asset-video-duration="">
+													
+														<div slot="thumbnail" class="aspect-16x9">
+															<img src="https://video-thumbnails.wral.com/thumbnail?src=https%3A%2F%2Fmedia-hls.wral.com%2Flivehttporigin%2F_definst_%2Fsmil%3Aencoder62-full.smil%2Fplaylist.m3u8" loading="lazy" decoding="async" alt="Live DUALDoppler5000">
+														</div>
+													
+													<h3 slot="title"><a href="https://www.wral.com/video/live-dualdoppler5000-radar/">Live DUALDoppler5000</a></h3>
+												</article-asset>
+											</li>
+										
+											<li>
+												<article-asset href="https://www.wral.com/video/forecast-raleigh-durham-fayetteville/" asset-video-is-live="" asset-video-duration="">
+													
+														<div slot="thumbnail" class="aspect-16x9">
+															<img src="https://images.wral.com/05e30a18-b496-4556-9484-a470d6d8175a?w=640&#x26;h=360&#x26;f=webp" loading="lazy" decoding="async" alt="WRAL WeatherCenter Forecast">
+														</div>
+													
+													<h3 slot="title"><a href="https://www.wral.com/video/forecast-raleigh-durham-fayetteville/">WRAL WeatherCenter Forecast</a></h3>
+												</article-asset>
+											</li>
+										
+									</ul>
+								
+
+								
+
+								
+
+								
+
+								
+							</div>
+
+							<!-- ExCo video player (above Map Center) -->
+							
+								<div class="layout-a__exco">
+									<div class="exco-wrapper" style="aspect-ratio: 16/9;">
+										
+											<p>Other WRAL Top Stories</p>
+										
+										<div class="exco-player" style="width: inherit;" feature="vendor.exco.player" id="d8af3f9c-ad37-4890-8ed5-bb0ce702acdf"></div>
+									</div>
+								</div>
+							
+
+							<!-- Map Center tiles + lightbox · <wral-map-center-lightbox> (DEV-979) -->
+							<!-- DEV-1087: desktop 970x250 leaderboard above Map Center -->
+							<!-- DEV-1298: advertising.hideAboveLightbox drops it where nothing separates it from the ad closing layout-a__main -->
+							
+								<div class="ad-container">
+									<div class="opscoad-Desktop_Leaderboard" data-unit="wral-v4/weather"></div>
+								</div>
+							
+							
+								
+									<h2 class="section-title">
+										
+											<a href="/weather_map_center/8106570/">Map Center</a>
+										
+										
+									</h2>
+								
+								<wral-map-center-lightbox base-url="https://api.wral.com/wxdata/v2" layers="dualdoppler5000,radar,satellite,forecasts,rainfall,temperatures">
+									<!-- DEV-1087: removed the in-lightbox ad slot; Map Center now uses the dedicated 970x250 units placed above and below the lightbox (avoids 3 stacked desktop leaderboards). -->
+								</wral-map-center-lightbox>
+							
+
+							<!-- DEV-1087: ad directly below Map Center (desktop 970x250 + mobile 300x250), above the stories -->
+							
+								<div class="ad-container">
+									<div class="opscoad-Mobile_In_Content" data-unit="wral-v4/weather"></div>
+									<div class="opscoad-Desktop_Leaderboard" data-unit="wral-v4/weather"></div>
+								</div>
+							
+
+							
+
+							
+								<div class="layout-a__asset-list">
+									<ul class="layout-a__vertical-list">
+										<!-- DEV-893: __imageBase drops any query already on an images.wral.com URL before the resize parameters are added; a second ? made every card fetch the 84 KB original -->
+										
+											<li>
+												<article-asset href="https://www.wral.com/weather/forecast-raleigh-durham-fayetteville/" align-thumbnail="right" date="2026-10-01T19:30:26Z" asset-video-duration="" asset-video-is-live="">
+													
+														<div slot="thumbnail" class="aspect-16x9">
+															<img src="https://images.wral.com/05e30a18-b496-4556-9484-a470d6d8175a?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/05e30a18-b496-4556-9484-a470d6d8175a?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/05e30a18-b496-4556-9484-a470d6d8175a?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/05e30a18-b496-4556-9484-a470d6d8175a?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Weekend cold front brings a good chance for rain">
+														</div>
+													
+													<h3 slot="title"><a href="https://www.wral.com/weather/forecast-raleigh-durham-fayetteville/">Weekend cold front brings a good chance for rain</a></h3>
+												</article-asset>
+											</li>
+										
+											<li>
+												<article-asset href="https://www.wral.com/weather/hurricane-season-2026-tracking-the-tropics/" align-thumbnail="right" date="2026-10-01T18:55:40Z" asset-video-duration="" asset-video-is-live="">
+													
+														<div slot="thumbnail" class="aspect-16x9">
+															<img src="https://images.wral.com/cc286394-640e-4002-932f-321ea93ae25c?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/cc286394-640e-4002-932f-321ea93ae25c?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/cc286394-640e-4002-932f-321ea93ae25c?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/cc286394-640e-4002-932f-321ea93ae25c?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Tracking the tropics: Will Fay develop again">
+														</div>
+													
+													<h3 slot="title"><a href="https://www.wral.com/weather/hurricane-season-2026-tracking-the-tropics/">Tracking the tropics: Will Fay develop again</a></h3>
+												</article-asset>
+											</li>
+										
+											<li>
+												<article-asset href="https://www.wral.com/weather/ask-the-meteorologist-how-warm-september-when-fall-weather-returns-october-2026/" align-thumbnail="right" date="2026-10-01T13:19:14Z" asset-video-duration="PT1M18S" asset-video-is-live="">
+													
+														<div slot="thumbnail" class="aspect-16x9">
+															<img src="https://images.wral.com/2341d37c-71d8-5fa6-8fc9-43108616b009?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/2341d37c-71d8-5fa6-8fc9-43108616b009?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/2341d37c-71d8-5fa6-8fc9-43108616b009?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/2341d37c-71d8-5fa6-8fc9-43108616b009?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Ask the Meteorologist: How warm was September, and when do we cool off?">
+														</div>
+													
+													<h3 slot="title"><a href="https://www.wral.com/weather/ask-the-meteorologist-how-warm-september-when-fall-weather-returns-october-2026/">Ask the Meteorologist: How warm was September, and when do we cool off?</a></h3>
+												</article-asset>
+											</li>
+										
+											<li>
+												<article-asset href="https://www.wral.com/weather/ask-the-meteorologist-predecessor-rain-event-helene-2024/" align-thumbnail="right" date="" asset-video-duration="PT1M40S" asset-video-is-live="">
+													
+														<div slot="thumbnail" class="aspect-16x9">
+															<img src="https://assets.wral.com/7cad0407-838e-4a86-8663-e15bbb833634?w=1200&#x26;h=630&#x26;height=630?w=320&#x26;h=180&#x26;f=webp" srcset="https://assets.wral.com/7cad0407-838e-4a86-8663-e15bbb833634?w=1200&#x26;h=630&#x26;height=630?w=320&#x26;h=180&#x26;f=webp 320w, https://assets.wral.com/7cad0407-838e-4a86-8663-e15bbb833634?w=1200&#x26;h=630&#x26;height=630?w=640&#x26;h=360&#x26;f=webp 640w, https://assets.wral.com/7cad0407-838e-4a86-8663-e15bbb833634?w=1200&#x26;h=630&#x26;height=630?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Two years since Helene: The &#x27;predecessor rain event&#x27; that made the storm even more devastating">
+														</div>
+													
+													<h3 slot="title"><a href="https://www.wral.com/weather/ask-the-meteorologist-predecessor-rain-event-helene-2024/">Two years since Helene: The 'predecessor rain event' that made the storm even more devastating</a></h3>
+												</article-asset>
+											</li>
+										
+											<li>
+												<article-asset href="https://www.wral.com/weather/starlink-barometer-sep-2026/" align-thumbnail="right" date="" asset-video-duration="" asset-video-is-live="">
+													
+														<div slot="thumbnail" class="aspect-16x9">
+															<img src="https://images.wral.com/8ceb8e33-4c19-46dc-8aa1-3f81e566ab42?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/8ceb8e33-4c19-46dc-8aa1-3f81e566ab42?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/8ceb8e33-4c19-46dc-8aa1-3f81e566ab42?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/8ceb8e33-4c19-46dc-8aa1-3f81e566ab42?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="How Starlink satellites could become a barometer for Earth’s upper atmosphere">
+														</div>
+													
+													<h3 slot="title"><a href="https://www.wral.com/weather/starlink-barometer-sep-2026/">How Starlink satellites could become a barometer for Earth’s upper atmosphere</a></h3>
+												</article-asset>
+											</li>
+										
+											<li>
+												<article-asset href="https://www.wral.com/weather/ask-the-meteorologist-cooler-weather-sticking-around-september-2026/" align-thumbnail="right" date="" asset-video-duration="PT1M6S" asset-video-is-live="">
+													
+														<div slot="thumbnail" class="aspect-16x9">
+															<img src="https://images.wral.com/fb3ec24a-a776-522c-8c92-401e8109be52?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/fb3ec24a-a776-522c-8c92-401e8109be52?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/fb3ec24a-a776-522c-8c92-401e8109be52?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/fb3ec24a-a776-522c-8c92-401e8109be52?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Ask the Meteorologist: How long does the cooler air stick around?">
+														</div>
+													
+													<h3 slot="title"><a href="https://www.wral.com/weather/ask-the-meteorologist-cooler-weather-sticking-around-september-2026/">Ask the Meteorologist: How long does the cooler air stick around?</a></h3>
+												</article-asset>
+											</li>
+										
+											<li>
+												<article-asset href="https://www.wral.com/weather/ask-the-meteorologist-noreaster-outer-banks-2026/" align-thumbnail="right" date="" asset-video-duration="PT1M13S" asset-video-is-live="">
+													
+														<div slot="thumbnail" class="aspect-16x9">
+															<img src="https://images.wral.com/3f63a403-2a17-5b11-ba63-933eef7f1c75?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/3f63a403-2a17-5b11-ba63-933eef7f1c75?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/3f63a403-2a17-5b11-ba63-933eef7f1c75?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/3f63a403-2a17-5b11-ba63-933eef7f1c75?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Ask the Meteorologist: What this week&#x27;s nor&#x27;easter means for North Carolina&#x27;s coast">
+														</div>
+													
+													<h3 slot="title"><a href="https://www.wral.com/weather/ask-the-meteorologist-noreaster-outer-banks-2026/">Ask the Meteorologist: What this week's nor'easter means for North Carolina's coast</a></h3>
+												</article-asset>
+											</li>
+										
+											<li>
+												<article-asset href="https://www.wral.com/weather/ask-the-meteorologist-cold-air-damming-september-2026/" align-thumbnail="right" date="" asset-video-duration="PT1M17S" asset-video-is-live="">
+													
+														<div slot="thumbnail" class="aspect-16x9">
+															<img src="https://images.wral.com/85aa45e9-b919-50a1-abc2-08bcacabc193?w=320&#x26;h=180&#x26;f=webp" srcset="https://images.wral.com/85aa45e9-b919-50a1-abc2-08bcacabc193?w=320&#x26;h=180&#x26;f=webp 320w, https://images.wral.com/85aa45e9-b919-50a1-abc2-08bcacabc193?w=640&#x26;h=360&#x26;f=webp 640w, https://images.wral.com/85aa45e9-b919-50a1-abc2-08bcacabc193?w=960&#x26;h=540&#x26;f=webp 960w" sizes="(max-width: 600px) 50vw, 320px" loading="lazy" decoding="async" alt="Ask the Meteorologist: What is the unique pattern causing this week&#x27;s big cooldown?">
+														</div>
+													
+													<h3 slot="title"><a href="https://www.wral.com/weather/ask-the-meteorologist-cold-air-damming-september-2026/">Ask the Meteorologist: What is the unique pattern causing this week's big cooldown?</a></h3>
+												</article-asset>
+											</li>
+										
+									</ul>
+								</div>
+							
+
+							<!-- DEV-1087: mid-page ad cluster below the weather stories list (desktop leaderboard #2 + medium rectangle + mobile in-content) -->
+							<!-- DEV-1298: advertising.hideBelowStories drops it on pages with no stories, where it would stack on the ad below Map Center -->
+							
+								<div class="ad-container">
+									<div class="opscoad-Mobile_In_Content" data-unit="wral-v4/weather"></div>
+									<div class="opscoad-Desktop_Leaderboard" data-unit="wral-v4/weather"></div>
+									<div class="opscoad-Desktop_MedRec" data-unit="wral-v4/weather"></div>
+								</div>
+							
+
+							<!-- Bottom text link cards (e.g. Beach & Mountains, Almanac) -->
+							
+
+							
+								<div class="layout-a__cta">
+									<a class="cta" href="/weather/news/">View more top stories</a>
+								</div>
+							
+
+						</div>
+
+						<!-- ===== layout-a__rail ===== -->
+						<aside class="layout-a__rail" aria-label="Advertisements">
+							<div class="sticky-container">
+								
+									
+										<div id="" class="layout-a__rail-slot opscoad-Mobile_In_Content" data-unit="wral-v4/weather" feature-name=""></div>
+									
+									<!-- Direct GPT companion slot (e.g. /6167/radar_sponsor on Map Center). min-height reserves the 300x250 footprint against CLS; the inline script keeps the div non-:empty so it is never hidden before fill. -->
+									
+								
+									
+										<div id="" class="layout-a__rail-slot opscoad-wx_sponsorship_tile2" data-unit="wral-v4/weather_sponsor" feature-name=""></div>
+									
+									<!-- Direct GPT companion slot (e.g. /6167/radar_sponsor on Map Center). min-height reserves the 300x250 footprint against CLS; the inline script keeps the div non-:empty so it is never hidden before fill. -->
+									
+								
+									
+										<div id="" class="layout-a__rail-slot opscoad-Desktop_Right_Rail_1" data-unit="wral-v4/weather" feature-name=""></div>
+									
+									<!-- Direct GPT companion slot (e.g. /6167/radar_sponsor on Map Center). min-height reserves the 300x250 footprint against CLS; the inline script keeps the div non-:empty so it is never hidden before fill. -->
+									
+								
+									
+										<div id="" class="layout-a__rail-slot opscoad-Desktop_Right_Rail_2" data-unit="wral-v4/weather" feature-name=""></div>
+									
+									<!-- Direct GPT companion slot (e.g. /6167/radar_sponsor on Map Center). min-height reserves the 300x250 footprint against CLS; the inline script keeps the div non-:empty so it is never hidden before fill. -->
+									
+								
+								<a href="https://www.wral.com/content/creative_services/promos/clickthru?oaparams=2__bannerid=1462__zoneid=2__cb=5d35f356ff__oadest=http%3A%2F%2Fwral.com%2Fapps" style="display:flex; flex-direction:column; align-items:center; justify-content:center; width:300px; border:3px solid #f9f9f9; box-sizing:border-box; padding:.625rem; text-decoration:none; color:inherit;">
+									<img src="https://wr.al/Fyz0/" style="max-width:100%;" alt="WRAL App" loading="lazy" decoding="async">
+									<p style="text-align:center; font-weight:700; margin:.5rem 0 0; line-height:1.3;">Get the app<br>Local news &#x26; alerts</p>
+								</a>
+							</div>
+						</aside>
+					</div>
+				</section>
+			
+
+			<!-- ===== webcam-grid · live webcam collection (hero asset + layout-a__asset-list) ===== -->
+			
+
+			<!-- ===== layout-b · 3-col card grid (ported from templates.wral-web.section-index) ===== -->
+			
+
+			<!-- ===== layout-c / layout-c-row · grouped sub-sections (ported from section-index) ===== -->
+			
+
+			<!-- ===== layout-d · uniform row of thumbnail + title cards ===== -->
+			
+
+			<!-- ===== layout-e / layout-e-row · featured item above a text-only list, columns side by side ===== -->
+			
+
+			<!-- ===== iframe-embed style (Hurricanes short-term) ===== -->
+			
+
+			<!-- ===== beach-mountain style (DEV-971) ===== -->
+			
+
+			<!-- ===== lake-levels style (DEV-971) ===== -->
+			
+
+			<!-- ===== hurricane-tracker style (Hurricanes long-term · DEV-968) ===== -->
+			
+
+			<!-- ===== baron-map style (Baron velocityweather iframe embed) ===== -->
+			
+		
+			</div>
+			
+		</div>
+
+		<!-- Taboola: Below Category Thumbnails (section fronts only) -->
+		
+			<section class="section-wrapper content-wrapper">
+				<div id="taboola-below-category-thumbnails" style="min-height: 636px;"></div>
+				<script type="text/javascript">
+					window._taboola = window._taboola || [];
+					_taboola.push({
+						mode: 'alternating-thumbnails-a',
+						container: 'taboola-below-category-thumbnails',
+						placement: 'Below Category Thumbnails',
+						target_type: 'mix'
+					});
+				</script>
+			</section>
+		
+
+		<!-- Footer leaderboard -->
+		
+			<section class="section-wrapper content-wrapper">
+				<div class="ad-container ad-10">
+					<div class="opscoad-Mobile_In_Content" data-unit="wral-v4/weather"></div>
+					<div class="opscoad-Desktop_Leaderboard" data-unit="wral-v4/weather"></div>
+				</div>
+			</section>
+		
+	</main>
+
+	<footer>
+		<wral-footer></wral-footer>
+	</footer>
+
+	<!-- ExCo player loader · injected once when a section declares content.excoPlayer.id -->
+	
+		<script>
+			(function (d, s, n) {
+				var js, fjs = d.getElementsByTagName(s)[0];
+				js = d.createElement(s);
+				js.className = n;
+				js.src = "//player.ex.co/player/d8af3f9c-ad37-4890-8ed5-bb0ce702acdf";
+				fjs.parentNode.insertBefore(js, fjs);
+			}(document, 'script', 'exco-player'));
+		</script>
+	
+
+	<!-- HTL targeting -->
+	<script>
+		window.opscobid = window.opscobid || {};
+		opscobid.cmd = opscobid.cmd || [];
+		opscobid.cmd.push(function () {
+			const currentUrl = new URL(window.location.href);
+			opscobid.setTargeting('is_testing', currentUrl.hostname === 'www.wral.com' ? 'no' : 'yes');
+			opscobid.setTargeting('is_home', 'no');
+			opscobid.setTargeting('category', 'weather');
+			opscobid.layout();
+		});
+	</script>
+
+	<!-- Analytics page-view -->
+	<script>
+		(() => {
+			window.dataLayer = window.dataLayer || [];
+			window.dataLayer.push({
+				event: 'core-page-view',
+				currentPageUrl: window.location.href,
+				assetType: 'section_front',
+				template: 'wral-web.weather',
+				articleTitle: document.title,
+				articleHeadline: document.querySelector('h1')?.textContent,
+				siteVersion: 5,
+			});
+		})();
+	</script>
+
+	<script id="chartbeat">
+		(function() {
+			setTimeout(function () {
+				var _sf_async_config = window._sf_async_config = (window._sf_async_config || {});
+				_sf_async_config.uid = 20531;
+				_sf_async_config.domain = 'wral.com';
+				_sf_async_config.useCanonical = true;
+				_sf_async_config.useCanonicalDomain = true;
+				_sf_async_config.sections = 'weather';
+				_sf_async_config.authors = 'WRAL';
+				_sf_async_config.flickerControl = false;
+				var e = document.createElement('script');
+				var n = document.getElementsByTagName('script')[0];
+				e.type = 'text/javascript';
+				e.async = true;
+				e.src = '//static.chartbeat.com/js/chartbeat.js';
+				n.parentNode.insertBefore(e, n);
+			}, 5000);
+		})();
+	</script>
+	<script async id="chartbeat_mab" src="//static.chartbeat.com/js/chartbeat_mab.js"></script>
+
+	<script type="text/javascript">
+		window._taboola = window._taboola || [];
+		_taboola.push({ flush: true });
+	</script>
+
+
+</body></html>

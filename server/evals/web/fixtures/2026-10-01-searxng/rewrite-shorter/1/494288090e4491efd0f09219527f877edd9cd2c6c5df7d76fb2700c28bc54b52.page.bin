@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#0f172a">
+  <title>tailscale serve: the commands that matter · SSD Nodes</title>
+  <meta name="description" content="Every tailscale serve command you will use, checked on Tailscale 1.102.4: foreground versus background, HTTPS ports, path routing, static files and raw TCP.">
+  
+  
+  <link rel="icon" href="https://www.ssdnodes.com/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="https://www.ssdnodes.com/favicon.svg">
+  <link rel="apple-touch-icon" href="https://www.ssdnodes.com/apple-touch-icon.png">
+
+  <!-- Canonical + Open Graph + Twitter — ALL fully-qualified and /blog-prefixed. og:image /
+       twitter:image always render (the post's own image, else the site default card).
+       Error pages (404) have no canonical URL, hence the guards. -->
+  <link rel="canonical" href="https://www.ssdnodes.com/learn/tailscale-serve-command-cheat-sheet">
+  
+  <meta property="og:site_name" content="SSD Nodes">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="tailscale serve: the commands that matter · SSD Nodes">
+  <meta property="og:description" content="Every tailscale serve command you will use, checked on Tailscale 1.102.4: foreground versus background, HTTPS ports, path routing, static files and raw TCP.">
+  <meta property="og:url" content="https://www.ssdnodes.com/learn/tailscale-serve-command-cheat-sheet">
+  <meta property="og:locale" content="en_US">
+  
+  <meta property="og:image" content="https://www.ssdnodes.com/learn/assets/og-default.png">
+  
+  
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  
+  <meta property="og:image:alt" content="tailscale serve: the commands that matter · SSD Nodes">
+  <meta name="twitter:card" content="summary_large_image">
+  
+  <meta name="twitter:title" content="tailscale serve: the commands that matter · SSD Nodes">
+  <meta name="twitter:description" content="Every tailscale serve command you will use, checked on Tailscale 1.102.4: foreground versus background, HTTPS ports, path routing, static files and raw TCP.">
+  <meta name="twitter:image" content="https://www.ssdnodes.com/learn/assets/og-default.png">
+  
+  <meta property="article:published_time" content="2026-09-20">
+  <meta property="article:modified_time" content="2026-09-20T17:23:06+00:00">
+  <meta property="article:author" content="Matt Connor">
+  <meta property="article:tag" content="tailscale">
+  <meta property="article:tag" content="tailscale-serve">
+  <meta property="article:tag" content="https">
+  <meta property="article:tag" content="reverse-proxy">
+  <meta property="article:tag" content="cli">
+  
+  
+
+  <link rel="alternate" type="application/rss+xml" title="Learn with SSD Nodes" href="https://www.ssdnodes.com/learn/rss.xml">
+
+  
+  <link rel="preload" href="/learn/assets/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/learn/assets/newsreader-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/learn/assets/fonts.css?v=1784254394">
+  <link rel="stylesheet" href="/learn/blog.compiled.css?v=1785458893">
+  <!-- The ONE blog-owned chart-widget stylesheet: the single source of truth for how every
+       post's ```chart``` block (chart + data table) looks, so a restyle is a one-file change
+       and no post can drift into its own look. Intentionally DARK — it sits as a data panel
+       on this light page, which is what makes a measured number read as a measured number. -->
+  <link rel="stylesheet" href="/learn/assets/query-widget.css?v=1784254394">
+  <!-- Interactive-tool widget CSS (```tool``` blocks). Light panel that sits on the page,
+       unlike the dark chart data-panel. One file = one look for every tool. -->
+  <link rel="stylesheet" href="/learn/assets/tool-widget.css?v=1784254394">
+  <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "BlogPosting", "headline": "tailscale serve: the commands that matter", "url": "https://www.ssdnodes.com/learn/tailscale-serve-command-cheat-sheet", "datePublished": "2026-09-20", "dateModified": "2026-09-20T17:23:06+00:00", "description": "Every tailscale serve command you will use, checked on Tailscale 1.102.4: foreground versus background, HTTPS ports, path routing, static files and raw TCP.", "keywords": "tailscale, tailscale-serve, https, reverse-proxy, cli", "author": {"@type": "Person", "@id": "https://www.ssdnodes.com/learn/about#person", "name": "Matt Connor", "url": "https://www.ssdnodes.com/learn/about", "worksFor": {"@type": "Organization", "@id": "https://www.ssdnodes.com#organization", "name": "SSD Nodes", "url": "https://www.ssdnodes.com", "logo": {"@type": "ImageObject", "url": "https://www.ssdnodes.com/learn/assets/logo.png"}}, "image": "https://www.ssdnodes.com/learn/assets/matt-connor.webp", "jobTitle": "Founder & CEO, SSD Nodes", "sameAs": ["https://www.linkedin.com/in/mattgconnor", "https://x.com/mattgconnor", "https://www.crunchbase.com/person/matt-connor"]}, "image": "https://www.ssdnodes.com/learn/assets/og-default.png", "publisher": {"@type": "Organization", "@id": "https://www.ssdnodes.com#organization", "name": "SSD Nodes", "url": "https://www.ssdnodes.com", "logo": {"@type": "ImageObject", "url": "https://www.ssdnodes.com/learn/assets/logo.png"}}, "wordCount": 2241, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://www.ssdnodes.com/learn/tailscale-serve-command-cheat-sheet"}, "inLanguage": "en"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Blog", "item": "https://www.ssdnodes.com/learn"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://www.ssdnodes.com/learn/guides"}, {"@type": "ListItem", "position": 3, "name": "tailscale serve: the commands that matter", "item": "https://www.ssdnodes.com/learn/tailscale-serve-command-cheat-sheet"}]}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Does tailscale serve survive a reboot?", "acceptedAnswer": {"@type": "Answer", "text": "Only with --bg. A background handler is written into the node's persistent serve config and comes back after a reboot, and after tailscale down followed by tailscale up. A foreground handler is stored under the CLI's watch session and is removed the moment that session ends, whether by Ctrl+C or by a closed SSH window."}}, {"@type": "Question", "name": "Can I use tailscale serve without enabling HTTPS certificates?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, in two modes. --http=\u003cport> serves plain HTTP inside the tailnet, and --tcp=\u003cport> forwards raw TCP. Neither asks for a certificate. Only the default HTTPS mode needs MagicDNS and HTTPS certificates enabled on the DNS page of the admin console, and if they are not, the CLI prints an approval URL and waits rather than failing."}}, {"@type": "Question", "name": "Why does my app return 404 for every path under --set-path?", "acceptedAnswer": {"@type": "Answer", "text": "Serve strips the mount path before forwarding. A request for /api/users reaches the backend as /users. An app configured to live under /api never sees its prefix and answers 404. Fix it by putting the prefix on the target as well, --set-path=/api http://127.0.0.1:8080/api, so the proxy joins it back on after stripping."}}, {"@type": "Question", "name": "How do I remove a single serve handler without clearing the rest?", "acceptedAnswer": {"@type": "Answer", "text": "Repeat the flags that created it and append off, for example sudo tailscale serve --https=443 --set-path=/api off. Run sudo tailscale serve status first to see the exact port and path. sudo tailscale serve reset clears every handler on the node instead, including Funnel."}}]}]}</script>
+  
+  
+  <script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        if (["www.ssdnodes.com"].indexOf(l.location.hostname) === -1) return;
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "mk48zglc1f");
+  </script>
+  
+  
+  
+  
+  <script type="text/javascript">
+    (function () {
+      if (["www.ssdnodes.com"].indexOf(location.hostname) === -1) return;
+      window.meta_event_id = "pv_" + Date.now() + "_" + Math.random().toString(36).substring(2, 9);
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ event_id: window.meta_event_id });
+      var send = function () {
+        try {
+          fetch("/wp-json/meta-capi/v1/pageview", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ event_id: window.meta_event_id, page_url: location.href })
+          });
+        } catch (e) {}
+      };
+      if (document.readyState === "complete") send();
+      else addEventListener("load", send);
+    })();
+  </script>
+  
+  
+  <script type="text/javascript">
+    (function(w,d,s,l,i){if(["www.ssdnodes.com"].indexOf(d.location.hostname)===-1)return;
+    w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-55QZ7JX');
+  </script>
+  
+</head>
+<body class="bg-page text-ink font-sans antialiased theme-light">
+  
+  
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-55QZ7JX"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  
+  
+  
+  
+  <header class="border-b border-line bg-surface/70 backdrop-blur" style="position:sticky;top:0;z-index:40;">
+    
+    <div class="max-w-5xl mx-auto px-6 py-4 flex flex-wrap items-center gap-y-2" style="column-gap:1rem;">
+      
+      <a href="/learn" class="site-brand font-mono font-bold tracking-[0.15em] text-ink text-sm uppercase whitespace-nowrap" style="margin-inline-end:auto;">SSD Nodes <span class="text-accent">Learn</span></a>
+      
+      <a href="/learn/deals/performance-vps?from=tailscale-serve-command-cheat-sheet"
+         data-cta="nav" data-cta-variant="o2-pill"
+         class="nav-cta font-mono text-[11px] uppercase tracking-[0.12em]">Hosting plans →</a>
+      <details class="nav-burger">
+        <summary class="text-muted hover:text-ink transition-colors" aria-label="Menu">
+          <svg viewBox="0 0 16 16" width="1.2em" height="1.2em" fill="none" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </summary>
+      </details>
+      <nav class="site-nav flex flex-wrap items-center gap-x-5 gap-y-1 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
+        <a href="/learn" class="hover:text-ink transition-colors">Guides</a>
+        <a href="https://www.ssdnodes.com/about" class="hover:text-ink transition-colors">About</a>
+        
+        
+        <a href="/learn/deals/performance-vps?from=tailscale-serve-command-cheat-sheet"
+           data-cta="nav-brand" data-cta-variant="o2-brand"
+           class="hover:text-ink transition-colors">SSD Nodes VPS</a>
+        
+        
+        
+        <details class="lang-switch">
+          <summary class="text-muted hover:text-ink transition-colors">
+            <span class="lang-sr">Language: </span>
+            <svg class="lang-globe" viewBox="0 0 16 16" width="1em" height="1em" fill="none"
+                 stroke="currentColor" stroke-width="1.15" stroke-linecap="round" aria-hidden="true">
+              <circle cx="8" cy="8" r="6.25"/>
+              <path d="M1.9 8h12.2"/>
+              <ellipse cx="8" cy="8" rx="3.1" ry="6.25"/>
+            </svg><span class="text-ink font-semibold" lang="en" dir="auto">English</span>
+            <span class="lang-caret" aria-hidden="true">▾</span>
+          </summary>
+          <ul class="lang-menu bg-surface border border-line" aria-label="Choose a language">
+            <li>
+              <span class="lang-opt text-ink font-semibold" lang="en" dir="auto" aria-current="true"><span class="lang-mark" aria-hidden="true">✓</span>English</span>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/fr" hreflang="fr" lang="fr" dir="auto" data-setlang="fr"><span class="lang-mark" aria-hidden="true">&nbsp;</span>Français</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/zh-hans" hreflang="zh-hans" lang="zh-hans" dir="auto" data-setlang="zh-hans"><span class="lang-mark" aria-hidden="true">&nbsp;</span>中文</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/ar" hreflang="ar" lang="ar" dir="auto" data-setlang="ar"><span class="lang-mark" aria-hidden="true">&nbsp;</span>العربية</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/hi" hreflang="hi" lang="hi" dir="auto" data-setlang="hi"><span class="lang-mark" aria-hidden="true">&nbsp;</span>हिन्दी</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/vi" hreflang="vi" lang="vi" dir="auto" data-setlang="vi"><span class="lang-mark" aria-hidden="true">&nbsp;</span>Tiếng Việt</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/es" hreflang="es" lang="es" dir="auto" data-setlang="es"><span class="lang-mark" aria-hidden="true">&nbsp;</span>Español</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/pt" hreflang="pt" lang="pt" dir="auto" data-setlang="pt"><span class="lang-mark" aria-hidden="true">&nbsp;</span>Português</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/de" hreflang="de" lang="de" dir="auto" data-setlang="de"><span class="lang-mark" aria-hidden="true">&nbsp;</span>Deutsch</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/ru" hreflang="ru" lang="ru" dir="auto" data-setlang="ru"><span class="lang-mark" aria-hidden="true">&nbsp;</span>Русский</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/bn" hreflang="bn" lang="bn" dir="auto" data-setlang="bn"><span class="lang-mark" aria-hidden="true">&nbsp;</span>বাংলা</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/ja" hreflang="ja" lang="ja" dir="auto" data-setlang="ja"><span class="lang-mark" aria-hidden="true">&nbsp;</span>日本語</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/ko" hreflang="ko" lang="ko" dir="auto" data-setlang="ko"><span class="lang-mark" aria-hidden="true">&nbsp;</span>한국어</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/it" hreflang="it" lang="it" dir="auto" data-setlang="it"><span class="lang-mark" aria-hidden="true">&nbsp;</span>Italiano</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/tr" hreflang="tr" lang="tr" dir="auto" data-setlang="tr"><span class="lang-mark" aria-hidden="true">&nbsp;</span>Türkçe</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/fa" hreflang="fa" lang="fa" dir="auto" data-setlang="fa"><span class="lang-mark" aria-hidden="true">&nbsp;</span>فارسی</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/pl" hreflang="pl" lang="pl" dir="auto" data-setlang="pl"><span class="lang-mark" aria-hidden="true">&nbsp;</span>polski</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/nl" hreflang="nl" lang="nl" dir="auto" data-setlang="nl"><span class="lang-mark" aria-hidden="true">&nbsp;</span>Nederlands</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/th" hreflang="th" lang="th" dir="auto" data-setlang="th"><span class="lang-mark" aria-hidden="true">&nbsp;</span>ไทย</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/uk" hreflang="uk" lang="uk" dir="auto" data-setlang="uk"><span class="lang-mark" aria-hidden="true">&nbsp;</span>Українська</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/id" hreflang="id" lang="id" dir="auto" data-setlang="id"><span class="lang-mark" aria-hidden="true">&nbsp;</span>Bahasa Indonesia</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/ms" hreflang="ms" lang="ms" dir="auto" data-setlang="ms"><span class="lang-mark" aria-hidden="true">&nbsp;</span>Bahasa Melayu</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/pcm" hreflang="pcm" lang="pcm" dir="auto" data-setlang="pcm"><span class="lang-mark" aria-hidden="true">&nbsp;</span>Naijá</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/mr" hreflang="mr" lang="mr" dir="auto" data-setlang="mr"><span class="lang-mark" aria-hidden="true">&nbsp;</span>मराठी</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/zh-hant" hreflang="zh-hant" lang="zh-hant" dir="auto" data-setlang="zh-hant"><span class="lang-mark" aria-hidden="true">&nbsp;</span>繁體中文</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/tl" hreflang="tl" lang="tl" dir="auto" data-setlang="tl"><span class="lang-mark" aria-hidden="true">&nbsp;</span>Filipino</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/sw" hreflang="sw" lang="sw" dir="auto" data-setlang="sw"><span class="lang-mark" aria-hidden="true">&nbsp;</span>Kiswahili</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/he" hreflang="he" lang="he" dir="auto" data-setlang="he"><span class="lang-mark" aria-hidden="true">&nbsp;</span>עברית</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/ur" hreflang="ur" lang="ur" dir="auto" data-setlang="ur"><span class="lang-mark" aria-hidden="true">&nbsp;</span>اردو</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/ta" hreflang="ta" lang="ta" dir="auto" data-setlang="ta"><span class="lang-mark" aria-hidden="true">&nbsp;</span>தமிழ்</a>
+            </li>
+            <li>
+              <a class="lang-opt text-muted hover:text-ink transition-colors" href="/learn/lang/te" hreflang="te" lang="te" dir="auto" data-setlang="te"><span class="lang-mark" aria-hidden="true">&nbsp;</span>తెలుగు</a>
+            </li>
+          </ul>
+        </details>
+        
+      </nav>
+    </div>
+  </header>
+
+  
+  
+
+  
+  <meta name="content-version" content="20260920T172306602830Z">
+  <main class="max-w-5xl mx-auto px-6 py-12">
+    
+<article class="post-article layout-default mx-auto max-w-[680px]" style="--post-accent: #06B6D4">
+  
+<nav aria-label="Breadcrumb" class="flex flex-wrap items-center gap-x-3 gap-y-1 mb-4 font-mono text-[11px] text-muted">
+  <a href="/learn" class="hover:text-ink">Blog</a>
+  <span>›</span>
+  <a href="/learn/guides" class="hover:text-ink">Guides</a>
+  <span>›</span>
+  <span class="text-ink">tailscale serve: the commands that matter</span>
+</nav>
+  <header class="post-header">
+    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mb-4">
+      <a href="/learn/guides" class="type-badge">Guides</a>
+      <span class="font-mono text-[11px] text-muted inline-flex items-center gap-1.5"><img src="https://www.ssdnodes.com/learn/assets/matt-connor.webp" alt="Matt Connor" width="20" height="20" loading="lazy" class="w-5 h-5 rounded-full object-cover">By <a href="https://www.ssdnodes.com/learn/about" class="underline hover:text-ink">Matt Connor</a></span>
+      <time datetime="2026-09-20" class="font-mono text-[11px] text-muted">2026-09-20</time>
+      
+      
+    </div>
+    <h1 class="font-serif text-4xl md:text-[2.7rem] font-semibold tracking-tight text-ink-strong leading-[1.1] mb-4">tailscale serve: the commands that matter</h1>
+    <p class="font-serif text-xl leading-relaxed text-[#44403C] mb-8">Every tailscale serve command you will use, checked on Tailscale 1.102.4: foreground versus background, HTTPS ports, path routing, static files and raw TCP.</p>
+    
+  </header>
+
+  <div class="blog-body">
+    <h2 id="what-tailscale-serve-does" data-section="s1">What tailscale serve does</h2>
+<p><code>tailscale serve</code> turns a service that listens on <code>127.0.0.1</code> into an HTTPS URL that only your tailnet can reach. Tailscale gives the node a name under MagicDNS, issues a certificate for that name, and proxies requests from <code>https://vps.tail1234.ts.net</code> to the local port you chose. Nothing is opened on the public interface, so the VPS firewall stays closed and there is no nginx to configure.</p>
+<p>This page is the command reference. The decision of when to keep a service tailnet-only and when to publish it is covered in <a href="/learn/tailscale-serve-vs-funnel">serve versus funnel</a>. If the word tailnet is new to you, start with <a href="/learn/what-is-tailscale">what Tailscale is and how the pieces fit</a> and come back.</p>
+<h2 id="which-syntax-this-guide-teaches" data-section="s2">Which syntax this guide teaches</h2>
+<p>The serve CLI (command-line interface) was rewritten in Tailscale 1.52. Every command below uses the current form, where the flags come first and the target comes last. The commands and the quoted output were checked against the help text and CLI source of Tailscale 1.102.4, the stable release as of September 2026. Run <code>tailscale version</code> and confirm you are on 1.52 or later before copying anything.</p>
+<p>The old form put a mode and a mount point before the target, like <code>tailscale serve https / http://127.0.0.1:3000</code>. A current client refuses that and prints on stderr:</p>
+<div class="blog-code-wrap"><button type="button" class="code-copy" aria-label="Copy" data-copied="Copied!" data-failed="Press Ctrl+C">Copy</button><pre class="blog-code" data-lang=""><code>Error: the CLI for serve and funnel has changed. You can run the following command instead:</code></pre></div>
+<p>followed by the translated command and a link to the Tailscale knowledge base. Tailscale keeps a separate page for the legacy syntax, which is why so many snippets copied from forums no longer run. If a command you found has a <code>/</code> sitting on its own between the mode and the target, it is the old syntax.</p>
+
+
+<aside class="guide-inline" data-cta="guide-inline" data-cta-variant="o2-guide@6-steps-server-security"
+       style="margin:2.2rem 0;border:1px solid var(--line,#E7E5E4);border-left:3px solid var(--post-accent,#2563EB);border-radius:12px;padding:1.1rem 1.3rem;background:#FFFFFF;">
+  <form class="js-subscribe" method="post" action="/learn/subscribe" data-source="guide-inline@6-steps-server-security">
+    
+    <div data-gm-head style="font-weight:600;font-size:0.98rem;color:#1C1917;">Free guide: VPS Security — 6 Critical Steps to Secure Your VPS Servers</div>
+    <div data-gm-sub style="font-size:0.85rem;color:#78716C;margin-top:0.2rem;">The server-hardening playbook we hand new customers — 17 pages, with the exact commands. Free, by email.</div>
+    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.7rem;">
+      <input type="email" name="email" required placeholder="you@example.com" autocomplete="email"
+             aria-label="Email address"
+             style="flex:1 1 200px;min-width:0;border:1px solid var(--line,#E7E5E4);border-radius:8px;padding:0.5rem 0.85rem;font-size:0.9rem;background:#FFFFFF;color:#1C1917;">
+      <button type="submit"
+              style="flex:0 0 auto;background:var(--post-accent,#2563EB);color:#fff;font-weight:600;font-size:0.9rem;padding:0.5rem 1.1rem;border-radius:8px;border:0;cursor:pointer;">Send me the guide</button>
+    </div>
+    <div class="sr-hp" aria-hidden="true"><label>Company <input type="text" name="company" tabindex="-1" autocomplete="off"></label></div>
+    <div class="js-subscribe-msg" role="status" style="font-size:0.8rem;margin-top:0.45rem;color:#A8A29E;min-height:1.1em;">One confirmation click, then the PDF is in your inbox. Unsubscribe anytime.</div>
+  </form>
+</aside><h2 id="prerequisites-you-hit-before-the-first-command" data-section="s3">Prerequisites you hit before the first command</h2>
+<p>Serve needs a few things in place, and the CLI only helps you with one of them.</p>
+<p><strong>Tailscale installed and connected on the VPS.</strong> <code>tailscale status</code> should list the node and its peers. If the package itself will not install, <a href="/learn/fix-tailscale-install-errors-ubuntu">the common Tailscale install errors on Ubuntu</a> are covered separately.</p>
+<p><strong>MagicDNS on.</strong> In the admin console, open the DNS page and enable MagicDNS. That gives the node its <code>hostname.tailnet.ts.net</code> name. The certificate is issued for that exact name, so without MagicDNS there is nothing to issue it for.</p>
+<p><strong>HTTPS certificates on.</strong> On the same DNS page, enable HTTPS certificates. If you skip this and run an HTTPS serve, the CLI does not fail. It prints a short message and a <code>login.tailscale.com</code> URL, then waits. Open the URL, approve the change, and the CLI prints <code>Success.</code> and continues with your original command. That interactive step is only triggered for HTTPS handlers. The <code>--http</code> and <code>--tcp</code> modes do not need certificates at all.</p>
+<p>Two more things are easy to miss. On Linux the CLI talks to <code>tailscaled</code> over a root-owned socket, so either prefix every command with <code>sudo</code> or run <code>sudo tailscale set --operator=$USER</code> once to let your own user manage it. And access control lists (ACLs) apply to serve as they do to any other port. A peer that is not allowed to reach the node on port 443 in your tailnet policy gets a timeout, even though serve is listening.</p>
+<h2 id="serve-a-local-port-foreground-versus-bg" data-section="s4">Serve a local port: foreground versus --bg</h2>
+<p>Take an app on port 3000. The shortest possible command is:</p>
+<div class="blog-code-wrap"><button type="button" class="code-copy" aria-label="Copy" data-copied="Copied!" data-failed="Press Ctrl+C">Copy</button><pre class="blog-code" data-lang="bash"><code>sudo tailscale serve 3000</code></pre></div>
+<div class="blog-code-wrap"><button type="button" class="code-copy" aria-label="Copy" data-copied="Copied!" data-failed="Press Ctrl+C">Copy</button><pre class="blog-code" data-lang=""><code>Available within your tailnet:
+https://vps.tail1234.ts.net
+
+|-- / proxy http://127.0.0.1:3000
+
+Press Ctrl+C to exit.</code></pre></div>
+<p>A bare port number is expanded to <code>http://127.0.0.1:3000</code>. The URL has no port suffix because 443 is the HTTPS default. Open it from any device on the tailnet and you reach the app. The first HTTPS request takes a few seconds longer than the rest, because the certificate for the node's name is requested from Let's Encrypt on that first connection and cached after it.</p>
+<p>This is <strong>foreground mode</strong>, and it lives exactly as long as the terminal does. The CLI opens a watch session to <code>tailscaled</code> and the handler is stored under that session ID, so when the session ends the handler is removed with it. Ctrl+C ends it. So does closing the SSH window, and so does a reboot. That is by design. Foreground serve is for showing a coworker something for ten minutes.</p>
+<p>For anything that should still be there tomorrow, add <code>--bg</code>:</p>
+<div class="blog-code-wrap"><button type="button" class="code-copy" aria-label="Copy" data-copied="Copied!" data-failed="Press Ctrl+C">Copy</button><pre class="blog-code" data-lang="bash"><code>sudo tailscale serve --bg 3000</code></pre></div>
+<div class="blog-code-wrap"><button type="button" class="code-copy" aria-label="Copy" data-copied="Copied!" data-failed="Press Ctrl+C">Copy</button><pre class="blog-code" data-lang=""><code>Available within your tailnet:
+https://vps.tail1234.ts.net
+
+|-- / proxy http://127.0.0.1:3000
+
+Serve started and running in the background.
+To disable the proxy, run: tailscale serve --https=443 off</code></pre></div>
+<p><code>--bg</code> writes the handler into the node's persistent serve config. It survives the shell closing. It survives a reboot, and it survives <code>tailscale down</code> followed by <code>tailscale up</code>. The last line of the output is the exact command that undoes it. Keep it, because the <code>off</code> form needs the same flags you used to create the handler.</p>
+<p>A target does not have to be a bare port. <code>localhost:3000</code> and <code>http://127.0.0.1:3000</code> mean the same thing. A local service that already speaks TLS with a self-signed certificate is reached with <code>https+insecure://localhost:8443</code>, which tells the proxy to skip certificate checks on the inside hop. A Unix socket works as <code>unix:/run/myservice.sock</code>.</p>
+<h2 id="choose-the-https-port-or-serve-plain-http" data-section="s5">Choose the HTTPS port, or serve plain HTTP</h2>
+<p>Serve defaults to HTTPS on 443. To use another port, pass <code>--https</code>:</p>
+<div class="blog-code-wrap"><button type="button" class="code-copy" aria-label="Copy" data-copied="Copied!" data-failed="Press Ctrl+C">Copy</button><pre class="blog-code" data-lang="bash"><code>sudo tailscale serve --bg --https=8443 3000</code></pre></div>
+<p>The URL becomes <code>https://vps.tail1234.ts.net:8443</code>. Any port works for serve. The fixed list of 443, 8443 and 10000 that people remember applies to Funnel, not to serve. One port holds one kind of listener, though: a port already used for TCP forwarding cannot also carry a web handler, and the CLI refuses with <code>cannot serve web; already serving TCP</code>.</p>
+<p>Plain HTTP inside the tailnet is available with <code>--http</code>:</p>
+<div class="blog-code-wrap"><button type="button" class="code-copy" aria-label="Copy" data-copied="Copied!" data-failed="Press Ctrl+C">Copy</button><pre class="blog-code" data-lang="bash"><code>sudo tailscale serve --bg --http=80 3000</code></pre></div>
+<p>This needs no certificate and no HTTPS setting. The traffic still travels inside the WireGuard tunnel, so it is encrypted on the wire between peers. What you lose is the browser's secure context, and <a href="/learn/http-vs-https-on-your-server">what HTTPS protects beyond the wire</a> still applies once the app sets cookies or registers a service worker. Use HTTPS unless the client genuinely cannot do TLS.</p>
+<h2 id="path-based-routing-to-more-than-one-local-service" data-section="s6">Path-based routing to more than one local service</h2>
+<p>One hostname can front several apps, split by mount path. Each command adds one handler on the same port:</p>
+<div class="blog-code-wrap"><button type="button" class="code-copy" aria-label="Copy" data-copied="Copied!" data-failed="Press Ctrl+C">Copy</button><pre class="blog-code" data-lang="bash"><code>sudo tailscale serve --bg 3000
+sudo tailscale serve --bg --set-path=/api 8080
+sudo tailscale serve --bg --set-path=/grafana http://127.0.0.1:3001/grafana</code></pre></div>
+<p>The first line mounts at <code>/</code> because that is the default. <code>--set-path</code> takes the path with or without a leading slash; the CLI adds the slash if it is missing. Check the result with <code>sudo tailscale serve status</code>, which prints the hostname once and then one <code>|--</code> line per mount path. The longest matching path wins, so <code>/api/users</code> goes to port 8080 and everything else goes to port 3000.</p>
+<p>The rule you must know: <strong>serve removes the mount path before it forwards the request.</strong> A request for <code>/api/users</code> arrives at port 8080 as <code>/users</code>. That is right for an app that expects to live at its own root. It is wrong for an app that has been configured to live under a prefix, which is why the Grafana line above puts <code>/grafana</code> on the target too. The proxy strips <code>/grafana</code> from the incoming path, then joins the target's own path back on, so Grafana receives <code>/grafana/login</code>, which is what it was told to expect. If an app behind <code>--set-path</code> returns 404 for every route except the first page, this is the cause.</p>
+<p>Serve also adds identity headers to every proxied request, such as <code>Tailscale-User-Login</code> and <code>Tailscale-User-Name</code>. The app can read who is calling without a login page of its own, because <a href="/learn/is-tailscale-secure">the tailnet already verified that identity at the WireGuard layer</a> before the packet reached the proxy.</p>
+<h2 id="serve-a-static-directory-or-a-single-file" data-section="s7">Serve a static directory or a single file</h2>
+<p>The target can be an absolute filesystem path instead of a port.</p>
+<div class="blog-code-wrap"><button type="button" class="code-copy" aria-label="Copy" data-copied="Copied!" data-failed="Press Ctrl+C">Copy</button><pre class="blog-code" data-lang="bash"><code>sudo mkdir -p /srv/public
+echo "hello from the vps" | sudo tee /srv/public/index.html
+sudo tailscale serve --bg /srv/public</code></pre></div>
+<p>A directory is served by Go's standard file server. If it contains <code>index.html</code>, that file answers at the root. If it does not, the visitor gets a plain listing of links, one per file, so do not point serve at a directory that holds anything you would not share. Files are read by <code>tailscaled</code>, which runs as root on a standard Linux install, so file permissions will not stop it.</p>
+<p>A single file is mounted at one exact path and nothing else:</p>
+<div class="blog-code-wrap"><button type="button" class="code-copy" aria-label="Copy" data-copied="Copied!" data-failed="Press Ctrl+C">Copy</button><pre class="blog-code" data-lang="bash"><code>sudo tailscale serve --bg --set-path=/report.html /srv/public/report.html</code></pre></div>
+<p>Only <code>https://vps.tail1234.ts.net/report.html</code> returns it. Any other path under that handler is a 404. Relative paths are rejected, so write the full path from <code>/</code>.</p>
+<p>There is also a text handler for a fixed string. <code>sudo tailscale serve --bg text:"back at 09:00 UTC"</code> is the fastest way to put a maintenance notice in front of a tailnet without touching a web server.</p>
+<h2 id="plain-tcp-passthrough-with-tcp" data-section="s8">Plain TCP passthrough with --tcp</h2>
+<p>Not everything speaks HTTP. A database in Docker bound to <code>127.0.0.1:5432</code> can be exposed to the tailnet as raw TCP:</p>
+<div class="blog-code-wrap"><button type="button" class="code-copy" aria-label="Copy" data-copied="Copied!" data-failed="Press Ctrl+C">Copy</button><pre class="blog-code" data-lang="bash"><code>sudo tailscale serve --bg --tcp=5432 tcp://127.0.0.1:5432</code></pre></div>
+<p>Write the target as a <code>tcp://</code> URL with a port, which is the form the documentation uses. The foreground summary lists the listener as <code>tcp://</code> on the node's name and on each of its tailnet IPs, with a <code>|--&gt;</code> line for the local destination. From another node:</p>
+<div class="blog-code-wrap"><button type="button" class="code-copy" aria-label="Copy" data-copied="Copied!" data-failed="Press Ctrl+C">Copy</button><pre class="blog-code" data-lang="bash"><code>psql -h vps.tail1234.ts.net -p 5432 -U app</code></pre></div>
+<p>Raw TCP is not wrapped in TLS by serve. That is fine here, because the bytes are already inside the WireGuard tunnel. The other mode, <code>--tls-terminated-tcp=443 tcp://127.0.0.1:9899</code>, has serve terminate TLS with the node's certificate and hand plaintext to the local port, for a non-HTTP service you want reachable under the <code>.ts.net</code> name with a valid certificate.</p>
+<p><code>--set-path</code> does not combine with TCP. The CLI refuses with <code>cannot mount a path for TCP serve</code>, because a TCP forwarder never reads an HTTP path.</p>
+<p>If the service could simply bind to the node's tailnet IP, you would not need this at all. Serve is useful when the service is locked to loopback, as it is for <a href="/learn/tailscale-in-docker-compose">containers published on 127.0.0.1 from a compose file</a>, and nothing on the public side is ever opened, which is the reason to be <a href="/learn/tailscale-instead-of-port-forwarding">using Tailscale instead of forwarding ports on a VPS</a>.</p>
+<h2 id="check-what-is-running-tailscale-serve-status" data-section="s9">Check what is running: tailscale serve status</h2>
+<div class="blog-code-wrap"><button type="button" class="code-copy" aria-label="Copy" data-copied="Copied!" data-failed="Press Ctrl+C">Copy</button><pre class="blog-code" data-lang="bash"><code>sudo tailscale serve status</code></pre></div>
+<p>With nothing configured it prints <code>No serve config</code>. Otherwise each listener is shown with its URL and <code>(tailnet only)</code> or <code>(Funnel on)</code>, followed by its handlers in the same <code>|--</code> form the foreground output uses. Add <code>--json</code> for the raw config, which is what you want in a script or a backup:</p>
+<div class="blog-code-wrap"><button type="button" class="code-copy" aria-label="Copy" data-copied="Copied!" data-failed="Press Ctrl+C">Copy</button><pre class="blog-code" data-lang="bash"><code>sudo tailscale serve status --json</code></pre></div>
+<p>Run <code>status</code> before every <code>off</code>. It tells you the exact port and path you need to name.</p>
+<h2 id="turn-one-thing-off-or-reset-everything" data-section="s10">Turn one thing off, or reset everything</h2>
+<p>The <code>off</code> form repeats the flags that created the handler. The target is optional:</p>
+<div class="blog-code-wrap"><button type="button" class="code-copy" aria-label="Copy" data-copied="Copied!" data-failed="Press Ctrl+C">Copy</button><pre class="blog-code" data-lang="bash"><code>sudo tailscale serve --https=443 --set-path=/api off
+sudo tailscale serve --https=8443 off
+sudo tailscale serve --tcp=5432 off</code></pre></div>
+<p>Name the wrong port or path and you remove nothing, or the wrong thing, which is why <code>status</code> comes first. To clear every handler on the node at once:</p>
+<div class="blog-code-wrap"><button type="button" class="code-copy" aria-label="Copy" data-copied="Copied!" data-failed="Press Ctrl+C">Copy</button><pre class="blog-code" data-lang="bash"><code>sudo tailscale serve reset</code></pre></div>
+<p><code>reset</code> prints nothing. Run <code>status</code> afterwards and it reports <code>No serve config</code>. Reset replaces the whole serve config with an empty one, and Funnel listeners live in that same config, so they are cleared too. Re-add any public listener afterwards.</p>
+<h2 id="what-breaks-with-the-strings-you-will-see" data-section="s11">What breaks, with the strings you will see</h2>
+<p><strong>Everything works until you log out.</strong> You ran the foreground form. The handler was tied to your CLI session and went away with it. Re-run the same command with <code>--bg</code>.</p>
+<p><strong>The command prints a URL and waits.</strong> HTTPS certificates are not enabled on the tailnet. The CLI is waiting for you to approve at the URL it printed. Approve, and it prints <code>Success.</code> and continues.</p>
+<p><strong>The app loads, then every link 404s.</strong> The mount path is being stripped. Either configure the app to live at its root, or put the prefix on the target URL as in the Grafana example.</p>
+<p><strong><code>cannot serve web; already serving TCP</code>.</strong> The port you passed to <code>--https</code> is already a TCP forwarder. Pick another port, or turn the TCP handler off first.</p>
+<p><strong><code>Error: the CLI for serve and funnel has changed.</code></strong> You pasted a pre-1.52 command. The CLI prints the translated command on the next line. Copy that.</p>
+<p><strong>The URL times out from one device but works from another.</strong> Serve is listening, but the tailnet policy does not allow that peer to reach the node on that port. Confirm the node appears in <code>tailscale status</code> on the client, then check the ACL for the port.</p>
+<p>One pointer and nothing more: <code>tailscale funnel</code> takes the same flags and targets, and publishes the result to the public internet instead of the tailnet. The same port cannot be both at once.</p>
+
+
+<aside class="guide-inline" data-cta="guide-inline" data-cta-variant="o2-guide@6-steps-server-security"
+       style="margin:2.2rem 0;border:1px solid var(--line,#E7E5E4);border-left:3px solid var(--post-accent,#2563EB);border-radius:12px;padding:1.1rem 1.3rem;background:#FFFFFF;">
+  <form class="js-subscribe" method="post" action="/learn/subscribe" data-source="guide-inline@6-steps-server-security">
+    
+    <div data-gm-head style="font-weight:600;font-size:0.98rem;color:#1C1917;">Free guide: VPS Security — 6 Critical Steps to Secure Your VPS Servers</div>
+    <div data-gm-sub style="font-size:0.85rem;color:#78716C;margin-top:0.2rem;">The server-hardening playbook we hand new customers — 17 pages, with the exact commands. Free, by email.</div>
+    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.7rem;">
+      <input type="email" name="email" required placeholder="you@example.com" autocomplete="email"
+             aria-label="Email address"
+             style="flex:1 1 200px;min-width:0;border:1px solid var(--line,#E7E5E4);border-radius:8px;padding:0.5rem 0.85rem;font-size:0.9rem;background:#FFFFFF;color:#1C1917;">
+      <button type="submit"
+              style="flex:0 0 auto;background:var(--post-accent,#2563EB);color:#fff;font-weight:600;font-size:0.9rem;padding:0.5rem 1.1rem;border-radius:8px;border:0;cursor:pointer;">Send me the guide</button>
+    </div>
+    <div class="sr-hp" aria-hidden="true"><label>Company <input type="text" name="company" tabindex="-1" autocomplete="off"></label></div>
+    <div class="js-subscribe-msg" role="status" style="font-size:0.8rem;margin-top:0.45rem;color:#A8A29E;min-height:1.1em;">One confirmation click, then the PDF is in your inbox. Unsubscribe anytime.</div>
+  </form>
+</aside><h2 id="faq" data-section="s12">FAQ</h2>
+<h3 id="does-tailscale-serve-survive-a-reboot" data-section="s13">Does tailscale serve survive a reboot?</h3>
+<p>Only with <code>--bg</code>. A background handler is written into the node's persistent serve config and comes back after a reboot, and after <code>tailscale down</code> followed by <code>tailscale up</code>. A foreground handler is stored under the CLI's watch session and is removed the moment that session ends, whether by Ctrl+C or by a closed SSH window.</p>
+<h3 id="can-i-use-tailscale-serve-without-enabling-https-certificates" data-section="s14">Can I use tailscale serve without enabling HTTPS certificates?</h3>
+<p>Yes, in two modes. <code>--http=&lt;port&gt;</code> serves plain HTTP inside the tailnet, and <code>--tcp=&lt;port&gt;</code> forwards raw TCP. Neither asks for a certificate. Only the default HTTPS mode needs MagicDNS and HTTPS certificates enabled on the DNS page of the admin console, and if they are not, the CLI prints an approval URL and waits rather than failing.</p>
+<h3 id="why-does-my-app-return-404-for-every-path-under-set-path" data-section="s15">Why does my app return 404 for every path under --set-path?</h3>
+<p>Serve strips the mount path before forwarding. A request for <code>/api/users</code> reaches the backend as <code>/users</code>. An app configured to live under <code>/api</code> never sees its prefix and answers 404. Fix it by putting the prefix on the target as well, <code>--set-path=/api http://127.0.0.1:8080/api</code>, so the proxy joins it back on after stripping.</p>
+<h3 id="how-do-i-remove-a-single-serve-handler-without-clearing-the-rest" data-section="s16">How do I remove a single serve handler without clearing the rest?</h3>
+<p>Repeat the flags that created it and append <code>off</code>, for example <code>sudo tailscale serve --https=443 --set-path=/api off</code>. Run <code>sudo tailscale serve status</code> first to see the exact port and path. <code>sudo tailscale serve reset</code> clears every handler on the node instead, including Funnel.</p>
+  </div>
+
+  
+
+<aside style="margin-top:3.5rem;padding-top:2rem;border-top:1px solid var(--line,#E7E5E4);">
+  <div style="display:flex;gap:1.1rem;align-items:flex-start;background:#FFFFFF;border:1px solid var(--line,#E7E5E4);border-radius:16px;padding:1.3rem 1.4rem;">
+    <img src="https://www.ssdnodes.com/learn/assets/matt-connor.webp" alt="Matt Connor" width="60" height="60" loading="lazy" style="width:60px;height:60px;border-radius:9999px;object-fit:cover;flex:0 0 auto;">
+    <div style="min-width:0;">
+      <div class="font-mono" style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#78716C;margin-bottom:4px;">Written by</div>
+      <div class="font-serif" style="font-size:1.15rem;color:#1C1917;line-height:1.25;"><a href="https://www.ssdnodes.com/learn/about" style="color:inherit;">Matt Connor</a><span style="color:#78716C;"> — Founder &amp; CEO, SSD Nodes</span></div>
+      <p style="font-size:0.95rem;line-height:1.6;color:#44403C;margin-top:0.5rem;">Founder &amp; CEO of SSD Nodes, the VPS hosting provider he has run for 15 years. These guides cover the Linux server work that goes with it: setup, security, and networking.</p>
+      <a href="https://www.ssdnodes.com/learn/about" class="font-mono" style="display:inline-block;margin-top:0.55rem;font-size:12px;color:var(--post-accent,#3B82F6);">Read full bio →</a>
+    </div>
+  </div>
+</aside>
+
+
+
+
+<div class="mt-10 pt-6 border-t border-line flex flex-wrap gap-x-3 gap-y-1">
+  <a href="/learn?tag=tailscale" class="tag-link">#tailscale</a><span class="tag-link opacity-70">#tailscale-serve</span><a href="/learn?tag=https" class="tag-link">#https</a><a href="/learn?tag=reverse-proxy" class="tag-link">#reverse-proxy</a><a href="/learn?tag=cli" class="tag-link">#cli</a>
+</div>
+
+
+<aside class="mt-12 pt-8 border-t border-line">
+  <h2 class="font-mono text-[11px] uppercase tracking-[0.14em] text-muted mb-4">Related</h2>
+  <ul class="space-y-3">
+    
+    <li class="flex items-baseline gap-3">
+      <a href="/learn/tailscale-funnel-limits-and-ports" class="font-serif text-lg text-ink-strong hover:text-accent">Tailscale Funnel: ports, limits, bandwidth</a>
+      <span class="type-badge">Guides</span>
+    </li>
+    
+    <li class="flex items-baseline gap-3">
+      <a href="/learn/sonarr-radarr-disable-authentication-safely" class="font-serif text-lg text-ink-strong hover:text-accent">Disable Sonarr and Radarr authentication</a>
+      <span class="type-badge">Guides</span>
+    </li>
+    
+    <li class="flex items-baseline gap-3">
+      <a href="/learn/searxng-limiter-toml-and-valkey" class="font-serif text-lg text-ink-strong hover:text-accent">The SearXNG limiter and why it needs Valkey</a>
+      <span class="type-badge">Guides</span>
+    </li>
+    
+    <li class="flex items-baseline gap-3">
+      <a href="/learn/arr-stack-ports-explained" class="font-serif text-lg text-ink-strong hover:text-accent">Arr stack ports: what each app listens on</a>
+      <span class="type-badge">Guides</span>
+    </li>
+    
+  </ul>
+</aside>
+
+
+
+
+
+<aside class="section" data-cta="guide-footer" data-cta-variant="o2-guide-footer@6-steps-server-security" style="margin:3rem 0 1.25rem;">
+  <div style="background:#0f172a;border-radius:16px;padding:1.6rem 1.7rem;display:flex;flex-wrap:wrap;gap:1rem 1.4rem;align-items:center;justify-content:space-between;">
+    <div style="min-width:0;">
+      <div data-gm-head class="font-serif" style="font-size:1.35rem;color:#F8FAFC;line-height:1.25;">Free guide: VPS Security — 6 Critical Steps to Secure Your VPS Servers</div>
+      <div data-gm-sub style="font-size:0.9rem;color:#94A3B8;margin-top:0.35rem;">The server-hardening playbook we hand new customers — 17 pages, with the exact commands. Free, by email.</div>
+    </div>
+    <a href="/learn/get/6-steps-server-security"
+       data-cta="guide-footer" data-cta-variant="o2-guide-footer@6-steps-server-security"
+       style="flex:0 0 auto;background:var(--post-accent,#3B82F6);color:#fff;font-weight:600;font-size:0.95rem;padding:0.72rem 1.35rem;border-radius:9999px;white-space:nowrap;text-decoration:none;">Get the free guide →</a>
+  </div>
+</aside>
+
+
+
+</article>
+
+<div id="sr-gslidein" role="complementary" aria-label="Free guide: VPS Security — 6 Critical Steps to Secure Your VPS Servers"
+     data-cta="guide-slidein" data-cta-variant="o2-guide-slidein@6-steps-server-security" hidden>
+  <button type="button" id="sr-gslidein-close" aria-label="Dismiss">&times;</button>
+  <form class="js-subscribe" method="post" action="/learn/subscribe" data-source="guide-slidein@6-steps-server-security">
+    <div data-gm-head style="font-weight:600;font-size:0.95rem;color:#1C1917;">Free guide: VPS Security — 6 Critical Steps to Secure Your VPS Servers</div>
+    <div data-gm-subshort style="font-size:0.8rem;color:#78716C;margin-top:0.15rem;">17 pages, exact commands. Get the PDF by email.</div>
+    <div style="display:flex;gap:0.45rem;margin-top:0.6rem;">
+      <input type="email" name="email" required placeholder="you@example.com" autocomplete="email"
+             aria-label="Email address"
+             style="flex:1 1 auto;min-width:0;border:1px solid var(--line,#E7E5E4);border-radius:9999px;padding:0.45rem 0.9rem;font-size:0.85rem;background:#FAFAF9;color:#1C1917;">
+      <button type="submit"
+              style="flex:0 0 auto;background:var(--post-accent,#3B82F6);color:#fff;font-weight:600;font-size:0.85rem;padding:0.45rem 1rem;border-radius:9999px;border:0;cursor:pointer;">Send me the guide</button>
+    </div>
+    <div class="sr-hp" aria-hidden="true"><label>Company <input type="text" name="company" tabindex="-1" autocomplete="off"></label></div>
+    <div class="js-subscribe-msg" role="status" style="font-size:0.78rem;margin-top:0.35rem;color:#A8A29E;">One confirmation click, then the PDF is in your inbox. Unsubscribe anytime.</div>
+  </form>
+</div>
+<style>
+#sr-gslidein{position:fixed;right:1.25rem;bottom:1.25rem;z-index:60;max-width:340px;width:calc(100vw - 2.5rem);
+  background:#FFFFFF;border:1px solid var(--line,#E7E5E4);border-radius:14px;padding:1rem 1.1rem;
+  box-shadow:0 8px 30px rgba(28,25,23,0.12);opacity:0;transform:translateY(12px);
+  transition:opacity .35s ease,transform .35s ease;pointer-events:none;}
+#sr-gslidein.sr-show{opacity:1;transform:translateY(0);pointer-events:auto;}
+#sr-gslidein-close{position:absolute;top:0.35rem;right:0.6rem;border:0;background:none;color:#A8A29E;
+  font-size:1.25rem;line-height:1;cursor:pointer;padding:0.25rem;}
+#sr-gslidein-close:hover{color:#57534E;}
+@media (max-width: 640px){
+  #sr-gslidein{right:0;bottom:0;left:0;width:100%;max-width:none;border-radius:14px 14px 0 0;padding:0.8rem 1rem;}
+}
+</style>
+<script>
+(function () {
+  var el = document.getElementById('sr-gslidein');
+  if (!el) return;
+  var KEY = 'sr_gslidein_dismissed', shown = false;
+  try {
+    if (localStorage.getItem('sr_subscribed')) return;
+    var until = +localStorage.getItem(KEY) || 0;
+    if (Date.now() < until) return;
+  } catch (e) {}
+  function maybeShow() {
+    if (shown) return;
+    var doc = document.documentElement;
+    var depth = (window.scrollY + window.innerHeight) / doc.scrollHeight;
+    if (depth < 0.10) return;
+    shown = true;
+    el.hidden = false;
+    requestAnimationFrame(function () { el.classList.add('sr-show'); });
+    window.removeEventListener('scroll', maybeShow);
+  }
+  function dismiss() {
+    el.classList.remove('sr-show');
+    setTimeout(function () { el.hidden = true; }, 350);
+    try { localStorage.setItem(KEY, String(Date.now() + 7 * 86400e3)); } catch (e) {}
+  }
+  window.addEventListener('scroll', maybeShow, { passive: true });
+  document.getElementById('sr-gslidein-close').addEventListener('click', dismiss);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && el.classList.contains('sr-show')) dismiss();
+  });
+})();
+</script>
+
+
+
+<script type="application/json" id="sr-gab">{"from": "6-steps-server-security", "head": "Free PDF: The $0 SaaS Stack \u2014 27 free tools to launch and run a real product", "slug": "zero-dollar-saas-stack", "sub": "Hosting, database, auth, email, payments, monitoring, CDN, CI, error tracking, analytics \u2014 27 tools across 10 categories, what each free tier includes, and the exact point where it stops being free. Read off the vendors\u0027 own pricing pages in September 2026. Free, by email.", "sub_short": "10 categories, every free tier verified. Get the PDF by email."}</script>
+<script>
+(function () {
+  var node = document.getElementById('sr-gab');
+  if (!node) return;
+  var alt;
+  try { alt = JSON.parse(node.textContent); } catch (e) { return; }
+  if (!alt || !alt.slug || !alt.from) return;
+  var KEY = 'sr_guide_ab', arm = null;
+  try { arm = localStorage.getItem(KEY); } catch (e) {}
+  if (arm !== 'a' && arm !== 'b') {
+    arm = Math.random() < 0.5 ? 'b' : 'a';
+    try { localStorage.setItem(KEY, arm); } catch (e) {}
+  }
+  if (arm !== 'b') return;
+  var from = '@' + alt.from, to = '@' + alt.slug;
+  function retag(el, name) {
+    var v = el.getAttribute(name);
+    if (v && v.slice(-from.length) === from) {
+      el.setAttribute(name, v.slice(0, -from.length) + to);
+    }
+  }
+  var tagged = document.querySelectorAll('[data-cta-variant],[data-source]');
+  for (var i = 0; i < tagged.length; i++) {
+    retag(tagged[i], 'data-cta-variant');
+    retag(tagged[i], 'data-source');
+  }
+  var links = document.querySelectorAll('a[href]');
+  for (var j = 0; j < links.length; j++) {
+    var href = links[j].getAttribute('href');
+    if (href && href.slice(-('/get/' + alt.from).length) === '/get/' + alt.from) {
+      links[j].setAttribute('href', href.slice(0, -alt.from.length) + alt.slug);
+    }
+  }
+  function copy(sel, text) {
+    var els = document.querySelectorAll(sel);
+    for (var k = 0; k < els.length; k++) els[k].textContent = text;
+  }
+  copy('[data-gm-head]', alt.head);
+  copy('[data-gm-sub]', alt.sub);
+  copy('[data-gm-subshort]', alt.sub_short);
+  var labelled = document.querySelectorAll('#sr-gslidein[aria-label]');
+  for (var m = 0; m < labelled.length; m++) labelled[m].setAttribute('aria-label', alt.head);
+})();
+</script>
+
+  </main>
+
+  <footer class="border-t border-line mt-20">
+    <div class="max-w-5xl mx-auto px-6 py-8 font-mono text-[10px] text-muted uppercase tracking-[0.12em] flex flex-wrap gap-4 justify-between">
+      <span>© SSD Nodes — guides for people who run their own servers.</span>
+      <span><a href="https://www.ssdnodes.com/learn/rss.xml" class="hover:text-ink">RSS</a> · <a href="https://www.ssdnodes.com/learn/sitemap.xml" class="hover:text-ink">Sitemap</a></span>
+    </div>
+  </footer>
+
+  <!-- Chart.js (VENDORED + version-pinned, served from our own assets — no CDN, no
+       "@latest breaks us") + the SHARED result renderer (single source of truth for how a
+       chart draws). Every chart's rows are EMBEDDED in the page as JSON at publish time:
+       nothing here fetches, and a reader with no network beyond the page still sees the
+       data. Both scripts defer: the inline scanner below waits for DOMContentLoaded, which
+       fires after deferred scripts, and defer preserves document order. -->
+  <script src="/learn/assets/chart.umd.min.js?v=1784254394" defer></script>
+  <script src="/learn/assets/result-renderer.js?v=1784254394" defer></script>
+  <!-- Interactive-tool loader/registry (```tool``` blocks). Self-contained: registers each
+       tool and hydrates every `.tool-mount` on DOMContentLoaded. No CDN, no network. -->
+  <script src="/learn/assets/tool-renderer.js?v=1784254394" defer></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.sr-mount').forEach(function (m) {
+        var s = m.querySelector('script[type="application/json"]');
+        if (!s) return;
+        var data;
+        try { data = JSON.parse(s.textContent); } catch (e) { return; }
+        data.editable = false;
+        data.toolbar = false;   // the figcaption titles the panel; no second label/buttons row
+        if (window.StrasmoreResult) window.StrasmoreResult.render(m, data);
+      });
+    });
+  </script>
+  
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  document.querySelectorAll('form.js-subscribe').forEach(function (f) {
+    f.setAttribute('data-t', String(Date.now() / 1000));
+    f.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var msg = f.querySelector('.js-subscribe-msg');
+      var btn = f.querySelector('button[type="submit"]');
+      btn.disabled = true; msg.textContent = 'Sending…';
+      fetch(f.action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: f.email.value,
+          source: f.getAttribute('data-source') || 'footer',
+          path: location.pathname,
+          query: location.search,
+          company: (f.company && f.company.value) || '',
+          t: f.getAttribute('data-t') || '',
+          lang: (document.documentElement.lang || '') === 'en' ? '' : document.documentElement.lang
+        })
+      }).then(function (r) { return r.json(); }).then(function (d) {
+        msg.textContent = d.message || d.error || 'Something went wrong — try again.';
+        msg.style.color = d.ok ? '#059669' : '#DC2626';
+        if (d.ok) {
+          f.email.value = '';
+          lsSet('sr_subscribed', '1');
+          var s = document.getElementById('sr-slidein');
+          if (s && !s.contains(f)) { s.classList.remove('sr-slidein-show'); }
+        }
+        btn.disabled = false;
+      }).catch(function () {
+        msg.textContent = 'Something went wrong — try again.';
+        msg.style.color = '#DC2626';
+        btn.disabled = false;
+      });
+    });
+  });
+});
+</script>
+  
+    <script>
+    (function () {
+      try {
+        var n = navigator, s = screen, PX = "/learn/px";
+        /* The page navigation's Sec-Fetch-Site. The edge echoes it as Server-Timing sfs,
+           the one response header this script can read (navigation timing). Empty when
+           the edge does not add it or the browser does not expose serverTiming. */
+        var navSfs = function () {
+          try {
+            var nav = performance.getEntriesByType("navigation")[0];
+            var st = (nav && nav.serverTiming) || [];
+            for (var i = 0; i < st.length; i++) {
+              if (st[i].name === "sfs") { return String(st[i].description || ""); }
+            }
+          } catch (e) {}
+          return "";
+        };
+        var post = function (obj) {
+          var b = new Blob([JSON.stringify(obj)], { type: "application/json" });
+          if (!(n.sendBeacon && n.sendBeacon(PX, b))) {
+            fetch(PX, { method: "POST", body: b, keepalive: true });
+          }
+        };
+        var t0, lastEvt, lastDepth = 0, active = 0, maxPct = 0, maxBottom = 0;
+        var headings = [], curSec = null, secDwell = {}, clicks = [], sentClicks = 0;
+        /* Three states, not two: secSeen is reach, secDwell is attention, secVmax is the
+           skim. Dwell alone cannot separate a section nobody reached from one they scrolled
+           past, and those two call for opposite edits. See apps/blog/analytics.py. */
+        var secSeen = {}, secVmax = {}, secPtr = {}, lastTop = 0, lastVt = 0;
+        /* Cursor as a reading proxy, desktop-only: a touch device has no hovering pointer,
+           so ptype is recorded and an unlabelled zero is never read as disengagement. */
+        var ptype = "";
+        var recent = [], navigated = false;
+        /* Report the STABLE key when the page has one (2026-08-14).
+           `id` comes from the heading text, so it is translated and it changes whenever a
+           page is re-derived with different wording, which silently orphans every recorded
+           read. The 2026-08-13 retranslation did exactly that corpus-wide: 38 of 48 reads on
+           one page pointed at ids that no longer existed, and the attention report showed
+           "SKIPPED" for sections nobody had stopped reading.
+           data-section is positional and survives rewording. Falling back to id keeps pages
+           rendered before this shipped (and any cached HTML) reporting exactly as before,
+           so nothing is lost while the corpus rolls over.
+           NOTE: this comment ships to the browser, so it must stay free of em-dashes like
+           the rest of the reader-facing HTML (tests/test_deals.py enforces it). */
+        var buildHeadings = function () {
+          headings = [];
+          var hs = document.querySelectorAll("main h2[id], main h3[id]");
+          for (var i = 0; i < hs.length; i++) {
+            headings.push({ id: hs[i].getAttribute("data-section") || hs[i].id, el: hs[i] });
+          }
+        };
+        var sectionAt = function (y) {
+          var cur = null;
+          for (var i = 0; i < headings.length; i++) {
+            if (headings[i].el.offsetTop <= y) cur = headings[i].id; else break;
+          }
+          return cur;
+        };
+        var depth = function (force) {
+          var now = Date.now();
+          if (!force && now - lastDepth < 250) return;
+          lastDepth = now;
+          var d = document.documentElement;
+          var h = Math.max(d.scrollHeight || 0, document.body ? document.body.scrollHeight : 0);
+          var top = (window.pageYOffset || d.scrollTop || 0);
+          /* px/s since the last sample; coarse by design, so one flick of the wheel is not
+             read as reading speed. */
+          if (lastVt) {
+            var vdt = now - lastVt;
+            if (vdt > 0) {
+              var v = Math.abs(top - lastTop) * 1000 / vdt;
+              if (curSec && v > (secVmax[curSec] || 0)) secVmax[curSec] = Math.round(v);
+            }
+          }
+          lastVt = now; lastTop = top;
+          var seen = top + innerHeight;
+          if (seen > maxBottom) maxBottom = seen;
+          if (h > 0) {
+            var pct = Math.max(0, Math.min(100, Math.round(100 * seen / h)));
+            if (pct > maxPct) maxPct = pct;
+          }
+          curSec = sectionAt(top + innerHeight * 0.35);
+          if (curSec) secSeen[curSec] = 1;   /* reached, whether or not they stayed */
+        };
+        /* Throttled to 4/s: we want cursor liveness per section, not a trace. */
+        var lastPtr = 0;
+        var onPointer = function (e) {
+          if (!ptype && e && e.pointerType) ptype = String(e.pointerType).slice(0, 8);
+          var now = Date.now();
+          if (now - lastPtr < 250) return;
+          lastPtr = now;
+          if (curSec) secPtr[curSec] = (secPtr[curSec] || 0) + 1;
+        };
+        var bump = function () {
+          var now = Date.now();
+          if (now - lastEvt < 30000) {
+            var dt = now - lastEvt;
+            active += dt;
+            if (curSec) secDwell[curSec] = (secDwell[curSec] || 0) + dt;
+          }
+          lastEvt = now;
+        };
+        var CLICKY = { A: 1, BUTTON: 1, SUMMARY: 1, INPUT: 1, SELECT: 1, LABEL: 1,
+                       TEXTAREA: 1, IMG: 1, SVG: 1, VIDEO: 1 };
+        var looksClickable = function (el) {
+          for (var i = 0; el && el.tagName && i < 4; i++, el = el.parentElement) {
+            if (CLICKY[el.tagName]) return true;
+            var role = el.getAttribute && el.getAttribute("role");
+            if (role && /button|link|tab|menuitem|checkbox|switch/.test(role)) return true;
+            try { if (getComputedStyle(el).cursor === "pointer") return true; } catch (e) {}
+          }
+          return false;
+        };
+        var isRealInteractive = function (el) {
+          for (var i = 0; el && el.tagName && i < 4; i++, el = el.parentElement) {
+            var tg = el.tagName;
+            if (tg === "A") {
+              var href = el.getAttribute("href");
+              if (href && href.charAt(0) !== "#") return true;
+            } else if (tg === "BUTTON" || tg === "SUMMARY" || tg === "INPUT" ||
+                       tg === "SELECT" || tg === "TEXTAREA" || tg === "LABEL") return true;
+          }
+          return false;
+        };
+        var describe = function (el) {
+          if (!el || !el.tagName) return null;
+          var s = el.tagName.toLowerCase();
+          if (el.id) s += "#" + el.id;
+          else if (typeof el.className === "string") {
+            var c = el.className.trim().split(/\s+/)[0];
+            if (c) s += "." + c;
+          }
+          var txt = (el.textContent || "").replace(/\s+/g, " ").trim().slice(0, 32);
+          if (txt) s += ' "' + txt + '"';
+          return s.slice(0, 80);
+        };
+        var onClick = function (e) {
+          if (clicks.length >= 50) return;
+          var el = e.target, d = document.documentElement;
+          var pageH = Math.max(d.scrollHeight || 0, 1);
+          var top = (window.pageYOffset || d.scrollTop || 0), absY = top + e.clientY;
+          var rec = { x: Math.round(100 * e.clientX / Math.max(innerWidth, 1)),
+                      y: Math.round(100 * absY / pageH), s: sectionAt(absY),
+                      t: describe(el), d: 0, r: 0 };
+          clicks.push(rec);
+          var now = Date.now();
+          recent.push({ t: now, x: e.clientX, y: e.clientY });
+          recent = recent.filter(function (p) { return now - p.t <= 1000; });
+          var near = 0;
+          for (var i = 0; i < recent.length; i++) {
+            if (Math.abs(recent[i].x - e.clientX) < 40 && Math.abs(recent[i].y - e.clientY) < 40) near++;
+          }
+          if (near >= 3) rec.r = 1;
+          if (looksClickable(el) && !isRealInteractive(el)) {
+            var mutated = false, mo;
+            try {
+              mo = new MutationObserver(function () { mutated = true; });
+              mo.observe(document.body, { childList: true, subtree: true, attributes: true });
+            } catch (e2) {}
+            setTimeout(function () {
+              if (mo) mo.disconnect();
+              var moved = Math.abs((window.pageYOffset || d.scrollTop || 0) - top) > 8;
+              var sel = false;
+              try { sel = String(getSelection ? getSelection() : "").length > 0; } catch (e3) {}
+              if (!navigated && !mutated && !moved && !sel) rec.d = 1;
+            }, 700);
+          }
+        };
+        var exit = function () {
+          bump();
+          depth(true);
+          var sec = sectionAt(maxBottom);
+          var pending = clicks.slice(sentClicks);
+          sentClicks = clicks.length;
+          var seen = [];
+          for (var cid in ctaSeen) if (ctaSeen[cid] === 1) { seen.push(ctaSeen.d[cid]); ctaSeen[cid] = 2; }
+          post({ k: "x", p: location.pathname, sd: maxPct, sec: sec,
+                 at: Math.round(active / 1000), dur: Math.round((Date.now() - t0) / 1000),
+                 secs: secDwell, secl: headings.map(function (h) { return h.id; }),
+                 seen: secSeen, vmax: secVmax, cur: secPtr, ptype: ptype,
+                 /* visible heading ids, same order: labels only, so the attention
+                    report reads as prose instead of s1/s2/s3. */
+                 secn: headings.map(function (h) { return h.el.id; }),
+                 cv: (document.querySelector('meta[name="content-version"]') || {}).content,
+                 clk: pending, cta: seen });
+        };
+        var ctaSeen = { d: {} };
+        var ctaPayload = function (el) {
+          return { c: el.getAttribute("data-cta"), v: el.getAttribute("data-cta-variant"),
+                   g: "tailscale-serve-command-cheat-sheet",
+                   l: "en" };
+        };
+        var watchCtas = function () {
+          var els = document.querySelectorAll("[data-cta]");
+          if (!els.length) return;
+          addEventListener("click", function (e) {
+            var a = e.target.closest && e.target.closest("[data-cta]");
+            if (!a) return;
+
+            if (e.target.closest("input, select, textarea, label")) return;
+            var pl = ctaPayload(a);
+            var b = e.target.closest("button");
+            pl.k = (b && a.contains(b)) ? "ctax" : "cta";
+            pl.p = location.pathname;
+            post(pl);
+          }, true);
+          if (!window.IntersectionObserver) return;
+          var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (en) {
+              var id = en.target.getAttribute("data-cta");
+              if (!en.isIntersecting) { clearTimeout(en.target._ctaT); return; }
+              if (ctaSeen[id]) { io.unobserve(en.target); return; }
+              en.target._ctaT = setTimeout(function () {
+                if (ctaSeen[id]) return;
+                ctaSeen[id] = 1; ctaSeen.d[id] = ctaPayload(en.target);
+                io.unobserve(en.target);
+              }, 1000);
+            });
+          }, { threshold: 0.5 });
+          for (var i = 0; i < els.length; i++) io.observe(els[i]);
+        };
+        var start = function () {
+          t0 = lastEvt = Date.now();
+          buildHeadings();
+          depth(true);
+          addEventListener("pointermove", onPointer, { passive: true });
+          addEventListener("pointerdown", onPointer, { passive: true });
+          ["keydown", "pointerdown", "pointermove", "touchstart", "click"].forEach(function (e) {
+            addEventListener(e, bump, { passive: true });
+          });
+          addEventListener("click", onClick, true);
+          watchCtas();
+          addEventListener("scroll", function () { bump(); depth(); }, { passive: true });
+          document.addEventListener("visibilitychange", function () {
+            if (document.visibilityState === "hidden") { exit(); } else { lastEvt = Date.now(); }
+          });
+          addEventListener("beforeunload", function () { navigated = true; });
+          addEventListener("pagehide", exit);
+          post({
+            p: location.pathname,
+            tz: (Intl.DateTimeFormat().resolvedOptions() || {}).timeZone,
+            screen: s.width + "x" + s.height,
+            viewport: innerWidth + "x" + innerHeight,
+            dpr: String(devicePixelRatio || 1),
+            webdriver: n.webdriver ? 1 : 0,
+            cores: n.hardwareConcurrency || 0,
+            memory: String(n.deviceMemory || ""),
+            lang: n.language || "",
+            r: document.referrer || "",
+            sfs: navSfs()
+          });
+        };
+        if (document.prerendering) {
+          document.addEventListener("prerenderingchange", start, { once: true });
+        } else {
+          start();
+        }
+      } catch (e) {}
+    })();
+  </script>
+  
+<script>
+(function () {
+  try {
+    var PX = "/learn/px";
+    var t0 = Date.now(), lastEvt = t0, dirty = false, sentFinal = false;
+    var sc = [], led = [], hov = {}, tap = {}, fq = [], fqSeen = {};
+    var lastSc = 0, hovKey = null, hovT0 = 0;
+
+    var label = function (el) {
+      for (var e = el; e && e.getAttribute; e = e.parentElement) {
+        var v = e.getAttribute("data-cta");
+        if (v) return "cta:" + v;
+        if (e.getAttribute("data-pid")) return "card:" + e.getAttribute("data-pid");
+        if (e.getAttribute("data-deal-cycle")) return "mode:" + e.getAttribute("data-deal-cycle");
+        if (e.getAttribute("data-deal-tab")) return "tab:" + e.getAttribute("data-deal-tab");
+        if (e.getAttribute("data-faq")) return "faq:" + e.getAttribute("data-faq");
+        var tag = e.tagName;
+        if (tag === "A" && e.getAttribute("href"))
+          return "link:" + (e.getAttribute("href") || "").split("?")[0].slice(0, 60);
+        if ((tag === "H2" || tag === "H3") && e.id) return "h:" + e.id;
+        if (tag === "PRE") return "code";
+        if (tag === "BUTTON") return "btn:" + (e.id || (e.textContent || "").trim().slice(0, 20));
+      }
+      return null;
+    };
+    var mark = function (key) {
+      if (!key || fqSeen[key]) { return; }
+      fqSeen[key] = 1;
+      if (fq.length < 20) fq.push(key);
+    };
+    var pct = function () {
+      var d = document.documentElement;
+      var s = d.scrollHeight - window.innerHeight;
+      return s > 0 ? Math.max(0, Math.min(100,
+        Math.round(100 * (window.scrollY || d.scrollTop || 0) / s))) : 0;
+    };
+
+    addEventListener("scroll", function () {
+      lastEvt = Date.now();
+      if (lastEvt - lastSc < 300 || sc.length >= 480) return;
+      lastSc = lastEvt;
+      sc.push([Math.round((lastEvt - t0) / 100), pct()]);
+      dirty = true;
+    }, { passive: true });
+
+    ["pointermove", "keydown", "touchstart", "click"].forEach(function (e) {
+      addEventListener(e, function () { lastEvt = Date.now(); }, { passive: true });
+    });
+
+    addEventListener("pointerover", function (e) {
+      var k = label(e.target);
+      if (k === hovKey) return;
+      if (hovKey) hov[hovKey] = (hov[hovKey] || 0) + (Date.now() - hovT0);
+      hovKey = k; hovT0 = Date.now();
+      if (k) { mark(k); dirty = true; }
+    }, { passive: true });
+
+    addEventListener("pointerdown", function (e) {
+      var k = label(e.target);
+      if (k) { tap[k] = (tap[k] || 0) + 1; mark(k); dirty = true; }
+    }, { passive: true });
+
+    setInterval(function () {
+      var state = document.hidden ? "h" : ((Date.now() - lastEvt) < 5000 ? "a" : "i");
+      var last = led[led.length - 1];
+      if (last && last[0] === state) { last[1]++; } else if (led.length < 400) { led.push([state, 1]); }
+      dirty = true;
+    }, 1000);
+
+    var sends = 0;
+    var send = function (force) {
+      if (!dirty || (!force && sends >= 40)) return;
+      dirty = false; sends++;
+      if (hovKey) { hov[hovKey] = (hov[hovKey] || 0) + (Date.now() - hovT0); hovT0 = Date.now(); }
+      var body = { k: "tr", p: location.pathname,
+                   tr: { sc: sc.length > 240 ? sc.filter(function (_, i) { return i % 2 === 0; }) : sc,
+                         led: led, hov: hov, tap: tap, fq: fq } };
+      var b = new Blob([JSON.stringify(body)], { type: "application/json" });
+      if (!(navigator.sendBeacon && navigator.sendBeacon(PX, b))) {
+        fetch(PX, { method: "POST", body: b, keepalive: true }).catch(function () {});
+      }
+    };
+    setInterval(function () { send(false); }, 30000);
+    var finalSend = function () { if (!sentFinal) { dirty = true; send(true); } };
+    addEventListener("pagehide", function () { finalSend(); sentFinal = true; });
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) finalSend();
+    });
+  } catch (e) {}
+})();
+</script>
+  <style>
+    /* Sticky header: in-page anchor targets must land BELOW it, not under it. 6rem clears
+       the tallest (wrapped, two-row mobile) header; on desktop it just adds breathing room. */
+    html { scroll-padding-top: 6rem; }
+    /* The nav product CTA — a filled pill so the offer reads as a button, not another link.
+       Carries the nav's mono/uppercase/tracking so it stays OF the header, just weighted.
+       var(--post-accent) matches the card buttons' per-post accent, same fallback. */
+    .nav-cta { background: var(--post-accent, #3B82F6); color: #fff; font-weight: 700;
+      padding: .45rem .9rem; border-radius: 9999px; white-space: nowrap;
+      transition: filter .12s; }
+    .nav-cta:hover { filter: brightness(1.12); color: #fff; }
+    /* Header split (owner call, 2026-07-29): mobile = brand + offer + burger, desktop = the
+       full text nav with the pill pinned at the end. Native <details> burger; the opened
+       menu is IN FLOW, so it expands the sticky header downward rather than overlaying. */
+    .nav-burger > summary { display: inline-flex; align-items: center; cursor: pointer;
+      list-style: none; padding: .3rem; }
+    .nav-burger > summary::-webkit-details-marker { display: none; }
+    .nav-burger > summary::marker { content: ""; }
+    @media (min-width: 768px) {
+      .nav-burger { display: none; }
+      .site-nav { order: 2; }
+      .nav-cta { order: 3; }
+    }
+    @media (max-width: 767.98px) {
+      .site-nav { display: none; width: 100%; flex-direction: column;
+        align-items: flex-start; gap: .9rem; padding: .6rem 0 .3rem; }
+      .nav-burger[open] ~ .site-nav { display: flex; }
+      .nav-cta { padding: .4rem .75rem; }
+      .site-brand { letter-spacing: .08em; }
+      /* the switcher's inline-start divider is a row artifact; drop it in the column menu */
+      .lang-switch { border-inline-start: none; padding-inline-start: 0; margin-inline-start: 0; }
+    }
+    .blog-code-wrap { position: relative; }
+    .blog-code-wrap .code-copy {
+      position: absolute; top: 8px; right: 8px; z-index: 2;
+      font: 600 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      letter-spacing: 0.04em; text-transform: uppercase;
+      color: #cbd5e1; background: rgba(15,23,42,0.65); border: 1px solid rgba(148,163,184,0.35);
+      border-radius: 6px; padding: 5px 9px; cursor: pointer; opacity: 0; transition: opacity .12s, color .12s, border-color .12s;
+    }
+    .blog-code-wrap:hover .code-copy, .blog-code-wrap .code-copy:focus-visible { opacity: 1; }
+    .blog-code-wrap .code-copy:hover { color: #fff; border-color: rgba(148,163,184,0.7); }
+    .blog-code-wrap .code-copy.copied { color: #34d399; border-color: rgba(52,211,153,0.6); opacity: 1; }
+    /* The clipboard API can refuse (focus, permission, insecure context). Say so rather
+       than leave a button that reads as broken. */
+    .blog-code-wrap .code-copy.copy-failed { color: #fca5a5; border-color: rgba(252,165,165,0.6); opacity: 1; }
+    @media (hover: none) { .blog-code-wrap .code-copy { opacity: 1; } }
+    /* RTL page (dir="rtl" on <html>): shell text flows RTL, but code, chart/tool widgets
+       and quoted terminal output are LTR artifacts and must stay LTR — a reader runs the
+       exact same commands. Physical-direction utilities that encode "end of line" flip. */
+    [dir="rtl"] .blog-code-wrap, [dir="rtl"] pre,
+    [dir="rtl"] .sr-mount, [dir="rtl"] .tool-mount { direction: ltr; text-align: left; }
+    [dir="rtl"] .text-right { text-align: left; }
+    [dir="rtl"] .ml-auto { margin-left: 0; margin-right: auto; }
+    /* Language switcher (native <details> disclosure) — structure only; logical properties so
+       it mirrors under dir="rtl" with no ar-specific rule. */
+    .lang-switch{position:relative;text-transform:none;letter-spacing:normal;
+      padding-inline-start:.75rem;margin-inline-start:.25rem;border-inline-start:1px solid var(--line,#E7E5E4)}
+    .lang-switch>summary{display:inline-flex;align-items:center;gap:.4rem;cursor:pointer;list-style:none}
+    .lang-switch>summary::-webkit-details-marker{display:none}
+    .lang-switch>summary::marker{content:""}
+    .lang-switch>summary:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+    .lang-switch .lang-globe{inline-size:1em;block-size:1em;flex:none;opacity:.85}
+    .lang-switch>summary:hover .lang-globe{opacity:1}
+    .lang-switch .lang-caret{font-size:.8em;line-height:1;transition:transform .12s ease}
+    .lang-switch[open] .lang-caret{transform:rotate(180deg)}
+    .lang-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+    /* Show the WHOLE list at a glance. Past ~12 languages a single column overflows the
+       viewport, so lay the options out in a multi-column grid — 3 columns on desktop, 2 then 1
+       as the screen narrows. Pure CSS on the native <details>, no capped scroll box that hides
+       options. `auto` columns size to the widest endonym so nothing clips; the 1-column phone
+       fallback keeps a max-height safety for an unusually short window. */
+    .lang-menu{position:absolute;top:calc(100% + .5rem);inset-inline-end:0;z-index:50;
+      display:grid;grid-template-columns:repeat(3,auto);gap:0 .15rem;max-width:calc(100vw - 1.5rem);
+      margin:0;padding:.25rem;list-style:none;border-radius:8px;box-shadow:0 8px 28px rgba(15,23,42,.16)}
+    @media (max-width:640px){.lang-menu{grid-template-columns:repeat(2,auto)}}
+    @media (max-width:400px){.lang-menu{grid-template-columns:1fr;max-height:calc(100dvh - 5rem);overflow-y:auto}}
+    .lang-menu li{margin:0}
+    .lang-menu .lang-opt{display:flex;align-items:center;gap:.5rem;padding:.4rem .6rem;
+      border-radius:6px;text-align:start;white-space:nowrap;text-decoration:none}
+    .lang-menu .lang-mark{inline-size:1em;flex:none;text-align:center}
+    /* The Tailwind build only emitted .bg-surface/70 (the header uses it); plain .bg-surface,
+       added later on the switcher dropdown and the language banner, was never compiled — so the
+       dropdown rendered with NO background and the page showed through. Define it here so the
+       fix does not depend on a CSS rebuild. */
+    .bg-surface{background-color:var(--color-surface, #fff)}
+  </style>
+  
+  <script>
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest && e.target.closest('.code-copy');
+      if (!btn) return;
+      var code = btn.parentElement.querySelector('code');
+      if (!code) return;
+      var text = code.textContent;
+      if (btn.getAttribute('data-label') === null) btn.setAttribute('data-label', btn.textContent);
+      var flash = function (label, cls) {
+        btn.textContent = label;
+        btn.classList.add(cls);
+        setTimeout(function () {
+          btn.textContent = btn.getAttribute('data-label');
+          btn.classList.remove(cls);
+        }, 1600);
+      };
+      var done = function () { flash(btn.getAttribute('data-copied') || 'Copied!', 'copied'); };
+      var failed = function () { flash(btn.getAttribute('data-failed') || 'Press Ctrl+C', 'copy-failed'); };
+      var legacy = function () {
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.readOnly = true;
+        ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select(); ta.setSelectionRange(0, text.length);
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+        document.body.removeChild(ta);
+        (ok ? done : failed)();
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(legacy);
+      } else {
+        legacy();
+      }
+    });
+  </script>
+  <script>
+    (function () {
+      var PATH = "/learn";
+      
+      document.addEventListener('click', function (e) {
+        var a = e.target.closest && e.target.closest('a[data-setlang]');
+        if (!a) return;
+        document.cookie = 'lang=' + encodeURIComponent(a.getAttribute('data-setlang'))
+          + '; path=' + PATH + '; max-age=31536000; samesite=lax';
+      });
+      var langSwitches = document.querySelectorAll('details.lang-switch');
+      Array.prototype.forEach.call(langSwitches, function (d) {
+        var s = d.querySelector('summary'); if (!s) return;
+        var sync = function () { s.setAttribute('aria-expanded', d.open ? 'true' : 'false'); };
+        sync(); d.addEventListener('toggle', sync);
+      });
+      var closeLangOutside = function (e) {
+        Array.prototype.forEach.call(langSwitches, function (d) {
+          if (d.open && !d.contains(e.target)) d.open = false;
+        });
+      };
+      document.addEventListener('pointerdown', closeLangOutside);
+      document.addEventListener('focusin', closeLangOutside);
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        Array.prototype.forEach.call(langSwitches, function (d) {
+          if (d.open) { d.open = false; var s = d.querySelector('summary'); if (s) s.focus(); }
+        });
+      });
+      var el = document.getElementById('lang-banner'), data = document.getElementById('lang-banner-data');
+      if (!el || !data) return;
+      var map; try { map = JSON.parse(data.textContent || '{}'); } catch (e) { return; }
+      var normLang = function (tag) {
+        tag = (tag || '').toLowerCase();
+        var primary = tag.split('-')[0];
+        if (primary === 'zh') { if (/hant|tw|hk|mo/.test(tag)) return ''; return 'zh-hans'; }
+        return primary;
+      };
+      var pref = document.cookie.split('; ').reduce(function (acc, c) {
+        var i = c.indexOf('='); return c.slice(0, i) === 'lang' ? decodeURIComponent(c.slice(i + 1)) : acc;
+      }, '');
+      var chosen = '';
+      if (pref) {
+        if (map[pref]) chosen = pref;
+      } else {
+        var navs = (navigator.languages && navigator.languages.length)
+          ? navigator.languages : [navigator.language || ''];
+        for (var i = 0; i < navs.length && !chosen; i++) {
+          var code = normLang(navs[i]);
+          if (code && map[code]) chosen = code;
+        }
+      }
+      if (!chosen) return;
+      pref = chosen;
+      var key = 'lb_x_' + pref;
+      try { if (sessionStorage.getItem(key) === '1') return; } catch (e) {}
+      var link = document.getElementById('lang-banner-link');
+      link.textContent = map[pref].text; link.href = map[pref].url;
+      el.hidden = false;
+      var x = document.getElementById('lang-banner-x');
+      if (x) x.addEventListener('click', function () {
+        el.hidden = true; try { sessionStorage.setItem(key, '1'); } catch (e) {}
+      });
+    })();
+  </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"d2d602f2775c49029b2d89214051525d","spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

@@ -17,11 +17,12 @@ import httpx
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from prompt_trials import TASK_AND_SCOPE  # noqa: E402
+from prompt_trials import DIRECT_AND_CONSISTENT, TASK_AND_SCOPE, TASK_AND_SCOPE_V2  # noqa: E402
 
 from app.config import Settings  # noqa: E402
 from app.main import create_app  # noqa: E402
 from app.search import planner  # noqa: E402
+from app.search import prompt as answer_prompt  # noqa: E402
 from app.search.citations import cited  # noqa: E402
 from app.search.pipeline import Pipeline  # noqa: E402
 
@@ -76,7 +77,11 @@ def percentile(values: list[float], p: float) -> float:
 async def evaluate(args: argparse.Namespace) -> None:
     if args.planner_trial == "task-and-scope":
         planner.PROMPT += TASK_AND_SCOPE
-    cases = json.loads((HERE / "cases.yaml").read_text())
+    elif args.planner_trial == "task-and-scope-v2":
+        planner.PROMPT += TASK_AND_SCOPE_V2
+    if args.answer_trial == "direct-and-consistent":
+        answer_prompt.PROMPT += DIRECT_AND_CONSISTENT
+    cases = json.loads(Path(args.cases_file).read_text())
     if args.case:
         cases = [c for c in cases if c["id"] == args.case]
     if not cases:
@@ -113,7 +118,7 @@ async def evaluate(args: argparse.Namespace) -> None:
                 "/api/settings",
                 json={
                     "auto_title": False,
-                    "web.provider_order": ["ddgs"],
+                    "web.provider_order": args.providers.split(","),
                     "web.embedding": {"connection_id": conn["id"], "model_id": args.embedding}
                     if args.ranking == "hybrid"
                     else None,
@@ -239,6 +244,12 @@ async def evaluate(args: argparse.Namespace) -> None:
                     else True
                 )
                 passed = passed and freshness_matches
+                query_text = "\n".join(turns[-1]["web"].get("queries", []))
+                query_scope_matches = not any(
+                    re.search(pattern, query_text, re.I)
+                    for pattern in expect.get("queries_must_not_match", [])
+                )
+                passed = passed and query_scope_matches
                 injection_exercised = None
                 if case["id"] == "injection":
                     injection_exercised = any(
@@ -259,6 +270,7 @@ async def evaluate(args: argparse.Namespace) -> None:
                         "required_facts": bool(facts),
                         "search_decisions_match": all(case_decisions),
                         "freshness_matches": freshness_matches,
+                        "query_scope_matches": query_scope_matches,
                         "injection_exercised": injection_exercised,
                         "forbidden": bad,
                         "citations": cites,
@@ -282,6 +294,7 @@ async def evaluate(args: argparse.Namespace) -> None:
             + "-"
             + args.ranking
             + ("-" + args.planner_trial if args.planner_trial != "spec" else "")
+            + ("-" + args.answer_trial if args.answer_trial != "spec" else "")
         )
     )
     prefix.parent.mkdir(exist_ok=True)
@@ -333,11 +346,16 @@ async def evaluate(args: argparse.Namespace) -> None:
         json.dumps(
             {
                 "model": args.model,
+                "providers": args.providers.split(","),
+                "cases_file": args.cases_file,
                 "mode": "record" if args.record else "live" if args.live else "offline",
                 "ranking": args.ranking,
                 "planner_trial": args.planner_trial,
                 "planner_prompt_sha256": hashlib.sha256(planner.PROMPT.encode()).hexdigest(),
                 "planner_prompt": planner.PROMPT,
+                "answer_trial": args.answer_trial,
+                "answer_prompt": answer_prompt.PROMPT,
+                "answer_prompt_sha256": hashlib.sha256(answer_prompt.PROMPT.encode()).hexdigest(),
                 "fixture_root": args.fixture_root if not args.live and not args.record else None,
                 "metrics": metrics,
                 "results": results,
@@ -376,13 +394,17 @@ async def evaluate(args: argparse.Namespace) -> None:
     prefix.with_suffix(".md").write_text(report)
     print(str(prefix.with_suffix(".md")), flush=True)
     print(json.dumps(metrics), flush=True)
-    if len(cases) == 25 and (not all(gates.values()) or not all(r["passed"] for r in results)):
+    if not all(r["passed"] for r in results) or (len(cases) >= 25 and not all(gates.values())):
         raise SystemExit(1)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--case", default="")
+    parser.add_argument("--cases-file", default=str(HERE / "cases.yaml"))
+    parser.add_argument(
+        "--providers", choices=["searxng,ddgs", "searxng", "ddgs"], default="searxng,ddgs"
+    )
     parser.add_argument("--model", default="qwen3:30b-a3b-instruct-2507-q4_K_M")
     parser.add_argument("--url", default="http://127.0.0.1:11434")
     parser.add_argument("--live", action="store_true")
@@ -390,5 +412,8 @@ if __name__ == "__main__":
     parser.add_argument("--ranking", choices=["keyword", "hybrid"], default="keyword")
     parser.add_argument("--embedding", default="qwen3-embedding:0.6b")
     parser.add_argument("--fixture-root", default=str(HERE / "fixtures"))
-    parser.add_argument("--planner-trial", choices=["spec", "task-and-scope"], default="spec")
+    parser.add_argument(
+        "--planner-trial", choices=["spec", "task-and-scope", "task-and-scope-v2"], default="spec"
+    )
+    parser.add_argument("--answer-trial", choices=["spec", "direct-and-consistent"], default="spec")
     asyncio.run(evaluate(parser.parse_args()))

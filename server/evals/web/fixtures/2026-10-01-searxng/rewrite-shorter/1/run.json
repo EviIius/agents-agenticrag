@@ -1,0 +1,323 @@
+{
+  "question": "make that two sentences",
+  "message": {
+    "id": "eefd2374ced04379bf4f945e1e040829",
+    "chat_id": "4054e5d658e6450fb8b5983bb8920dca",
+    "parent_id": "be996e5c59794c129b2fa3ce788bbcd5",
+    "role": "assistant",
+    "content": "Tailscale Serve allows you to securely expose a local service, like a web server on port 3000, to other devices within your private Tailscale network (tailnet) using a unique HTTPS URL, such as `https://amelie-workstation.pango-lin.ts.net`, without opening public ports or exposing the service to the internet [1][4]. It uses identity and app capability headers to pass user authentication details to the service and enforces access control based on your tailnet's policies [1][4].",
+    "reasoning": null,
+    "status": "complete",
+    "error": null,
+    "model": {
+      "connection_id": "b8059257ae314eeeb80ab806c59d0034",
+      "model_id": "qwen3:30b-a3b-instruct-2507-q4_K_M",
+      "display_name": "qwen3:30b-a3b-instruct-2507-q4_K_M"
+    },
+    "attachments": [],
+    "stats": {
+      "reasoning_ms": null,
+      "ttft_ms": 6284.589249997225,
+      "total_ms": 7703.762958997686,
+      "prompt_tokens": 3493,
+      "completion_tokens": 110,
+      "tokens_per_sec": 77.55665513657726,
+      "tokens_estimated": false,
+      "load_ms": 6.149583,
+      "finish_reason": "stop",
+      "context_length": 16384,
+      "dropped_message_count": 0,
+      "params": {}
+    },
+    "web": {
+      "status": "used",
+      "freshness": "any",
+      "notice": null,
+      "queries": [
+        "Tailscale Serve feature overview and how it works",
+        "Tailscale Serve command usage example and secure URL format"
+      ],
+      "timings": {
+        "plan": 748.8498330058064,
+        "search": 734.3234590007341,
+        "fetch": 1831.3482499943348,
+        "rank": 5.8533749979687855
+      },
+      "source_count": 6,
+      "plan_fallback": false,
+      "providers": [
+        "SearXNG"
+      ],
+      "ranking": "keyword"
+    },
+    "created_at": "2026-10-01T22:30:32.969023+00:00"
+  },
+  "sources": [
+    {
+      "n": 1,
+      "url": "https://tailscale.com/docs/features/tailscale-serve",
+      "title": "Tailscale Serve · Tailscale Docs",
+      "site_name": "Tailscale",
+      "domain": "tailscale.com",
+      "published_at": "2026-01-20",
+      "fetched_at": "2026-10-01T22:30:34.455377+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://tailscale.com/docs/features/tailscale-serve",
+          "heading": "Run Tailscale Serve",
+          "ord": 2,
+          "text": "## Run Tailscale Serve\n\nIf you run the `tailscale serve` command and your tailnet isn't properly configured to use Tailscale Serve, it presents a login server URL that you can follow to enable the feature.\n\nTailscale Serve lets you serve local directories, files, plain text, or local ports with other devices in your tailnet. For example, you can proxy requests to a web server running at `http://127.0.0.1:3000` using the following command:\n\n```\ntailscale serve 3000\n```\nRun `tailscale serve --help` for more examples.\n\nThe CLI opens a foreground session that displays the status of what it's serving and the URL you can use to access your server:\n\n```\ntailscale serve 3000\nAvailable within your tailnet:\nhttps://amelie-workstation.pango-lin.ts.net\n\n|-- / proxy http://127.0.0.1:3000\n\nPress Ctrl+C to exit.\n```\n## Identity headers"
+        },
+        {
+          "source_url": "https://tailscale.com/docs/features/tailscale-serve",
+          "heading": "Run Tailscale Serve",
+          "ord": 5,
+          "text": "Although identity headers are only populated for tailnet traffic, this includes traffic from external users who have accepted a share of your device. For example, if you share a device with a friend and have it configured with a Serve proxy, Tailscale populates the identity headers when your friend visits the Serve URL.\n\nWhen you use the identity headers to authenticate to a backend service, it's best practice to only have the service listen on localhost. Otherwise, any user that can call your service directly (rather than with the Serve URL) could trivially provide their own values for these HTTP headers. By listening only on localhost, this limits tampering to only other services running on the Serve device, and not anyone on your LAN or tailnet."
+        },
+        {
+          "source_url": "https://tailscale.com/docs/features/tailscale-serve",
+          "heading": "App capabilities header",
+          "ord": 6,
+          "text": "## App capabilities header\n\nServe traffic can be configured to forward a header with selected app capabilities of the connected user or tagged device. Similar to identity headers, this isn't available for Funnel traffic, which is publicly available.\n\nThis feature is available in Tailscale v1.92 or later.\n\nWhen you use Serve to proxy traffic to a local service running on your device, you can use the `--accept-app-caps` command line flag to specify which app capabilities of a user or tagged node Serve should forward.\nIf a user or tagged node that makes a request has been granted any of the app capabilities specified, Serve will convert them into serialised JSON and forward them in a header called `Tailscale-App-Capabilities`.\nFor an example of what this can look like, refer to the Tailscale Serve examples."
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 2,
+      "url": "https://ssdnodes.com/learn/tailscale-serve-command-cheat-sheet",
+      "title": "tailscale serve: the commands that matter · SSD Nodes",
+      "site_name": "SSD Nodes",
+      "domain": "ssdnodes.com",
+      "published_at": "2026-09-20",
+      "fetched_at": "2026-10-01T22:30:34.455439+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://ssdnodes.com/learn/tailscale-serve-command-cheat-sheet",
+          "heading": "Prerequisites you hit before the first command",
+          "ord": 5,
+          "text": "**HTTPS certificates on.** On the same DNS page, enable HTTPS certificates. If you skip this and run an HTTPS serve, the CLI does not fail. It prints a short message and a `login.tailscale.com` URL, then waits. Open the URL, approve the change, and the CLI prints `Success.` and continues with your original command. That interactive step is only triggered for HTTPS handlers. The `--http` and `--tcp` modes do not need certificates at all.\n\nTwo more things are easy to miss. On Linux the CLI talks to `tailscaled` over a root-owned socket, so either prefix every command with `sudo` or run `sudo tailscale set --operator=$USER` once to let your own user manage it. And access control lists (ACLs) apply to serve as they do to any other port. A peer that is not allowed to reach the node on port 443 in your tailnet policy gets a timeout, even though serve is listening."
+        },
+        {
+          "source_url": "https://ssdnodes.com/learn/tailscale-serve-command-cheat-sheet",
+          "heading": "What breaks, with the strings you will see",
+          "ord": 20,
+          "text": "## What breaks, with the strings you will see\n\n**Everything works until you log out.** You ran the foreground form. The handler was tied to your CLI session and went away with it. Re-run the same command with `--bg`.\n\n**The command prints a URL and waits.** HTTPS certificates are not enabled on the tailnet. The CLI is waiting for you to approve at the URL it printed. Approve, and it prints `Success.` and continues.\n\n**The app loads, then every link 404s.** The mount path is being stripped. Either configure the app to live at its root, or put the prefix on the target URL as in the Grafana example.\n\n**`cannot serve web; already serving TCP`.** The port you passed to `--https` is already a TCP forwarder. Pick another port, or turn the TCP handler off first."
+        },
+        {
+          "source_url": "https://ssdnodes.com/learn/tailscale-serve-command-cheat-sheet",
+          "heading": "What breaks, with the strings you will see",
+          "ord": 21,
+          "text": "**`Error: the CLI for serve and funnel has changed.`** You pasted a pre-1.52 command. The CLI prints the translated command on the next line. Copy that.\n\n**The URL times out from one device but works from another.** Serve is listening, but the tailnet policy does not allow that peer to reach the node on that port. Confirm the node appears in `tailscale status` on the client, then check the ACL for the port.\n\nOne pointer and nothing more: `tailscale funnel` takes the same flags and targets, and publishes the result to the public internet instead of the tailnet. The same port cannot be both at once."
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 3,
+      "url": "https://tailscale.com/docs/reference/tailscale-cli/serve",
+      "title": "tailscale serve command · Tailscale Docs",
+      "site_name": "Tailscale",
+      "domain": "tailscale.com",
+      "published_at": "2026-01-26",
+      "fetched_at": "2026-10-01T22:30:34.455410+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://tailscale.com/docs/reference/tailscale-cli/serve",
+          "heading": "Serve command flags",
+          "ord": 3,
+          "text": "The `tailscale serve` command accepts a target that can be a file, directory, text, or most commonly, the location to a service running on the local device. You can write the location to the local service as a port number (for example, `3000`), a partial URL (for example, `localhost:3000`), or a full URL including a path (for example, `tcp://localhost:3000/foo`, `https+insecure://localhost:3000/foo`)."
+        },
+        {
+          "source_url": "https://tailscale.com/docs/reference/tailscale-cli/serve",
+          "heading": "Use HTTPS and HTTP servers",
+          "ord": 6,
+          "text": "Example: `tailscale serve /home/alice/blog/index.html`Due to macOS app sandbox limitations, this option only works when using Tailscale's open source variant. If you've installed Tailscale on macOS through the Mac App Store or as a Standalone variant system extension, you can use Serve to share ports but not files or directories.\n  - \n**Static text server**Specifying `text:<value>` as a`<target>` configures a static plain-text server.Example: `tailscale serve text:\"Hello, world!\"`\n-"
+        },
+        {
+          "source_url": "https://tailscale.com/docs/reference/tailscale-cli/serve",
+          "heading": "Get the status",
+          "ord": 12,
+          "text": "## Get the status\n\n```\ntailscale serve status [--json]\n```\nTo get the status of your servers, you can use the `status` subcommand. This lists all the servers that are currently running on your device.\n\n- \n`--json` If you want to get the status in JSON format, you can provide the`--json` argument.Example: `tailscale serve status --json`\n\nCurrently, `tailscale serve status` and `tailscale serve status --json` return different information. If you are seeking a list of Services, you can use the following command:\n\n```\ntailscale serve get-config --all\n```\nFor more information, refer to our GitHub issue."
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 4,
+      "url": "https://github.com/Chesszyh/tailscale-docs/blob/master/features/tailscale-serve/index.md",
+      "title": "tailscale-docs/features/tailscale-serve/index.md at master · Chesszyh/tailscale-docs",
+      "site_name": "GitHub",
+      "domain": "github.com",
+      "published_at": "2026-05-07",
+      "fetched_at": "2026-10-01T22:30:34.455426+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://github.com/Chesszyh/tailscale-docs/blob/master/features/tailscale-serve/index.md",
+          "heading": "",
+          "ord": 1,
+          "text": "Additionally, keep in mind that access control rules apply to Serve just like any other service. If you have access control rules that restrict access to certain devices or users, those rules will also apply to the services you're sharing with Serve.\n\nIf you don't have HTTPS enabled in your tailnet, the Tailscale CLI command `tailscale serve` provides an interactive web UI that prompts you to allow Tailscale to enable HTTPS on your behalf.\n\nThe `serve` command prompts you as needed and sends you to a web consent page to enable any unmet requirements.\n\n**Tailscale Funnel** is enabled by default. If you don't plan to use Tailscale Funnel on the device, you can turn it off.\n\nIf you run the `tailscale serve` command and your tailnet isn't properly configured to use Tailscale Serve, it presents a login server URL that you can follow to enable the feature."
+        },
+        {
+          "source_url": "https://github.com/Chesszyh/tailscale-docs/blob/master/features/tailscale-serve/index.md",
+          "heading": "",
+          "ord": 2,
+          "text": "Tailscale Serve lets you serve local directories, files, plain text, or local ports with other devices in your tailnet. For example, you can proxy requests to a web server running at `http://127.0.0.1:3000` using the following command:\n\n`tailscale serve 3000`\nRun `tailscale serve --help` for more examples.\n\nThe CLI opens a foreground session that displays the status of what it's serving and the URL you can use to access your server:\n\n```\ntailscale serve 3000\nAvailable within your tailnet:\nhttps://amelie-workstation.pango-lin.ts.net\n\n|-- / proxy http://127.0.0.1:3000\n\nPress Ctrl+C to exit.\n```\nServe traffic includes identity headers when serving traffic from your tailnet using Tailscale Serve. Funnel traffic, which is publicly available, does not include identity headers."
+        },
+        {
+          "source_url": "https://github.com/Chesszyh/tailscale-docs/blob/master/features/tailscale-serve/index.md",
+          "heading": "",
+          "ord": 5,
+          "text": "When you use the identity headers to authenticate to a backend service, it's best practice to only have the service listen on localhost. Otherwise, any user that can call your service directly (rather than with the Serve URL) could trivially provide their own values for these HTTP headers. By listening only on localhost, this limits tampering to only other services running on the Serve device, and not anyone on your LAN or tailnet.\n\nServe traffic can be configured to forward a header with selected app capabilities of the connected user or tagged device. Similar to identity headers, this isn't available for Funnel traffic, which is publicly available.\n\nThis feature is available in Tailscale v1.92 or later."
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 5,
+      "url": "https://tech-insider.org/ca/how-to-set-up-tailscale-2026",
+      "title": "How to Set Up Tailscale: 13 Steps, 60 Min [2026]",
+      "site_name": "Tech Insider",
+      "domain": "tech-insider.org",
+      "published_at": "2026-07-30",
+      "fetched_at": "2026-10-01T22:30:34.845414+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://tech-insider.org/ca/how-to-set-up-tailscale-2026",
+          "heading": "What Tailscale Is, and Why Zero Trust Access Matters Right Now",
+          "ord": 6,
+          "text": "Beyond access itself, Tailscale bundles a few smaller features that make it worth the switch even for a network of two devices. Taildrop sends files directly between your own machines without an intermediate cloud service. Device tags let you group machines by role, server, laptop, printer, and reference that group in policy instead of listing individual devices by name. None of these are the main event in this tutorial, but they’re the kind of detail that separates a tool people keep using from one they set up once and abandon."
+        },
+        {
+          "source_url": "https://tech-insider.org/ca/how-to-set-up-tailscale-2026",
+          "heading": "Step 10: Write an Access Control List (ACL) Policy",
+          "ord": 24,
+          "text": "## Step 10: Write an Access Control List (ACL) Policy\n\nBy default, every device on a tailnet can reach every other device. That’s fine for a quick test, but it isn’t Zero Trust, and it isn’t what you want running permanently. Tailscale’s ACL documentation covers the full policy format. Here’s a working example that fits the setup this tutorial has built so far.\n\nOpen the Access Controls tab in the admin console and replace the default policy with something closer to this:"
+        },
+        {
+          "source_url": "https://tech-insider.org/ca/how-to-set-up-tailscale-2026",
+          "heading": "Is Tailscale secure enough for business use?",
+          "ord": 56,
+          "text": "### Is Tailscale secure enough for business use?\n\nIt’s built on WireGuard and layers identity-based ACLs, tagged access, optional tailnet lock, and Tailscale SSH on top, which reflects the same Zero Trust model described in NIST’s SP 800-207. Whether that’s sufficient for a given business depends on its own risk assessment and compliance obligations, but the underlying architecture matches current Zero Trust guidance."
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 6,
+      "url": "https://jefframnani.com/2024/01/getting-nice-urls-in-tailscale",
+      "title": "Getting Nice URLs in Tailscale - Jeff Ramnani",
+      "site_name": "Jeff Ramnani",
+      "domain": "jefframnani.com",
+      "published_at": "2024-01-26",
+      "fetched_at": "2026-10-01T22:30:34.455462+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://jefframnani.com/2024/01/getting-nice-urls-in-tailscale",
+          "heading": "The Problem",
+          "ord": 1,
+          "text": "## The Problem\n\nTailscale let’s you choose your machine name in their system. So I can refer to a host like “mycloud.yak-bebop.ts.net”. But, and this is important, I can only refer to the host in this way.\n\nNow I want to run two services on this host. Let’s say FreshRSS and Jellyfin. Note, I’m using two services in this example, but assume there are more like ten services in practice.\n\nOnly one service can listen on TCP port 80 and use a pretty name like “http://mycloud.yak-bebop.ts.net/”, the other service will have to listen on a different port like “http://mycloud.yak-bebop.ts.net:8080/”.\n\nThis isn’t the end of the world. I had about 3-4 services running this way for awhile. But remembering the TCP port numbers is annoying. So I set up an HTML dashboard where I could just click a link to a web app or service and not have to remember what all the different ports were."
+        },
+        {
+          "source_url": "https://jefframnani.com/2024/01/getting-nice-urls-in-tailscale",
+          "heading": "Tailscale Serve",
+          "ord": 5,
+          "text": "### Tailscale Serve\n\nTailscale’s serve command is similar to what I want, but not quite. I could reverse proxy one service, but it wouldn’t really help me run multiple services on one host. Plus, it seems this feature is focused on TLS. And I’m running services on top of Tailscale, which already provides encryption, so I’m less interested in TLS in this context."
+        },
+        {
+          "source_url": "https://jefframnani.com/2024/01/getting-nice-urls-in-tailscale",
+          "heading": "Universal Docker Mods",
+          "ord": 6,
+          "text": "### Universal Docker Mods\n\nI got excited when I saw this blog post about Tailscale’s Universal Docker Mods for linuxserver.io containers. I like what linuxserver.io is doing, and I use their image for FreshRSS.\n\nAlas, after trying to work with it for a couple hours, I couldn’t get it to work with FreshRSS. I’m still not sure why, but I kept getting “Connection Reset” errors when trying to connect to the app. I’m sure the feature works, but I just don’t understand how to use it yet. Or maybe I didn’t know how to configure FreshRSS properly while I did this experiment.\n\nPlus linuxserver.io doesn’t publish an image for Jellyfin. So even if I used this technique for FreshRSS, I don’t think I could do the same thing for Jellyfin."
+        }
+      ],
+      "cited": false
+    }
+  ],
+  "reads": [
+    {
+      "url": "https://github.com/Chesszyh/tailscale-docs/blob/master/features/tailscale-serve/index.md",
+      "title": "tailscale-docs/features/tailscale-serve/index.md at master · Chesszyh/tailscale-docs",
+      "site_name": "GitHub",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://jefframnani.com/2024/01/getting-nice-urls-in-tailscale",
+      "title": "Getting Nice URLs in Tailscale - Jeff Ramnani",
+      "site_name": "Jeff Ramnani",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://ssdnodes.com/learn/tailscale-serve-command-cheat-sheet",
+      "title": "tailscale serve: the commands that matter · SSD Nodes",
+      "site_name": "SSD Nodes",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://tailscale.com/docs/features/tailscale-serve",
+      "title": "Tailscale Serve · Tailscale Docs",
+      "site_name": "Tailscale",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://tailscale.com/docs/reference/tailscale-cli/serve",
+      "title": "tailscale serve command · Tailscale Docs",
+      "site_name": "Tailscale",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://tech-insider.org/ca/how-to-set-up-tailscale-2026",
+      "title": "How to Set Up Tailscale: 13 Steps, 60 Min [2026]",
+      "site_name": "Tech Insider",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://youtube.com/watch?v=MpxmfpCl20c",
+      "title": "Serve and Funnel | Tailscale Explained - YouTube",
+      "site_name": "youtube.com",
+      "status": "failed",
+      "reason": "too little readable text"
+    },
+    {
+      "url": "https://youtube.com/watch?v=mELAg50ljSA",
+      "title": "An exciting new feature just dropped - Tailscale Services - YouTube",
+      "site_name": "youtube.com",
+      "status": "failed",
+      "reason": "too little readable text"
+    }
+  ],
+  "elapsed_ms": 7722.569500001555,
+  "web": {
+    "status": "used",
+    "freshness": "any",
+    "notice": null,
+    "queries": [
+      "Tailscale Serve feature overview and how it works",
+      "Tailscale Serve command usage example and secure URL format"
+    ],
+    "timings": {
+      "plan": 748.8498330058064,
+      "search": 734.3234590007341,
+      "fetch": 1831.3482499943348,
+      "rank": 5.8533749979687855
+    },
+    "source_count": 6,
+    "plan_fallback": false,
+    "providers": [
+      "SearXNG"
+    ],
+    "ranking": "keyword"
+  }
+}

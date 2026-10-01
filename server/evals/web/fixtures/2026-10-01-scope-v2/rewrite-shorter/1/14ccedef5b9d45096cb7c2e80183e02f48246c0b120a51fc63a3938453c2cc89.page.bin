@@ -1,0 +1,1520 @@
+
+
+
+
+	
+		
+			
+		
+	
+		
+	
+		
+	
+		
+	
+		
+	
+		
+	
+		
+	
+		
+	
+
+
+
+
+
+
+
+
+	
+		
+			
+		
+	
+		
+	
+		
+	
+		
+	
+		
+	
+		
+	
+		
+	
+		
+	
+
+
+	
+		
+	
+		
+	
+		
+	
+		
+	
+		
+	
+		
+	
+		
+	
+		
+			
+		
+	
+
+
+
+
+
+
+
+	
+
+
+
+	
+
+
+
+
+
+	
+
+
+
+	
+
+
+
+	
+
+
+
+	
+
+<!doctype html>
+<html lang="" class="theme black bg-washed-yellow" data-theme="sun" data-default-theme="sun" data-auto-light-theme="sun" data-auto-dark-theme="terminal" data-theme-preference="auto">
+<head>
+	<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<title>A Not So Short Guide to Tailscale: Secure Networking Made Simple · Nicholas Clooney</title>
+
+	<meta name="description" content="October 1, 2025 Part of a series">
+
+<link rel="icon" href="/assets/favicon/favicon.svg" type="image/svg+xml">
+<link rel="alternate" href="/feed.xml" type="application/rss+xml" title="">
+
+	<link rel="canonical" href="https://blog.nicholas.clooney.io/posts/tailscale-starter-guide/">
+
+<meta property="og:title" content="A Not So Short Guide to Tailscale: Secure Networking Made Simple · Nicholas Clooney">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Nicholas Clooney">
+
+	<meta property="og:url" content="https://blog.nicholas.clooney.io/posts/tailscale-starter-guide/">
+
+
+	<meta property="og:description" content="October 1, 2025 Part of a series">
+
+
+	<meta property="og:image" content="https://blog.nicholas.clooney.io/assets/og/posts--tailscale-starter-guide.png">
+	<meta property="og:image:width" content="1200">
+	<meta property="og:image:height" content="630">
+	
+		<meta property="og:image:alt" content="October 1, 2025 Part of a series">
+	
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A Not So Short Guide to Tailscale: Secure Networking Made Simple · Nicholas Clooney">
+
+	<meta name="twitter:description" content="October 1, 2025 Part of a series">
+
+
+	<meta name="twitter:image" content="https://blog.nicholas.clooney.io/assets/og/posts--tailscale-starter-guide.png">
+
+
+<meta name="fediverse:creator" content="@NicholasClooney@mastodon.social">
+
+	<link rel="stylesheet" href="https://unpkg.com/tachyons@4.12.0/css/tachyons.min.css">
+<link rel="stylesheet" href="/assets/css/code-embeds.c239166317.css">
+<link rel="stylesheet" href="/assets/css/highlight-github.109096d44f.css">
+
+<style>
+	html.theme {
+		transition: background-color 0.5s ease-in-out, color 0.5s ease-in-out;
+	}
+	html.theme .theme-text,
+	html.theme a,
+	html.theme [data-theme-preview] span {
+		transition: color 0.5s ease-in-out, background-color 0.5s ease-in-out;
+	}
+	html.theme .theme-midtone {
+		transition: color 0.5s ease-in-out;
+	}
+	html.theme {
+		--accent: #E7040F;
+		--accent-hover: var(--accent);
+	}
+	@media screen {
+		
+		
+		html.theme[data-theme="sun"] {
+			--accent: #E7040F;
+			
+			--project-tag-active-color: #ECE9E9;
+			
+		}
+		
+		
+		html.theme[data-theme="default"] {
+			--accent: #00449E;
+			
+			--project-tag-active-color: #ECE9E9;
+			
+		}
+		
+		
+		html.theme[data-theme="mint"] {
+			--accent: #137752;
+			
+			--project-tag-active-color: #ECE9E9;
+			
+		}
+		
+		
+		html.theme[data-theme="grape"] {
+			--accent: #FFA3D7;
+			
+			--project-tag-active-color: #2D113B;
+			
+		}
+		
+		
+		html.theme[data-theme="charcoal"] {
+			--accent: #CCCCCC;
+			
+			--project-tag-active-color: #1A1A1A;
+			
+		}
+		
+		
+		html.theme[data-theme="deep-blue"] {
+			--accent: #CDECFF;
+			
+			--project-tag-active-color: #012A63;
+			
+		}
+		
+		
+		html.theme[data-theme="midnight"] {
+			--accent: #96CCFF;
+			
+			--project-tag-active-color: #001B44;
+			
+		}
+		
+		
+		html.theme[data-theme="terminal"] {
+			--accent: #33FF66;
+			
+			--project-tag-active-color: #0A2A0A;
+			
+		}
+		
+	}
+	@supports (color: color-mix(in srgb, #000 0%, #fff 100%)) {
+		html.theme {
+			--accent-hover: color-mix(in srgb, var(--accent) 80%, white 20%);
+		}
+	}
+	@supports (color: lch(50% 0 0)) {
+		html.theme {
+			--accent-hover: lch(from var(--accent) calc(l + 20) c h);
+		}
+	}
+	html.theme .theme-midtone {
+		color: var(--accent);
+	}
+	html.theme a,
+	html.theme a:visited {
+		color: var(--accent);
+	}
+	html.theme a:hover,
+	html.theme a:focus {
+		color: var(--accent-hover);
+	}
+	html.theme a:focus-visible {
+		outline-color: var(--accent);
+	}
+	html.theme blockquote.todo-quote {
+		--todo-quote-bg: var(--accent);
+		--todo-quote-fg: #fff;
+		background: var(--todo-quote-bg);
+		color: var(--todo-quote-fg);
+		border-left: 0.4rem solid var(--todo-quote-fg);
+		border-radius: 0.5rem;
+		padding: 1rem 1.25rem;
+		margin-left: 0;
+		margin-right: 0;
+		box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--todo-quote-bg) 70%, transparent);
+	}
+	html.theme blockquote.todo-quote a,
+	html.theme blockquote.todo-quote a:visited {
+		color: inherit;
+	}
+	html.theme blockquote.todo-quote.prod {
+		display: none !important;
+	}
+	html.theme.black blockquote.todo-quote {
+		--todo-quote-fg: #fff;
+	}
+	html.theme.near-white blockquote.todo-quote,
+	html.theme.white blockquote.todo-quote {
+		--todo-quote-fg: #111;
+	}
+	html.theme .footnotes {
+		margin-top: 2rem;
+		padding-top: 1rem;
+		border-top: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+		font-size: 0.95rem;
+	}
+	html.theme .footnotes-sep {
+		display: none;
+	}
+	html.theme .footnotes-list {
+		counter-reset: footnotes;
+		list-style: none;
+		padding-left: 0;
+		margin: 0.75rem 0 0;
+	}
+	html.theme .footnote-item {
+		counter-increment: footnotes;
+		display: grid;
+		grid-template-columns: auto 1fr;
+		column-gap: 0.55rem;
+		align-items: baseline;
+		padding: 0.25rem 0.45rem;
+		margin: 0.35rem 0;
+	}
+	html.theme .footnote-item::before {
+		content: counter(footnotes) ".";
+		grid-column: 1;
+		grid-row: 1;
+	}
+	html.theme .footnote-item > p {
+		grid-column: 2;
+		margin: 0;
+	}
+	html.theme .footnote-item:target {
+		outline: 3px solid var(--footnote-target-outline, var(--accent));
+		outline-offset: 0.2rem;
+		border-radius: 0.35rem;
+	}
+	html.theme .footnote-ref,
+	html.theme .footnote-backref {
+		text-decoration: none;
+		font-weight: 700;
+	}
+	html.theme .footnote-ref {
+		font-size: 0.8em;
+		vertical-align: super;
+	}
+	html.theme .footnote-backref {
+		margin-left: 0.25rem;
+	}
+	html.theme .footnote-ref a,
+	html.theme .footnote-backref {
+		color: var(--accent);
+	}
+	@supports (color: color-mix(in srgb, #000 0%, transparent)) {
+		html.theme {
+			--footnote-target-outline: color-mix(in srgb, var(--accent) 62%, transparent);
+		}
+	}
+	/*
+		Eleventy Img transform adds width/height attrs;
+		Reset the height so images stay proportional at narrow widths
+	*/
+	main table {
+		margin-left: auto;
+		margin-right: auto;
+	}
+	main p a,
+	main li a,
+	main td a {
+		overflow-wrap: anywhere;
+		word-break: break-word;
+	}
+	img {
+		height: auto;
+	}
+</style>
+
+	<script>
+	(function() {
+		const themeTarget = document.documentElement;
+		const defaultThemeId = themeTarget.dataset.defaultTheme;
+		const autoLightThemeId = themeTarget.dataset.autoLightTheme || defaultThemeId;
+		const autoDarkThemeId = themeTarget.dataset.autoDarkTheme || defaultThemeId;
+		const preferenceStorageKey = 'themePreference';
+		const themeConfig = [{"id":"sun","label":"Sun (black / washed-yellow)","classes":["black","bg-washed-yellow"],"midtoneClass":"gold","accent":"#E7040F","project":{"tagActiveColor":"#ECE9E9"}},{"id":"default","label":"Default","classes":["black","bg-white"],"midtoneClass":"mid-gray","accent":"#00449E","project":{"tagActiveColor":"#ECE9E9"}},{"id":"mint","label":"Mint (black / washed-green)","classes":["black","bg-washed-green"],"midtoneClass":"dark-green","accent":"#137752","project":{"tagActiveColor":"#ECE9E9"}},{"id":"grape","label":"Grape (near-white / purple)","classes":["near-white","bg-purple"],"midtoneClass":"light-purple","accent":"#FFA3D7","project":{"tagActiveColor":"#2D113B"}},{"id":"charcoal","label":"Charcoal (near-white / mid-gray)","classes":["near-white","bg-mid-gray"],"midtoneClass":"light-silver","accent":"#CCCCCC","project":{"tagActiveColor":"#1A1A1A"}},{"id":"deep-blue","label":"Deep Blue (white / dark-blue)","classes":["white","bg-dark-blue"],"midtoneClass":"light-blue","accent":"#CDECFF","project":{"tagActiveColor":"#012A63"}},{"id":"midnight","label":"Midnight (near-white / navy)","classes":["near-white","bg-navy"],"midtoneClass":"moon-gray","accent":"#96CCFF","project":{"tagActiveColor":"#001B44"}},{"id":"terminal","label":"Terminal (green / near-black)","classes":["near-white","bg-near-black"],"midtoneClass":"light-green","accent":"#33FF66","project":{"tagActiveColor":"#0A2A0A"}}];
+		const themeMap = themeConfig.reduce((map, theme) => {
+			map[theme.id] = theme.classes;
+			return map;
+		}, {});
+		const allThemeClasses = Array.from(new Set(themeConfig.flatMap(theme => theme.classes)));
+
+		function getSystemThemeId() {
+			if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+				return themeMap[autoDarkThemeId] ? autoDarkThemeId : defaultThemeId;
+			}
+			return themeMap[autoLightThemeId] ? autoLightThemeId : defaultThemeId;
+		}
+
+		function resolveThemeId(preference) {
+			if (preference === 'auto') {
+				return getSystemThemeId();
+			}
+			return themeMap[preference] ? preference : defaultThemeId;
+		}
+
+		let desiredPreference = themeTarget.dataset.themePreference || 'auto';
+		try {
+			const storedPreference = localStorage.getItem(preferenceStorageKey);
+			if (storedPreference === 'auto' || themeMap[storedPreference]) {
+				desiredPreference = storedPreference;
+			} else {
+				const storedTheme = localStorage.getItem('theme');
+				if (storedTheme && themeMap[storedTheme]) {
+					desiredPreference = storedTheme;
+				}
+			}
+		} catch (error) {
+			/* Ignore storage access errors and fall back to default theme. */
+		}
+		const desiredThemeId = resolveThemeId(desiredPreference);
+		const desiredClasses = themeMap[desiredThemeId];
+		if (!desiredClasses) return;
+		themeTarget.classList.remove(...allThemeClasses);
+		themeTarget.classList.add(...desiredClasses);
+		themeTarget.dataset.theme = desiredThemeId;
+		themeTarget.dataset.themePreference = desiredPreference;
+	})();
+</script>
+
+
+	
+		
+
+
+<script defer="" src="https://analytics.clooney.ninja/script.js" data-website-id="49fa5de1-ee69-4faa-b73e-7fdf92e3c808"></script>
+
+
+
+	
+
+	
+	
+	
+	
+		<link rel="me" href="https://mastodon.social/@NicholasClooney">
+	
+	
+	
+		
+	
+
+</head>
+<body>
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="sans-serif">
+  
+  <style>
+    /* Fade + Slide Keyframe Animations */
+    @keyframes slideFadeIn {
+      from { transform: translateY(-10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes slideFadeOut {
+      from { transform: translateY(0); opacity: 1; }
+      to { transform: translateY(-10px); opacity: 0; }
+    }
+    .slide-fade-in { animation: slideFadeIn 0.3s ease forwards; }
+    .slide-fade-out { animation: slideFadeOut 0.3s ease forwards; }
+
+    /* Burger Menu Icon */
+    #nav-toggle { position: relative; width: 2rem; height: 2rem; color: inherit; }
+    .burger {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 1.5rem; height: 1.25rem;
+      transform: translate(-50%, -50%);
+      display: flex; flex-direction: column;
+      justify-content: space-between;
+    }
+    .burger div {
+      width: 100%; height: 2px;
+      background: currentColor;
+      transition: transform 0.3s ease, opacity 0.3s ease, width 0.3s ease;
+    }
+    /* active state: hide middle patty, rotate buns */
+    #nav-toggle.opened .burger .patty {
+      opacity: 0;
+    }
+    #nav-toggle.opened .burger .top-bun {
+      transform: translateY(6px) rotate(45deg);
+      width: 100%;
+    }
+    #nav-toggle.opened .burger .bottom-bun {
+      transform: translateY(-6px) rotate(-45deg);
+      width: 100%;
+    }
+
+    [data-theme-preview],
+    [data-theme-mode-toggle] {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    [data-theme-preview]:focus,
+    [data-theme-mode-toggle]:focus {
+      outline: none;
+    }
+    [data-theme-preview][data-active],
+    [data-theme-mode-toggle][data-active] {
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35);
+    }
+    [data-theme-preview]:hover,
+    [data-theme-mode-toggle]:hover {
+      transform: translateY(-2px);
+    }
+    [data-theme-mode-toggle] {
+      position: relative;
+    }
+    [data-theme-mode-toggle] .theme-mode-surface {
+      background: #f5f5f5;
+      color: #111;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    [data-theme-mode-toggle] .theme-mode-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    .theme-auto-icon {
+      position: relative;
+      width: 0.9rem;
+      height: 0.9rem;
+      display: inline-block;
+      border: 1.5px solid currentColor;
+      border-radius: 9999px;
+      background: linear-gradient(90deg, currentColor 0 50%, transparent 50% 100%);
+      overflow: hidden;
+      opacity: 0.9;
+    }
+    .theme-auto-icon::before {
+      content: '';
+      position: absolute;
+      top: 0.12rem;
+      bottom: 0.12rem;
+      left: 50%;
+      width: 1px;
+      transform: translateX(-50%);
+      background: currentColor;
+      opacity: 0.3;
+    }
+    .theme-auto-icon::after {
+      content: none;
+    }
+    html.theme[data-theme="sun"] [data-theme-mode-toggle] .theme-auto-icon,
+    html.theme[data-theme="default"] [data-theme-mode-toggle] .theme-auto-icon,
+    html.theme[data-theme="mint"] [data-theme-mode-toggle] .theme-auto-icon {
+      color: #111;
+    }
+    html.theme[data-theme="grape"] [data-theme-mode-toggle] .theme-auto-icon,
+    html.theme[data-theme="charcoal"] [data-theme-mode-toggle] .theme-auto-icon,
+    html.theme[data-theme="deep-blue"] [data-theme-mode-toggle] .theme-auto-icon,
+    html.theme[data-theme="midnight"] [data-theme-mode-toggle] .theme-auto-icon,
+    html.theme[data-theme="terminal"] [data-theme-mode-toggle] .theme-auto-icon {
+      color: #f4f4f4;
+    }
+    .theme-mode-icon {
+      width: 1rem;
+      height: 1rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      line-height: 1;
+    }
+    .theme-mode-icon--light,
+    .theme-mode-icon--dark {
+      font-size: 0.9rem;
+    }
+    [data-theme-mode-toggle][data-theme-mode="auto"] .theme-mode-icon--light,
+    [data-theme-mode-toggle][data-theme-mode="auto"] .theme-mode-icon--dark,
+    [data-theme-mode-toggle][data-theme-mode="light"] .theme-mode-icon--auto,
+    [data-theme-mode-toggle][data-theme-mode="light"] .theme-mode-icon--dark,
+    [data-theme-mode-toggle][data-theme-mode="dark"] .theme-mode-icon--auto,
+    [data-theme-mode-toggle][data-theme-mode="dark"] .theme-mode-icon--light,
+    [data-theme-mode-toggle][data-theme-mode="custom"] .theme-mode-icon--light,
+    [data-theme-mode-toggle][data-theme-mode="custom"] .theme-mode-icon--dark {
+      display: none;
+    }
+    html.theme[data-theme="grape"] [data-theme-mode-toggle] .theme-mode-surface,
+    html.theme[data-theme="charcoal"] [data-theme-mode-toggle] .theme-mode-surface,
+    html.theme[data-theme="deep-blue"] [data-theme-mode-toggle] .theme-mode-surface,
+    html.theme[data-theme="midnight"] [data-theme-mode-toggle] .theme-mode-surface,
+    html.theme[data-theme="terminal"] [data-theme-mode-toggle] .theme-mode-surface {
+      background: rgba(255, 255, 255, 0.08);
+      color: #f4f4f4;
+    }
+    html.theme[data-theme="grape"] [data-theme-mode-toggle][data-theme-mode="auto"] .theme-mode-surface,
+    html.theme[data-theme="charcoal"] [data-theme-mode-toggle][data-theme-mode="auto"] .theme-mode-surface,
+    html.theme[data-theme="deep-blue"] [data-theme-mode-toggle][data-theme-mode="auto"] .theme-mode-surface,
+    html.theme[data-theme="midnight"] [data-theme-mode-toggle][data-theme-mode="auto"] .theme-mode-surface,
+    html.theme[data-theme="terminal"] [data-theme-mode-toggle][data-theme-mode="auto"] .theme-mode-surface {
+      background: rgba(255, 255, 255, 0.08);
+      color: #f4f4f4;
+    }
+    html.theme[data-theme="grape"] [data-theme-mode-toggle][data-theme-mode="light"] .theme-mode-surface,
+    html.theme[data-theme="charcoal"] [data-theme-mode-toggle][data-theme-mode="light"] .theme-mode-surface,
+    html.theme[data-theme="deep-blue"] [data-theme-mode-toggle][data-theme-mode="light"] .theme-mode-surface,
+    html.theme[data-theme="midnight"] [data-theme-mode-toggle][data-theme-mode="light"] .theme-mode-surface,
+    html.theme[data-theme="terminal"] [data-theme-mode-toggle][data-theme-mode="light"] .theme-mode-surface {
+      background: #f4f4f4;
+      color: #111;
+    }
+    html.theme[data-theme="sun"] [data-theme-mode-toggle][data-theme-mode="dark"] .theme-mode-surface,
+    html.theme[data-theme="default"] [data-theme-mode-toggle][data-theme-mode="dark"] .theme-mode-surface,
+    html.theme[data-theme="mint"] [data-theme-mode-toggle][data-theme-mode="dark"] .theme-mode-surface,
+    html.theme[data-theme="grape"] [data-theme-mode-toggle][data-theme-mode="dark"] .theme-mode-surface,
+    html.theme[data-theme="charcoal"] [data-theme-mode-toggle][data-theme-mode="dark"] .theme-mode-surface,
+    html.theme[data-theme="deep-blue"] [data-theme-mode-toggle][data-theme-mode="dark"] .theme-mode-surface,
+    html.theme[data-theme="midnight"] [data-theme-mode-toggle][data-theme-mode="dark"] .theme-mode-surface,
+    html.theme[data-theme="terminal"] [data-theme-mode-toggle][data-theme-mode="dark"] .theme-mode-surface {
+      background: rgba(255, 255, 255, 0.08);
+      color: #f4f4f4;
+    }
+
+    .theme .theme-text,
+    .theme .theme-text:visited,
+    .theme .theme-text:hover,
+    .theme .theme-text:focus,
+    .theme .theme-text:active {
+      color: inherit;
+    }
+    @media screen and (min-width: 30em) {
+      [data-theme-selector] {
+        position: relative;
+      }
+      [data-theme-selector]::after {
+        content: '';
+        display: inline-block;
+        margin-left: 0.25rem;
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 5px solid currentColor;
+        transition: transform 0.2s ease;
+      }
+      [data-theme-selector]:hover::after,
+      [data-theme-selector]:focus-within::after {
+        transform: rotate(180deg);
+      }
+      [data-theme-selector] .theme-preview-button {
+        display: none;
+      }
+      [data-theme-selector] .theme-preview-button[data-active] {
+        display: flex;
+      }
+      [data-theme-selector]:hover .theme-preview-button,
+      [data-theme-selector]:focus-within .theme-preview-button {
+        display: flex;
+      }
+    }
+  </style>
+
+  <!-- Site Title + Mobile Hamburger -->
+  <div class="pa4 flex items-center justify-between flex-wrap">
+    <a href="/" class="link dim f3 f2-ns fw6 ma0 tr tl-ns db theme-text">
+      Nicholas Clooney
+    </a>
+    <div class="flex items-center mt3 mt0-ns flex-wrap justify-end">
+      
+      <div class="flex items-center flex-nowrap ml3-ns ml2" data-theme-selector="">
+        
+          
+                  <button type="button" class="theme-preview-button w2 h2 bn pointer br2 mr2 mb2 pa0 ba b--transparent bg-transparent flex items-center justify-center" data-theme-preview="terminal" aria-label="Preview Terminal (green / near-black) theme">
+            <span class="w-100 h-100 br2 flex items-center justify-center near-white bg-near-black">
+              Aa
+            </span>
+          </button>
+          
+        
+          
+                  <button type="button" class="theme-preview-button w2 h2 bn pointer br2 mr2 mb2 pa0 ba b--transparent bg-transparent flex items-center justify-center" data-theme-preview="midnight" aria-label="Preview Midnight (near-white / navy) theme">
+            <span class="w-100 h-100 br2 flex items-center justify-center near-white bg-navy">
+              Aa
+            </span>
+          </button>
+          
+        
+          
+                  <button type="button" class="theme-preview-button w2 h2 bn pointer br2 mr2 mb2 pa0 ba b--transparent bg-transparent flex items-center justify-center" data-theme-preview="deep-blue" aria-label="Preview Deep Blue (white / dark-blue) theme">
+            <span class="w-100 h-100 br2 flex items-center justify-center white bg-dark-blue">
+              Aa
+            </span>
+          </button>
+          
+        
+          
+                  <button type="button" class="theme-preview-button w2 h2 bn pointer br2 mr2 mb2 pa0 ba b--transparent bg-transparent flex items-center justify-center" data-theme-preview="charcoal" aria-label="Preview Charcoal (near-white / mid-gray) theme">
+            <span class="w-100 h-100 br2 flex items-center justify-center near-white bg-mid-gray">
+              Aa
+            </span>
+          </button>
+          
+        
+          
+                  <button type="button" class="theme-preview-button w2 h2 bn pointer br2 mr2 mb2 pa0 ba b--transparent bg-transparent flex items-center justify-center" data-theme-preview="grape" aria-label="Preview Grape (near-white / purple) theme">
+            <span class="w-100 h-100 br2 flex items-center justify-center near-white bg-purple">
+              Aa
+            </span>
+          </button>
+          
+        
+          
+                  <button type="button" class="theme-preview-button w2 h2 bn pointer br2 mr2 mb2 pa0 ba b--transparent bg-transparent flex items-center justify-center" data-theme-preview="mint" aria-label="Preview Mint (black / washed-green) theme">
+            <span class="w-100 h-100 br2 flex items-center justify-center black bg-washed-green">
+              Aa
+            </span>
+          </button>
+          
+        
+          
+                  <button type="button" class="theme-preview-button w2 h2 bn pointer br2 mr2 mb2 pa0 ba b--transparent bg-transparent flex items-center justify-center" data-theme-preview="default" aria-label="Preview Default theme">
+            <span class="w-100 h-100 br2 flex items-center justify-center black bg-white">
+              Aa
+            </span>
+          </button>
+          
+        
+          
+                  <button type="button" class="theme-preview-button w2 h2 bn pointer br2 mr2 mb2 pa0 ba b--transparent bg-transparent flex items-center justify-center" data-theme-preview="sun" aria-label="Preview Sun (black / washed-yellow) theme">
+            <span class="w-100 h-100 br2 flex items-center justify-center black bg-washed-yellow">
+              Aa
+            </span>
+          </button>
+          
+        
+        <button type="button" class="w2 h2 bn pointer br2 mr2 mb2 pa0 ba b--transparent bg-transparent flex items-center justify-center" data-theme-mode-toggle="" data-active="" data-theme-mode="auto" title="Theme mode: Auto" aria-label="Theme mode: Auto">
+          <span class="theme-mode-surface w-100 h-100 br2 flex items-center justify-center">
+            <span class="theme-mode-icon theme-mode-icon--auto" aria-hidden="true">
+              <span class="theme-auto-icon"></span>
+            </span>
+            <span class="theme-mode-icon theme-mode-icon--light" aria-hidden="true">☀</span>
+            <span class="theme-mode-icon theme-mode-icon--dark" aria-hidden="true">☾</span>
+            <span class="theme-mode-label">Auto</span>
+          </span>
+        </button>
+      </div>
+      
+      <button id="nav-toggle" class="dib dn-ns bn bg-transparent pa2 pointer ml3 mt2 mt0-ns" aria-expanded="false" aria-controls="sidebar">
+        <div class="burger">
+          <div class="top-bun"></div>
+          <div class="patty"></div>
+          <div class="bottom-bun"></div>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Two-column layout -->
+  <div class="flex flex-column flex-row-ns">
+    <!-- Sidebar nav: hidden on mobile until toggle; no background color -->
+    <nav id="sidebar" class="dn db-ns w-100 w-25-ns pa4">
+      
+      <ul class="list pl0 ma0 pa0 flex flex-column lh-copy items-end">
+        
+          
+        
+        
+        
+        
+        
+        
+          
+            
+          
+        
+          
+            
+          
+        
+          
+            
+              
+            
+          
+        
+        
+          
+          
+          <li class="mb3 w-100">
+            <a href="/" class="db pa1 link dim f4 lh-copy tr tl-ns theme-text underline" aria-current="page">
+              Blog
+            </a>
+          </li>
+        
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        
+          
+        
+          
+        
+        
+        
+        
+        
+        
+          
+            
+          
+        
+          
+            
+          
+        
+        
+          
+          
+          <li class="mb3 w-100">
+            <a href="/notes/" class="db pa1 link dim f4 lh-copy tr tl-ns theme-text">
+              Notes
+            </a>
+          </li>
+        
+      
+        
+          
+        
+        
+        
+        
+        
+        
+          
+            
+          
+        
+        
+          
+          
+          <li class="mb3 w-100">
+            <a href="/series/" class="db pa1 link dim f4 lh-copy tr tl-ns theme-text">
+              Series
+            </a>
+          </li>
+        
+      
+        
+          
+        
+        
+        
+        
+        
+        
+          
+            
+          
+        
+          
+            
+          
+        
+        
+      
+        
+          
+        
+        
+        
+        
+        
+        
+          
+            
+          
+        
+        
+          
+          
+          <li class="mb3 w-100">
+            <a href="/projects/" class="db pa1 link dim f4 lh-copy tr tl-ns theme-text">
+              Projects
+            </a>
+          </li>
+        
+      
+        
+          
+        
+        
+        
+        
+        
+        
+          
+            
+          
+        
+        
+          
+          
+          <li class="mb3 w-100">
+            <a href="/tags/" class="db pa1 link dim f4 lh-copy tr tl-ns theme-text">
+              Tags
+            </a>
+          </li>
+        
+      
+        
+          
+        
+        
+        
+        
+        
+        
+          
+            
+          
+        
+          
+            
+          
+        
+        
+          
+          
+          <li class="mb3 w-100">
+            <a href="/timeline/" class="db pa1 link dim f4 lh-copy tr tl-ns theme-text">
+              Timeline
+            </a>
+          </li>
+        
+      
+        
+          
+        
+        
+        
+        
+        
+        
+          
+            
+          
+        
+        
+          
+          
+          <li class="mb3 w-100">
+            <a href="/about/" class="db pa1 link dim f4 lh-copy tr tl-ns theme-text">
+              About
+            </a>
+          </li>
+        
+      
+        
+      </ul>
+    </nav>
+
+    <!-- Main content -->
+    <main class="w-100 w-75-ns pa4 lh-copy">
+      
+        <header class="mb4">
+          
+            <p class="f6 ttu tracked theme-midtone mt0 mb2">
+              <time datetime="2025-10-01">October 1, 2025</time>
+            </p>
+          
+          
+            <h1 class="f2 lh-title mt0 mb3">A Not So Short Guide to Tailscale: Secure Networking Made Simple</h1>
+          
+          
+          
+            <div class="pa3 ba b--black-10 br3 bg-white-20">
+              <p class="f6 ttu tracked theme-midtone mt0 mb2">Part of a series</p>
+              <ul class="list pl0 ma0">
+                
+                  <li>
+                    <a class="link dim fw6 theme-text underline" href="/series/networking-infra/">
+                      Networking &amp; Infrastructure Series
+                    </a>
+                    <span class="theme-midtone">
+                      (2 of 12)
+                    </span>
+                  </li>
+                
+              </ul>
+            </div>
+          
+        </header>
+      
+      <heading-anchors>
+        <p>Over the past few weeks, I’ve spent quite a bit of time experimenting with <strong>Tailscale</strong>, and it has quickly become one of my favorite tools.</p>
+<p>If you haven’t heard of it, <a href="https://tailscale.com/">Tailscale</a> is a secure, easy-to-use mesh VPN built on WireGuard. It lets your devices talk to each other as if they were on the same local network, no matter where in the world they are.</p>
+<p>I originally wrote about my broader Tailscale journey in previous blog posts (<a href="/posts/ssh-from-iPhone-to-Mac/">Coding on iPhone Anywhere</a>, <a href="/posts/networking-deep-dive">Network Debugging Deep Dive</a>), but this time I want to focus on something more concrete: a <strong>starter guide</strong> mixed with a few <strong>real-world examples</strong> of how I personally use it, from helping my family in China to keeping my own services private.</p>
+<p>Before diving in: the concepts here aren’t complicated, but they do build on each other. I’ll explain the key ideas as we go.</p>
+<hr>
+<nav class="toc"><ul><li><a href="#why-tailscale%3F"> Why Tailscale?</a><ul><li><a href="#how-it-actually-works-(briefly)"> How it actually works (briefly)</a></li></ul></li><li><a href="#getting-started"> Getting Started</a><ul><li><a href="#on-macos-or-linux"> On macOS or Linux</a></li><li><a href="#the-tailscale-admin-console"> The Tailscale admin console</a></li></ul></li><li><a href="#real-world-examples-of-tailscale-in-action"> Real-World Examples of Tailscale in Action</a><ul><li><a href="#helping-family-across-the-great-firewall"> Helping Family Across the Great Firewall</a></li><li><a href="#my-own-private-remote-terminal-(without-exposing-ssh)"> My Own Private Remote Terminal (Without Exposing SSH)</a></li><li><a href="#secure-access-to-my-own-services"> Secure Access to My Own Services</a></li></ul></li><li><a href="#tips-and-extras"> Tips and Extras</a><ul><li><a href="#subnet-routers"> Subnet Routers</a></li><li><a href="#acls-(access-control-lists)"> ACLs (Access Control Lists)</a></li><li><a href="#tailscale-funnel"> Tailscale Funnel</a></li><li><a href="#tailscale-send"> Tailscale Send</a></li><li><a href="#sharing-devices"> Sharing Devices</a></li></ul></li><li><a href="#one-caveat%3A-the-control-plane"> One Caveat: the Control Plane</a><ul><li><a href="#tailscale-lock"> Tailscale Lock</a></li></ul></li><li><a href="#closing-thoughts"> Closing Thoughts</a></li></ul></nav><h2 id="why-tailscale%3F" tabindex="-1"><a class="header-anchor" href="#why-tailscale%3F" aria-hidden="true">#</a> Why Tailscale?</h2>
+<p>For most people, a VPN means either the clunky corporate tool you log into for work, or a consumer VPN app that promises “privacy” while routing all your traffic through someone else’s servers. Both feel like a black box. You don’t really know what’s happening behind the scenes.</p>
+<p>Tailscale is <strong>different</strong>. It gives you your own secure private network and <strong>complete control</strong>. Just install the app, log in with an account (Google, Apple, GitHub, etc.), and suddenly all your devices can see each other as if they were side by side.</p>
+<h3 id="how-it-actually-works-(briefly)" tabindex="-1"><a class="header-anchor" href="#how-it-actually-works-(briefly)" aria-hidden="true">#</a> How it actually works (briefly)</h3>
+<p>Under the hood, Tailscale uses <a href="https://www.wireguard.com/">WireGuard</a>, a modern, lean VPN protocol known for being both fast and cryptographically sound. But WireGuard alone requires manual key exchange and configuration for every pair of devices. Tailscale handles all of that automatically using a <strong>control plane</strong>: a coordination server that manages key distribution and peer discovery.</p>
+<p>The result is a <strong>mesh network</strong>. Rather than all traffic funneling through a central server (like a traditional hub-and-spoke VPN), your devices connect <strong>directly to each other</strong> peer-to-peer. This keeps latency low. Traffic takes the most direct route it can.</p>
+<p>When a direct connection isn’t possible (e.g., both devices are behind strict NAT), Tailscale falls back to relaying traffic through its <a href="https://pkg.go.dev/tailscale.com/derp">DERP</a> servers. You won’t notice the difference; it just works.</p>
+<p>Each device gets a stable <strong>100.x.x.x</strong> address (from the CGNAT range) assigned by Tailscale. These addresses never change, so even if your laptop switches networks, its Tailscale IP stays the same.</p>
+<p>Here’s why I love it:</p>
+<ul>
+<li><strong>Simple setup</strong>: No port forwarding, no firewall rules, no static IPs.</li>
+<li><strong>Security baked in</strong>: WireGuard’s cryptography with identity-based authentication tied to your login provider.</li>
+<li><strong>Cross-platform</strong>: Works on macOS, iOS, Linux, Windows, Android, even routers and Raspberry Pis.</li>
+<li><strong>Feels like one network</strong>: With MagicDNS (enabled by default), you connect to devices by name instead of memorizing IPs. <code>ssh macbook-pro</code> just works.</li>
+</ul>
+<p>And here’s the powerful part:</p>
+<ul>
+<li>You can access your laptop from anywhere in the world as though it’s on the same Wi-Fi.</li>
+<li>You can set an <strong>exit node</strong> to route all your internet traffic through another device, useful for bypassing firewalls, avoiding geo-restrictions, or browsing as if you’re back home.</li>
+<li>You can run private services safely without ever exposing them to the public internet.</li>
+</ul>
+<hr>
+<h2 id="getting-started" tabindex="-1"><a class="header-anchor" href="#getting-started" aria-hidden="true">#</a> Getting Started</h2>
+<p>If you’re new to Tailscale, here’s the fastest way to dive in:</p>
+<ol>
+<li><strong>Sign up</strong> at <a href="https://tailscale.com/">tailscale.com</a> with your preferred login (Google, Apple, GitHub, Microsoft, etc.).</li>
+<li><strong>Install Tailscale</strong> on your devices: laptops, phones, servers.</li>
+<li><strong>Log in on each device</strong>, and they appear in your personal <strong>tailnet</strong> (Tailscale’s name for your private network).</li>
+<li><strong>Test it out</strong>: SSH into another machine using its hostname, or open a private service through its Tailscale IP.</li>
+</ol>
+<p>That’s it. No firewall rules. No public IP headaches. Just devices talking directly and securely.</p>
+<h3 id="on-macos-or-linux" tabindex="-1"><a class="header-anchor" href="#on-macos-or-linux" aria-hidden="true">#</a> On macOS or Linux</h3>
+<p>On macOS, Tailscale is a menu bar app. Once installed, clicking it shows you all connected devices and their Tailscale IPs.</p>
+<p>For Linux servers (or a headless Raspberry Pi), the CLI is your friend:</p>
+<div class="code-block code-block--wrap">
+	
+	<div class="code-block__actions">
+		<button class="code-block__wrap gh-embed__copy" type="button" data-wrap-toggle="" aria-pressed="true" data-wrap-label="Wrap" data-wrapped-label="Wrapped">Wrapped</button>
+		<button class="code-block__copy gh-embed__copy" type="button" data-clipboard="">Copy</button>
+	</div>
+	<pre class="code-block__pre"><code class="hljs language-bash"><span class="hljs-comment"># Install on Debian/Ubuntu</span>
+curl -fsSL https://tailscale.com/install.sh | sh
+
+<span class="hljs-comment"># Start the Tailscale daemon</span>
+<span class="hljs-built_in">sudo</span> tailscaled
+
+<span class="hljs-comment"># Bring it up and authenticate</span>
+<span class="hljs-built_in">sudo</span> tailscale up
+
+<span class="hljs-comment"># Check status and see all peers</span>
+tailscale status
+</code></pre>
+	
+</div><p>After <code>tailscale up</code>, you’ll see a URL to open in a browser for authentication. Once done, the device is part of your tailnet.</p>
+<h3 id="the-tailscale-admin-console" tabindex="-1"><a class="header-anchor" href="#the-tailscale-admin-console" aria-hidden="true">#</a> The Tailscale admin console</h3>
+<p>The <a href="https://login.tailscale.com/admin/machines">admin console</a> is where you manage everything:</p>
+<ul>
+<li><strong>Machines</strong>: see all your devices, their IPs, OS, and last-seen time.</li>
+<li><strong>DNS</strong>: configure MagicDNS and custom nameservers.</li>
+<li><strong>ACLs</strong>: control which devices can talk to which (more on this below).</li>
+<li><strong>Exit nodes</strong>: approve devices to act as internet gateways.</li>
+</ul>
+<p>It’s surprisingly clean. Getting to grips with it early makes the more advanced features much easier to use.</p>
+<hr>
+<h2 id="real-world-examples-of-tailscale-in-action" tabindex="-1"><a class="header-anchor" href="#real-world-examples-of-tailscale-in-action" aria-hidden="true">#</a> Real-World Examples of Tailscale in Action</h2>
+<h3 id="helping-family-across-the-great-firewall" tabindex="-1"><a class="header-anchor" href="#helping-family-across-the-great-firewall" aria-hidden="true">#</a> Helping Family Across the Great Firewall</h3>
+<p>One of the most meaningful use cases for me has been setting up Tailscale for my family in China. The Great Firewall makes most VPN solutions unreliable or overly technical to configure. Tailscale’s approach is different. Because the connection is peer-to-peer and the traffic looks like standard WireGuard UDP, it’s far more resilient than many alternatives.</p>
+<p>The setup process for them was simple: install the app, log in with a shared account I created, and they were on my tailnet. I then set my Mac at home as an <strong>exit node</strong>, so when they enable it, all their internet traffic routes through my machine and out through my home internet connection.</p>
+<p>To configure an exit node on Linux:</p>
+<div class="code-block code-block--wrap">
+	
+	<div class="code-block__actions">
+		<button class="code-block__wrap gh-embed__copy" type="button" data-wrap-toggle="" aria-pressed="true" data-wrap-label="Wrap" data-wrapped-label="Wrapped">Wrapped</button>
+	</div>
+	<pre class="code-block__pre"><code class="hljs language-bash"><span class="hljs-built_in">sudo</span> tailscale up --advertise-exit-node
+</code></pre>
+	
+</div><p>Then in the admin console, approve the exit node under the machine settings. On their end, they just pick it from the Tailscale app. No terminal required.</p>
+<p>I love the moment when they realized how <strong>easy</strong> it is and how <strong>powerful</strong> it is to get a free and open internet with that <strong>little effort</strong>. That’s a feeling worth optimizing for.</p>
+<h3 id="my-own-private-remote-terminal-(without-exposing-ssh)" tabindex="-1"><a class="header-anchor" href="#my-own-private-remote-terminal-(without-exposing-ssh)" aria-hidden="true">#</a> My Own Private Remote Terminal (Without Exposing SSH)</h3>
+<p>Tailscale also powers my own workflow. Whether I’m hopping between my MacBook Air and MacBook Pro, or connecting into a Linux server, it acts as my <strong>secure remote terminal solution</strong>. It feels like SSH over a local network, even if I’m halfway across the world.</p>
+<p>The key detail: <strong>I don’t expose SSH port 22 to the internet at all.</strong> The server’s firewall blocks all inbound connections from the public internet. SSH only works over the Tailscale interface.</p>
+<div class="code-block code-block--wrap">
+	
+	<div class="code-block__actions">
+		<button class="code-block__wrap gh-embed__copy" type="button" data-wrap-toggle="" aria-pressed="true" data-wrap-label="Wrap" data-wrapped-label="Wrapped">Wrapped</button>
+	</div>
+	<pre class="code-block__pre"><code class="hljs language-bash"><span class="hljs-comment"># SSH by hostname, not IP - MagicDNS resolves it</span>
+ssh debian-server
+
+<span class="hljs-comment"># Or use Tailscale SSH, which handles auth too</span>
+tailscale ssh debian-server
+</code></pre>
+	
+</div><p><a href="https://tailscale.com/kb/1193/tailscale-ssh">Tailscale SSH</a> is worth highlighting separately. It’s a completely different mechanism from regular SSH over a Tailscale connection. Rather than running your system’s SSH daemon and connecting to it over the Tailscale network, Tailscale SSH replaces the SSH server entirely. Authentication is handled by Tailscale itself using the device’s identity. No keys to generate, no <code>authorized_keys</code> to manage.</p>
+<p>To enable it on the server side, pass <code>--ssh</code> when bringing Tailscale up:</p>
+<div class="code-block code-block--wrap">
+	
+	<div class="code-block__actions">
+		<button class="code-block__wrap gh-embed__copy" type="button" data-wrap-toggle="" aria-pressed="true" data-wrap-label="Wrap" data-wrapped-label="Wrapped">Wrapped</button>
+	</div>
+	<pre class="code-block__pre"><code class="hljs language-bash"><span class="hljs-built_in">sudo</span> tailscale up --ssh
+</code></pre>
+	
+</div><p>That’s all it takes. From any other device on your tailnet, <code>tailscale ssh debian-server</code> connects directly, authenticated by your Tailscale identity. I use it for quick access to machines where I haven’t bothered with traditional key setup. It’s one less thing to manage.</p>
+<h3 id="secure-access-to-my-own-services" tabindex="-1"><a class="header-anchor" href="#secure-access-to-my-own-services" aria-hidden="true">#</a> Secure Access to My Own Services</h3>
+<p>I run a few private services: a preview build of this blog on my MacBook Pro, an analytics dashboard on a VPS, and a couple of other internal tools. Instead of exposing them to the public internet, I keep them locked down behind Tailscale.</p>
+<p>In practice: the services listen on <code>0.0.0.0</code> (or the Tailscale interface specifically), but the machine’s firewall only allows inbound connections from the Tailscale CGNAT range (<code>100.64.0.0/10</code>). Nothing is publicly reachable.</p>
+<div class="code-block code-block--wrap">
+	
+	<div class="code-block__actions">
+		<button class="code-block__wrap gh-embed__copy" type="button" data-wrap-toggle="" aria-pressed="true" data-wrap-label="Wrap" data-wrapped-label="Wrapped">Wrapped</button>
+	</div>
+	<pre class="code-block__pre"><code class="hljs language-bash"><span class="hljs-comment"># Example: lock a service to Tailscale only with ufw</span>
+<span class="hljs-built_in">sudo</span> ufw allow <span class="hljs-keyword">in</span> on tailscale0
+<span class="hljs-built_in">sudo</span> ufw deny 3000  <span class="hljs-comment"># deny the port publicly</span>
+</code></pre>
+	
+</div><p>That way, they’re only accessible to me, or whoever I explicitly add to my tailnet. It’s the cleanest way I’ve found to run personal services without managing certificates, nginx auth proxies, or IP allowlists.</p>
+<hr>
+<h2 id="tips-and-extras" tabindex="-1"><a class="header-anchor" href="#tips-and-extras" aria-hidden="true">#</a> Tips and Extras</h2>
+<p>Once you’re comfortable with the basics, there are some great extras worth exploring:</p>
+<h3 id="subnet-routers" tabindex="-1"><a class="header-anchor" href="#subnet-routers" aria-hidden="true">#</a> Subnet Routers</h3>
+<p>An exit node routes <em>all</em> your traffic through another device. A <strong>subnet router</strong> is more surgical. It advertises a specific local network range to your tailnet, so other devices can reach machines on that subnet without installing Tailscale on every one of them.</p>
+<p>This is great for home labs. If your router or a Raspberry Pi runs Tailscale and advertises <code>192.168.1.0/24</code>, you can SSH into any device on that local network from anywhere, even if those devices don’t have Tailscale installed.</p>
+<div class="code-block code-block--wrap">
+	
+	<div class="code-block__actions">
+		<button class="code-block__wrap gh-embed__copy" type="button" data-wrap-toggle="" aria-pressed="true" data-wrap-label="Wrap" data-wrapped-label="Wrapped">Wrapped</button>
+	</div>
+	<pre class="code-block__pre"><code class="hljs language-bash"><span class="hljs-built_in">sudo</span> tailscale up --advertise-routes=192.168.1.0/24
+</code></pre>
+	
+</div><p>Approve it in the admin console and enable IP forwarding on the device, and you’re done.</p>
+<h3 id="acls-(access-control-lists)" tabindex="-1"><a class="header-anchor" href="#acls-(access-control-lists)" aria-hidden="true">#</a> ACLs (Access Control Lists)</h3>
+<p>By default, all devices on your tailnet can reach each other. That’s fine for personal use, but if you start sharing access with others, ACLs let you define exactly who can connect to what.</p>
+<p>The policy is written in a simple JSON-like format in the admin console. For example, you can say &quot;only my personal devices can reach the media server&quot; while a family member’s device can only use the exit node.</p>
+<h3 id="tailscale-funnel" tabindex="-1"><a class="header-anchor" href="#tailscale-funnel" aria-hidden="true">#</a> Tailscale Funnel</h3>
+<p><a href="https://tailscale.com/kb/1223/tailscale-funnel">Funnel</a> is a newer feature that lets you expose a local service to the <strong>public internet</strong> through Tailscale’s infrastructure, without any port forwarding or public IP. It’s the opposite of what I normally use Tailscale for, but incredibly useful for sharing a local dev server temporarily.</p>
+<div class="code-block code-block--wrap">
+	
+	<div class="code-block__actions">
+		<button class="code-block__wrap gh-embed__copy" type="button" data-wrap-toggle="" aria-pressed="true" data-wrap-label="Wrap" data-wrapped-label="Wrapped">Wrapped</button>
+	</div>
+	<pre class="code-block__pre"><code class="hljs language-bash">tailscale funnel 3000
+</code></pre>
+	
+</div><p>That’s it. Tailscale gives you a public HTTPS URL pointing at your local port 3000.</p>
+<h3 id="tailscale-send" tabindex="-1"><a class="header-anchor" href="#tailscale-send" aria-hidden="true">#</a> Tailscale Send</h3>
+<p>Transfer files directly between devices without any setup:</p>
+<div class="code-block code-block--wrap">
+	
+	<div class="code-block__actions">
+		<button class="code-block__wrap gh-embed__copy" type="button" data-wrap-toggle="" aria-pressed="true" data-wrap-label="Wrap" data-wrapped-label="Wrapped">Wrapped</button>
+	</div>
+	<pre class="code-block__pre"><code class="hljs language-bash">tailscale file <span class="hljs-built_in">cp</span> some-file.txt macbook-pro:
+</code></pre>
+	
+</div><p>The recipient picks it up from the Tailscale app. No cloud storage, no shared drives. Just a direct peer-to-peer transfer.</p>
+<h3 id="sharing-devices" tabindex="-1"><a class="header-anchor" href="#sharing-devices" aria-hidden="true">#</a> Sharing Devices</h3>
+<p>You can share individual devices with people outside your tailnet (a friend, a contractor, a family member) without giving them full access to everything. They accept the share via a link and see only that one device in their Tailscale app. It’s a clean way to give limited access without the overhead of managing a full shared network.</p>
+<hr>
+<h2 id="one-caveat%3A-the-control-plane" tabindex="-1"><a class="header-anchor" href="#one-caveat%3A-the-control-plane" aria-hidden="true">#</a> One Caveat: the Control Plane</h2>
+<p>It’s worth being transparent about one trade-off: while the data plane (actual traffic) is peer-to-peer and encrypted end-to-end, the <strong>control plane runs on Tailscale’s servers</strong>. Tailscale coordinates key exchange and device discovery. This means you’re trusting Tailscale as a company not to misuse that coordination role.</p>
+<p>For most personal and professional use cases, this is a completely reasonable trade-off, and Tailscale has published a <a href="https://tailscale.com/security">detailed security model</a> explaining exactly what they can and cannot see. If you need fully self-hosted coordination, they also have an open-source control server called <a href="https://github.com/juanfont/headscale">Headscale</a>, though that comes with its own operational overhead.</p>
+<h3 id="tailscale-lock" tabindex="-1"><a class="header-anchor" href="#tailscale-lock" aria-hidden="true">#</a> Tailscale Lock</h3>
+<p>If the control plane trust concern does bother you, there’s a built-in answer: <strong>Tailscale Lock</strong> (also called <code>tailnet lock</code>).</p>
+<p>Normally, Tailscale’s coordination server decides which devices are authorized to join your tailnet. With Tailscale Lock enabled, that’s no longer enough. Every new node must be <strong>cryptographically signed</strong> by a trusted key before other devices will accept it, even if Tailscale’s servers say it’s legitimate.</p>
+<p>This means that even if Tailscale’s control plane were somehow compromised, an attacker couldn’t silently add a rogue device to your network. Your existing trusted nodes hold the signing authority.</p>
+<div class="code-block code-block--wrap">
+	
+	<div class="code-block__actions">
+		<button class="code-block__wrap gh-embed__copy" type="button" data-wrap-toggle="" aria-pressed="true" data-wrap-label="Wrap" data-wrapped-label="Wrapped">Wrapped</button>
+	</div>
+	<pre class="code-block__pre"><code class="hljs language-bash"><span class="hljs-comment"># Initialize Tailscale Lock - generates a signing key on this device</span>
+tailscale lock init
+
+<span class="hljs-comment"># Sign a new node before it can join</span>
+tailscale lock sign &lt;node-key&gt;
+
+<span class="hljs-comment"># Check current lock status</span>
+tailscale lock status
+</code></pre>
+	
+</div><p>It’s an advanced feature and adds operational overhead. You need a trusted device online to sign new nodes. But if you’re running anything sensitive behind your tailnet, it’s a meaningful extra layer of assurance that sits entirely outside Tailscale’s control.</p>
+<hr>
+<h2 id="closing-thoughts" tabindex="-1"><a class="header-anchor" href="#closing-thoughts" aria-hidden="true">#</a> Closing Thoughts</h2>
+<p>For me, Tailscale isn’t just another networking tool. It’s a <strong>solution I enjoy using</strong>: simple, secure, and quietly powerful. Whether I’m helping my family stay connected, accessing my own servers, or keeping services private, it’s become part of my daily workflow.</p>
+<p>What I appreciate most is how incrementally it reveals its power. You can start with just two devices talking to each other and grow into exit nodes, subnet routers, ACLs, and Funnel, without ever needing to tear anything down and start over. Good tools feel like that.</p>
+<p>If you’ve ever felt frustrated by traditional VPNs, I highly recommend giving Tailscale a try. And if you’re curious about the longer story of how I got here, check out my earlier posts (<a href="/posts/ssh-from-iPhone-to-Mac/">Coding on iPhone Anywhere</a>, <a href="/posts/networking-deep-dive">Network Debugging Deep Dive</a>).</p>
+<hr>
+<p><em>Have you used Tailscale in your own setup? I’d love to hear how, especially any creative uses I haven’t thought of.</em></p>
+
+      </heading-anchors>
+      
+      
+        <script src="https://giscus.app/client.js" data-repo="NicholasClooney/blog.clooney.io" data-repo-id="R_kgDOOtRluQ" data-category="Announcements" data-category-id="DIC_kwDOOtRluc4CwANX" data-mapping="og:title" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="en" crossorigin="anonymous" async="">
+        </script>
+      
+    </main>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('nav-toggle');
+    const sidebar = document.getElementById('sidebar');
+
+    btn.addEventListener('click', function() {
+      const isOpen = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!isOpen));
+      btn.classList.toggle('opened', !isOpen);
+
+      if (!isOpen) {
+        sidebar.classList.remove('dn', 'slide-fade-out');
+        sidebar.classList.add('slide-fade-in');
+      } else {
+        sidebar.classList.remove('slide-fade-in');
+        sidebar.classList.add('slide-fade-out');
+        sidebar.addEventListener('animationend', function handler() {
+          sidebar.classList.add('dn');
+          sidebar.removeEventListener('animationend', handler);
+        });
+      }
+    });
+  });
+</script>
+
+	<script>
+	(function() {
+		const themeConfig = [{"id":"sun","label":"Sun (black / washed-yellow)","classes":["black","bg-washed-yellow"],"midtoneClass":"gold","accent":"#E7040F","project":{"tagActiveColor":"#ECE9E9"}},{"id":"default","label":"Default","classes":["black","bg-white"],"midtoneClass":"mid-gray","accent":"#00449E","project":{"tagActiveColor":"#ECE9E9"}},{"id":"mint","label":"Mint (black / washed-green)","classes":["black","bg-washed-green"],"midtoneClass":"dark-green","accent":"#137752","project":{"tagActiveColor":"#ECE9E9"}},{"id":"grape","label":"Grape (near-white / purple)","classes":["near-white","bg-purple"],"midtoneClass":"light-purple","accent":"#FFA3D7","project":{"tagActiveColor":"#2D113B"}},{"id":"charcoal","label":"Charcoal (near-white / mid-gray)","classes":["near-white","bg-mid-gray"],"midtoneClass":"light-silver","accent":"#CCCCCC","project":{"tagActiveColor":"#1A1A1A"}},{"id":"deep-blue","label":"Deep Blue (white / dark-blue)","classes":["white","bg-dark-blue"],"midtoneClass":"light-blue","accent":"#CDECFF","project":{"tagActiveColor":"#012A63"}},{"id":"midnight","label":"Midnight (near-white / navy)","classes":["near-white","bg-navy"],"midtoneClass":"moon-gray","accent":"#96CCFF","project":{"tagActiveColor":"#001B44"}},{"id":"terminal","label":"Terminal (green / near-black)","classes":["near-white","bg-near-black"],"midtoneClass":"light-green","accent":"#33FF66","project":{"tagActiveColor":"#0A2A0A"}}];
+		const themeTarget = document.documentElement;
+		const defaultThemeId = themeTarget.dataset.defaultTheme;
+		const autoLightThemeId = themeTarget.dataset.autoLightTheme || defaultThemeId;
+		const autoDarkThemeId = themeTarget.dataset.autoDarkTheme || defaultThemeId;
+		const themeMap = themeConfig.reduce((map, theme) => {
+			map[theme.id] = theme.classes;
+			return map;
+		}, {});
+		const defaultMidtoneClass = "gold";
+		const themeMidtoneMap = themeConfig.reduce((map, theme) => {
+			const className = theme.midtoneClass || defaultMidtoneClass;
+			map[theme.id] = className;
+			return map;
+		}, {});
+		const allThemeClasses = Array.from(new Set(themeConfig.flatMap(theme => theme.classes)));
+		const allMidtoneClasses = Array.from(new Set([
+			defaultMidtoneClass,
+			...Object.values(themeMidtoneMap)
+		])).filter(Boolean);
+		const storageKey = 'themePreference';
+		const previewResetDelay = 500;
+		const previewHoverDelay = 500;
+		const themeModeLabelTemplate = "Theme mode: {mode}";
+		const themeModeAutoLabel = "Auto";
+		const themeModeCustomLabel = "Custom";
+		const modePreferenceMap = {
+			auto: 'auto',
+			light: autoLightThemeId,
+			dark: autoDarkThemeId
+		};
+		const modeSequence = ['auto', 'light', 'dark'];
+		let activePreference = themeTarget.dataset.themePreference || 'auto';
+		let previewButtons = [];
+		let modeToggleButton;
+		let previewResetTimeout;
+		let previewHoverTimeout;
+		let systemThemeQuery;
+
+		function getSystemThemeId() {
+			if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+				return themeMap[autoDarkThemeId] ? autoDarkThemeId : defaultThemeId;
+			}
+			return themeMap[autoLightThemeId] ? autoLightThemeId : defaultThemeId;
+		}
+
+		function resolveThemeId(preference) {
+			if (preference === 'auto') {
+				return getSystemThemeId();
+			}
+			return themeMap[preference] ? preference : defaultThemeId;
+		}
+
+		function getModeForPreference(preference) {
+			if (preference === 'auto') return 'auto';
+			if (preference === autoDarkThemeId) return 'dark';
+			if (preference === autoLightThemeId) return 'light';
+			return null;
+		}
+
+		function updateModeToggle(preference) {
+			if (!modeToggleButton) return;
+			const mode = getModeForPreference(preference);
+			const label = mode === 'auto'
+				? themeModeAutoLabel
+				: mode
+					? mode.charAt(0).toUpperCase() + mode.slice(1)
+					: themeModeCustomLabel;
+			const modeLabel = themeModeLabelTemplate.replace('{mode}', label);
+			modeToggleButton.dataset.themeMode = mode || 'custom';
+			modeToggleButton.setAttribute('aria-label', modeLabel);
+			modeToggleButton.setAttribute('title', modeLabel);
+			modeToggleButton.setAttribute('aria-pressed', String(Boolean(mode)));
+			modeToggleButton.classList.toggle('o-60', !mode);
+			if (mode) {
+				modeToggleButton.setAttribute('data-active', '');
+			} else {
+				modeToggleButton.removeAttribute('data-active');
+			}
+			const labelNode = modeToggleButton.querySelector('.theme-mode-label');
+			if (labelNode) labelNode.textContent = label;
+		}
+
+		function cycleThemeMode() {
+			const currentMode = getModeForPreference(activePreference) || 'custom';
+			const currentIndex = modeSequence.indexOf(currentMode);
+			const nextMode = modeSequence[(currentIndex + 1) % modeSequence.length];
+			applyTheme(nextMode === 'custom' ? 'auto' : modePreferenceMap[nextMode]);
+		}
+
+		function updateActivePreview(preference) {
+			if (!previewButtons.length) return;
+			previewButtons.forEach(button => {
+				const isActive = button.dataset.themePreview === preference;
+				if (isActive) {
+					button.setAttribute('data-active', '');
+				} else {
+					button.removeAttribute('data-active');
+				}
+				button.classList.toggle('b--black-80', isActive);
+				button.classList.toggle('o-60', !isActive);
+				button.setAttribute('aria-pressed', String(isActive));
+			});
+		}
+
+		function clearPreviewReset() {
+			if (!previewResetTimeout) return;
+			clearTimeout(previewResetTimeout);
+			previewResetTimeout = undefined;
+		}
+
+		function clearPreviewHover() {
+			if (!previewHoverTimeout) return;
+			clearTimeout(previewHoverTimeout);
+			previewHoverTimeout = undefined;
+		}
+
+		function schedulePreviewReset() {
+			clearPreviewReset();
+			previewResetTimeout = setTimeout(() => {
+				applyTheme(activePreference, { persist: false, syncSelect: true, preview: true });
+			}, previewResetDelay);
+		}
+
+		function applyTheme(preference, options = {}) {
+			const { persist = true, syncSelect = true, preview = false } = options;
+			const resolvedThemeId = resolveThemeId(preference);
+			if (!themeMap[resolvedThemeId]) return;
+			themeTarget.classList.remove(...allThemeClasses);
+			themeTarget.classList.add(...themeMap[resolvedThemeId]);
+			themeTarget.dataset.theme = resolvedThemeId;
+			themeTarget.dataset.themePreference = preference;
+			const midtoneClass = themeMidtoneMap[resolvedThemeId] || defaultMidtoneClass;
+			if (allMidtoneClasses.length) {
+				document.querySelectorAll('.theme-midtone').forEach(element => {
+					element.classList.remove(...allMidtoneClasses);
+					if (midtoneClass) element.classList.add(midtoneClass);
+				});
+			}
+			if (!preview) {
+				activePreference = preference;
+				updateActivePreview(preference);
+				updateModeToggle(preference);
+				if (persist) {
+					try {
+						localStorage.setItem(storageKey, preference);
+						localStorage.setItem('theme', resolvedThemeId);
+					} catch (error) {
+						/* localStorage may be unavailable; ignore persistence */
+					}
+				}
+			}
+			if (syncSelect) {
+				document.querySelectorAll('[data-theme-select]').forEach(select => {
+					if (select.value !== preference) select.value = preference;
+				});
+			}
+		}
+
+		function previewTheme(preference) {
+			clearPreviewReset();
+			applyTheme(preference, { persist: false, syncSelect: false, preview: true });
+		}
+
+		function schedulePreviewTheme(preference) {
+			clearPreviewHover();
+			previewHoverTimeout = setTimeout(() => {
+				previewHoverTimeout = undefined;
+				previewTheme(preference);
+			}, previewHoverDelay);
+		}
+
+		function cancelPreview(event) {
+			clearPreviewHover();
+			if (event && event.relatedTarget && event.relatedTarget.closest && event.relatedTarget.closest('[data-theme-preview]')) {
+				return;
+			}
+			schedulePreviewReset();
+		}
+
+		function initTheme() {
+			let initial = themeTarget.dataset.themePreference || 'auto';
+			try {
+				const stored = localStorage.getItem(storageKey);
+				if (stored === 'auto' || themeMap[stored]) {
+					initial = stored;
+				} else {
+					const legacyStoredTheme = localStorage.getItem('theme');
+					if (legacyStoredTheme === 'auto' || themeMap[legacyStoredTheme]) {
+						initial = legacyStoredTheme;
+					}
+				}
+			} catch (error) {
+				/* ignore storage issues and fall back to default */
+			}
+			applyTheme(initial, { persist: false, syncSelect: false });
+		}
+
+		applyTheme(activePreference, { persist: false, syncSelect: false, preview: true });
+
+		document.addEventListener('DOMContentLoaded', () => {
+			initTheme();
+			modeToggleButton = document.querySelector('[data-theme-mode-toggle]');
+			if (modeToggleButton) {
+				modeToggleButton.addEventListener('click', () => {
+					clearPreviewReset();
+					cycleThemeMode();
+				});
+			}
+			const themeSelects = document.querySelectorAll('[data-theme-select]');
+			themeSelects.forEach(select => {
+				if (select.value !== 'auto' && !themeMap[select.value]) {
+					select.value = themeTarget.dataset.themePreference;
+				}
+				select.addEventListener('change', event => {
+					applyTheme(event.target.value);
+				});
+			});
+
+			const supportsPointer = 'PointerEvent' in window;
+			previewButtons = Array.from(document.querySelectorAll('[data-theme-preview]'));
+			previewButtons.forEach(button => {
+				const themeId = button.dataset.themePreview;
+				const enterEvent = supportsPointer ? 'pointerenter' : 'mouseenter';
+				const leaveEvent = supportsPointer ? 'pointerleave' : 'mouseleave';
+				button.addEventListener(enterEvent, () => schedulePreviewTheme(themeId));
+				button.addEventListener(leaveEvent, cancelPreview);
+				button.addEventListener('focus', () => schedulePreviewTheme(themeId));
+				button.addEventListener('blur', cancelPreview);
+				button.addEventListener('click', event => {
+					clearPreviewHover();
+					clearPreviewReset();
+					applyTheme(themeId);
+					if (event && event.detail && event.detail > 0) {
+						button.blur();
+					}
+				});
+			});
+
+			if (window.matchMedia) {
+				systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+				const handleSystemThemeChange = () => {
+					if (activePreference === 'auto') {
+						applyTheme('auto', { persist: false, syncSelect: true });
+					}
+				};
+				if (systemThemeQuery.addEventListener) {
+					systemThemeQuery.addEventListener('change', handleSystemThemeChange);
+				} else if (systemThemeQuery.addListener) {
+					systemThemeQuery.addListener(handleSystemThemeChange);
+				}
+			}
+
+			updateModeToggle(themeTarget.dataset.themePreference || 'auto');
+			updateActivePreview(themeTarget.dataset.themePreference || 'auto');
+		});
+	})();
+</script>
+
+	
+	
+		
+	
+	<script src="/assets/js/copy.js" defer=""></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"387494d998e64cbea05a5b48785c8dea","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>
