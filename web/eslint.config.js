@@ -1,0 +1,1 @@
+export default [{ignores:['node_modules/**','src/**/*.ts','src/**/*.tsx','tests/**','test-results/**','playwright-report/**','vite.config.ts','playwright.config.ts']},{files:['**/*.js'],languageOptions:{ecmaVersion:'latest',sourceType:'module'},rules:{'no-unused-vars':'error','no-debugger':'error','no-constant-condition':'error'}}];
