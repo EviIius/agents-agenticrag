@@ -117,7 +117,11 @@ class Pipeline:
             )
             try:
                 page = await cache.read(
-                    self.store, result.url, int(values["web.page_cache_days"]), self.fixtures
+                    self.store,
+                    result.url,
+                    int(values["web.page_cache_days"]),
+                    self.fixtures,
+                    plan.freshness,
                 )
                 fetched[result.url] = page
                 await self.store.execute(

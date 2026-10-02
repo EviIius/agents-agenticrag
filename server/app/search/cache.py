@@ -10,11 +10,17 @@ from .fetch import read_network
 from .fixtures import Fixtures
 
 
-async def read(store: Store, url: str, days: int, fixtures: Fixtures) -> Page:
+async def read(
+    store: Store, url: str, days: int, fixtures: Fixtures, freshness: str = "any"
+) -> Page:
     date = datetime.now(UTC)
+    # Retention and reuse are separate: a recent-information request must not
+    # reuse an old snapshot merely because the user keeps pages for 7/30 days.
+    cutoff = (date - timedelta(minutes=30)).isoformat() if freshness != "any" else None
     cached = await store.one(
-        "SELECT * FROM page_cache WHERE url=? AND expires_at>? AND error IS NULL",
-        (url, date.isoformat()),
+        "SELECT * FROM page_cache WHERE url=? AND expires_at>? AND error IS NULL "
+        "AND (? IS NULL OR fetched_at>?)",
+        (url, date.isoformat(), cutoff, cutoff),
     )
     if cached and not fixtures.recording and not fixtures.directory:
         return Page(

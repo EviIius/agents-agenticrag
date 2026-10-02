@@ -16,6 +16,7 @@ from typing import Any
 
 import aiosqlite
 import httpx
+from grading import required_facts
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -27,8 +28,10 @@ from prompt_trials import (  # noqa: E402
     CITED_EVIDENCE_V5,
     CITED_EVIDENCE_V6,
     CITED_EVIDENCE_V7,
+    CITED_EVIDENCE_V8,
     DIRECT_AND_CONSISTENT,
     INTENT_PROMPT,
+    INTENT_QUERY_COVERAGE,
     TASK_AND_SCOPE,
     TASK_AND_SCOPE_V2,
 )
@@ -36,6 +39,7 @@ from prompt_trials import (  # noqa: E402
 from app.config import Settings  # noqa: E402
 from app.main import create_app  # noqa: E402
 from app.providers.ollama import Ollama  # noqa: E402
+from app.search import pipeline as search_pipeline  # noqa: E402
 from app.search import planner  # noqa: E402
 from app.search import prompt as answer_prompt  # noqa: E402
 from app.search.citations import cited  # noqa: E402
@@ -97,6 +101,8 @@ async def evaluate(args: argparse.Namespace) -> None:
         planner.PROMPT += TASK_AND_SCOPE
     elif args.planner_trial == "task-and-scope-v2":
         planner.PROMPT += TASK_AND_SCOPE_V2
+    elif args.planner_trial == "entity-queries":
+        planner.PROMPT = INTENT_QUERY_COVERAGE
     elif args.planner_trial == "intent-first":
         planner.PROMPT = INTENT_PROMPT
         original_json = Ollama.complete_json
@@ -143,7 +149,14 @@ async def evaluate(args: argparse.Namespace) -> None:
         answer_prompt.PROMPT = CITED_EVIDENCE_V6
     elif args.answer_trial == "cited-evidence-v7":
         answer_prompt.PROMPT = CITED_EVIDENCE_V7
-    cases = json.loads(Path(args.cases_file).read_text())
+    elif args.answer_trial == "cited-evidence-v8":
+        answer_prompt.PROMPT = CITED_EVIDENCE_V8
+    cases_bytes = Path(args.cases_file).read_bytes()
+    cases = json.loads(cases_bytes)
+    if args.table_trial == "named-cells":
+        from table_trials import named_cells
+
+        search_pipeline.chunk = named_cells
     if args.case:
         cases = [c for c in cases if c["id"] == args.case]
     if not cases:
@@ -214,6 +227,11 @@ async def evaluate(args: argparse.Namespace) -> None:
                             "connection_id": conn["id"],
                             "model_id": args.model,
                             "web_enabled": True,
+                            **(
+                                {"params": {"temperature": args.temperature}}
+                                if args.temperature is not None
+                                else {}
+                            ),
                         },
                     )
                 ).json()
@@ -342,8 +360,7 @@ async def evaluate(args: argparse.Namespace) -> None:
                     str.maketrans({c: "-" for c in "‐‑‒–—―−"})
                 )
                 expect = case["expect"]
-                patterns = expect.get("must_include_last", expect.get("must_include", []))
-                facts = all(re.search(p, answer, re.I) for p in patterns)
+                facts = required_facts(answer, expect)
                 fact_passes.append(facts)
                 bad = [p for p in expect.get("must_not_match", []) if re.search(p, answer, re.I)]
                 if bad:
@@ -417,6 +434,12 @@ async def evaluate(args: argparse.Namespace) -> None:
             + args.ranking
             + ("-" + args.planner_trial if args.planner_trial != "spec" else "")
             + ("-" + args.answer_trial if args.answer_trial != "spec" else "")
+            + ("-" + args.table_trial if args.table_trial != "spec" else "")
+            + (
+                "-temperature-" + f"{args.temperature:g}".replace(".", "p")
+                if args.temperature is not None
+                else ""
+            )
         )
     )
     prefix.parent.mkdir(exist_ok=True)
@@ -477,6 +500,9 @@ async def evaluate(args: argparse.Namespace) -> None:
         json.dumps(
             {
                 "model": args.model,
+                "chat_params": {"temperature": args.temperature}
+                if args.temperature is not None
+                else {},
                 "providers": args.providers.split(","),
                 "cases_file": args.cases_file,
                 "mode": "record" if args.record else "live" if args.live else "offline",
@@ -492,6 +518,7 @@ async def evaluate(args: argparse.Namespace) -> None:
                 "answer_trial": args.answer_trial,
                 "answer_prompt": answer_prompt.PROMPT,
                 "answer_prompt_sha256": hashlib.sha256(answer_prompt.PROMPT.encode()).hexdigest(),
+                "table_trial": args.table_trial,
                 "fixture_root": args.fixture_root if not args.live else None,
                 "injection_scope": (
                     "Live pages are not controlled attacks; E-AC10 is evaluated separately "
@@ -499,7 +526,7 @@ async def evaluate(args: argparse.Namespace) -> None:
                 )
                 if args.live or args.record
                 else "The model must receive the controlled attack text.",
-                "cases_sha256": hashlib.sha256(Path(args.cases_file).read_bytes()).hexdigest(),
+                "cases_sha256": hashlib.sha256(cases_bytes).hexdigest(),
                 "metrics": metrics,
                 "results": results,
             },
@@ -520,7 +547,8 @@ async def evaluate(args: argparse.Namespace) -> None:
         f"# Web evaluation — {args.model}\n\n"
         f"{date} · {len(results)} cases · {args.ranking} · {mode}\n\n"
         f"Fixture root: {args.fixture_root if mode == 'recorded web' else 'not replayed'}\n\n"
-        f"Planner: {args.planner_trial} (trial prompts are not active in the app).\n\n"
+        f"Planner: {args.planner_trial}; answer: {args.answer_trial}; "
+        f"tables: {args.table_trial} (non-spec trials run only in this process).\n\n"
         + (
             "Search results are frozen from the recording, independent of new query wording. "
             "Plans are also frozen for this ranking comparison. "
@@ -561,6 +589,12 @@ async def evaluate(args: argparse.Namespace) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--case", default="")
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=None,
+        help="Explicit isolated test-chat temperature; omitted by default",
+    )
     parser.add_argument("--cases-file", default=str(HERE / "cases.yaml"))
     parser.add_argument(
         "--search-key-db",
@@ -586,12 +620,13 @@ if __name__ == "__main__":
     parser.add_argument("--record", action="store_true")
     parser.add_argument("--replay-corpus", action="store_true")
     parser.add_argument("--replay-plans", action="store_true")
+    parser.add_argument("--table-trial", choices=["spec", "named-cells"], default="spec")
     parser.add_argument("--ranking", choices=["keyword", "hybrid"], default="keyword")
     parser.add_argument("--embedding", default="qwen3-embedding:0.6b")
     parser.add_argument("--fixture-root", default=str(HERE / "fixtures"))
     parser.add_argument(
         "--planner-trial",
-        choices=["spec", "task-and-scope", "task-and-scope-v2", "intent-first"],
+        choices=["spec", "task-and-scope", "task-and-scope-v2", "intent-first", "entity-queries"],
         default="spec",
     )
     parser.add_argument(
@@ -606,10 +641,13 @@ if __name__ == "__main__":
             "cited-evidence-v5",
             "cited-evidence-v6",
             "cited-evidence-v7",
+            "cited-evidence-v8",
         ],
         default="spec",
     )
     args = parser.parse_args()
+    if args.temperature is not None and not 0 <= args.temperature <= 2:
+        parser.error("Temperature must be between 0 and 2")
     if args.replay_plans and not args.replay_corpus:
         parser.error("--replay-plans requires --replay-corpus")
     if args.replay_corpus and (args.live or args.record):

@@ -92,9 +92,12 @@ export function ModelPicker({
       <CommandInput placeholder="Search models…" aria-label="Search models" />
       <CommandList className="min-h-0 flex-1">
         <CommandEmpty>No matching models.</CommandEmpty>
-        <CommandGroup
-          heading={models ? undefined : "Fake runtime · fixture connection"}
-        >
+        <div>
+          {!models && (
+            <div className="px-2 py-1.5 text-xs font-medium text-fg-3">
+              Fake runtime · fixture connection
+            </div>
+          )}
           {models && state !== "loading" ? (
             Array.from(new Set(models.map((model) => model.connection_id))).map(
               (id) => (
@@ -274,7 +277,7 @@ export function ModelPicker({
               Loading fake-chat… 12 s
             </p>
           )}
-        </CommandGroup>
+        </div>
       </CommandList>
       <p className="border-t border-line p-3 text-xs text-fg-2">
         {models
@@ -312,7 +315,7 @@ export function ModelPicker({
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent
         align="start"
-        className="w-[min(420px,calc(100vw-32px))] p-0"
+        className="flex max-h-(--radix-popover-content-available-height) w-[min(420px,calc(100vw-32px))] flex-col overflow-hidden p-0"
       >
         {content}
       </PopoverContent>

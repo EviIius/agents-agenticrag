@@ -1,4 +1,4 @@
-"""Historical generic prompt trials; intent-first and evidence V5 are now in SPEC."""
+"""Historical generic prompt trials; intent-first and evidence V6 are now in SPEC."""
 
 TASK_AND_SCOPE = (
     "\n\nDecision clarifications:\n"
@@ -172,4 +172,23 @@ CITED_EVIDENCE_V7 = CITED_EVIDENCE_V6.replace(
     "Test each entry against that criterion. List only entries that satisfy it, "
     "and include all such entries explicitly established by the evidence. "
     "Omit entries that fail the criterion, even if a source lists them.",
+)
+
+INTENT_QUERY_COVERAGE = INTENT_PROMPT + (
+    "\nFor comparisons of entities, use one query per entity covering every requested "
+    "property of that entity. Cover all requested properties within the three-query limit; "
+    "do not spend all query slots on only some properties."
+)
+
+CITED_EVIDENCE_V8 = CITED_EVIDENCE_V6.replace(
+    "If a requested detail is missing, say it is not established by these sources.",
+    "Include the essential participants, quantities and dates that explain the requested "
+    "result when the passages supply them. If a requested detail is missing, say it "
+    "is not established by these sources.",
+).replace(
+    "Include every supported matching entry; omit non-matching entries "
+    "even if a source lists them.",
+    "Inspect the entire relevant set, including the final entries in a source, before "
+    "composing a list. Include every supported matching entry; omit non-matching entries "
+    "even if a source lists them.",
 )

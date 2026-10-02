@@ -10,11 +10,20 @@
       "search": true,
       "must_include": [
         "Phoenix Suns",
-        "Milwaukee Bucks",
-        "(?:4\\s*-\\s*2|2\\s*-\\s*4)"
+        "Milwaukee Bucks"
       ],
       "must_not_match": [
         "\\|\\s*20(1\\d|20)\\s*\\|"
+      ],
+      "must_include_one_of": [
+        [
+          "(?:4\\s*-\\s*2|2\\s*-\\s*4)"
+        ],
+        [
+          "(?im)^\\|[^\\n]*\\|\\s*Wins\\s*\\|",
+          "(?im)^\\|\\s*Milwaukee Bucks\\s*\\|(?:[^\\n|]*\\|)*\\s*4\\s*\\|",
+          "(?im)^\\|\\s*Phoenix Suns\\s*\\|(?:[^\\n|]*\\|)*\\s*2\\s*\\|"
+        ]
       ]
     }
   },
@@ -223,7 +232,7 @@
         "research.{0,25}private",
         "sheet.pan.nachos",
         "chicken.alfredo",
-        "(?:^|\\n)\\s*(?:[-*]|\\d+[.)]|\\|(?:\\s*\\d+\\s*\\|)?)\\s*(?:\\*\\*)?(?:Denver Nuggets|Toronto Raptors|Chicago Bulls|Sacramento Kings|Baltimore Bullets).{0,80}(?:0 (?:Finals )?losses|0 (?:Finals )?loss|\\|\\s*0\\s*\\|)"
+        "(?:^|\\n)\\s*(?:[-*]|\\d+[.)]|\\|(?:\\s*\\d+\\s*\\|)?)\\s*(?:\\*\\*)?(?:Denver Nuggets|Toronto Raptors|Chicago Bulls|Sacramento Kings|Baltimore Bullets)\\b"
       ],
       "queries_must_not_match": [
         "never (?:won|win)",

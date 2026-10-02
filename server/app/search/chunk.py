@@ -12,6 +12,7 @@ def table_header(rows: list[str]) -> list[str]:
 def chunk(url: str, text: str) -> list[Passage]:
     blocks: list[tuple[str, str]] = []
     heading = ""
+    navigation_level: int | None = None
     # Split table boundaries even when extraction omitted a blank line.
     lines = text.splitlines()
     groups: list[str] = []
@@ -38,8 +39,22 @@ def chunk(url: str, text: str) -> list[Passage]:
                 continue
         joined.append(group)
     for block in joined:
-        if re.match(r"^#{1,4}\s", block):
+        section = re.match(r"^(#{1,4})\s+([^\n]+)", block)
+        if section:
+            level = len(section[1])
+            if navigation_level is not None and level <= navigation_level:
+                navigation_level = None
+            if section[2].strip().casefold() in {"external links", "see also"}:
+                navigation_level = level
+            if navigation_level is not None:
+                continue
             heading = block.splitlines()[0].lstrip("# ") or heading
+            if all(re.fullmatch(r"#{1,4}\s+.*", line) for line in block.splitlines()):
+                # The heading belongs to the following evidence, not a passage
+                # with no facts that can occupy one of the source's three slots.
+                continue
+        if navigation_level is not None:
+            continue
         if block.startswith("|"):
             rows = block.splitlines()
             header_rows = table_header(rows)

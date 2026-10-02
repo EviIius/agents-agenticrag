@@ -14,7 +14,18 @@ _STOP = frozenset(
 
 
 def tokenize(text: str) -> list[str]:
-    return [t for t in _TOKEN.findall(text.lower()) if t not in _STOP]
+    tokens = []
+    for term in _TOKEN.findall(text.lower()):
+        if term in _STOP:
+            continue
+        # Fold regular English noun plurals for passage matching. Provider
+        # queries and the source text shown to the user remain exact.
+        if len(term) > 4 and term.endswith("ies"):
+            term = term[:-3] + "y"
+        elif len(term) > 4 and term.endswith("s") and not term.endswith(("ss", "us", "is")):
+            term = term[:-1]
+        tokens.append(term)
+    return tokens
 
 
 def bm25(query: str, docs: list[str], k1: float = 1.2, b: float = 0.75) -> list[float]:
@@ -59,14 +70,35 @@ def rank(
 ) -> list[tuple[Passage, float]]:
     keyword = bm25(query, [p.heading + "\n" + p.text for p in passages])
     keys = [str(i) for i in range(len(passages))]
-    lexical = sorted(keys, key=lambda k: (-keyword[int(k)], int(k)))
+    matched = [key for key in keys if keyword[int(key)] > 0]
+    lexical = sorted(matched or keys, key=lambda k: (-keyword[int(k)], int(k)))
     rankings = [lexical]
     if vectors:
         similarities = [cosine(vectors[0], v) for v in vectors[1:]]
         rankings.append(sorted(keys, key=lambda k: (-similarities[int(k)], int(k))))
     fused = rrf(rankings)
     for key in keys:
-        fused[key] += 1 / (60 + source_order.index(passages[int(key)].source_url) + 1)
+        fused.setdefault(key, 0.0)
+        # A search-position prior must not turn a zero lexical match into
+        # a positive relevance score. Semantic matches still qualify in hybrid.
+        if fused[key] > 0:
+            fused[key] += 1 / (60 + source_order.index(passages[int(key)].source_url) + 1)
+        passage = passages[int(key)]
+        bibliography = passage.heading.strip().casefold() in {
+            "references",
+            "bibliography",
+            "works cited",
+        }
+        citations = re.findall(r"(?m)^\s*(?:\d+\.\s|↑\s|(?:\d+\s+){2,})", passage.text)
+        if (
+            bibliography
+            and len(citations) >= 2
+            and not (set(tokenize(query)) & {"reference", "bibliography", "citation"})
+        ):
+            # Repeated titles in a bibliography are discovery links, rather
+            # than the article's factual summary. Keep them available when
+            # requested, but prevent repetition from crowding out body text.
+            fused[key] *= 0.25
     return [(passages[int(k)], fused[k]) for k in sorted(keys, key=lambda k: (-fused[k], int(k)))]
 
 

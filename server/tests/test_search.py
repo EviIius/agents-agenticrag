@@ -1,5 +1,6 @@
 import json
 import socket
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 from unittest.mock import Mock
@@ -22,6 +23,54 @@ from app.search.rank import bm25, cosine, rank, select
 from tests.test_chat import finish
 
 VECTORS = json.loads((Path(__file__).parents[2] / "shared/citation_cases.json").read_text())
+
+
+def test_plural_query_retrieves_singular_fact() -> None:
+    unrelated = Passage(
+        source_url="https://other.org", ord=0, text="Electric radiators heat rooms."
+    )
+    relevant = Passage(
+        source_url="https://facts.org", ord=0, text="Battery capacity is 80 watt-hours."
+    )
+    ranked = rank(
+        [unrelated, relevant], "batteries capacities", [unrelated.source_url, relevant.source_url]
+    )
+    assert ranked[0][0] == relevant
+
+
+def test_bibliography_repetition_does_not_replace_article_summary() -> None:
+    url = "https://facts.org"
+    summary = Passage(source_url=url, ord=0, text="The widget weighs 20 grams.")
+    bibliography = Passage(
+        source_url=url,
+        heading="References",
+        ord=1,
+        text='1. "Widget weight widget grams."\n2. "Widget weight grams weight."',
+    )
+    assert rank([bibliography, summary], "widget weight grams", [url])[0][0] == summary
+    assert rank([bibliography, summary], "widget weight references", [url])[0][0] == bibliography
+
+
+def test_heading_is_metadata_not_a_factless_passage() -> None:
+    passages = chunk(
+        "https://facts.org", "## Specifications\n\n" + "The widget weighs 20 grams. " * 40
+    )
+    assert passages and all(p.heading == "Specifications" for p in passages)
+    assert all("20 grams" in p.text for p in passages)
+
+
+def test_navigation_sections_do_not_replace_article_facts() -> None:
+    text = (
+        "# Widget\n\nThe current widget price is 10 dollars.\n\n"
+        "## See also\n\nWidget prices price widget.\n\n"
+        "### Related guides\n\nA navigation entry.\n\n"
+        "## Specifications\n\nThe widget weighs 20 grams.\n\n"
+        "## External links\n\nWidget prices and prices and widget."
+    )
+    passages = chunk("https://facts.org", text)
+    chosen = " ".join(p.text for p in passages)
+    assert "10 dollars" in chosen and "20 grams" in chosen
+    assert "navigation entry" not in chosen and "prices and prices" not in chosen
 
 
 @pytest.mark.parametrize("vector", VECTORS)
@@ -864,6 +913,43 @@ async def test_reuses_query_when_planner_adds_another_query(
     assert batches[0][0].title == "first"
     await service.query("first", "day")
     assert called == ["first", "second", "first"]
+
+
+@pytest.mark.parametrize("freshness", ["day", "week", "month", "year"])
+async def test_recent_requests_refresh_retained_page_snapshots(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+    monkeypatch: pytest.MonkeyPatch,
+    freshness: str,
+) -> None:
+    app, _, _ = chat_app
+    url = "https://example.org/current"
+    date = datetime.now(UTC)
+    await app.state.store.execute(
+        "INSERT INTO page_cache VALUES (?,?,?,?,?,?,NULL,?,?)",
+        (
+            url,
+            url,
+            "Snapshot",
+            "Example",
+            None,
+            "Old revision 20. " * 30,
+            (date - timedelta(hours=2)).isoformat(),
+            (date + timedelta(days=7)).isoformat(),
+        ),
+    )
+    requests = []
+
+    async def refreshed(page_url: str) -> RawPage:
+        requests.append(page_url)
+        return RawPage(page_url, b"New revision 37. " * 30, "text/plain")
+
+    monkeypatch.setattr(cache, "read_network", refreshed)
+    retained = await cache.read(app.state.store, url, 7, Fixtures())
+    assert "Old revision 20" in retained.text and not requests
+    current = await cache.read(app.state.store, url, 7, Fixtures(), freshness)
+    assert "New revision 37" in current.text and requests == [url]
+    reused = await cache.read(app.state.store, url, 7, Fixtures(), freshness)
+    assert reused.text == current.text and requests == [url]
 
 
 async def test_fetch_priority_survives_slow_top_result(

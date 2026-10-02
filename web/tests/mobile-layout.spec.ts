@@ -176,3 +176,42 @@ test("drawer follows the panned visual viewport above the keyboard", async ({
   ).toBeVisible();
   await close.click();
 });
+
+test("tablet model picker keeps its footer above a reduced viewport", async ({
+  page,
+}) => {
+  await page.route("**/api/models*", async (route) => {
+    const response = await route.fetch();
+    const models = await response.json();
+    await route.fulfill({
+      response,
+      json: Array.from({ length: 30 }, (_, index) => ({
+        ...models[0],
+        model_id: `test-model-${index}`,
+        display_name: `Test model ${index}`,
+      })),
+    });
+  });
+  await page.setViewportSize({ width: 768, height: 844 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Choose model" }).click();
+  await page.setViewportSize({ width: 768, height: 320 });
+  const popover = page.locator('[data-slot="popover-content"]');
+  await expect(popover).toBeInViewport({ ratio: 1 });
+  const footer = popover.getByText(
+    "30 models · capabilities reported by Ollama",
+  );
+  await expect(footer).toBeInViewport({ ratio: 1 });
+  const list = popover.locator('[data-slot="command-list"]');
+  expect(
+    await list.evaluate((el) => el.scrollHeight > el.clientHeight),
+  ).toBeTruthy();
+  await popover
+    .getByRole("combobox", { name: "Search models" })
+    .fill("Test model 29");
+  await expect(
+    popover.getByRole("option", { name: /Test model 29/ }),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(popover).not.toBeVisible();
+});
