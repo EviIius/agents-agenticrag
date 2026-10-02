@@ -28,3 +28,8 @@ reports. LM Studio and generic OpenAI adapters are outside the current build sco
 User approval (1 Oct 2026): install Docker Desktop and run local SearXNG. Web search
 must use free providers; no Brave API subscription or key is required. Verify real
 parameter payloads and rename, pin/unpin, Markdown/JSON export and delete actions.
+
+User amendment (1 Oct 2026): research and refine free web search integrations;
+prefer Ollama Search if live evidence supports it, with free fallbacks. The user
+saved its account key in the app. Continue to Phase 3 after Phase 2 is validated;
+retain phase reports and evidence. Existing httpx adapters need no added SDK.

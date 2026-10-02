@@ -1,7 +1,9 @@
 import asyncio
 import hashlib
 import json
+import weakref
 from datetime import UTC, datetime, timedelta
+from time import monotonic
 from typing import Any
 
 import httpx
@@ -11,20 +13,124 @@ from ..db.core import Store
 from ..schemas import SearchResult, SearchStatus
 from .fixtures import Fixtures
 
-NAMES = {"searxng": "SearXNG", "ddgs": "DuckDuckGo", "brave": "Brave"}
+NAMES = {
+    "ollama": "Ollama Search",
+    "searxng": "SearXNG",
+    "exa": "Exa",
+    "ddgs": "DuckDuckGo",
+    "brave": "Brave",
+}
+EXA_URL = "https://mcp.exa.ai/mcp?tools=web_search_advanced_exa"
+_COOLDOWNS: weakref.WeakKeyDictionary[Store, dict[str, float]] = weakref.WeakKeyDictionary()
+
+
+class RateLimited(ValueError):
+    def __init__(self, message: str, retry_after: str | None) -> None:
+        super().__init__(message)
+        try:
+            self.seconds = max(1, min(86400, int(retry_after or "60")))
+        except ValueError:
+            self.seconds = 60
+
+
+async def exa_search(query: str, freshness: str) -> list[SearchResult]:
+    """One bounded, keyless search call; no SDK, agent tools or generated summaries."""
+    arguments: dict[str, Any] = {
+        "query": query,
+        "numResults": 10,
+        "type": "fast",
+        "enableSummary": False,
+        "enableHighlights": True,
+        "highlightsMaxCharacters": 1000,
+        "textMaxCharacters": 1000,
+    }
+    if freshness != "any":
+        days = {"day": 1, "week": 7, "month": 30, "year": 365}[freshness]
+        arguments["startPublishedDate"] = (datetime.now(UTC) - timedelta(days=days)).isoformat()
+        arguments["maxAgeHours"] = 1 if freshness == "day" else 24
+    async with asyncio.timeout(8), httpx.AsyncClient(timeout=8, trust_env=False) as client:
+        async with client.stream(
+            "POST",
+            EXA_URL,
+            headers={"Accept": "application/json, text/event-stream"},
+            json={
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tools/call",
+                "params": {"name": "web_search_advanced_exa", "arguments": arguments},
+            },
+        ) as response:
+            if response.status_code == 429:
+                raise RateLimited("Exa free search rate limit", response.headers.get("Retry-After"))
+            response.raise_for_status()
+            data = bytearray()
+            async for part in response.aiter_bytes():
+                data.extend(part)
+                if len(data) > 3_000_000:
+                    raise ValueError("Exa response too large")
+            body = data.decode("utf-8")
+            if "text/event-stream" in response.headers.get("content-type", ""):
+                events = [
+                    "\n".join(
+                        line[5:].lstrip() for line in event.splitlines() if line.startswith("data:")
+                    )
+                    for event in body.replace("\r\n", "\n").split("\n\n")
+                ]
+                payload = next(json.loads(event) for event in events if event and event != "[DONE]")
+            else:
+                payload = json.loads(body)
+    result = payload.get("result", {})
+    if payload.get("error") or result.get("isError"):
+        raise ValueError("Exa search returned an error")
+    structured = result.get("structuredContent")
+    if structured is None:
+        structured = json.loads(
+            next(c["text"] for c in result.get("content", []) if c.get("type") == "text")
+        )
+    return [
+        SearchResult(
+            url=row["url"],
+            title=row.get("title", row["url"]),
+            snippet="\n".join(row.get("highlights", [])) or row.get("text", ""),
+            published_at=row.get("publishedDate"),
+            provider="Exa",
+        )
+        for row in structured.get("results", [])[:10]
+    ]
 
 
 class Providers:
     def __init__(self, store: Store, values: dict[str, Any], fixtures: Fixtures) -> None:
         self.store, self.values, self.fixtures = store, values, fixtures
+        self.cooldowns = _COOLDOWNS.setdefault(store, {})
+
+    def cooldown_key(self, provider: str) -> str:
+        key = str(self.values.get("web.ollama_api_key", "")) if provider == "ollama" else ""
+        return provider + ":" + hashlib.sha256(key.encode()).hexdigest()
+
+    def limited(self, provider: str) -> bool:
+        return self.cooldowns.get(self.cooldown_key(provider), 0) > monotonic()
+
+    def cache_key(self, queries: list[str] | str, freshness: str) -> str:
+        config = {
+            k: v
+            for k, v in self.values.items()
+            if k
+            in ("web.provider_order", "web.searxng_url", "web.brave_api_key", "web.ollama_api_key")
+        }
+        return hashlib.sha256(
+            json.dumps([queries, freshness, config], sort_keys=True).encode()
+        ).hexdigest()
 
     def configured(self, provider: str) -> bool:
         return (
-            bool(self.values.get("web.searxng_url"))
+            bool(self.values.get("web.ollama_api_key"))
+            if provider == "ollama"
+            else bool(self.values.get("web.searxng_url"))
             if provider == "searxng"
             else bool(self.values.get("web.brave_api_key"))
             if provider == "brave"
-            else provider == "ddgs"
+            else provider in ("ddgs", "exa")
         )
 
     async def status(self) -> list[SearchStatus]:
@@ -33,6 +139,9 @@ class Providers:
             configured = self.configured(p)
             reachable = configured
             error = None
+            if self.limited(p):
+                reachable = False
+                error = NAMES[p] + " is rate-limited; using another provider until retry time"
             if p == "searxng" and configured and not self.fixtures.directory:
                 try:
                     async with httpx.AsyncClient(timeout=2, trust_env=False) as client:
@@ -54,9 +163,13 @@ class Providers:
             return replay
         if not self.configured(provider):
             raise ValueError(NAMES[provider] + " is not configured")
+        if self.limited(provider):
+            raise ValueError(NAMES[provider] + " is rate-limited; waiting for retry time")
         time_range = {} if freshness == "any" else {"time_range": freshness}
         try:
-            if provider == "ddgs":
+            if provider == "exa":
+                out = await exa_search(query, freshness)
+            elif provider == "ddgs":
 
                 def search() -> list[SearchResult]:
                     raw = DDGS(timeout=8).text(
@@ -81,7 +194,26 @@ class Providers:
                     out = await asyncio.to_thread(search)
             else:
                 async with httpx.AsyncClient(timeout=8, trust_env=False) as client:
-                    if provider == "searxng":
+                    if provider == "ollama":
+                        response = await client.post(
+                            "https://ollama.com/api/web_search",
+                            json={"query": query, "max_results": 10},
+                            headers={
+                                "Authorization": "Bearer " + str(self.values["web.ollama_api_key"])
+                            },
+                        )
+                        if response.status_code in (401, 403, 429):
+                            if response.status_code == 429:
+                                raise RateLimited(
+                                    "Ollama search usage limit reached",
+                                    response.headers.get("Retry-After"),
+                                )
+                            raise ValueError(
+                                "Ollama search key rejected"
+                                if response.status_code in (401, 403)
+                                else "Ollama search usage limit reached"
+                            )
+                    elif provider == "searxng":
                         response = await client.get(
                             str(self.values["web.searxng_url"]).rstrip("/") + "/search",
                             params={
@@ -114,7 +246,7 @@ class Providers:
                     raw = response.json()
                     rows = (
                         raw.get("results", [])
-                        if provider == "searxng"
+                        if provider in ("searxng", "ollama")
                         else raw.get("web", {}).get("results", [])
                     )
                     if provider == "searxng" and not rows and raw.get("unresponsive_engines"):
@@ -136,6 +268,9 @@ class Providers:
                     ]
             self.fixtures.save_search(provider, query, freshness, out)
             return out
+        except RateLimited as exc:
+            self.cooldowns[self.cooldown_key(provider)] = monotonic() + exc.seconds
+            raise
         except httpx.ConnectError as exc:
             raise ValueError(
                 "SearXNG isn't running" if provider == "searxng" else "connection failed"
@@ -151,6 +286,15 @@ class Providers:
             raise
 
     async def query(self, query: str, freshness: str) -> tuple[list[SearchResult], str | None]:
+        key = self.cache_key(query, freshness)
+        cached = await self.store.one(
+            "SELECT results_json FROM search_cache WHERE key=? AND expires_at>?",
+            (key, datetime.now(UTC).isoformat()),
+        )
+        if cached and not self.fixtures.recording:
+            return [
+                SearchResult.model_validate(r) for r in json.loads(str(cached["results_json"]))
+            ], None
         errors: list[str] = []
         successful = False
         for p in self.values["web.provider_order"]:
@@ -160,6 +304,14 @@ class Providers:
                 results = await self.request(p, query, freshness)
                 successful = True
                 if results:
+                    await self.store.execute(
+                        "INSERT OR REPLACE INTO search_cache VALUES (?,?,?)",
+                        (
+                            key,
+                            json.dumps([r.model_dump() for r in results]),
+                            (datetime.now(UTC) + timedelta(minutes=30)).isoformat(),
+                        ),
+                    )
                     return results, None
             except Exception as exc:
                 self.fixtures.save_error(p, query, freshness, str(exc)[:200])
@@ -169,14 +321,7 @@ class Providers:
     async def search(
         self, queries: list[str], freshness: str
     ) -> tuple[list[list[SearchResult]], list[str]]:
-        config = {
-            k: v
-            for k, v in self.values.items()
-            if k in ("web.provider_order", "web.searxng_url", "web.brave_api_key")
-        }
-        key = hashlib.sha256(
-            json.dumps([queries, freshness, config], sort_keys=True).encode()
-        ).hexdigest()
+        key = self.cache_key(queries, freshness)
         date = datetime.now(UTC)
         cached = await self.store.one(
             "SELECT results_json FROM search_cache WHERE key=? AND expires_at>?",

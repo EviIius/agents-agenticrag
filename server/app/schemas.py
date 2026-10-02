@@ -391,7 +391,7 @@ class RunEvent(
 
 
 class SearchTest(Input):
-    provider: Literal["searxng", "ddgs", "brave"]
+    provider: Literal["ollama", "searxng", "exa", "ddgs", "brave"]
 
 
 class SearchResult(BaseModel):

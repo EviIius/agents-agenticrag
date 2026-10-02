@@ -14,7 +14,8 @@ DEFAULTS: dict[str, Any] = {
     "auto_title": True,
     "utility_model": None,
     "user_name": "",
-    "web.provider_order": ["searxng", "ddgs"],
+    "web.provider_order": ["ollama", "searxng", "exa", "ddgs"],
+    "web.ollama_api_key": None,
     "web.searxng_url": "http://127.0.0.1:8888",
     "web.brave_api_key": None,
     "web.default_on": False,
@@ -42,6 +43,7 @@ async def get(store: Store, public: bool = False) -> dict[str, Any]:
     }
     if public:
         values["web.has_brave_api_key"] = bool(values.pop("web.brave_api_key", None))
+        values["web.has_ollama_api_key"] = bool(values.pop("web.ollama_api_key", None))
     return values
 
 
@@ -68,7 +70,7 @@ async def patch(store: Store, values: dict[str, Any]) -> None:
     if "web.page_cache_days" in values and values["web.page_cache_days"] not in (1, 7, 30):
         raise ValueError("Cache days must be 1, 7 or 30")
     if "web.provider_order" in values and (
-        set(values["web.provider_order"]) - {"searxng", "ddgs", "brave"}
+        set(values["web.provider_order"]) - {"ollama", "searxng", "exa", "ddgs", "brave"}
     ):
         raise ValueError("Unknown search provider")
     for key in ("auto_title", "include_current_date", "web.default_on"):
@@ -99,12 +101,13 @@ async def patch(store: Store, values: dict[str, Any]) -> None:
             or parsed.password
         ):
             raise ValueError("Search URL must be HTTP or HTTPS without credentials")
-    if (
-        "web.brave_api_key" in values
-        and values["web.brave_api_key"] is not None
-        and not isinstance(values["web.brave_api_key"], str)
-    ):
-        raise ValueError("API key must be text")
+    for key in ("web.brave_api_key", "web.ollama_api_key"):
+        if (
+            key in values
+            and values[key] is not None
+            and (not isinstance(values[key], str) or any(c in values[key] for c in "\r\n"))
+        ):
+            raise ValueError("API key must be text without line breaks")
     for key in ("utility_model", "web.embedding"):
         if values.get(key) is not None and (
             not isinstance(values[key], dict)

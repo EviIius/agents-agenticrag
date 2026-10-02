@@ -28,6 +28,13 @@ everyday questions supplied by Jake are supplemental eval cases, alongside E12's
 
 **How Jake uses this file**
 
+**User amendment — 1 October 2026:** Evaluate the supplied web-search links and
+free integrations, including Ollama's supported Search API and keyless Exa as a
+fallback. Jake saved an Ollama account key in the app. Keep chat inference local;
+use the existing HTTP stack with no additional agents or model calls. Respect
+provider usage limits and record live failures. Continue to Phase 3 only after
+Phase 2 validation, retaining the H4 report at each checkpoint.
+
 1. Save it in the repo as `docs/SPEC.md`.
 2. Paste the prompt in §0 into Codex.
 3. After each phase, review the report (checklist, screenshots, test output) before you reply "continue".

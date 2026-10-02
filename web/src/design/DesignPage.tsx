@@ -17,6 +17,7 @@ import type { Source, Message } from "@/lib/api";
 import { errorCopy } from "@/lib/errors";
 import { useUI } from "@/stores/ui";
 import { DataPane } from "@/components/settings/LiveSettings";
+import { OllamaSearchKey } from "@/components/settings/OllamaSearchKey";
 const webSource: Source = {
   n: 1,
   url: "https://example.org",
@@ -120,6 +121,22 @@ export function DesignPage() {
         <h2 className="mb-5 text-lg font-medium">
           Web search · synthetic fixtures
         </h2>
+        {[false, true].map((hasKey) => (
+          <div
+            key={String(hasKey)}
+            className="mb-6 rounded-lg border border-line p-4"
+          >
+            <h3>
+              Ollama Search · {hasKey ? "saved key" : "setup needed"} ·
+              synthetic preview
+            </h3>
+            <OllamaSearchKey
+              hasKey={hasKey}
+              onSave={async () => true}
+              onRemove={async () => true}
+            />
+          </div>
+        ))}
         <SearchActivity
           message={webMessage}
           sources={[webSource]}

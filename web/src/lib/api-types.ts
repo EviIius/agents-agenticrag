@@ -1029,7 +1029,7 @@ export interface components {
              * Provider
              * @enum {string}
              */
-            provider: "searxng" | "ddgs" | "brave";
+            provider: "ollama" | "searxng" | "exa" | "ddgs" | "brave";
         };
         /** SearchTestResult */
         SearchTestResult: {

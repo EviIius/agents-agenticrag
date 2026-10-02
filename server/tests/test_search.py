@@ -17,7 +17,7 @@ from app.search.extract import _Text, extract
 from app.search.fetch import RawPage, _public_address, fetch_public
 from app.search.fixtures import Fixtures
 from app.search.merge import canonical, merge
-from app.search.providers import Providers
+from app.search.providers import EXA_URL, Providers
 from app.search.rank import bm25, cosine, rank, select
 from tests.test_chat import finish
 
@@ -619,3 +619,221 @@ async def test_pipeline_failures_still_answer(
         detail = (await client.get("/api/chats/" + chat["id"])).json()
         assert detail["sources"][run.message.id][0]["kind"] == "snippet"
     assert "This answer uses" not in run.message.content
+
+
+async def test_ollama_search_credentials_and_quota_fallback(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+) -> None:
+    import respx
+
+    app, client, _ = chat_app
+    await client.patch(
+        "/api/settings",
+        json={
+            "web.ollama_api_key": "test-ollama-secret",
+            "web.provider_order": ["ollama", "exa"],
+        },
+    )
+    from app.db import settings
+
+    values = await settings.get(app.state.store)
+    for route in ["/api/settings", "/api/bootstrap"]:
+        response = await client.get(route)
+        assert "test-ollama-secret" not in response.text
+        assert "web.has_ollama_api_key" in response.text
+    service = Providers(app.state.store, values, Fixtures())
+    assert service.configured("ollama")
+    with respx.mock:
+        ollama = respx.post("https://ollama.com/api/web_search").mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "results": [
+                        {
+                            "url": "https://example.org/fact",
+                            "title": "A fact",
+                            "content": "Exact snippet",
+                        }
+                    ],
+                },
+            )
+        )
+        result = await service.request("ollama", "public query", "day")
+        assert result[0].provider == "Ollama Search" and result[0].snippet == "Exact snippet"
+        sent = ollama.calls[-1].request
+        assert sent.headers["Authorization"] == "Bearer test-ollama-secret"
+        assert json.loads(sent.content) == {"query": "public query", "max_results": 10}
+        for status in [401, 403, 429]:
+            ollama.mock(return_value=httpx.Response(status))
+            with pytest.raises(
+                ValueError, match="key rejected" if status != 429 else "usage limit"
+            ):
+                await service.request("ollama", "public query", "any")
+        exa = respx.post(EXA_URL).mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "structuredContent": {
+                            "results": [
+                                {
+                                    "url": "https://example.org/fallback",
+                                    "title": "Fallback",
+                                    "text": "Original text",
+                                },
+                            ]
+                        }
+                    },
+                },
+            )
+        )
+        rows, error = await service.query("quota fallback", "any")
+        assert error is None and rows[0].provider == "Exa"
+        assert "Authorization" not in exa.calls[-1].request.headers
+    await client.patch("/api/settings", json={"web.ollama_api_key": None})
+    assert not Providers(
+        app.state.store, await settings.get(app.state.store), Fixtures()
+    ).configured("ollama")
+    assert (
+        await client.patch("/api/settings", json={"web.ollama_api_key": "invalid\nheader"})
+    ).status_code == 422
+
+
+@pytest.mark.parametrize("sse", [False, True])
+async def test_exa_original_snippets_freshness_and_wire_formats(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+    sse: bool,
+) -> None:
+    import respx
+
+    app, _, _ = chat_app
+    service = Providers(app.state.store, {"web.provider_order": ["exa"]}, Fixtures())
+    payload = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": json.dumps(
+                        {
+                            "results": [
+                                {
+                                    "url": "https://example.org/source",
+                                    "title": "Title",
+                                    "text": "Full excerpt",
+                                    "publishedDate": "2026-10-01",
+                                    "highlights": ["Original highlight"],
+                                }
+                            ],
+                        }
+                    ),
+                }
+            ]
+        },
+    }
+    response = (
+        httpx.Response(
+            200,
+            text="event: message\ndata: " + json.dumps(payload) + "\n\n",
+            headers={"content-type": "text/event-stream"},
+        )
+        if sse
+        else httpx.Response(200, json=payload)
+    )
+    with respx.mock:
+        route = respx.post(EXA_URL).mock(return_value=response)
+        results = await service.request("exa", "public query", "week")
+        assert (
+            results[0].snippet == "Original highlight" and results[0].published_at == "2026-10-01"
+        )
+        args = json.loads(route.calls[-1].request.content)["params"]["arguments"]
+        assert args["enableSummary"] is False and args["query"] == "public query"
+        assert args["maxAgeHours"] == 24 and "startPublishedDate" in args
+        assert not route.calls[-1].request.headers.get("Authorization")
+
+
+@pytest.mark.parametrize("failure", ["quota", "tool_error", "malformed", "oversized"])
+async def test_exa_failure_is_visible(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+    failure: str,
+) -> None:
+    import respx
+
+    app, _, _ = chat_app
+    service = Providers(app.state.store, {"web.provider_order": ["exa"]}, Fixtures())
+    response = {
+        "quota": httpx.Response(429),
+        "tool_error": httpx.Response(200, json={"result": {"isError": True}}),
+        "malformed": httpx.Response(200, text="not JSON"),
+        "oversized": httpx.Response(200, content=b"x" * 3_000_001),
+    }[failure]
+    with respx.mock:
+        respx.post(EXA_URL).mock(return_value=response)
+        rows, error = await service.query("public query", "any")
+        assert not rows and error
+
+
+async def test_provider_respects_retry_time_across_turns_and_key_changes(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import respx
+
+    from app.search import providers
+
+    app, _, _ = chat_app
+    clock = 100.0
+    monkeypatch.setattr(providers, "monotonic", lambda: clock)
+    values = {"web.provider_order": ["ollama", "exa"], "web.ollama_api_key": "key-one"}
+    with respx.mock:
+        api = respx.post("https://ollama.com/api/web_search").mock(
+            return_value=httpx.Response(429, headers={"Retry-After": "860"})
+        )
+        exa = respx.post(EXA_URL).mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "result": {
+                        "structuredContent": {"results": [{"url": "https://example.org/fact"}]}
+                    }
+                },
+            )
+        )
+        for query in ["one", "two"]:
+            service = Providers(app.state.store, values, Fixtures())
+            rows, error = await service.query(query, "any")
+            assert rows[0].provider == "Exa" and error is None
+        assert api.call_count == 1 and exa.call_count == 2
+        status = await service.status()
+        assert not status[0].reachable and "rate-limited" in str(status[0].error)
+        service.values = {**values, "web.ollama_api_key": "key-two"}
+        assert not service.limited("ollama")
+        service.values = values
+        clock += 861
+        assert not service.limited("ollama")
+        await service.query("after reset", "any")
+        assert api.call_count == 2
+
+
+async def test_reuses_query_when_planner_adds_another_query(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app, _, _ = chat_app
+    service = Providers(app.state.store, {"web.provider_order": ["exa"]}, Fixtures())
+    called = []
+
+    async def request(provider: str, query: str, freshness: str) -> list[SearchResult]:
+        called.append(query)
+        return [SearchResult(url="https://example.org/" + query, title=query, provider="Exa")]
+
+    monkeypatch.setattr(service, "request", request)
+    await service.search(["first"], "any")
+    batches, errors = await service.search(["first", "second"], "any")
+    assert called == ["first", "second"] and len(batches) == 2 and not errors
+    assert batches[0][0].title == "first"
+    await service.query("first", "day")
+    assert called == ["first", "second", "first"]

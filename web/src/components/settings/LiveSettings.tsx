@@ -30,6 +30,7 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible";
 import { LiveChatSettings } from "./LiveChatSettings";
+import { OllamaSearchKey } from "./OllamaSearchKey";
 import { Textarea } from "@/components/ui/textarea";
 import { api, type Bootstrap, type Model } from "@/lib/api";
 import type { components } from "@/lib/api-types";
@@ -75,8 +76,10 @@ export function LiveSettingsPane({
       await api(endpoint, body, method);
       await query.invalidateQueries();
       toast("Saved");
+      return true;
     } catch (e) {
       toast(String(e));
+      return false;
     }
   };
   if (pane === "Connections")
@@ -505,7 +508,13 @@ export function LiveSettingsPane({
             >
               <div className="flex flex-wrap items-center gap-2">
                 <span className="min-w-0 flex-1 capitalize">
-                  {provider === "ddgs" ? "DuckDuckGo" : provider}
+                  {provider === "ddgs"
+                    ? "DuckDuckGo"
+                    : provider === "ollama"
+                      ? "Ollama Search"
+                      : provider === "exa"
+                        ? "Exa"
+                        : provider}
                 </span>
                 <span className="text-xs text-fg-3">
                   {status.data?.find((s) => s.provider === provider)?.reachable
@@ -563,6 +572,24 @@ export function LiveSettingsPane({
                     )
                   }
                 />
+              )}
+              {provider === "ollama" && (
+                <OllamaSearchKey
+                  hasKey={Boolean(
+                    bootstrap?.settings["web.has_ollama_api_key"],
+                  )}
+                  onSave={(key) =>
+                    update("/settings", { "web.ollama_api_key": key }, "PATCH")
+                  }
+                  onRemove={() =>
+                    update("/settings", { "web.ollama_api_key": null }, "PATCH")
+                  }
+                />
+              )}
+              {provider === "exa" && (
+                <p className="mt-2 text-sm text-fg-2">
+                  Free keyless fallback. Rate limits apply.
+                </p>
               )}
             </div>
           ),
