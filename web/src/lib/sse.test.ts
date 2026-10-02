@@ -69,3 +69,55 @@ it("terminal message snapshots never attach a new stream", () => {
   }
   expect(construct).not.toHaveBeenCalled();
 });
+
+it("a late streaming chat fetch cannot discard the final SSE answer", async () => {
+  const listeners = new Map<string, (event: { data: string }) => void>();
+  vi.stubGlobal(
+    "EventSource",
+    class {
+      addEventListener(
+        type: string,
+        callback: (event: { data: string }) => void,
+      ) {
+        listeners.set(type, callback);
+      }
+      close() {}
+    },
+  );
+  const query = new QueryClient();
+  const streaming = {
+    id: "late-fetch-message",
+    chat_id: "late-fetch-chat",
+    status: "streaming",
+    content: "",
+    reasoning: null,
+  } as Message;
+  let release!: () => void;
+  const pending = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  vi.spyOn(query, "invalidateQueries").mockImplementation(() => pending);
+  attachRun("late-fetch-run", "late-fetch-chat", streaming, query);
+  const final = {
+    ...streaming,
+    status: "complete",
+    content: "Authoritative final answer",
+  };
+  listeners.get("message.done")!({ data: JSON.stringify({ message: final }) });
+  listeners.get("run.closed")!({ data: "{}" });
+  query.setQueryData(["chat", "late-fetch-chat"], {
+    messages: [streaming],
+    sources: {},
+    reads: {},
+  });
+  release();
+  await vi.waitFor(() =>
+    expect(useRuns.getState().runs["late-fetch-run"]).toBeUndefined(),
+  );
+  const detail = query.getQueryData<{ messages: Message[] }>([
+    "chat",
+    "late-fetch-chat",
+  ]);
+  expect(detail!.messages[0].status).toBe("complete");
+  expect(detail!.messages[0].content).toBe("Authoritative final answer");
+});

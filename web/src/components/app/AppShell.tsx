@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router";
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, X } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "./Sidebar";
+import { IconButton } from "./IconButton";
 import { TopBar } from "./TopBar";
 import { SettingsDialog } from "@/components/settings/SettingsDialog";
 import { ChatSettingsPanel } from "@/components/settings/ChatSettingsPanel";
@@ -75,7 +76,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
       }}
     />
   );
-  const panel = <ChatSettingsPanel />;
+  const panel = <ChatSettingsPanel drawer={phone && !wide} />;
   return (
     <div className="app-shell">
       <aside className="sidebar-desktop" data-collapsed={ui.collapsed}>
@@ -169,7 +170,14 @@ export function AppShell({ children }: { children?: ReactNode }) {
         (phone ? (
           <Drawer open={ui.panel} onOpenChange={(panel) => ui.set({ panel })}>
             <DrawerContent className="overflow-hidden">
-              <DrawerHeader className="shrink-0">
+              <DrawerHeader className="relative shrink-0 px-14">
+                <IconButton
+                  label="Close chat settings"
+                  className="absolute right-3 top-2"
+                  onClick={() => ui.set({ panel: false })}
+                >
+                  <X />
+                </IconButton>
                 <DrawerTitle>Chat settings</DrawerTitle>
                 <DrawerDescription>
                   Fake runtime · preview controls

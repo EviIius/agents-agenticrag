@@ -26,5 +26,13 @@ export const useUI = create<UI>((set) => ({
   textSize: "M",
   reduceMotion: "system",
   name: "",
-  set,
+  set: (patch) =>
+    set({
+      ...(patch.sidebar ? { panel: false } : {}),
+      ...(patch.panel ? { sidebar: false } : {}),
+      ...(patch.settings || patch.command
+        ? { sidebar: false, panel: false }
+        : {}),
+      ...patch,
+    }),
 }));

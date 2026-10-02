@@ -196,6 +196,12 @@ body {
   font-size: 14px;
   line-height: 20px;
 }
+html:has(.app-shell),
+body:has(.app-shell),
+#root:has(.app-shell) {
+  height: 100%;
+  overflow: hidden;
+}
 button,
 a,
 input,
@@ -222,10 +228,39 @@ input::placeholder {
   opacity: 1;
 }
 .app-shell {
+  position: fixed;
+  inset-inline: 0;
+  top: var(--viewport-top, 0px);
   height: var(--viewport-h, 100dvh);
   display: flex;
   overflow: hidden;
-  padding-top: env(safe-area-inset-top);
+  padding-top: var(--safe-area-top, env(safe-area-inset-top));
+}
+[data-slot="sheet-content"] {
+  padding-top: var(--safe-area-top, env(safe-area-inset-top));
+  padding-bottom: var(--safe-area-bottom, env(safe-area-inset-bottom));
+}
+[data-slot="sheet-content"][data-side="left"],
+[data-slot="sheet-content"][data-side="right"] {
+  top: var(--viewport-top, 0px);
+  bottom: var(--viewport-bottom, 0px);
+  height: var(--viewport-h, 100dvh);
+}
+[data-slot="drawer-content"] {
+  max-height: calc(
+    var(--viewport-h, 100dvh) - var(--safe-area-top, env(safe-area-inset-top)) -
+      16px
+  );
+  padding-bottom: var(--safe-area-bottom, env(safe-area-inset-bottom));
+}
+[data-slot="drawer-header"] {
+  flex-shrink: 0;
+}
+[data-slot="drawer-content"][data-vaul-drawer-direction="bottom"] {
+  bottom: var(--viewport-bottom, 0px);
+}
+[data-slot="drawer-close"] {
+  min-height: 44px;
 }
 .app-main {
   min-width: 0;
@@ -265,7 +300,8 @@ input::placeholder {
 }
 .composer-row {
   flex-shrink: 0;
-  padding: 12px 24px max(16px, env(safe-area-inset-bottom));
+  padding: 12px 24px
+    max(16px, var(--safe-area-bottom, env(safe-area-inset-bottom)));
 }
 .composer {
   max-width: var(--thread-w);
@@ -362,6 +398,12 @@ input::placeholder {
   }
 }
 @media (max-width: 639px) {
+  input,
+  textarea,
+  select,
+  [data-slot="command-input"] {
+    font-size: 16px;
+  }
   .topbar {
     padding: 0 8px;
   }
@@ -369,7 +411,8 @@ input::placeholder {
     padding: 28px 18px;
   }
   .composer-row {
-    padding: 8px 12px max(12px, env(safe-area-inset-bottom));
+    padding: 8px 12px
+      max(12px, var(--safe-area-bottom, env(safe-area-inset-bottom)));
   }
   .composer {
     padding: 12px;
@@ -397,7 +440,6 @@ input::placeholder {
     padding: 20px;
   }
   [data-slot="button"],
-  [data-slot="switch"],
   [data-slot="select-trigger"],
   [data-slot="dropdown-menu-item"] {
     min-height: 44px;
@@ -449,4 +491,8 @@ input::placeholder {
   * {
     border-color: var(--line);
   }
+}
+
+[data-slot="sheet-close"] {
+  top: calc(var(--safe-area-top, env(safe-area-inset-top)) + 16px);
 }

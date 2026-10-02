@@ -31,6 +31,7 @@ export function LiveChatSettings({
   draftParams,
   draftPrompt,
   defaultsOnly = false,
+  drawer = false,
 }: {
   chat?: Chat;
   model?: Model;
@@ -38,6 +39,7 @@ export function LiveChatSettings({
   onDefaults: (params: Params) => void;
   onContext: (context: number) => void;
   defaultsOnly?: boolean;
+  drawer?: boolean;
   draftParams?: Params;
   draftPrompt?: string | null;
 }) {
@@ -53,19 +55,21 @@ export function LiveChatSettings({
     [context, setContext] = useState(model?.context_length ?? 8192);
   return (
     <section className="p-5" aria-label="Chat settings controls">
-      <header className="mb-6 flex items-center justify-between">
-        <h2 className="font-medium">
-          {defaultsOnly ? "Model defaults" : "Chat settings"}
-        </h2>
-        {!defaultsOnly && (
-          <IconButton
-            label="Close chat settings"
-            onClick={() => useUI.getState().set({ panel: false })}
-          >
-            <X />
-          </IconButton>
-        )}
-      </header>
+      {!drawer && (
+        <header className="mb-6 flex items-center justify-between">
+          <h2 className="font-medium">
+            {defaultsOnly ? "Model defaults" : "Chat settings"}
+          </h2>
+          {!defaultsOnly && (
+            <IconButton
+              label="Close chat settings"
+              onClick={() => useUI.getState().set({ panel: false })}
+            >
+              <X />
+            </IconButton>
+          )}
+        </header>
+      )}
       {!defaultsOnly && (
         <>
           <label className="mb-3 flex min-h-11 items-center gap-2 text-sm">

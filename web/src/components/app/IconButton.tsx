@@ -1,5 +1,6 @@
 import { type ComponentProps } from "react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
@@ -8,6 +9,7 @@ import {
 export function IconButton({
   label,
   children,
+  className,
   ...props
 }: ComponentProps<typeof Button> & { label: string }) {
   return (
@@ -16,7 +18,7 @@ export function IconButton({
         <Button
           variant="ghost"
           size="icon"
-          className="icon-button"
+          className={cn("icon-button", className)}
           aria-label={label}
           {...props}
         >

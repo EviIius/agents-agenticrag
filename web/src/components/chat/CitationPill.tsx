@@ -12,6 +12,7 @@ export function Favicon({ domain }: { domain: string }) {
     <span
       className="inline-flex size-5 shrink-0 items-center justify-center rounded bg-surface-3 text-xs text-fg-2"
       aria-hidden="true"
+      data-domain={domain}
     >
       {failed ? (
         domain[0]?.toUpperCase()
@@ -39,7 +40,7 @@ export function CitationPill({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
-          className="mx-0.5 inline-flex min-h-11 max-w-full items-center rounded-md bg-cite-bg px-2 align-baseline font-sans text-xs font-medium text-cite-text break-all hover:bg-cite-bg-hover focus-visible:outline-brand"
+          className="mx-0.5 inline-flex min-h-11 max-w-full items-center rounded-md bg-cite px-2 align-baseline font-sans text-xs font-medium text-cite-fg break-all hover:bg-cite-hover focus-visible:outline-brand"
           onClick={(e) => {
             e.preventDefault();
             setOpen(true);

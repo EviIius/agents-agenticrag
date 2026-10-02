@@ -88,9 +88,9 @@ export function ModelPicker({
     </Button>
   );
   const content = (
-    <Command>
+    <Command className="min-h-0 flex-1">
       <CommandInput placeholder="Search models…" aria-label="Search models" />
-      <CommandList className="max-h-[50dvh]">
+      <CommandList className="min-h-0 flex-1">
         <CommandEmpty>No matching models.</CommandEmpty>
         <CommandGroup
           heading={models ? undefined : "Fake runtime · fixture connection"}

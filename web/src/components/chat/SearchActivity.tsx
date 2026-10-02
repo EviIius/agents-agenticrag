@@ -45,7 +45,7 @@ export function SearchActivity({
     pages_unreadable: `Couldn't read any of the search results (${info?.notice?.message}). This answer uses the model's own knowledge.`,
   };
   return (
-    <div className="mb-4 text-xs text-fg-2">
+    <div className="mb-4 text-xs text-fg-2" data-testid="search-activity">
       {info?.notice && info.notice.code !== "uncited" && (
         <div className="mb-2 rounded-lg border border-line p-3" role="status">
           <p>{notices[info.notice.code] ?? info.notice.message}</p>

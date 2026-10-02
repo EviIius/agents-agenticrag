@@ -1,4 +1,4 @@
-import type { Message } from "./api";
+import type { Message, Detail } from "./api";
 import { useRuns } from "@/stores/runs";
 import { cited } from "./citations";
 import type { QueryClient } from "@tanstack/react-query";
@@ -174,7 +174,32 @@ export function attachRun(
         // Keep final rendering until the authoritative chat fetch resolves.
         void query
           .invalidateQueries({ queryKey: ["chat", chatId] })
-          .then(() => useRuns.getState().remove(id));
+          .then(() => {
+            const final = useRuns.getState().runs[id];
+            if (final && final.message.status !== "streaming") {
+              // The first chat request may have captured a streaming row before
+              // completion. Its late response must not replace the SSE snapshot.
+              query.setQueryData<Detail>(["chat", chatId], (detail) => {
+                if (!detail) return detail;
+                const stored = detail.messages.find(
+                  (m) => m.id === final.message.id,
+                );
+                if (stored && stored.status !== "streaming") return detail;
+                return {
+                  ...detail,
+                  messages: stored
+                    ? detail.messages.map((m) =>
+                        m.id === final.message.id ? final.message : m,
+                      )
+                    : [...detail.messages, final.message],
+                  sources: final.sources
+                    ? { ...detail.sources, [final.message.id]: final.sources }
+                    : detail.sources,
+                };
+              });
+            }
+            useRuns.getState().remove(id);
+          });
         void query.invalidateQueries({ queryKey: ["active"] });
         void query.invalidateQueries({ queryKey: ["chats"] });
       }

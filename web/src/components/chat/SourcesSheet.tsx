@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Globe, ChevronDown } from "lucide-react";
+import { Globe, ChevronDown, X } from "lucide-react";
+import { IconButton } from "@/components/app/IconButton";
+import { useUI } from "@/stores/ui";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -111,7 +113,10 @@ export function SourcesSheet({
       <Button
         variant="ghost"
         className="my-3 max-w-full gap-2"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          if (phone) useUI.getState().set({ sidebar: false, panel: false });
+          setOpen(true);
+        }}
       >
         <span className="flex -space-x-1">
           {sources.slice(0, 4).map((s) => (
@@ -124,14 +129,21 @@ export function SourcesSheet({
       </Button>
       {phone ? (
         <Drawer open={open} onOpenChange={setOpen}>
-          <DrawerContent className="max-h-[90dvh] overflow-y-auto">
-            <DrawerHeader>
+          <DrawerContent className="overflow-hidden">
+            <DrawerHeader className="relative px-14">
+              <IconButton
+                label="Close sources"
+                className="absolute right-3 top-2"
+                onClick={() => setOpen(false)}
+              >
+                <X />
+              </IconButton>
               <DrawerTitle>Sources</DrawerTitle>
               <DrawerDescription>
                 The exact passages supplied for this answer.
               </DrawerDescription>
             </DrawerHeader>
-            {body}
+            <div className="min-h-0 flex-1 overflow-y-auto">{body}</div>
           </DrawerContent>
         </Drawer>
       ) : (

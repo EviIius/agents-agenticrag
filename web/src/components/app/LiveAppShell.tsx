@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query";
 import {
   ArrowDown,
+  X,
   Ellipsis,
   PanelLeftOpen,
   SlidersHorizontal,
@@ -449,6 +450,7 @@ export function LiveAppShell() {
   );
   const panel = (
     <LiveChatSettings
+      drawer={phone && !wide}
       key={`${chatId ?? "new"}:${current?.connection_id}:${current?.model_id}`}
       chat={detail.data?.chat}
       draftParams={draftParams}
@@ -735,7 +737,14 @@ export function LiveAppShell() {
         (phone ? (
           <Drawer open={ui.panel} onOpenChange={(panel) => ui.set({ panel })}>
             <DrawerContent className="overflow-hidden">
-              <DrawerHeader className="shrink-0">
+              <DrawerHeader className="relative shrink-0 px-14">
+                <IconButton
+                  label="Close chat settings"
+                  className="absolute right-3 top-2"
+                  onClick={() => ui.set({ panel: false })}
+                >
+                  <X />
+                </IconButton>
                 <DrawerTitle>Chat settings</DrawerTitle>
                 <DrawerDescription>
                   Sampling and context for this conversation

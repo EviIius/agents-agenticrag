@@ -29,14 +29,29 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [answerFont, textSize, reduceMotion]);
   useEffect(() => {
     const viewport = window.visualViewport;
-    const resize = () =>
+    const resize = () => {
       document.documentElement.style.setProperty(
         "--viewport-h",
         `${viewport?.height ?? window.innerHeight}px`,
       );
+      document.documentElement.style.setProperty(
+        "--viewport-top",
+        `${viewport?.offsetTop ?? 0}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--viewport-bottom",
+        `${Math.max(0, window.innerHeight - (viewport?.height ?? window.innerHeight) - (viewport?.offsetTop ?? 0))}px`,
+      );
+    };
     resize();
     viewport?.addEventListener("resize", resize);
-    return () => viewport?.removeEventListener("resize", resize);
+    viewport?.addEventListener("scroll", resize);
+    window.addEventListener("resize", resize);
+    return () => {
+      viewport?.removeEventListener("resize", resize);
+      viewport?.removeEventListener("scroll", resize);
+      window.removeEventListener("resize", resize);
+    };
   }, []);
   return children;
 }

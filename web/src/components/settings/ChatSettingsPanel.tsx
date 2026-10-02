@@ -58,20 +58,22 @@ function NumericControl({
     </fieldset>
   );
 }
-export function ChatSettingsPanel() {
+export function ChatSettingsPanel({ drawer = false }: { drawer?: boolean }) {
   const { set } = useUI();
   const [reset, setReset] = useState(0);
   return (
     <section className="p-5" aria-label="Chat settings controls">
-      <header className="mb-6 flex items-center justify-between">
-        <h2 className="text-base font-medium">Chat settings</h2>
-        <IconButton
-          label="Close chat settings"
-          onClick={() => set({ panel: false })}
-        >
-          <X />
-        </IconButton>
-      </header>
+      {!drawer && (
+        <header className="mb-6 flex items-center justify-between">
+          <h2 className="text-base font-medium">Chat settings</h2>
+          <IconButton
+            label="Close chat settings"
+            onClick={() => set({ panel: false })}
+          >
+            <X />
+          </IconButton>
+        </header>
+      )}
       <p className="mb-6 text-xs text-fg-2">
         Design preview · open the main app to save settings and send them to a
         model.
