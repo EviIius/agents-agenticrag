@@ -3,6 +3,12 @@ import re
 from ..schemas import Passage
 
 
+def table_header(rows: list[str]) -> list[str]:
+    if len(rows) > 1 and re.fullmatch(r"\|(?:\s*:?-+:?\s*\|)+\s*", rows[1]):
+        return rows[:2]
+    return rows[:1]
+
+
 def chunk(url: str, text: str) -> list[Passage]:
     blocks: list[tuple[str, str]] = []
     heading = ""
@@ -18,16 +24,28 @@ def chunk(url: str, text: str) -> list[Passage]:
                 groups.append("\n".join(current))
                 current = []
         if line.strip():
-            current.append(line)
+            current.append(line.strip() if is_table else line)
             table = is_table
-    for block in groups:
+    # Extractors can split one HTML table into adjacent Markdown tables with
+    # repeated headers. Keep that data together before applying passage limits.
+    joined: list[str] = []
+    for group in groups:
+        if group.startswith("|") and joined and joined[-1].startswith("|"):
+            rows, previous = group.splitlines(), joined[-1].splitlines()
+            repeated = table_header(rows)
+            if repeated == table_header(previous):
+                joined[-1] += "\n" + "\n".join(rows[len(repeated) :])
+                continue
+        joined.append(group)
+    for block in joined:
         if re.match(r"^#{1,4}\s", block):
-            heading = block.splitlines()[0].lstrip("# ")
+            heading = block.splitlines()[0].lstrip("# ") or heading
         if block.startswith("|"):
             rows = block.splitlines()
-            header = "\n".join(rows[:2])
+            header_rows = table_header(rows)
+            header = "\n".join(header_rows)[:2998]
             part = header
-            for row in rows[2:]:
+            for row in rows[len(header_rows) :]:
                 if len(row) + len(header) + 1 > 3000:
                     # An enormous table cell remains bounded, rather than swallowing the page.
                     row = row[: max(1, 2999 - len(header))]
@@ -46,7 +64,27 @@ def chunk(url: str, text: str) -> list[Passage]:
                 blocks.append((heading, block))
     out: list[Passage] = []
     for heading, block in blocks:
-        if out and out[-1].heading == heading and len(out[-1].text) + len(block) + 2 <= 900:
+        if (
+            out
+            and block.startswith("|")
+            and "\n|" not in out[-1].text
+            and not out[-1].text.startswith("|")
+            and out[-1].heading == heading
+            and len(out[-1].text) <= 900
+            and len(out[-1].text) + len(block) + 2 <= 3000
+        ):
+            # Keep a table's short caption with its complete data. Otherwise
+            # three highly ranked captions can crowd out the table itself.
+            out[-1].text += "\n\n" + block
+            continue
+        if (
+            out
+            and not block.startswith("|")
+            and not out[-1].text.startswith("|")
+            and "\n|" not in out[-1].text
+            and out[-1].heading == heading
+            and len(out[-1].text) + len(block) + 2 <= 900
+        ):
             out[-1].text += "\n\n" + block
         else:
             out.append(Passage(source_url=url, heading=heading, ord=len(out), text=block))

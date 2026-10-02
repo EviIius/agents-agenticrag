@@ -57,7 +57,7 @@ def rank(
     source_order: list[str],
     vectors: list[list[float]] | None = None,
 ) -> list[tuple[Passage, float]]:
-    keyword = bm25(query, [p.text for p in passages])
+    keyword = bm25(query, [p.heading + "\n" + p.text for p in passages])
     keys = [str(i) for i in range(len(passages))]
     lexical = sorted(keys, key=lambda k: (-keyword[int(k)], int(k)))
     rankings = [lexical]

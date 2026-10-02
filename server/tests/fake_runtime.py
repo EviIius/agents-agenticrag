@@ -108,8 +108,13 @@ def create_fake_runtime() -> FastAPI:
         if isinstance(body.get("format"), dict):
             latest = prompt.split("Latest user message:\n")[-1]
             search = latest.strip().lower() not in {"thanks!", "hello", "rewrite shorter"}
+            decision = (
+                {"task": "lookup" if search else "conversation"}
+                if "task" in body["format"].get("properties", {})
+                else {"search": search}
+            )
             text = json.dumps(
-                {"search": search, "queries": [latest[:120]] if search else [], "freshness": "any"}
+                {**decision, "queries": [latest[:120]] if search else [], "freshness": "any"}
             )
         elif "<search_results" in prompt and "#uncited" in prompt:
             text = MARKDOWN

@@ -147,14 +147,27 @@ def test_chunk_tables_repeat_headers_and_bound_prose() -> None:
         f"| {i} | {'A' * 100} |" for i in range(100)
     )
     ps = chunk("https://x.org", "# Results\n\n" + table + "\n\n" + "Sentence. " * 500)
-    tables = [p for p in ps if p.text.startswith("|")]
+    tables = [p for p in ps if "| Year | Result |" in p.text]
     assert len(tables) > 1 and all(
-        p.text.startswith("| Year | Result |") and len(p.text) <= 3000 for p in tables
+        "| Year | Result |\n| --- | --- |" in p.text and len(p.text) <= 3000 for p in tables
     )
     assert all(p.heading == "Results" for p in ps)
-    assert all(len(p.text) <= 1600 for p in ps if not p.text.startswith("|"))
+    assert all(len(p.text) <= 1600 for p in ps if "| Year | Result |" not in p.text)
     assert list(range(len(ps))) == [p.ord for p in ps]
     assert "| 99 |" in "\n".join(p.text for p in tables)
+
+
+def test_fragmented_tables_keep_all_rows_and_their_caption() -> None:
+    header = "| Product | Units sold |"
+    fragments = [
+        header + "\n" + "\n".join(f"| Item {i} | {i * 3} |" for i in r)
+        for r in [range(8), range(8, 20), range(20, 28)]
+    ]
+    passages = chunk("https://example.org", "# Sales\n\nIntro.\n\n" + "\n\n".join(fragments))
+    tables = [p for p in passages if header in p.text]
+    assert len(tables) == 1 and tables[0].text.count(header) == 1
+    assert all(f"| Item {i} | {i * 3} |" in tables[0].text for i in range(28))
+    assert "Intro." in tables[0].text and len(tables[0].text) <= 3000
 
 
 def test_extract_html_metadata_tables_and_rejects() -> None:
@@ -211,7 +224,7 @@ async def test_planner_schema_transcript_and_fallback(monkeypatch: pytest.Monkey
 
     async def complete(req: ChatRequest) -> dict[str, Any]:
         captured.append(req)
-        return {"search": True, "queries": ["NBA Finals", " nba finals ", ""], "freshness": "any"}
+        return {"task": "lookup", "queries": ["NBA Finals", " nba finals ", ""], "freshness": "any"}
 
     adapter.complete_json = complete
     # Empty strings from an imperfect runtime are trimmed as the spec requires.
@@ -258,7 +271,7 @@ async def test_pipeline_cites_exact_sources_and_skips_without_traffic(
     async def complete(self: Ollama, req: ChatRequest) -> dict[str, Any]:
         latest = req.messages[-1].content.split("Latest user message:\n")[-1]
         return {
-            "search": latest != "thanks!",
+            "task": "lookup" if latest != "thanks!" else "conversation",
             "queries": ["NBA Finals 2021"] if latest != "thanks!" else [],
             "freshness": "month",
         }
@@ -312,7 +325,7 @@ async def test_pipeline_cites_exact_sources_and_skips_without_traffic(
     assert "[9]" not in run.message.content
     answer_request = runtime.state.captures[-1]
     assert "<search_results" in answer_request["messages"][-1]["content"]
-    assert "web search results" in answer_request["messages"][0]["content"]
+    assert prompt.PROMPT in answer_request["messages"][0]["content"]
     count = len(calls)
     response = (
         await client.post(
@@ -386,6 +399,13 @@ async def test_fixture_replay_and_page_cache(
     assert len(page.text) > 300
     again = await cache.read(app.state.store, raw.url, 7, Fixtures())
     assert again.text == page.text
+    # A controlled attack for the same URL must replace the prior benign page
+    # during replay; otherwise a passing injection test never sees its attack.
+    replacement = RawPage(raw.url, b"Controlled replacement evidence. " * 30, "text/plain")
+    recording.save_page(raw.url, replacement)
+    replaced = await cache.read(app.state.store, raw.url, 7, replay)
+    assert "Controlled replacement" in replaced.text
+    assert replaced.text != page.text
     with pytest.raises(ValueError):
         replay.search("ddgs", "missing", "any")
 
@@ -554,7 +574,7 @@ async def test_pipeline_failures_still_answer(
     app, client, _ = chat_app
 
     async def complete(self: Ollama, req: ChatRequest) -> dict[str, Any]:
-        return {"search": True, "queries": ["Public facts"], "freshness": "any"}
+        return {"task": "lookup", "queries": ["Public facts"], "freshness": "any"}
 
     monkeypatch.setattr(Ollama, "complete_json", complete)
 
@@ -844,3 +864,55 @@ async def test_reuses_query_when_planner_adds_another_query(
     assert batches[0][0].title == "first"
     await service.query("first", "day")
     assert called == ["first", "second", "first"]
+
+
+async def test_fetch_priority_survives_slow_top_result(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import asyncio
+
+    from app.search.extract import Page
+
+    app, client, _ = chat_app
+    requested = []
+
+    async def plan(*args: Any, **kwargs: Any) -> tuple[planner.Plan, bool]:
+        return planner.Plan(search=True, queries=["measurements"], freshness="any"), False
+
+    async def search(*args: Any, **kwargs: Any) -> tuple[list[list[SearchResult]], list[str]]:
+        return [
+            [SearchResult(url=f"https://source{i}.org/", title="Measurements") for i in range(8)]
+        ], []
+
+    async def read(store: Any, url: str, *args: Any) -> Page:
+        requested.append(url)
+        if url == "https://source0.org/":
+            raise ValueError("unavailable")
+        if url == "https://source1.org/":
+            await asyncio.sleep(0.03)
+        return Page(
+            url, "Measurements", "Science", None, "Scientific measurements use SI units. " * 20
+        )
+
+    monkeypatch.setattr(planner, "plan", plan)
+    monkeypatch.setattr(Providers, "search", search)
+    monkeypatch.setattr(cache, "read", read)
+    await client.patch("/api/settings", json={"web.max_sources": 4})
+    conn = (await client.get("/api/connections")).json()[0]["id"]
+    chat = (
+        await client.post(
+            "/api/chats", json={"connection_id": conn, "model_id": "fake-chat", "web_enabled": True}
+        )
+    ).json()
+    response = (
+        await client.post(
+            f"/api/chats/{chat['id']}/messages", json={"content": "#cite Scientific measurements"}
+        )
+    ).json()
+    run = await finish(app, response)
+    assert run.message.status == "complete", run.message.error
+    detail = (await client.get("/api/chats/" + chat["id"])).json()
+    assert {s["url"] for s in detail["sources"][run.message.id]} == {
+        f"https://source{i}.org/" for i in range(1, 5)
+    }
+    assert set(requested) == {f"https://source{i}.org/" for i in range(5)}

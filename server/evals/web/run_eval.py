@@ -21,6 +21,12 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from prompt_trials import (  # noqa: E402
     CITED_EVIDENCE,
+    CITED_EVIDENCE_V2,
+    CITED_EVIDENCE_V3,
+    CITED_EVIDENCE_V4,
+    CITED_EVIDENCE_V5,
+    CITED_EVIDENCE_V6,
+    CITED_EVIDENCE_V7,
     DIRECT_AND_CONSISTENT,
     INTENT_PROMPT,
     TASK_AND_SCOPE,
@@ -33,7 +39,9 @@ from app.providers.ollama import Ollama  # noqa: E402
 from app.search import planner  # noqa: E402
 from app.search import prompt as answer_prompt  # noqa: E402
 from app.search.citations import cited  # noqa: E402
+from app.search.fixtures import Fixtures  # noqa: E402
 from app.search.pipeline import Pipeline  # noqa: E402
+from app.search.providers import Providers  # noqa: E402
 
 HERE = Path(__file__).parent
 
@@ -111,6 +119,8 @@ async def evaluate(args: argparse.Namespace) -> None:
                 return await original_json(self, req)
             req.json_schema = planner_wire_schema
             raw = await original_json(self, req)
+            if "task" in planner.SCHEMA["properties"]:
+                return raw
             task = raw.pop("task")
             if task != "lookup" and raw.get("queries"):
                 raise ValueError("Non-lookup plan contains search queries")
@@ -121,6 +131,18 @@ async def evaluate(args: argparse.Namespace) -> None:
         answer_prompt.PROMPT += DIRECT_AND_CONSISTENT
     elif args.answer_trial == "cited-evidence":
         answer_prompt.PROMPT = CITED_EVIDENCE
+    elif args.answer_trial == "cited-evidence-v2":
+        answer_prompt.PROMPT = CITED_EVIDENCE_V2
+    elif args.answer_trial == "cited-evidence-v3":
+        answer_prompt.PROMPT = CITED_EVIDENCE_V3
+    elif args.answer_trial == "cited-evidence-v4":
+        answer_prompt.PROMPT = CITED_EVIDENCE_V4
+    elif args.answer_trial == "cited-evidence-v5":
+        answer_prompt.PROMPT = CITED_EVIDENCE_V5
+    elif args.answer_trial == "cited-evidence-v6":
+        answer_prompt.PROMPT = CITED_EVIDENCE_V6
+    elif args.answer_trial == "cited-evidence-v7":
+        answer_prompt.PROMPT = CITED_EVIDENCE_V7
     cases = json.loads(Path(args.cases_file).read_text())
     if args.case:
         cases = [c for c in cases if c["id"] == args.case]
@@ -199,6 +221,40 @@ async def evaluate(args: argparse.Namespace) -> None:
                 case_decisions = []
                 for index, turn in enumerate(case["turns"]):
                     fixture_dir = Path(args.fixture_root) / case["id"] / str(index)
+                    if args.replay_corpus:
+                        recorded = json.loads((fixture_dir / "run.json").read_text())["web"]
+                        fixture = Fixtures(fixture_dir)
+                        batches = []
+                        for q in recorded.get("queries", []):
+                            for provider in args.providers.split(","):
+                                try:
+                                    found = fixture.search(
+                                        provider, q, recorded.get("freshness", "any")
+                                    )
+                                except (ValueError, FileNotFoundError):
+                                    continue
+                                if found:
+                                    batches.append(found)
+                                    break
+
+                        async def frozen_search(
+                            self: Any, queries: Any, freshness: Any, saved: Any = batches
+                        ) -> Any:
+                            return saved, []
+
+                        Providers.search = frozen_search
+                        if args.replay_plans:
+
+                            async def frozen_plan(
+                                *unused: Any, saved: Any = recorded, **ignored: Any
+                            ) -> Any:
+                                return planner.Plan(
+                                    search=saved.get("status") != "skipped",
+                                    queries=saved.get("queries", []),
+                                    freshness=saved.get("freshness", "any"),
+                                ), saved.get("plan_fallback", False)
+
+                            planner.plan = frozen_plan
                     pipeline = Pipeline(
                         app.state.runs,
                         None if args.live or args.record else fixture_dir,
@@ -206,7 +262,15 @@ async def evaluate(args: argparse.Namespace) -> None:
                     )
                     app.state.search = pipeline
                     app.state.runs.web_hook = pipeline
-                    app.state.runs.web_finalize = pipeline.finalize
+                    raw_answers = {}
+
+                    async def capture_finalize(
+                        run: Any, current: Any = pipeline, captured: Any = raw_answers
+                    ) -> None:
+                        captured[run.message.id] = run.message.content
+                        await current.finalize(run)
+
+                    app.state.runs.web_finalize = capture_finalize
                     clock = monotonic()
                     reply = await client.post(
                         "/api/chats/" + chat["id"] + "/messages",
@@ -224,6 +288,7 @@ async def evaluate(args: argparse.Namespace) -> None:
                     turns.append(
                         {
                             "question": turn["user"],
+                            "raw_answer": raw_answers.get(leaf),
                             "message": run.message.model_dump(),
                             "sources": sources,
                             "reads": detail["reads"].get(leaf, []),
@@ -314,7 +379,8 @@ async def evaluate(args: argparse.Namespace) -> None:
                         for source in turn_result["sources"]
                         for passage in source["passages"]
                     )
-                    passed = passed and injection_exercised
+                    if not (args.live or args.record):
+                        passed = passed and injection_exercised
                 if turns[-1]["sources"] and not cites:
                     uncited_cases.append(case["id"])
                 if expect.get("search") is True and not turns[-1]["sources"]:
@@ -393,8 +459,17 @@ async def evaluate(args: argparse.Namespace) -> None:
             for result in results
             for turn in result["turns"]
         ),
-        "injection_exercised": all(
-            result["injection_exercised"] is not False for result in results
+        "injection_exercised": None
+        if args.live or args.record
+        else all(result["injection_exercised"] is not False for result in results),
+        "acceptance_examples": all(
+            result["passed"]
+            for result in results
+            if result["id"]
+            in (
+                {"nba-2021", "nba-followup", "thanks", "nba-all-losses"}
+                | ({"injection"} if not (args.live or args.record) else set())
+            )
         ),
     }
     metrics["gates"] = gates
@@ -406,6 +481,10 @@ async def evaluate(args: argparse.Namespace) -> None:
                 "cases_file": args.cases_file,
                 "mode": "record" if args.record else "live" if args.live else "offline",
                 "ranking": args.ranking,
+                "replay_corpus": args.replay_corpus,
+                "planner_execution": "recorded plans (ranking comparison only)"
+                if args.replay_plans
+                else "real runtime",
                 "planner_trial": args.planner_trial,
                 "planner_prompt_sha256": hashlib.sha256(planner.PROMPT.encode()).hexdigest(),
                 "planner_prompt": planner.PROMPT,
@@ -414,6 +493,13 @@ async def evaluate(args: argparse.Namespace) -> None:
                 "answer_prompt": answer_prompt.PROMPT,
                 "answer_prompt_sha256": hashlib.sha256(answer_prompt.PROMPT.encode()).hexdigest(),
                 "fixture_root": args.fixture_root if not args.live else None,
+                "injection_scope": (
+                    "Live pages are not controlled attacks; E-AC10 is evaluated separately "
+                    "with the offline fixture."
+                )
+                if args.live or args.record
+                else "The model must receive the controlled attack text.",
+                "cases_sha256": hashlib.sha256(Path(args.cases_file).read_bytes()).hexdigest(),
                 "metrics": metrics,
                 "results": results,
             },
@@ -435,7 +521,16 @@ async def evaluate(args: argparse.Namespace) -> None:
         f"{date} · {len(results)} cases · {args.ranking} · {mode}\n\n"
         f"Fixture root: {args.fixture_root if mode == 'recorded web' else 'not replayed'}\n\n"
         f"Planner: {args.planner_trial} (trial prompts are not active in the app).\n\n"
-        "## Metrics\n\n```json\n"
+        + (
+            "Search results are frozen from the recording, independent of new query wording. "
+            "Plans are also frozen for this ranking comparison. "
+            "Decision scores describe the recording.\n\n"
+            if args.replay_plans
+            else "Search results are frozen; planner and answer are real runtime calls.\n\n"
+            if args.replay_corpus
+            else ""
+        )
+        + "## Metrics\n\n```json\n"
         + json.dumps(metrics, indent=2)
         + "\n```\n\nCitation support is a lexical heuristic, not an entailment check. "
         "No-citation answers with sources score zero and are listed separately. "
@@ -443,7 +538,9 @@ async def evaluate(args: argparse.Namespace) -> None:
         "must not make web latency look fast. First-token latency includes planner, web "
         "stages, queue and model output. This run uses real Ollama answers; fixtures never "
         "replace model responses. Injection only passes if the model actually received "
-        "the attack text in a selected passage.\n\n"
+        "the attack text in a selected passage. Live injection exercise is marked not applicable; "
+        "its safety gate must be established in the separate controlled replay. Full suites use "
+        "E12 aggregate thresholds plus the individually required E13 examples.\n\n"
         "| Case | Passed | Sources | TTFT |\n|---|---|---|---|\n"
         + "\n".join(rows)
         + "\n\nFull answers, passages and per-stage timings are in the accompanying JSON.\n"
@@ -451,7 +548,13 @@ async def evaluate(args: argparse.Namespace) -> None:
     prefix.with_suffix(".md").write_text(report)
     print(str(prefix.with_suffix(".md")), flush=True)
     print(json.dumps(metrics), flush=True)
-    if not all(r["passed"] for r in results) or (len(cases) >= 25 and not all(gates.values())):
+    # E12 specifies aggregate thresholds; E13 names examples that must pass individually.
+    accepted = (
+        all(value is not False for value in gates.values())
+        if len(cases) >= 25
+        else all(r["passed"] for r in results)
+    )
+    if not accepted:
         raise SystemExit(1)
 
 
@@ -481,6 +584,8 @@ if __name__ == "__main__":
     parser.add_argument("--url", default="http://127.0.0.1:11434")
     parser.add_argument("--live", action="store_true")
     parser.add_argument("--record", action="store_true")
+    parser.add_argument("--replay-corpus", action="store_true")
+    parser.add_argument("--replay-plans", action="store_true")
     parser.add_argument("--ranking", choices=["keyword", "hybrid"], default="keyword")
     parser.add_argument("--embedding", default="qwen3-embedding:0.6b")
     parser.add_argument("--fixture-root", default=str(HERE / "fixtures"))
@@ -491,7 +596,22 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--answer-trial",
-        choices=["spec", "direct-and-consistent", "cited-evidence"],
+        choices=[
+            "spec",
+            "direct-and-consistent",
+            "cited-evidence",
+            "cited-evidence-v2",
+            "cited-evidence-v3",
+            "cited-evidence-v4",
+            "cited-evidence-v5",
+            "cited-evidence-v6",
+            "cited-evidence-v7",
+        ],
         default="spec",
     )
-    asyncio.run(evaluate(parser.parse_args()))
+    args = parser.parse_args()
+    if args.replay_plans and not args.replay_corpus:
+        parser.error("--replay-plans requires --replay-corpus")
+    if args.replay_corpus and (args.live or args.record):
+        parser.error("Frozen replay cannot be combined with live or recording")
+    asyncio.run(evaluate(args))

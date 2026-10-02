@@ -100,67 +100,71 @@ class Pipeline:
             )
             return
         pages: dict[str, Page] = {}
+        fetched: dict[str, Page] = {}
         reasons: list[str] = []
-        semaphore = asyncio.Semaphore(6)
         clock = monotonic()
         limit = int(values["web.max_sources"])
 
         async def fetch(result: SearchResult) -> None:
-            async with semaphore:
-                if len(pages) >= limit:
-                    return
-                await run.emit(
-                    "search.reading",
-                    {
-                        "url": result.url,
-                        "title": result.title,
-                        "site_name": urlsplit(result.url).hostname,
-                        "domain": urlsplit(result.url).hostname,
-                    },
+            await run.emit(
+                "search.reading",
+                {
+                    "url": result.url,
+                    "title": result.title,
+                    "site_name": urlsplit(result.url).hostname,
+                    "domain": urlsplit(result.url).hostname,
+                },
+            )
+            try:
+                page = await cache.read(
+                    self.store, result.url, int(values["web.page_cache_days"]), self.fixtures
                 )
-                try:
-                    page = await cache.read(
-                        self.store, result.url, int(values["web.page_cache_days"]), self.fixtures
-                    )
-                    if len(pages) < limit:
-                        pages[result.url] = page
-                    await self.store.execute(
-                        "INSERT INTO web_reads VALUES (?,?,?,?,?,NULL)",
-                        (run.message.id, result.url, page.title, page.site_name, "unused"),
-                    )
-                    await run.emit("search.read", {"url": result.url, "status": "ok"})
-                except asyncio.CancelledError:
-                    raise
-                except Exception as exc:
-                    reason = (
-                        "timeout"
-                        if isinstance(exc, TimeoutError)
-                        else str(exc)[:160] or "connection failed"
-                    )
-                    self.fixtures.save_page_error(result.url, reason)
-                    reasons.append(reason)
-                    await self.store.execute(
-                        "INSERT INTO web_reads VALUES (?,?,?,?,?,?)",
-                        (
-                            run.message.id,
-                            result.url,
-                            result.title,
-                            urlsplit(result.url).hostname,
-                            "failed",
-                            reason,
-                        ),
-                    )
-                    await run.emit(
-                        "search.read", {"url": result.url, "status": "failed", "reason": reason}
-                    )
+                fetched[result.url] = page
+                await self.store.execute(
+                    "INSERT INTO web_reads VALUES (?,?,?,?,?,NULL)",
+                    (run.message.id, result.url, page.title, page.site_name, "unused"),
+                )
+                await run.emit("search.read", {"url": result.url, "status": "ok"})
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                reason = (
+                    "timeout"
+                    if isinstance(exc, TimeoutError)
+                    else str(exc)[:160] or "connection failed"
+                )
+                self.fixtures.save_page_error(result.url, reason)
+                reasons.append(reason)
+                await self.store.execute(
+                    "INSERT INTO web_reads VALUES (?,?,?,?,?,?)",
+                    (
+                        run.message.id,
+                        result.url,
+                        result.title,
+                        urlsplit(result.url).hostname,
+                        "failed",
+                        reason,
+                    ),
+                )
+                await run.emit(
+                    "search.read", {"url": result.url, "status": "failed", "reason": reason}
+                )
 
-        tasks = [asyncio.create_task(fetch(r)) for r in candidates]
+        tasks: list[asyncio.Task[None]] = []
+        started: list[SearchResult] = []
         try:
             async with asyncio.timeout(12):
-                await asyncio.gather(*tasks)
+                offset = 0
+                while offset < len(candidates) and len(fetched) < limit:
+                    wave = candidates[offset : offset + min(6, limit - len(fetched))]
+                    offset += len(wave)
+                    started.extend(wave)
+                    wave_tasks = [asyncio.create_task(fetch(r)) for r in wave]
+                    tasks.extend(wave_tasks)
+                    await asyncio.gather(*wave_tasks)
         except TimeoutError:
             reasons.append("timeout")
-            for r, task in zip(candidates, tasks, strict=True):
+            for r, task in zip(started, tasks, strict=True):
                 if task.cancelled():
                     await self.store.execute(
                         "INSERT OR IGNORE INTO web_reads VALUES (?,?,?,?,?,?)",
@@ -181,6 +185,8 @@ class Pipeline:
                 if not task.done():
                     task.cancel()
             await asyncio.gather(*tasks, return_exceptions=True)
+        # Concurrent completion must not choose which pages enter the answer.
+        pages = {r.url: fetched[r.url] for r in candidates if r.url in fetched}
         info.timings["fetch"] = (monotonic() - clock) * 1000
         passages: list[Passage] = []
         # Order by search rank, never by nondeterministic fetch completion order.

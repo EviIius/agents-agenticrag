@@ -16,7 +16,7 @@ async def read(store: Store, url: str, days: int, fixtures: Fixtures) -> Page:
         "SELECT * FROM page_cache WHERE url=? AND expires_at>? AND error IS NULL",
         (url, date.isoformat()),
     )
-    if cached and not fixtures.recording:
+    if cached and not fixtures.recording and not fixtures.directory:
         return Page(
             str(cached["final_url"]),
             str(cached["title"] or ""),
