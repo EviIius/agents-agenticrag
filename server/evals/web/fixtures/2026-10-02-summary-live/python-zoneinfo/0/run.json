@@ -1,0 +1,304 @@
+{
+  "question": "Which Python standard library module handles IANA time zones, and which version introduced it?",
+  "raw_answer": "The `zoneinfo` module handles IANA time zones and was introduced in Python 3.9 [3].",
+  "message": {
+    "id": "60618a148a5a4641847ef216c636bbca",
+    "chat_id": "9179a06573f64ed58c4c09eb5c0f3974",
+    "parent_id": "e95c7cf34169450f93039d7027ae0186",
+    "role": "assistant",
+    "content": "The `zoneinfo` module handles IANA time zones and was introduced in Python 3.9 [3].",
+    "reasoning": null,
+    "status": "complete",
+    "error": null,
+    "model": {
+      "connection_id": "8d812a3e89c547e0ba9ef0a08e45ae0f",
+      "model_id": "qwen3:30b-a3b-instruct-2507-q4_K_M",
+      "display_name": "qwen3:30b-a3b-instruct-2507-q4_K_M"
+    },
+    "attachments": [],
+    "stats": {
+      "reasoning_ms": null,
+      "ttft_ms": 5028.332416011835,
+      "total_ms": 5318.272666001576,
+      "prompt_tokens": 3325,
+      "completion_tokens": 24,
+      "tokens_per_sec": 83.02458565542722,
+      "tokens_estimated": false,
+      "load_ms": 5.880542,
+      "finish_reason": "stop",
+      "context_length": 16384,
+      "dropped_message_count": 0,
+      "params": {}
+    },
+    "web": {
+      "status": "used",
+      "freshness": "any",
+      "notice": null,
+      "queries": [
+        "Python standard library module IANA time zones introduction version",
+        "Python timezone module IANA support release version"
+      ],
+      "timings": {
+        "plan": 658.388041993021,
+        "search": 667.0596670010127,
+        "fetch": 899.8564579960657,
+        "rank": 5.163499998161569
+      },
+      "source_count": 6,
+      "plan_fallback": false,
+      "providers": [
+        "SearXNG"
+      ],
+      "ranking": "keyword"
+    },
+    "created_at": "2026-10-02T16:04:39.707948+00:00"
+  },
+  "sources": [
+    {
+      "n": 1,
+      "url": "https://peps.python.org/pep-0615",
+      "title": "PEP 615 – Support for the IANA Time Zone Database in the Standard Library | peps.python.org",
+      "site_name": "Python Enhancement Proposals (PEPs)",
+      "domain": "peps.python.org",
+      "published_at": "2020-02-22",
+      "fetched_at": "2026-10-02T16:04:41.036820+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://peps.python.org/pep-0615",
+          "heading": "PEP 615 – Support for the IANA Time Zone Database in the Standard Library",
+          "ord": 0,
+          "text": "- Author:\n- Paul Ganssle <paul at ganssle.io>\n- Discussions-To:\n- Discourse thread\n- Status:\n- Final\n- Type:\n- Standards Track\n- Created:\n- 22-Feb-2020\n- Python-Version:\n- 3.9\n- Post-History:\n- 25-Feb-2020, 29-Mar-2020\n- Replaces:\n- 431"
+        },
+        {
+          "source_url": "https://peps.python.org/pep-0615",
+          "heading": "Motivation",
+          "ord": 2,
+          "text": "The `datetime` library uses a flexible mechanism to handle time zones: all\nconversions and time zone information queries are delegated to an instance of a\nsubclass of the abstract `datetime.tzinfo` base class. [10] This allows\nusers to implement arbitrarily complex time zone rules, but in practice the\nmajority of users want support for just three types of time zone: [a]\n\n1. UTC and fixed offsets thereof\n2. The system local time zone\n3. IANA time zones\n\nIn Python 3.2, the `datetime.timezone` class was introduced to support the\nfirst class of time zone (with a special `datetime.timezone.utc` singleton\nfor UTC).\n\nWhile there is still no “local” time zone, in Python 3.0 the semantics of naïve time zones was changed to support many “local time” operations, and it is now possible to get a fixed time zone offset from a local time:"
+        },
+        {
+          "source_url": "https://peps.python.org/pep-0615",
+          "heading": "Including `tzdata` in the standard library by default",
+          "ord": 40,
+          "text": "Although PEP 453, which introduced the `ensurepip`\nmechanism to CPython, provides a convenient template for a standard library\nmodule maintained on PyPI, a potentially similar `ensuretzdata` mechanism is\nsomewhat less necessary, and would be complicated enough that it is considered\nout of scope for this PEP.\n\nBecause the `zoneinfo` module is designed to use the system time zone data\nwherever possible, the `tzdata` package is unnecessary (and may be\nundesirable) on systems that deploy time zone data, and so it does not seem\ncritical to ship `tzdata` with CPython.\n\nIt is also not yet clear how these hybrid standard library / PyPI modules\nshould be updated, (other than `pip`, which has a natural mechanism for\nupdates and notifications) and since it is not critical to the operation of the\nmodule, it seems prudent to defer any such proposal."
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 2,
+      "url": "https://w3schools.com/python/ref_module_zoneinfo.asp",
+      "title": "W3Schools.com",
+      "site_name": "W3Schools",
+      "domain": "w3schools.com",
+      "published_at": "2026-08-19",
+      "fetched_at": "2026-10-02T16:04:41.036833+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://w3schools.com/python/ref_module_zoneinfo.asp",
+          "heading": "Example",
+          "ord": 0,
+          "text": "Work with time zones using IANA time zone database:\n\n```\nfrom datetime import datetime\nfrom zoneinfo import ZoneInfo\ndt = datetime(2025, 1, 15, 12, 0, tzinfo=ZoneInfo('America/New_York'))\nprint(f'New York time: {dt}')\ntokyo = dt.astimezone(ZoneInfo('Asia/Tokyo'))\nprint(f'Tokyo time: {tokyo}')\n\n```\n  Try it Yourself »\n## Definition and Usage\n\nThe zoneinfo module provides support for IANA time zone database, allowing you to work with time zones in a standard and reliable way.\n\nUse it to convert between time zones, handle daylight saving time transitions, and work with historical time zone data.\n\n**Note:** This module was introduced in Python 3.9 and replaces the older pytz package for many use cases."
+        },
+        {
+          "source_url": "https://w3schools.com/python/ref_module_zoneinfo.asp",
+          "heading": "Members",
+          "ord": 1,
+          "text": "| Member | Description |\n|---|---|\n| available_timezones() | Return a set of all available IANA time zone names. |\n| InvalidTZPathWarning | Warning raised when TZPATH contains an invalid path. |\n| reset_tzpath() | Reset the time zone search path to the default. |\n| ZoneInfo | Class representing an IANA time zone. |\n| ZoneInfoNotFoundError | Exception raised when a time zone cannot be found. |"
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 3,
+      "url": "https://docs.python.org/3/library/zoneinfo.html",
+      "title": "zoneinfo — IANA time zone support",
+      "site_name": "Python documentation",
+      "domain": "docs.python.org",
+      "published_at": "2020-10-31",
+      "fetched_at": "2026-10-02T16:04:41.036792+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://docs.python.org/3/library/zoneinfo.html",
+          "heading": "`zoneinfo` — IANA time zone support¶",
+          "ord": 0,
+          "text": "Added in version 3.9.\n\n**Source code:** Lib/zoneinfo\n\nThe `zoneinfo` module provides a concrete time zone implementation to\nsupport the IANA time zone database as originally specified in **PEP 615**. By\ndefault, `zoneinfo` uses the system’s time zone data if available; if no\nsystem time zone data is available, the library will fall back to using the\nfirst-party tzdata package available on PyPI.\n\nSee also\n\nAvailability: not WASI.\n\nThis module does not work or is not available on WebAssembly. See WebAssembly platforms for more information."
+        },
+        {
+          "source_url": "https://docs.python.org/3/library/zoneinfo.html",
+          "heading": "Using `ZoneInfo`¶",
+          "ord": 2,
+          "text": "```\n>>> when_add = when + dt.timedelta(days=1)\n>>> print(when_add)\n2020-11-01 12:00:00-08:00\n>>> when_add.tzname()\n'PST'\n```\nThese time zones also support the `fold` attribute\nintroduced in **PEP 495**.  During offset transitions which induce ambiguous\ntimes (such as a daylight saving time to standard time transition), the offset\nfrom *before* the transition is used when `fold=0`, and the offset *after*\nthe transition is used when `fold=1`, for example:\n\n```\n>>> when = dt.datetime(2020, 11, 1, 1, tzinfo=ZoneInfo(\"America/Los_Angeles\"))\n>>> print(when)\n2020-11-01 01:00:00-07:00\n>>> print(when.replace(fold=1))\n2020-11-01 01:00:00-08:00\n```\nWhen converting from another time zone, the fold will be set to the correct value:"
+        },
+        {
+          "source_url": "https://docs.python.org/3/library/zoneinfo.html",
+          "heading": "Using `ZoneInfo`¶",
+          "ord": 4,
+          "text": "The `zoneinfo` module does not directly provide time zone data, and instead\npulls time zone information from the system time zone database or the\nfirst-party PyPI package tzdata, if available. Some systems, including\nnotably Windows systems, do not have an IANA database available, and so for\nprojects targeting cross-platform compatibility that require time zone data, it\nis recommended to declare a dependency on tzdata. If neither system data nor\ntzdata are available, all calls to `ZoneInfo` will raise\n`ZoneInfoNotFoundError`."
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 4,
+      "url": "https://salivity.github.io/python/article/python-3-9-zoneinfo-module-for-iana-time-zones",
+      "title": "Python 3.9 Zoneinfo Module for IANA Time Zones - python",
+      "site_name": "Python 3.9 Zoneinfo Module for IANA Time Zones",
+      "domain": "salivity.github.io",
+      "published_at": "2026-01-01",
+      "fetched_at": "2026-10-02T16:04:41.036864+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://salivity.github.io/python/article/python-3-9-zoneinfo-module-for-iana-time-zones",
+          "heading": "Python 3.9 Zoneinfo Module for IANA Time Zones",
+          "ord": 0,
+          "text": "The `zoneinfo` module, introduced in Python 3.9 under PEP\n615, brings native support for the IANA (Internet Assigned Numbers\nAuthority) time zone database directly into Python's standard library.\nThis article explains what the module provides, how it replaces legacy\nthird-party tools, and how it handles Daylight Saving Time transitions\nand time zone arithmetic cleanly using standard datetime objects."
+        },
+        {
+          "source_url": "https://salivity.github.io/python/article/python-3-9-zoneinfo-module-for-iana-time-zones",
+          "heading": "Native IANA Time Zone Implementation",
+          "ord": 1,
+          "text": "Prior to Python 3.9, the standard library only included basic tools\nfor fixed UTC offsets (`datetime.timezone`). Handling\nregional time zones with complex Daylight Saving Time (DST) rules\nrequired third-party libraries such as `pytz` or\n`python-dateutil`.\n\nThe `zoneinfo` module provides\n`zoneinfo.ZoneInfo`, a concrete subclass of\n`datetime.tzinfo`. It allows developers to instantiate any\nvalid IANA time zone string—such as `\"America/New_York\"`,\n`\"Europe/London\"`, or `\"Asia/Tokyo\"`—and attach it\ndirectly to datetime objects.\n\n```\nfrom datetime import datetime\nfrom zoneinfo import ZoneInfo\ndt = datetime(2026, 6, 1, 12, 0, tzinfo=ZoneInfo(\"Europe/Paris\"))\n```\n### System Data Access\nand the `tzdata` Fallback"
+        },
+        {
+          "source_url": "https://salivity.github.io/python/article/python-3-9-zoneinfo-module-for-iana-time-zones",
+          "heading": "Resolution of",
+          "ord": 4,
+          "text": "```\n# Converting between time zones\neastern = ZoneInfo(\"America/New_York\")\ntokyo = ZoneInfo(\"Asia/Tokyo\")\nny_time = datetime(2026, 3, 15, 9, 30, tzinfo=eastern)\ntokyo_time = ny_time.astimezone(tokyo)\n```\n### Automatic Ambiguity\nHandling with `fold`\n\nDuring the \"fall back\" transition of Daylight Saving Time, clocks are\nset backward, causing the same local time to occur twice. Python 3.6\nintroduced the `fold` attribute on datetime objects to\ndistinguish between the first (`fold=0`) and second\n(`fold=1`) occurrences of an ambiguous time.\n\nThe `zoneinfo` module fully utilizes this standard:"
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 5,
+      "url": "https://pradyunsg-cpython-lutra-testing.readthedocs.io/en/latest/library/zoneinfo.html",
+      "title": "zoneinfo — IANA time zone support",
+      "site_name": "Python 3.12.0a0 documentation",
+      "domain": "pradyunsg-cpython-lutra-testing.readthedocs.io",
+      "published_at": "2022-09-26",
+      "fetched_at": "2026-10-02T16:04:41.036844+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://pradyunsg-cpython-lutra-testing.readthedocs.io/en/latest/library/zoneinfo.html",
+          "heading": "`zoneinfo` — IANA time zone support#",
+          "ord": 0,
+          "text": "New in version 3.9.\n\nThe `zoneinfo` module provides a concrete time zone implementation to\nsupport the IANA time zone database as originally specified in **PEP 615**. By\ndefault, `zoneinfo` uses the system’s time zone data if available; if no\nsystem time zone data is available, the library will fall back to using the\nfirst-party tzdata package available on PyPI.\n\nSee also\n\nAvailability: not Emscripten, not WASI.\n\nThis module does not work or is not available on WebAssembly platforms\n`wasm32-emscripten` and `wasm32-wasi`. See\nWebAssembly platforms for more information."
+        },
+        {
+          "source_url": "https://pradyunsg-cpython-lutra-testing.readthedocs.io/en/latest/library/zoneinfo.html",
+          "heading": "Using `ZoneInfo`#",
+          "ord": 2,
+          "text": "```\n>>> dt_add = dt + timedelta(days=1)\n>>> print(dt_add)\n2020-11-01 12:00:00-08:00\n>>> dt_add.tzname()\n'PST'\n```\nThese time zones also support the `fold` attribute\nintroduced in **PEP 495**.  During offset transitions which induce ambiguous\ntimes (such as a daylight saving time to standard time transition), the offset\nfrom *before* the transition is used when `fold=0`, and the offset *after*\nthe transition is used when `fold=1`, for example:\n\n```\n>>> dt = datetime(2020, 11, 1, 1, tzinfo=ZoneInfo(\"America/Los_Angeles\"))\n>>> print(dt)\n2020-11-01 01:00:00-07:00\n>>> print(dt.replace(fold=1))\n2020-11-01 01:00:00-08:00\n```\nWhen converting from another time zone, the fold will be set to the correct value:"
+        },
+        {
+          "source_url": "https://pradyunsg-cpython-lutra-testing.readthedocs.io/en/latest/library/zoneinfo.html",
+          "heading": "Using `ZoneInfo`#",
+          "ord": 4,
+          "text": "The `zoneinfo` module does not directly provide time zone data, and instead\npulls time zone information from the system time zone database or the\nfirst-party PyPI package tzdata, if available. Some systems, including\nnotably Windows systems, do not have an IANA database available, and so for\nprojects targeting cross-platform compatibility that require time zone data, it\nis recommended to declare a dependency on tzdata. If neither system data nor\ntzdata are available, all calls to `ZoneInfo` will raise\n`ZoneInfoNotFoundError`."
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 6,
+      "url": "https://github.com/python/tzdata/releases",
+      "title": "Releases · python/tzdata",
+      "site_name": "GitHub",
+      "domain": "github.com",
+      "published_at": "2026-04-01",
+      "fetched_at": "2026-10-02T16:04:41.036854+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://github.com/python/tzdata/releases",
+          "heading": "Changes to past timestamps",
+          "ord": 3,
+          "text": "Colombia’s 1992-05-02 spring forward was at 00:00, not 24:00.\n\nIran’s 1979-05-26 spring forward was at 00:00, not 24:00. (Thanks to N.F. Hase.)\n\nThe backward-compatibility names EST5EDT, CST6CDT, MST7MDT, and PST8PDT now\n\nconform better to POSIX.  For example, EST5EDT now always uses the abbreviation\n\n\"EST\" for standard time (now always 5 hours behind UT) and \"EDT\" for daylight\n\nsaving time, whereas it formerly had different UT offsets before standard time\n\nwas introduced and sometimes used abbreviations like \"LMT\", \"EWT\" and \"EPT\", all\n\ncontrary to POSIX.  Also, though not required by POSIX these names now use US\n\nfederal rules rather than rules of places like New York, reverting to 2024a\n\nbehavior.  This change affects only timestamps before 1966-10-30 at 01:00\n\nstandard time."
+        },
+        {
+          "source_url": "https://github.com/python/tzdata/releases",
+          "heading": "Changes to documentation",
+          "ord": 5,
+          "text": "URLs for release tarballs in tz-link.html have been updated to reflect their new\n\ncanonical URLs on data.iana.org."
+        },
+        {
+          "source_url": "https://github.com/python/tzdata/releases",
+          "heading": "Changes to future timestamps",
+          "ord": 8,
+          "text": "Alberta’s 2026-03-08 spring forward was its last foreseeable clock change, as it\n\nmoved to permanent -06 thereafter.  (Thanks to Roozbeh Pournader and others.)\n\nModel this with its traditional abbreviation CST.  Although the change to\n\npermanent -06 legally took place on 2026-06-18, temporarily model the change to\n\noccur on 2026-11-01 at 02:00 instead, for the same reason we introduced a\n\nsimilarly temporary hack for British Columbia in 2026b.\n\nAlthough another TZDB release will likely be needed soon because Northwest\n\nTerritories will likely follow Alberta, the legal formalities have not yet taken\n\nplace.\n\nMorocco plans to move back to permanent UTC, without daylight saving time\n\ntransitions, on 2026-09-20 at 02:00.  This also affects Western Sahara."
+        }
+      ],
+      "cited": false
+    }
+  ],
+  "reads": [
+    {
+      "url": "https://docs.python.org/3/library/zoneinfo.html",
+      "title": "zoneinfo — IANA time zone support",
+      "site_name": "Python documentation",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://github.com/python/tzdata/releases",
+      "title": "Releases · python/tzdata",
+      "site_name": "GitHub",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://peps.python.org/pep-0615",
+      "title": "PEP 615 – Support for the IANA Time Zone Database in the Standard Library | peps.python.org",
+      "site_name": "Python Enhancement Proposals (PEPs)",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://pradyunsg-cpython-lutra-testing.readthedocs.io/en/latest/library/zoneinfo.html",
+      "title": "zoneinfo — IANA time zone support",
+      "site_name": "Python 3.12.0a0 documentation",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://salivity.github.io/python/article/python-3-9-zoneinfo-module-for-iana-time-zones",
+      "title": "Python 3.9 Zoneinfo Module for IANA Time Zones - python",
+      "site_name": "Python 3.9 Zoneinfo Module for IANA Time Zones",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://w3schools.com/python/ref_module_zoneinfo.asp",
+      "title": "W3Schools.com",
+      "site_name": "W3Schools",
+      "status": "used",
+      "reason": null
+    }
+  ],
+  "elapsed_ms": 5332.116624995251,
+  "web": {
+    "status": "used",
+    "freshness": "any",
+    "notice": null,
+    "queries": [
+      "Python standard library module IANA time zones introduction version",
+      "Python timezone module IANA support release version"
+    ],
+    "timings": {
+      "plan": 658.388041993021,
+      "search": 667.0596670010127,
+      "fetch": 899.8564579960657,
+      "rank": 5.163499998161569
+    },
+    "source_count": 6,
+    "plan_fallback": false,
+    "providers": [
+      "SearXNG"
+    ],
+    "ranking": "keyword"
+  }
+}

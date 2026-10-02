@@ -1,0 +1,72 @@
+........................................................................ [ 97%]
+.F                                                                       [100%]
+=================================== FAILURES ===================================
+_________________ test_fetch_priority_survives_slow_top_result _________________
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10c97cad0>, <httpx.AsyncClient object at 0x10ca70050>, <fastapi.applications.FastAPI object at 0x10c97c980>)
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c1478c0>
+
+    async def test_fetch_priority_survives_slow_top_result(
+        chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI], monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        import asyncio
+    
+        from app.search.extract import Page
+    
+        app, client, _ = chat_app
+        requested = []
+    
+        async def plan(*args: Any, **kwargs: Any) -> tuple[planner.Plan, bool]:
+            return planner.Plan(search=True, queries=["measurements"], freshness="any"), False
+    
+        async def search(*args: Any, **kwargs: Any) -> tuple[list[list[SearchResult]], list[str]]:
+            return [
+                [SearchResult(url=f"https://source{i}.org", title="Measurements") for i in range(8)]
+            ], []
+    
+        async def read(store: Any, url: str, *args: Any) -> Page:
+            requested.append(url)
+            if url == "https://source0.org":
+                raise ValueError("unavailable")
+            if url == "https://source1.org":
+                await asyncio.sleep(0.03)
+            return Page(
+                url, "Measurements", "Science", None, "Scientific measurements use SI units. " * 20
+            )
+    
+        monkeypatch.setattr(planner, "plan", plan)
+        monkeypatch.setattr(Providers, "search", search)
+        monkeypatch.setattr(cache, "read", read)
+        await client.patch("/api/settings", json={"web.max_sources": 4})
+        conn = (await client.get("/api/connections")).json()[0]["id"]
+        chat = (
+            await client.post(
+                "/api/chats", json={"connection_id": conn, "model_id": "fake-chat", "web_enabled": True}
+            )
+        ).json()
+        response = (
+            await client.post(
+                f"/api/chats/{chat['id']}/messages", json={"content": "#cite Scientific measurements"}
+            )
+        ).json()
+        run = await finish(app, response)
+        assert run.message.status == "complete", run.message.error
+        detail = (await client.get("/api/chats/" + chat["id"])).json()
+>       assert {s["url"] for s in detail["sources"][run.message.id]} == {
+            f"https://source{i}.org" for i in range(1, 5)
+        }
+E       AssertionError: assert {'https://sou...source3.org/'} == {'https://sou.../source4.org'}
+E         
+E         Extra items in the left set:
+E         'https://source0.org/'
+E         'https://source1.org/'
+E         'https://source3.org/'
+E         'https://source2.org/'
+E         Extra items in the right set:...
+E         
+E         ...Full output truncated (5 lines hidden), use '-vv' to show
+
+tests/test_search.py:908: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_search.py::test_fetch_priority_survives_slow_top_result - A...
+1 failed, 73 passed in 2.39s
