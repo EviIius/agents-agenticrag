@@ -219,6 +219,21 @@ def test_fragmented_tables_keep_all_rows_and_their_caption() -> None:
     assert "Intro." in tables[0].text and len(tables[0].text) <= 3000
 
 
+def test_extracted_tables_gain_delimiter_without_changing_cells() -> None:
+    header = "|  | Product | Units |"
+    rows = [f"| {i} | {'A' * 70} {i} | - |" for i in range(60)]
+    passages = chunk("https://example.org", header + "\n" + "\n".join(rows))
+    assert len(passages) > 1
+    assert all(p.text.startswith(header + "\n| --- | --- | --- |\n") for p in passages)
+    selected_rows = [row for p in passages for row in p.text.splitlines()[2:]]
+    assert selected_rows == rows
+    assert all(len(p.text) <= 3000 for p in passages)
+    escaped = chunk("https://example.org", "| Label | Units |\n| A\\|B | - |")
+    assert escaped[0].text == "| Label | Units |\n| --- | --- |\n| A\\|B | - |"
+    malformed = "| Label | Units |\n| A | - | extra |"
+    assert chunk("https://example.org", malformed)[0].text == malformed
+
+
 def test_extract_html_metadata_tables_and_rejects() -> None:
     html = (
         '<html><head><title>Results</title><meta charset="utf-8"></head>'

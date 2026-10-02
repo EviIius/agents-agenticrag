@@ -30,7 +30,7 @@ The current automated implementation checks pass, but repeated real-model answer
 - `web/src/components/ui/switch.tsx`, `IconButton.tsx`, `drawer.tsx`, `sheet.tsx`, `web/src/styles/globals.css` and `ThemeProvider.tsx`: separate a 44 px switch hit target from its 32×18 px track; keep shell and panels within the visible viewport and safe areas; disable conflicting Vaul keyboard repositioning; use 16 px phone inputs to avoid Safari zoom.
 - `LiveChatSettings.tsx`, `ChatSettingsPanel.tsx`, `SourcesSheet.tsx`, UI store and `ModelPicker.tsx`: one phone settings heading, pinned source header/close, mutually exclusive phone panels, scrollable picker list and reachable footer. Removing an empty outer command group fixes search hiding every model; the tablet popover respects available height.
 - `useChatRun.ts` and regression tests: a late streaming chat GET cannot erase a terminal SSE answer or reattach a closed run. Rendering continues to use SSE and animation-frame batching.
-- `server/app/search/chunk.py`: retain complete split tables, correct header repetition, attach short captions, ignore navigation-only sections and store headings as metadata rather than factless passages.
+- `server/app/search/chunk.py`: retain complete split tables, correct header repetition, attach short captions, ignore navigation-only sections and store headings as metadata rather than factless passages. Repair missing Markdown separators for equal-width tables without changing cells; preserve malformed rows and escaped pipes.
 - `rank.py`: match regular English plurals, exclude zero lexical matches from lexical votes/source bonuses, and reduce dense bibliography-list relevance for factual requests. Reference queries retain those lists. No topical filters are used.
 - `cache.py` and `pipeline.py`: recording/replay bypass cache reuse; recent-information requests refresh snapshots older than 30 minutes regardless of 1/7/30-day retention. Ordered fetch waves preserve provider priority and stop starting requests after the source cap.
 - `planner.py`, `prompt.py`, SPEC §E4/E7/E8: generic intent classification and evidence V6. Comparison queries cover every requested property of each entity within three slots. No extra model call, answer sampling override or agent was added.
@@ -54,6 +54,16 @@ No dependencies, agents, extra modes, extra model calls, forced sampling default
 3. **Stale reuse:** a recent request could reuse a seven-day retained page. Retention now stays separate from a 30-minute reuse window.
 4. **Model errors remain:** the supplied table distinguishes 23 positive-loss entries from five non-losing entries using dashes. Qwen sometimes omits final entries, reads dashes as one loss, or drops supported scores/citations. Named-cell table labels did not fix the comprehensive answer and were not promoted. Available sources and syntactically valid citations do not establish factual correctness.
 5. **UI bugs were independent:** switch sizing, safe-area positioning and nested command filtering caused the phone/picker defects. A separate GET/SSE race could blank a completed answer.
+
+### Latest source-format investigation
+
+The complete source table reaches the model with all 28 rows, including five dashes in the losses column and prose stating that only 23 entries have losses. The native-default baseline still emits all 28 teams and invents positive losses. Adding section headings does not fix it; neither does repairing the missing Markdown separator. The formatting repair is retained because it makes the evidence a valid table while preserving every original cell. **It is not an accuracy fix, and Phase 2 is still incomplete.**
+
+- [Native baseline, `185419`](../server/evals/web/reports/2026-10-02-185419-qwen3-30b-a3b-instruct-2507-q4_K_M-offline-keyword.md): fails comprehensive-list exclusion, 11.20 s TTFT.
+- [Heading experiment, `185611`](../server/evals/web/reports/2026-10-02-185611-qwen3-30b-a3b-instruct-2507-q4_K_M-offline-keyword-sectioned.md): fails exclusion, 10.26 s TTFT. This changes ranking input too; it is not an answer-only A/B. It remains outside production.
+- [Delimiter repair, `190310`](../server/evals/web/reports/2026-10-02-190310-qwen3-30b-a3b-instruct-2507-q4_K_M-offline-keyword.md): fails exclusion, 11.20 s TTFT. Every table cell is preserved and the raw answer remains attached.
+
+All three use the same frozen public corpus, real planner/answer calls and native sampling. Planner variation still limits exact causal attribution. Lexical support scores of 0.94–1.00 accompany these wrong answers, demonstrating why that metric cannot establish truth. The failing individual case is enough to keep the phase open; another full suite was not run to seek a transient passing result.
 
 ### Real-model evaluation evidence
 
@@ -92,6 +102,7 @@ Public raw recordings are gzip-compressed with original-byte SHA-256 manifests a
 
 ## Test output
 
+- [Latest `make check`](../artifacts/phase-2/check-table-delimiter-current.txt): **164 Python tests**, **36 Vitest tests**, lint/format, strict types, API generation and **56 contrast pairs** pass. The new table regression checks preservation of all rows, empty cells/dashes, escaped pipes, malformed tables and repeated headers under the 3,000-character limit. The [focused search suite](../artifacts/phase-2/table-format-tests.txt) passes **83 tests**. No UI code changed in this investigation; the existing browser/screenshot evidence below remains applicable.
 - [Current `make check`](../artifacts/phase-2/check-phase2-current.txt): **163 Python tests**, **36 Vitest tests**, lint/format, strict types, API types and **56 contrast pairs** pass. Providers coverage 83.3%, runs 88.3%, search 87.6%.
 - [Full browser suite](../artifacts/phase-2/e2e-final-current.txt): **106 passed, 2 deliberate duplicate skips**, Chromium/WebKit. It includes actions/parameters, stop/reconnect, long streams/timeouts, mobile panels and citation/source states in both themes.
 - [Post-picker-fix focused suite](../artifacts/phase-2/e2e-panels-search-fixed.txt): **24 passed**, including the new reduced-viewport/filtering regression and all web interaction regressions. The earlier failing attempt is retained in `e2e-panels-ranking-final.txt`; it exposed the command-group bug.

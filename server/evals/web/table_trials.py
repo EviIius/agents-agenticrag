@@ -35,3 +35,11 @@ def named_cells(url: str, text: str) -> list[Passage]:
                 + " |"
             )
     return chunk(url, "\n".join(out))
+
+
+def with_section_heading(passage: Passage) -> Passage:
+    heading = passage.heading.strip()
+    text = passage.text
+    if heading and not text.lstrip("# \n").startswith(heading):
+        text = heading + "\n\n" + text
+    return passage.model_copy(update={"text": text})

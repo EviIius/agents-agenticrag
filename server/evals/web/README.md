@@ -10,6 +10,7 @@ It contains 25 generic cases plus Jake's comprehensive NBA Finals-losses regress
 - `--replay-corpus`: freeze a recorded turn's public result batches while the planner runs normally.
 - `--replay-plans`: also freeze recorded plans for an isolated ranking comparison. Decision scores then describe the recording, not a new planner run.
 - `--planner-trial`, `--answer-trial`, `--table-trial`: experiments confined to the evaluator process. Reports record exact prompts/schema/hashes and table variant. No production agent or extra model call is added.
+- `--evidence-format sectioned`: an isolated heading experiment that also changes ranking input. It cannot be combined with `--table-trial`; it is not a controlled answer-only comparison and is not used in production.
 
 Answer sampling stays at native defaults. `--temperature` sets an explicit isolated test-chat value only when Jake requests that comparison; it is omitted by default and never changes app/model preferences. Reports record `chat_params`. Utility calls use only SPEC parameters. An optional
 `--search-key-db` opens the new app database read-only and copies its key into the temporary

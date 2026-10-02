@@ -58,9 +58,18 @@ def chunk(url: str, text: str) -> list[Passage]:
         if block.startswith("|"):
             rows = block.splitlines()
             header_rows = table_header(rows)
+            data_rows = rows[len(header_rows) :]
+            if len(header_rows) == 1:
+                # Trafilatura may emit pipe rows without Markdown's delimiter.
+                # Add only structure; retain empty cells, dashes and every value.
+                cells = re.split(r"(?<!\\)\|", header_rows[0])[1:-1]
+                if cells and all(
+                    len(re.split(r"(?<!\\)\|", row)[1:-1]) == len(cells) for row in data_rows
+                ):
+                    header_rows = [header_rows[0], "| " + " | ".join("---" for _ in cells) + " |"]
             header = "\n".join(header_rows)[:2998]
             part = header
-            for row in rows[len(header_rows) :]:
+            for row in data_rows:
                 if len(row) + len(header) + 1 > 3000:
                     # An enormous table cell remains bounded, rather than swallowing the page.
                     row = row[: max(1, 2999 - len(header))]

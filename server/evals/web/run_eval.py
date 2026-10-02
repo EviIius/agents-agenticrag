@@ -153,6 +153,15 @@ async def evaluate(args: argparse.Namespace) -> None:
         answer_prompt.PROMPT = CITED_EVIDENCE_V8
     cases_bytes = Path(args.cases_file).read_bytes()
     cases = json.loads(cases_bytes)
+    if args.evidence_format == "sectioned":
+        from table_trials import with_section_heading
+
+        original_chunk = search_pipeline.chunk
+
+        def sectioned_chunk(url: str, text: str) -> Any:
+            return [with_section_heading(passage) for passage in original_chunk(url, text)]
+
+        search_pipeline.chunk = sectioned_chunk
     if args.table_trial == "named-cells":
         from table_trials import named_cells
 
@@ -435,6 +444,7 @@ async def evaluate(args: argparse.Namespace) -> None:
             + ("-" + args.planner_trial if args.planner_trial != "spec" else "")
             + ("-" + args.answer_trial if args.answer_trial != "spec" else "")
             + ("-" + args.table_trial if args.table_trial != "spec" else "")
+            + ("-" + args.evidence_format if args.evidence_format != "spec" else "")
             + (
                 "-temperature-" + f"{args.temperature:g}".replace(".", "p")
                 if args.temperature is not None
@@ -519,6 +529,7 @@ async def evaluate(args: argparse.Namespace) -> None:
                 "answer_prompt": answer_prompt.PROMPT,
                 "answer_prompt_sha256": hashlib.sha256(answer_prompt.PROMPT.encode()).hexdigest(),
                 "table_trial": args.table_trial,
+                "evidence_format": args.evidence_format,
                 "fixture_root": args.fixture_root if not args.live else None,
                 "injection_scope": (
                     "Live pages are not controlled attacks; E-AC10 is evaluated separately "
@@ -549,6 +560,7 @@ async def evaluate(args: argparse.Namespace) -> None:
         f"Fixture root: {args.fixture_root if mode == 'recorded web' else 'not replayed'}\n\n"
         f"Planner: {args.planner_trial}; answer: {args.answer_trial}; "
         f"tables: {args.table_trial} (non-spec trials run only in this process).\n\n"
+        f"Evidence format: {args.evidence_format}.\n\n"
         + (
             "Search results are frozen from the recording, independent of new query wording. "
             "Plans are also frozen for this ranking comparison. "
@@ -621,6 +633,7 @@ if __name__ == "__main__":
     parser.add_argument("--replay-corpus", action="store_true")
     parser.add_argument("--replay-plans", action="store_true")
     parser.add_argument("--table-trial", choices=["spec", "named-cells"], default="spec")
+    parser.add_argument("--evidence-format", choices=["spec", "sectioned"], default="spec")
     parser.add_argument("--ranking", choices=["keyword", "hybrid"], default="keyword")
     parser.add_argument("--embedding", default="qwen3-embedding:0.6b")
     parser.add_argument("--fixture-root", default=str(HERE / "fixtures"))
@@ -652,4 +665,6 @@ if __name__ == "__main__":
         parser.error("--replay-plans requires --replay-corpus")
     if args.replay_corpus and (args.live or args.record):
         parser.error("Frozen replay cannot be combined with live or recording")
+    if args.evidence_format != "spec" and args.table_trial != "spec":
+        parser.error("Run section-heading and table-format experiments separately")
     asyncio.run(evaluate(args))
