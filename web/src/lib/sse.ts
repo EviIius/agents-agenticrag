@@ -3,13 +3,19 @@ import { useRuns } from "@/stores/runs";
 import { cited } from "./citations";
 import type { QueryClient } from "@tanstack/react-query";
 const attached = new Map<string, EventSource>();
+const finished = new Set<string>();
+function rememberFinished(id: string) {
+  finished.add(id);
+  if (finished.size > 256) finished.delete(finished.values().next().value!);
+}
 export function attachRun(
   id: string,
   chatId: string,
   snapshot: Message,
   query: QueryClient,
 ) {
-  if (attached.has(id)) return;
+  if (attached.has(id) || finished.has(id) || snapshot.status !== "streaming")
+    return;
   useRuns.getState().put(id, {
     chatId,
     message: { ...snapshot, content: "", reasoning: null },
@@ -161,6 +167,7 @@ export function attachRun(
         void query.invalidateQueries({ queryKey: ["chats"] });
       if (type === "run.closed") {
         closed = true;
+        rememberFinished(id);
         source.close();
         attached.delete(id);
         if (frame) cancelAnimationFrame(frame);
@@ -184,6 +191,8 @@ export function attachRun(
           active: import("./api-types").components["schemas"]["ActiveRun"][],
         ) => {
           if (!active.some((run) => run.run_id === id)) {
+            closed = true;
+            rememberFinished(id);
             source.close();
             attached.delete(id);
             if (frame) cancelAnimationFrame(frame);
