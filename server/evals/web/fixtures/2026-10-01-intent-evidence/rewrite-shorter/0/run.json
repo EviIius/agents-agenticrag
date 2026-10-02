@@ -1,0 +1,171 @@
+{
+  "question": "Explain what Tailscale Serve does.",
+  "message": {
+    "id": "5d1189e2f4a4443d952512495465fa09",
+    "chat_id": "c35d360405fc4bdc9f479f4ddbbf26de",
+    "parent_id": "06d15f5f46284f83a404412156887ebf",
+    "role": "assistant",
+    "content": "Tailscale Serve enables users to share a local server securely within their tailnet, which is a private network of devices managed by Tailscale [2]. It allows specific services or applications running on a local device to be accessible to other devices within the same tailnet. For example, users can expose a local web server, database, or API through the tailnet using configured HTTP(S) ports, path routing, or raw TCP connections [1]. The `tailscale serve` command is used to configure and manage these local services within the private network [2]. To share services beyond the tailnet, users must use the `tailscale funnel` command instead [2].",
+    "reasoning": null,
+    "status": "complete",
+    "error": null,
+    "model": {
+      "connection_id": "bcc27cd4805747b3b5b7a2280310816f",
+      "model_id": "qwen3:30b-a3b-instruct-2507-q4_K_M",
+      "display_name": "qwen3:30b-a3b-instruct-2507-q4_K_M"
+    },
+    "attachments": [],
+    "stats": {
+      "reasoning_ms": null,
+      "ttft_ms": 3133.1230420037173,
+      "total_ms": 4647.304834004899,
+      "prompt_tokens": 1353,
+      "completion_tokens": 137,
+      "tokens_per_sec": 90.53469659642407,
+      "tokens_estimated": false,
+      "load_ms": 5.865834,
+      "finish_reason": "stop",
+      "context_length": 16384,
+      "dropped_message_count": 0,
+      "params": {}
+    },
+    "web": {
+      "status": "used",
+      "freshness": "any",
+      "notice": null,
+      "queries": [
+        "Tailscale Serve what does it do",
+        "Tailscale Serve functionality overview"
+      ],
+      "timings": {
+        "plan": 596.956917004718,
+        "search": 713.2487919952837,
+        "fetch": 875.1773339972715,
+        "rank": 2.705333004996646
+      },
+      "source_count": 2,
+      "plan_fallback": false,
+      "providers": [
+        "Ollama Search"
+      ],
+      "ranking": "keyword"
+    },
+    "created_at": "2026-10-02T00:00:41.469152+00:00"
+  },
+  "sources": [
+    {
+      "n": 1,
+      "url": "https://ssdnodes.com/learn/tailscale-serve-command-cheat-sheet",
+      "title": "tailscale serve: the commands that matter · SSD Nodes",
+      "site_name": "SSD Nodes",
+      "domain": "ssdnodes.com",
+      "published_at": "2026-09-20",
+      "fetched_at": "2026-10-02T00:00:42.782148+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://ssdnodes.com/learn/tailscale-serve-command-cheat-sheet",
+          "heading": "tailscale serve: the commands that matter",
+          "ord": 0,
+          "text": "# tailscale serve: the commands that matter\n\nEvery tailscale serve command you will use, checked on Tailscale 1.102.4: foreground versus background, HTTPS ports, path routing, static files and raw TCP."
+        },
+        {
+          "source_url": "https://ssdnodes.com/learn/tailscale-serve-command-cheat-sheet",
+          "heading": "Turn one thing off, or reset everything",
+          "ord": 19,
+          "text": "## Turn one thing off, or reset everything\n\nThe `off` form repeats the flags that created the handler. The target is optional:\n\n```\nsudo tailscale serve --https=443 --set-path=/api off\nsudo tailscale serve --https=8443 off\nsudo tailscale serve --tcp=5432 off\n```\nName the wrong port or path and you remove nothing, or the wrong thing, which is why `status` comes first. To clear every handler on the node at once:\n\n`sudo tailscale serve reset`\n`reset` prints nothing. Run `status` afterwards and it reports `No serve config`. Reset replaces the whole serve config with an empty one, and Funnel listeners live in that same config, so they are cleared too. Re-add any public listener afterwards."
+        },
+        {
+          "source_url": "https://ssdnodes.com/learn/tailscale-serve-command-cheat-sheet",
+          "heading": "How do I remove a single serve handler without clearing the rest?",
+          "ord": 26,
+          "text": "### How do I remove a single serve handler without clearing the rest?\n\nRepeat the flags that created it and append `off`, for example `sudo tailscale serve --https=443 --set-path=/api off`. Run `sudo tailscale serve status` first to see the exact port and path. `sudo tailscale serve reset` clears every handler on the node instead, including Funnel."
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 2,
+      "url": "https://github.com/tailscale/tailscale/blob/main/cmd/tailscale/cli/serve_v2.go",
+      "title": "tailscale/cmd/tailscale/cli/serve_v2.go at main · tailscale/tailscale",
+      "site_name": "GitHub",
+      "domain": "github.com",
+      "published_at": "2020-01-31",
+      "fetched_at": "2026-10-02T00:00:42.782144+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://github.com/tailscale/tailscale/blob/main/cmd/tailscale/cli/serve_v2.go",
+          "heading": "File metadata and controls",
+          "ord": 13,
+          "text": "\t\treturn serveTypeTCP, true\n\n\tcase conffile.ProtoTLSTerminatedTCP:\n\n\t\treturn serveTypeTLSTerminatedTCP, true\n\n\tcase conffile.ProtoTUN:\n\n\t\treturn serveTypeTUN, true\n\n\t}\n\n\treturn -1, false\n\n}\n\nconst noService tailcfg.ServiceName = \"\"\n\nvar infoMap = map[serveMode]commandInfo{\n\n\tserve: {\n\n\t\tName:      \"serve\",\n\n\t\tShortHelp: \"Serve content and local servers on your tailnet\",\n\n\t\tLongHelp: strings.Join([]string{\n\n\t\t\t\"Tailscale Serve enables you to share a local server securely within your tailnet.\\n\",\n\n\t\t\t\"To share a local server on the internet, use `tailscale funnel`\\n\\n\",\n\n\t\t}, \"\\n\"),\n\n\t},\n\n\tfunnel: {\n\n\t\tName:      \"funnel\",\n\n\t\tShortHelp: \"Serve content and local servers on the internet\",\n\n\t\tLongHelp: strings.Join([]string{\n\n\t\t\t\"Funnel enables you to share a local server on the internet using Tailscale.\\n\",\n\n\t\t\t\"To share only within your tailnet, use `tailscale serve`\\n\\n\",\n\n\t\t}, \"\\n\"),\n\n\t},"
+        },
+        {
+          "source_url": "https://github.com/tailscale/tailscale/blob/main/cmd/tailscale/cli/serve_v2.go",
+          "heading": "File metadata and controls",
+          "ord": 14,
+          "text": "}\n\n// errHelpFunc is standard error text that prompts users to\n\n// run `$subcmd --help` for information on how to use serve.\n\nvar errHelpFunc = func(m serveMode) error {\n\n\treturn fmt.Errorf(\"try `tailscale %s --help` for usage info\", infoMap[m].Name)\n\n}\n\n// newServeV2Command returns a new \"serve\" subcommand using e as its environment.\n\nfunc newServeV2Command(e *serveEnv, subcmd serveMode) *ffcli.Command {\n\n\tif subcmd != serve && subcmd != funnel {\n\n\t\tlog.Fatalf(\"newServeDevCommand called with unknown subcmd %v\", subcmd)\n\n\t}\n\n\tinfo := infoMap[subcmd]\n\n\treturn &ffcli.Command{\n\n\t\tName:      info.Name,\n\n\t\tShortHelp: info.ShortHelp,\n\n\t\tShortUsage: strings.Join([]string{\n\n\t\t\tfmt.Sprintf(\"tailscale %s <target>\", info.Name),\n\n\t\t\tfmt.Sprintf(\"tailscale %s status [--json]\", info.Name),\n\n\t\t\tfmt.Sprintf(\"tailscale %s reset\", info.Name),\n\n\t\t}, \"\\n\"),"
+        },
+        {
+          "source_url": "https://github.com/tailscale/tailscale/blob/main/cmd/tailscale/cli/serve_v2.go",
+          "heading": "File metadata and controls",
+          "ord": 39,
+          "text": "\t\treturn errors.New(\"must specify either --service=svc:<service-name> or --all\")\n\n\t}\n\n\tj = append(j, '\\n')\n\n\t_, err = e.stdout().Write(j)\n\n\treturn err\n\n}\n\n// serveConfigDocsURL documents the Services configuration file format that set-config prefers\n\nconst serveConfigDocsURL = \"https://tailscale.com/kb/1589/tailscale-services-configuration-file\"\n\nconst serveLegacyFormatWarning = \"Warning: %q is in the legacy raw serve config format \" +\n\n\t\"(as emitted by `tailscale serve status --json`), which is deprecated for set-config. \" +\n\n\t\"Applying its services only. To migrate, run `tailscale serve get-config` to save your \" +\n\n\t\"configuration in the supported format; see %s\\n\"\n\nconst serveLegacyDroppedWarning = \"Warning: ignoring node-level fields not supported by set-config: %s\\n\"\n\n// legacyNodeLevelFields returns the names of the populated top-level fields in"
+        }
+      ],
+      "cited": true
+    }
+  ],
+  "reads": [
+    {
+      "url": "https://github.com/tailscale/tailscale/blob/main/cmd/tailscale/cli/serve_v2.go",
+      "title": "tailscale/cmd/tailscale/cli/serve_v2.go at main · tailscale/tailscale",
+      "site_name": "GitHub",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://ssdnodes.com/learn/tailscale-serve-command-cheat-sheet",
+      "title": "tailscale serve: the commands that matter · SSD Nodes",
+      "site_name": "SSD Nodes",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://tailscale.com/docs/features/tailscale-serve",
+      "title": "",
+      "site_name": "tailscale.com",
+      "status": "failed",
+      "reason": "[Errno 65] No route to host"
+    },
+    {
+      "url": "https://tailscale.com/docs/reference/tailscale-cli/serve",
+      "title": "",
+      "site_name": "tailscale.com",
+      "status": "failed",
+      "reason": "[Errno 65] No route to host"
+    }
+  ],
+  "elapsed_ms": 4661.361625003337,
+  "web": {
+    "status": "used",
+    "freshness": "any",
+    "notice": null,
+    "queries": [
+      "Tailscale Serve what does it do",
+      "Tailscale Serve functionality overview"
+    ],
+    "timings": {
+      "plan": 596.956917004718,
+      "search": 713.2487919952837,
+      "fetch": 875.1773339972715,
+      "rank": 2.705333004996646
+    },
+    "source_count": 2,
+    "plan_fallback": false,
+    "providers": [
+      "Ollama Search"
+    ],
+    "ranking": "keyword"
+  }
+}

@@ -1,0 +1,308 @@
+{
+  "question": "Explain what Tailscale Serve does.",
+  "message": {
+    "id": "663febe26cae4d98afd8830f28f6c30f",
+    "chat_id": "42a82212539144ef9da2d6a124b14039",
+    "parent_id": "334a937bfe3845fd95b1ca3a5baaa713",
+    "role": "assistant",
+    "content": "Tailscale Serve is a feature that allows you to publish a local service (like a web server or application) within your private Tailscale network (tailnet) so that other authorized devices in the same tailnet can access it. It enables controlled, private access to internal services without exposing them to the public internet [4]. \n\nWhen you use `tailscale serve`, the service running on your local machine (e.g., on port 3000) becomes accessible to other devices in your tailnet via a unique URL, such as `https://your-device-name.tailnet.ts.net` [3]. This access is managed through Tailscale's identity and access control system—only devices and users authorized by the tailnet's policies can reach the service [1][3]. \n\nServe requires HTTPS to be enabled in your tailnet, and the Tailscale CLI will prompt you to set this up if it's not already configured [3]. Traffic routed through Serve includes identity headers, which help maintain security and traceability within the private network [3]. \n\nIn essence, Tailscale Serve shifts the security model from public exposure (like traditional port forwarding) to identity-aware, private access, reducing the attack surface while still allowing convenient access for trusted users [4]. It is ideal for sharing services like admin panels, development environments, or internal applications only with members of your trusted network [2].",
+    "reasoning": null,
+    "status": "complete",
+    "error": null,
+    "model": {
+      "connection_id": "4c25149517b948e3a4f7657d65e3bd71",
+      "model_id": "qwen3:30b-a3b-instruct-2507-q4_K_M",
+      "display_name": "qwen3:30b-a3b-instruct-2507-q4_K_M"
+    },
+    "attachments": [],
+    "stats": {
+      "reasoning_ms": null,
+      "ttft_ms": 4111.246374995972,
+      "total_ms": 7468.337790996884,
+      "prompt_tokens": 2251,
+      "completion_tokens": 286,
+      "tokens_per_sec": 85.21747887962256,
+      "tokens_estimated": false,
+      "load_ms": 6.275458,
+      "finish_reason": "stop",
+      "context_length": 16384,
+      "dropped_message_count": 0,
+      "params": {}
+    },
+    "web": {
+      "status": "used",
+      "freshness": "any",
+      "notice": null,
+      "queries": [
+        "Tailscale Serve what does it do",
+        "Tailscale Serve functionality overview",
+        "Tailscale Serve vs Tailscale access"
+      ],
+      "timings": {
+        "plan": 733.3979999966687,
+        "search": 880.2039160000277,
+        "fetch": 691.8667909994838,
+        "rank": 3.7069999962113798
+      },
+      "source_count": 5,
+      "plan_fallback": false,
+      "providers": [
+        "SearXNG"
+      ],
+      "ranking": "keyword"
+    },
+    "created_at": "2026-10-01T23:52:53.913724+00:00"
+  },
+  "sources": [
+    {
+      "n": 1,
+      "url": "https://natchecker.com/blog/tailscale-port-forwarding",
+      "title": "Tailscale Port Forwarding: Serve, Funnel & Firewall Ports",
+      "site_name": "natchecker.com",
+      "domain": "natchecker.com",
+      "published_at": "2026-07-30",
+      "fetched_at": "2026-10-01T23:52:55.530299+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://natchecker.com/blog/tailscale-port-forwarding",
+          "heading": "Tailscale Port Forwarding: Private Access, Funnel, and Open Ports",
+          "ord": 0,
+          "text": "# Tailscale Port Forwarding: Private Access, Funnel, and Open Ports\n\nSeparate private tailnet access from public internet exposure, choose Serve or Funnel, check direct versus relay connections, and compare three VPN port-forwarding options."
+        },
+        {
+          "source_url": "https://natchecker.com/blog/tailscale-port-forwarding",
+          "heading": "Use normal Tailscale access or Serve",
+          "ord": 7,
+          "text": "### Use normal Tailscale access or Serve\n\nInstall Tailscale on both endpoints. Connect to the service by its Tailscale IP or MagicDNS name. Use Serve when you want a stable HTTPS or TCP front end inside the tailnet. No public router forward is required.\n\nSee the private setup\n## Tailscale vs port forwarding: choose by reachability\n\nRelated searches mix private remote access, SSH port forwarding, public hosting, and faster peer connections. These methods solve different problems and should not be configured interchangeably."
+        },
+        {
+          "source_url": "https://natchecker.com/blog/tailscale-port-forwarding",
+          "heading": "Tailscale Serve example",
+          "ord": 14,
+          "text": "### Tailscale Serve example\n\nProxy a local service on port 3000 behind a private tailnet URL. Access policy still applies.\n\n`tailscale serve 3000`\n### Tailscale Funnel example\n\nPublish the same local service publicly. Confirm authentication, logging, updates, and data exposure first.\n\n`tailscale funnel 3000`\nCommand syntax changed in Tailscale 1.52. Current Funnel documentation restricts public listener ports to 443, 8443, or 10000 and describes supported HTTPS and TCP modes. Review the linked official CLI pages before using copied commands on a production host."
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 2,
+      "url": "https://aicybr.com/blog/tailscale-vs-reverse-proxy-vs-vpn-remote-access",
+      "title": "Tailscale vs Reverse Proxy vs VPN: How Should You Access Self-Hosted Services Remotely?",
+      "site_name": "AiCybr",
+      "domain": "aicybr.com",
+      "published_at": "2026-08-18",
+      "fetched_at": "2026-10-01T23:52:55.530321+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://aicybr.com/blog/tailscale-vs-reverse-proxy-vs-vpn-remote-access",
+          "heading": "Tailscale vs Reverse Proxy vs VPN: How Should You Access Self-Hosted Services Remotely?",
+          "ord": 0,
+          "text": "# Tailscale vs Reverse Proxy vs VPN: How Should You Access Self-Hosted Services Remotely?\n\n**Use a private overlay such as Tailscale for admin panels and services meant only for you or a small trusted group. Use a public reverse proxy when a service genuinely needs to be reachable by ordinary internet users without installing a VPN client. Use a traditional WireGuard VPN when you want private network access but also want to operate the VPN topology, keys and routing yourself.**\n\nThose choices solve different problems. A reverse proxy is not a replacement for a VPN, and a VPN is not automatically the best way to publish a website. The useful question is not which product is “most secure” in isolation. It is **who must reach the service, from which devices, and whether the service should be exposed to the public internet at all**."
+        },
+        {
+          "source_url": "https://aicybr.com/blog/tailscale-vs-reverse-proxy-vs-vpn-remote-access",
+          "heading": "Tailscale vs WireGuard: the security boundary is not just encryption",
+          "ord": 18,
+          "text": "## Tailscale vs WireGuard: the security boundary is not just encryption\n\nBoth approaches can use WireGuard tunnels. The practical difference is the surrounding control system.\n\nRaw WireGuard authenticates peers cryptographically and routes according to configuration. Tailscale adds a coordination/control plane, identity integration, device enrollment, NAT traversal machinery, DNS and centrally defined access policy.\n\nThis means “Tailscale vs WireGuard” is often really a decision between **managed mesh operations** and **self-managed VPN operations**, not a comparison between secure and insecure encryption.\n\nIf dependence on a hosted coordination service is unacceptable, self-hosted coordination alternatives such as Headscale or broader self-hosted mesh platforms may be relevant. That is a separate decision from whether the protected service should be private or public."
+        },
+        {
+          "source_url": "https://aicybr.com/blog/tailscale-vs-reverse-proxy-vs-vpn-remote-access",
+          "heading": "Sources",
+          "ord": 32,
+          "text": "## Sources\n\n- Tailscale documentation: access-control grants, connecting devices, Serve and Funnel behavior.\n- WireGuard official Quick Start: peer keys, endpoints, AllowedIPs and NAT keepalive behavior.\n- Caddy documentation: automatic HTTPS and reverse-proxy operation."
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 3,
+      "url": "https://github.com/Chesszyh/tailscale-docs/blob/master/features/tailscale-serve/index.md",
+      "title": "tailscale-docs/features/tailscale-serve/index.md at master · Chesszyh/tailscale-docs",
+      "site_name": "GitHub",
+      "domain": "github.com",
+      "published_at": "2026-05-07",
+      "fetched_at": "2026-10-01T23:52:55.562317+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://github.com/Chesszyh/tailscale-docs/blob/master/features/tailscale-serve/index.md",
+          "heading": "",
+          "ord": 0,
+          "text": "The CLI commands for both Tailscale Funnel and Tailscale Serve have changed in the 1.52 version of the Tailscale client. If you've used Funnel or Serve in previous versions, we recommend reviewing the CLI documentation.\n\nTailscale Serve lets you route traffic from other devices on your Tailscale network (known as a tailnet) to a local service running on your device. You can think of this as sharing the service, such as a website, with the rest of your tailnet. This page provides information about how Serve works and how to get started with it in your tailnet. For more specific use cases, refer to Tailscale Serve examples.\n\nVideo: Serve and Funnel | Tailscale Explained\n\nIf you'd like to share local services publicly over the internet, use Tailscale Funnel instead.\n\nTailscale Serve requires you to enable HTTPS certificates in your tailnet."
+        },
+        {
+          "source_url": "https://github.com/Chesszyh/tailscale-docs/blob/master/features/tailscale-serve/index.md",
+          "heading": "",
+          "ord": 1,
+          "text": "Additionally, keep in mind that access control rules apply to Serve just like any other service. If you have access control rules that restrict access to certain devices or users, those rules will also apply to the services you're sharing with Serve.\n\nIf you don't have HTTPS enabled in your tailnet, the Tailscale CLI command `tailscale serve` provides an interactive web UI that prompts you to allow Tailscale to enable HTTPS on your behalf.\n\nThe `serve` command prompts you as needed and sends you to a web consent page to enable any unmet requirements.\n\n**Tailscale Funnel** is enabled by default. If you don't plan to use Tailscale Funnel on the device, you can turn it off.\n\nIf you run the `tailscale serve` command and your tailnet isn't properly configured to use Tailscale Serve, it presents a login server URL that you can follow to enable the feature."
+        },
+        {
+          "source_url": "https://github.com/Chesszyh/tailscale-docs/blob/master/features/tailscale-serve/index.md",
+          "heading": "",
+          "ord": 2,
+          "text": "Tailscale Serve lets you serve local directories, files, plain text, or local ports with other devices in your tailnet. For example, you can proxy requests to a web server running at `http://127.0.0.1:3000` using the following command:\n\n`tailscale serve 3000`\nRun `tailscale serve --help` for more examples.\n\nThe CLI opens a foreground session that displays the status of what it's serving and the URL you can use to access your server:\n\n```\ntailscale serve 3000\nAvailable within your tailnet:\nhttps://amelie-workstation.pango-lin.ts.net\n\n|-- / proxy http://127.0.0.1:3000\n\nPress Ctrl+C to exit.\n```\nServe traffic includes identity headers when serving traffic from your tailnet using Tailscale Serve. Funnel traffic, which is publicly available, does not include identity headers."
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 4,
+      "url": "https://nhimg.org/glossary/tailscale-serve",
+      "title": "What Is Tailscale Serve? Definition & Examples",
+      "site_name": "NHI Management Group",
+      "domain": "nhimg.org",
+      "published_at": "2026-08-01",
+      "fetched_at": "2026-10-01T23:52:55.530331+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://nhimg.org/glossary/tailscale-serve",
+          "heading": "",
+          "ord": 0,
+          "text": "Tailscale Serve is a feature that publishes an internal service through the tailnet so authorised devices can reach it without opening inbound internet ports. It shifts exposure from public network access to authenticated private access, which reduces attack surface but still requires lifecycle and trust management."
+        },
+        {
+          "source_url": "https://nhimg.org/glossary/tailscale-serve",
+          "heading": "Expanded Definition",
+          "ord": 1,
+          "text": "## Expanded Definition\n\nTailscale Serve is best understood as a controlled publishing method for an internal application or endpoint within a tailnet. Rather than exposing a service directly to the public internet, it makes the service reachable only to authenticated devices and identities that already belong to the private network. That distinction matters in cybersecurity because the exposure model changes from perimeter-based ingress to identity-aware access, with policy, device trust, and routing rules determining who can connect."
+        },
+        {
+          "source_url": "https://nhimg.org/glossary/tailscale-serve",
+          "heading": "Examples and Use Cases",
+          "ord": 3,
+          "text": "## Examples and Use Cases\n\nImplementing Tailscale Serve rigorously often introduces a dependency on strong identity and device posture, requiring organisations to weigh convenience against tighter access governance."
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 5,
+      "url": "https://blog.starmorph.com/blog/tailscale-complete-developer-reference-guide",
+      "title": "Tailscale 101: Complete Developer Reference Guide for Mesh VPN Networking",
+      "site_name": "Starmorph AI Web Development Blog",
+      "domain": "blog.starmorph.com",
+      "published_at": "2026-02-15",
+      "fetched_at": "2026-10-01T23:52:55.673730+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://blog.starmorph.com/blog/tailscale-complete-developer-reference-guide",
+          "heading": "`tailscale down`",
+          "ord": 13,
+          "text": "```\ntailscale file cp <file> <hostname>:       # Send files via Taildrop\nsudo tailscale file get                     # Receive files (Linux)\nsudo tailscale file get --loop              # Continuous receive mode\ntailscale drive share <name> <path>         # Share directory (Taildrive)\n```\n#### Service Exposure\n\n```\ntailscale serve 8080                        # Serve on tailnet only\ntailscale serve ~/public                    # Serve a directory\ntailscale funnel 8080                       # Expose to public internet\ntailscale cert myserver.tailnet.ts.net      # Get TLS certificate\n```\n#### Account & Maintenance"
+        },
+        {
+          "source_url": "https://blog.starmorph.com/blog/tailscale-complete-developer-reference-guide",
+          "heading": "Tailscale Serve & Funnel",
+          "ord": 28,
+          "text": "## Tailscale Serve & Funnel"
+        },
+        {
+          "source_url": "https://blog.starmorph.com/blog/tailscale-complete-developer-reference-guide",
+          "heading": "Tailscale Serve",
+          "ord": 29,
+          "text": "### Tailscale Serve\n\nMakes a local service accessible to devices **in your tailnet only**.\n\n**Prerequisites:** Enable HTTPS Certificates in admin console, then run `tailscale cert`.\n\n```\ntailscale serve 8080                          # Serve localhost:8080 on tailnet\ntailscale serve https:443 / localhost:8080    # HTTPS on port 443\ntailscale serve ~/public                      # Serve a directory\n```\n### Tailscale Funnel\n\nMakes a local service accessible to the **entire internet**.\n\nWhen you turn on Funnel, Tailscale creates public DNS records for your `node.tailnet.ts.net` name, pointing to worldwide ingress servers.\n\n`tailscale funnel 8080                         # Expose to public internet`\n**Use cases:** Testing OAuth callbacks, receiving webhooks, sharing dev environments temporarily.\n\n**Benefits:** Public IP, DNS, TLS cert, and HTTPS server — all automatic."
+        }
+      ],
+      "cited": false
+    }
+  ],
+  "reads": [
+    {
+      "url": "https://aicybr.com/blog/tailscale-vs-reverse-proxy-vs-vpn-remote-access",
+      "title": "Tailscale vs Reverse Proxy vs VPN: How Should You Access Self-Hosted Services Remotely?",
+      "site_name": "AiCybr",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://blog.starmorph.com/blog/tailscale-complete-developer-reference-guide",
+      "title": "Tailscale 101: Complete Developer Reference Guide for Mesh VPN Networking",
+      "site_name": "Starmorph AI Web Development Blog",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://deepwiki.com/tailscale/tailscale/7.4-serve-and-funnel",
+      "title": "Serve and Funnel | tailscale/tailscale | DeepWiki",
+      "site_name": "deepwiki.com",
+      "status": "failed",
+      "reason": "HTTP 429"
+    },
+    {
+      "url": "https://github.com/Chesszyh/tailscale-docs/blob/master/features/tailscale-serve/index.md",
+      "title": "tailscale-docs/features/tailscale-serve/index.md at master · Chesszyh/tailscale-docs",
+      "site_name": "GitHub",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://natchecker.com/blog/tailscale-port-forwarding",
+      "title": "Tailscale Port Forwarding: Serve, Funnel & Firewall Ports",
+      "site_name": "natchecker.com",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://nhimg.org/glossary/tailscale-serve",
+      "title": "What Is Tailscale Serve? Definition & Examples",
+      "site_name": "NHI Management Group",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://reddit.com/r/Tailscale/comments/1946s5a/can_someone_explain_to_me_how_tailscale_works_and",
+      "title": "Can someone explain to me how Tailscale works and ... - Reddit",
+      "site_name": "reddit.com",
+      "status": "failed",
+      "reason": "too little readable text"
+    },
+    {
+      "url": "https://reddit.com/r/Tailscale/comments/1bbkvel/so_what_exactly_is_tailscale_serve",
+      "title": "So... what exactly IS Tailscale serve? : r/Tailscale - Reddit",
+      "site_name": "reddit.com",
+      "status": "failed",
+      "reason": "too little readable text"
+    },
+    {
+      "url": "https://tailscale.com/docs/features/tailscale-serve",
+      "title": "Tailscale Serve · Tailscale Docs",
+      "site_name": "tailscale.com",
+      "status": "failed",
+      "reason": "[Errno 65] No route to host"
+    },
+    {
+      "url": "https://tailscale.com/docs/reference/tailscale-cli/serve",
+      "title": "tailscale serve command",
+      "site_name": "tailscale.com",
+      "status": "failed",
+      "reason": "[Errno 65] No route to host"
+    }
+  ],
+  "elapsed_ms": 7482.933208004397,
+  "web": {
+    "status": "used",
+    "freshness": "any",
+    "notice": null,
+    "queries": [
+      "Tailscale Serve what does it do",
+      "Tailscale Serve functionality overview",
+      "Tailscale Serve vs Tailscale access"
+    ],
+    "timings": {
+      "plan": 733.3979999966687,
+      "search": 880.2039160000277,
+      "fetch": 691.8667909994838,
+      "rank": 3.7069999962113798
+    },
+    "source_count": 5,
+    "plan_fallback": false,
+    "providers": [
+      "SearXNG"
+    ],
+    "ranking": "keyword"
+  }
+}

@@ -1,0 +1,287 @@
+{
+  "question": "Explain what Tailscale Serve does.",
+  "message": {
+    "id": "b4a1a6e3c216404fa4c75b544f96760c",
+    "chat_id": "246c6ae418c44c00be4672362919c86a",
+    "parent_id": "b0a5bb1b04c843ed824be3456f68396a",
+    "role": "assistant",
+    "content": "Tailscale Serve allows you to securely expose a local server or service running on your device to other members of your Tailscale network (tailnet), without needing to open firewall ports or configure reverse proxies [3]. It creates a secure, encrypted connection using WireGuard, and the service is accessible only to authenticated members of your tailnet via a unique HTTPS URL (e.g., `https://your-service.tailnet-name.ts.net`) [3][4].\n\nServe works by binding the local service (e.g., a web app on port 3000) and exposing it within the tailnet using Tailscale's MagicDNS and HTTPS capabilities [3][5]. Access is controlled by your tailnet's access policies, such as ACLs (Access Control Lists), ensuring only authorized users can reach the service [1][3]. It is ideal for internal use cases like sharing a development server, internal wiki, or admin dashboard with teammates who are already part of the Tailscale network [1][4].\n\nUnlike Tailscale Funnel, which exposes the service to the public internet, Serve keeps the service accessible only within the tailnet, making it a safer option for internal collaboration [3][4]. You can serve on any port, and while HTTPS is the default, you can also serve plain HTTP within the tailnet using `--http` or forward raw TCP traffic using `--tcp` [5].",
+    "reasoning": null,
+    "status": "complete",
+    "error": null,
+    "model": {
+      "connection_id": "c48fe73e6b4c4ee0b79e727720a697e9",
+      "model_id": "qwen3:30b-a3b-instruct-2507-q4_K_M",
+      "display_name": "qwen3:30b-a3b-instruct-2507-q4_K_M"
+    },
+    "attachments": [],
+    "stats": {
+      "reasoning_ms": null,
+      "ttft_ms": 4142.136499998742,
+      "total_ms": 7572.484666998207,
+      "prompt_tokens": 2343,
+      "completion_tokens": 289,
+      "tokens_per_sec": 84.25938478986903,
+      "tokens_estimated": false,
+      "load_ms": 5.476625,
+      "finish_reason": "stop",
+      "context_length": 16384,
+      "dropped_message_count": 0,
+      "params": {}
+    },
+    "web": {
+      "status": "used",
+      "freshness": "any",
+      "notice": null,
+      "queries": [
+        "Tailscale Serve what does it do",
+        "Tailscale Serve functionality explained",
+        "Tailscale Serve vs Tailscale access use cases"
+      ],
+      "timings": {
+        "plan": 718.9765830044053,
+        "search": 643.6749169952236,
+        "fetch": 1004.9960420001298,
+        "rank": 4.101250000530854
+      },
+      "source_count": 5,
+      "plan_fallback": false,
+      "providers": [
+        "Ollama Search"
+      ],
+      "ranking": "keyword"
+    },
+    "created_at": "2026-10-01T23:43:49.607068+00:00"
+  },
+  "sources": [
+    {
+      "n": 1,
+      "url": "https://tailscale-dev-scaletail-31.mintlify.app/configuration/serve-vs-funnel",
+      "title": "Tailscale Serve vs Funnel - ScaleTail",
+      "site_name": "ScaleTail",
+      "domain": "tailscale-dev-scaletail-31.mintlify.app",
+      "published_at": "2026-03-04",
+      "fetched_at": "2026-10-01T23:43:50.973425+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://tailscale-dev-scaletail-31.mintlify.app/configuration/serve-vs-funnel",
+          "heading": "Key Differences",
+          "ord": 17,
+          "text": "## Key Differences\n\n- Access Control\n- Security\n- Use Cases\n- Configuration"
+        },
+        {
+          "source_url": "https://tailscale-dev-scaletail-31.mintlify.app/configuration/serve-vs-funnel",
+          "heading": "Scenario 3: Development Team Tool",
+          "ord": 28,
+          "text": "### Scenario 3: Development Team Tool\n\n**Goal**: Internal wiki for 5-person team\n\n**Solution**: Use\n\n**Serve**with ACLs\n\n**Tailscale ACL**:\n\n**Why**:\n\n- Team already uses Tailscale\n- Fine-grained access control via ACLs\n- Secure by default\n- Easy onboarding/offboarding"
+        },
+        {
+          "source_url": "https://tailscale-dev-scaletail-31.mintlify.app/configuration/serve-vs-funnel",
+          "heading": "Use ACLs",
+          "ord": 37,
+          "text": "## Use ACLs\n\nWith Serve, use Tailscale ACLs to restrict which Tailnet members can access specific services."
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 2,
+      "url": "https://github.com/tailscale/tailscale/blob/main/cmd/tailscale/cli/serve_v2.go",
+      "title": "tailscale/cmd/tailscale/cli/serve_v2.go at main · tailscale/tailscale",
+      "site_name": "GitHub",
+      "domain": "github.com",
+      "published_at": "2020-01-31",
+      "fetched_at": "2026-10-01T23:43:50.973415+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://github.com/tailscale/tailscale/blob/main/cmd/tailscale/cli/serve_v2.go",
+          "heading": "File metadata and controls",
+          "ord": 12,
+          "text": "  - Expose an HTTPS server with invalid or self-signed certificates at https://localhost:8443\n\n    $ tailscale %[1]s https+insecure://localhost:8443\n\n  - Expose a service listening on a Unix socket (Linux/macOS/BSD only):\n\n    $ tailscale %[1]s unix:/var/run/myservice.sock\n\nFor more examples and use cases visit our docs site https://tailscale.com/kb/1247/funnel-serve-use-cases\n\n`)\n\ntype serveMode int\n\nconst (\n\n\tserve serveMode = iota\n\n\tfunnel\n\n)\n\ntype serveType int\n\nconst (\n\n\tserveTypeHTTPS serveType = iota\n\n\tserveTypeHTTP\n\n\tserveTypeTCP\n\n\tserveTypeTLSTerminatedTCP\n\n\tserveTypeTUN\n\n)\n\nfunc serveTypeFromConfString(sp conffile.ServiceProtocol) (st serveType, ok bool) {\n\n\tswitch sp {\n\n\tcase conffile.ProtoHTTP:\n\n\t\treturn serveTypeHTTP, true\n\n\tcase conffile.ProtoHTTPS, conffile.ProtoHTTPSInsecure, conffile.ProtoFile:\n\n\t\treturn serveTypeHTTPS, true\n\n\tcase conffile.ProtoTCP:"
+        },
+        {
+          "source_url": "https://github.com/tailscale/tailscale/blob/main/cmd/tailscale/cli/serve_v2.go",
+          "heading": "File metadata and controls",
+          "ord": 13,
+          "text": "\t\treturn serveTypeTCP, true\n\n\tcase conffile.ProtoTLSTerminatedTCP:\n\n\t\treturn serveTypeTLSTerminatedTCP, true\n\n\tcase conffile.ProtoTUN:\n\n\t\treturn serveTypeTUN, true\n\n\t}\n\n\treturn -1, false\n\n}\n\nconst noService tailcfg.ServiceName = \"\"\n\nvar infoMap = map[serveMode]commandInfo{\n\n\tserve: {\n\n\t\tName:      \"serve\",\n\n\t\tShortHelp: \"Serve content and local servers on your tailnet\",\n\n\t\tLongHelp: strings.Join([]string{\n\n\t\t\t\"Tailscale Serve enables you to share a local server securely within your tailnet.\\n\",\n\n\t\t\t\"To share a local server on the internet, use `tailscale funnel`\\n\\n\",\n\n\t\t}, \"\\n\"),\n\n\t},\n\n\tfunnel: {\n\n\t\tName:      \"funnel\",\n\n\t\tShortHelp: \"Serve content and local servers on the internet\",\n\n\t\tLongHelp: strings.Join([]string{\n\n\t\t\t\"Funnel enables you to share a local server on the internet using Tailscale.\\n\",\n\n\t\t\t\"To share only within your tailnet, use `tailscale serve`\\n\\n\",\n\n\t\t}, \"\\n\"),\n\n\t},"
+        },
+        {
+          "source_url": "https://github.com/tailscale/tailscale/blob/main/cmd/tailscale/cli/serve_v2.go",
+          "heading": "File metadata and controls",
+          "ord": 14,
+          "text": "}\n\n// errHelpFunc is standard error text that prompts users to\n\n// run `$subcmd --help` for information on how to use serve.\n\nvar errHelpFunc = func(m serveMode) error {\n\n\treturn fmt.Errorf(\"try `tailscale %s --help` for usage info\", infoMap[m].Name)\n\n}\n\n// newServeV2Command returns a new \"serve\" subcommand using e as its environment.\n\nfunc newServeV2Command(e *serveEnv, subcmd serveMode) *ffcli.Command {\n\n\tif subcmd != serve && subcmd != funnel {\n\n\t\tlog.Fatalf(\"newServeDevCommand called with unknown subcmd %v\", subcmd)\n\n\t}\n\n\tinfo := infoMap[subcmd]\n\n\treturn &ffcli.Command{\n\n\t\tName:      info.Name,\n\n\t\tShortHelp: info.ShortHelp,\n\n\t\tShortUsage: strings.Join([]string{\n\n\t\t\tfmt.Sprintf(\"tailscale %s <target>\", info.Name),\n\n\t\t\tfmt.Sprintf(\"tailscale %s status [--json]\", info.Name),\n\n\t\t\tfmt.Sprintf(\"tailscale %s reset\", info.Name),\n\n\t\t}, \"\\n\"),"
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 3,
+      "url": "https://blog.openreplay.com/secure-local-web-apps-tailscale",
+      "title": "Access Local Web Apps Securely with Tailscale",
+      "site_name": "OpenReplay",
+      "domain": "blog.openreplay.com",
+      "published_at": "2026-04-03",
+      "fetched_at": "2026-10-01T23:43:50.973434+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://blog.openreplay.com/secure-local-web-apps-tailscale",
+          "heading": "Access Local Web Apps Securely with Tailscale",
+          "ord": 0,
+          "text": "# Access Local Web Apps Securely with Tailscale\n\nShare local web apps securely with Tailscale Serve and Funnel across devices, without port forwarding, firewall rules, or unstable ngrok tunnels.\n\nYou’re deep in a feature build. Your designer needs to review it on their machine. Your options: push a half-finished branch to a staging server, wrestle with port forwarding, or fire up ngrok and hope the tunnel stays alive. None of these feel right.\n\nTailscale offers a cleaner path. This article covers how to use **Tailscale Serve** to securely access local web apps across devices and teammates — without opening firewall ports or configuring reverse proxies."
+        },
+        {
+          "source_url": "https://blog.openreplay.com/secure-local-web-apps-tailscale",
+          "heading": "Tailscale Serve vs Funnel: Knowing the Difference",
+          "ord": 5,
+          "text": "## Tailscale Serve vs Funnel: Knowing the Difference\n\nThis distinction matters and is worth being explicit about.\n\n|  | **Tailscale Serve** | **Tailscale Funnel** | \n|---|---|---|\n| **Who can access it** | Tailnet members only | Anyone on the public internet | \n| **Use case** | Team collaboration, internal review | Client demos, webhook testing | \n| **HTTPS** | Yes (MagicDNS) | Yes | \n| **Requires Tailscale on viewer’s device** | Yes | No | \n\n**Use Serve** when sharing with teammates who already have Tailscale. **Use Tailscale Funnel** when you need someone outside your tailnet — a client, a stakeholder, a webhook provider — to reach your local service.\n\nTo expose your app publicly with Funnel:\n\n`tailscale funnel 3000`\nThe URL format is the same, but traffic is now routable from the open internet. Use this deliberately and only when necessary."
+        },
+        {
+          "source_url": "https://blog.openreplay.com/secure-local-web-apps-tailscale",
+          "heading": "Is Tailscale Serve safe to use for sharing work-in-progress features?",
+          "ord": 9,
+          "text": "## Is Tailscale Serve safe to use for sharing work-in-progress features?\n\nYes. Tailscale Serve only exposes your local service to authenticated members of your tailnet over an encrypted WireGuard connection. Your dev server stays bound to localhost and is never reachable from the public internet. Access is governed by your tailnet's access controls (such as grants or ACL policies), so only authorized teammates can connect."
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 4,
+      "url": "https://ssdnodes.com/learn/tailscale-serve-vs-funnel",
+      "title": "Tailscale serve vs funnel: which to use · SSD Nodes",
+      "site_name": "SSD Nodes",
+      "domain": "ssdnodes.com",
+      "published_at": "2026-08-16",
+      "fetched_at": "2026-10-01T23:43:51.003308+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://ssdnodes.com/learn/tailscale-serve-vs-funnel",
+          "heading": "Tailscale serve vs funnel: which to use",
+          "ord": 0,
+          "text": "# Tailscale serve vs funnel: which to use\n\nTailscale serve puts HTTPS on a tailnet-only URL. Funnel opens that same port to the public internet. Which to use, and the policy gate that blocks funnel."
+        },
+        {
+          "source_url": "https://ssdnodes.com/learn/tailscale-serve-vs-funnel",
+          "heading": "tailscale serve vs funnel: who can reach the URL",
+          "ord": 1,
+          "text": "## tailscale serve vs funnel: who can reach the URL\n\nThe difference between `tailscale serve` and `tailscale funnel` is the audience, and nothing else. `serve` puts an HTTPS (hypertext transfer protocol secure) front end on a local port and publishes it to your tailnet only. `funnel` publishes that same local port to the whole public internet, through relay servers Tailscale runs. The two commands take the same flags and the same targets. One word stands between a private dashboard and a world-reachable one."
+        },
+        {
+          "source_url": "https://ssdnodes.com/learn/tailscale-serve-vs-funnel",
+          "heading": "Which one should I use?",
+          "ord": 15,
+          "text": "## Which one should I use?\n\nThe rule is short.\n\nUse `serve` for anything internal: admin interfaces, dashboards, a metrics UI you do not want indexed, a staging copy of a site. Membership of the tailnet is the access control, and it is a good one. A device that is not on the tailnet cannot even resolve the name.\n\nUse `funnel` for a demo link, a webhook receiver that a third party must POST to, or an OAuth callback during development. It is the fastest route to a public HTTPS URL, and one `off` command ends it. Public means public, though: the hostname is not a secret, and a funnel in front of an app with no login is an open service. Whatever sits behind it must authenticate its own requests, with the same care an exposed Ollama API endpoint needs."
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 5,
+      "url": "https://ssdnodes.com/learn/tailscale-serve-command-cheat-sheet",
+      "title": "tailscale serve: the commands that matter · SSD Nodes",
+      "site_name": "SSD Nodes",
+      "domain": "ssdnodes.com",
+      "published_at": "2026-09-20",
+      "fetched_at": "2026-10-01T23:43:50.973442+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://ssdnodes.com/learn/tailscale-serve-command-cheat-sheet",
+          "heading": "tailscale serve: the commands that matter",
+          "ord": 0,
+          "text": "# tailscale serve: the commands that matter\n\nEvery tailscale serve command you will use, checked on Tailscale 1.102.4: foreground versus background, HTTPS ports, path routing, static files and raw TCP."
+        },
+        {
+          "source_url": "https://ssdnodes.com/learn/tailscale-serve-command-cheat-sheet",
+          "heading": "Choose the HTTPS port, or serve plain HTTP",
+          "ord": 9,
+          "text": "## Choose the HTTPS port, or serve plain HTTP\n\nServe defaults to HTTPS on 443. To use another port, pass `--https`:\n\n`sudo tailscale serve --bg --https=8443 3000`\nThe URL becomes `https://vps.tail1234.ts.net:8443`. Any port works for serve. The fixed list of 443, 8443 and 10000 that people remember applies to Funnel, not to serve. One port holds one kind of listener, though: a port already used for TCP forwarding cannot also carry a web handler, and the CLI refuses with `cannot serve web; already serving TCP`.\n\nPlain HTTP inside the tailnet is available with `--http`:"
+        },
+        {
+          "source_url": "https://ssdnodes.com/learn/tailscale-serve-command-cheat-sheet",
+          "heading": "Can I use tailscale serve without enabling HTTPS certificates?",
+          "ord": 24,
+          "text": "### Can I use tailscale serve without enabling HTTPS certificates?\n\nYes, in two modes. `--http=<port>` serves plain HTTP inside the tailnet, and `--tcp=<port>` forwards raw TCP. Neither asks for a certificate. Only the default HTTPS mode needs MagicDNS and HTTPS certificates enabled on the DNS page of the admin console, and if they are not, the CLI prints an approval URL and waits rather than failing."
+        }
+      ],
+      "cited": true
+    }
+  ],
+  "reads": [
+    {
+      "url": "https://blog.openreplay.com/secure-local-web-apps-tailscale",
+      "title": "Access Local Web Apps Securely with Tailscale",
+      "site_name": "OpenReplay",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://github.com/tailscale/tailscale/blob/main/cmd/tailscale/cli/serve_v2.go",
+      "title": "tailscale/cmd/tailscale/cli/serve_v2.go at main · tailscale/tailscale",
+      "site_name": "GitHub",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://ssdnodes.com/learn/tailscale-serve-command-cheat-sheet",
+      "title": "tailscale serve: the commands that matter · SSD Nodes",
+      "site_name": "SSD Nodes",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://ssdnodes.com/learn/tailscale-serve-vs-funnel",
+      "title": "Tailscale serve vs funnel: which to use · SSD Nodes",
+      "site_name": "SSD Nodes",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://tailscale-dev-scaletail-31.mintlify.app/configuration/serve-vs-funnel",
+      "title": "Tailscale Serve vs Funnel - ScaleTail",
+      "site_name": "ScaleTail",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://tailscale.com/docs/features/tailscale-serve",
+      "title": "",
+      "site_name": "tailscale.com",
+      "status": "failed",
+      "reason": "[Errno 65] No route to host"
+    },
+    {
+      "url": "https://tailscale.com/docs/reference/tailscale-cli/serve",
+      "title": "",
+      "site_name": "tailscale.com",
+      "status": "failed",
+      "reason": "[Errno 65] No route to host"
+    }
+  ],
+  "elapsed_ms": 7586.95945799991,
+  "web": {
+    "status": "used",
+    "freshness": "any",
+    "notice": null,
+    "queries": [
+      "Tailscale Serve what does it do",
+      "Tailscale Serve functionality explained",
+      "Tailscale Serve vs Tailscale access use cases"
+    ],
+    "timings": {
+      "plan": 718.9765830044053,
+      "search": 643.6749169952236,
+      "fetch": 1004.9960420001298,
+      "rank": 4.101250000530854
+    },
+    "source_count": 5,
+    "plan_fallback": false,
+    "providers": [
+      "Ollama Search"
+    ],
+    "ranking": "keyword"
+  }
+}
