@@ -1,5 +1,6 @@
 """Explicit fixture/recording boundary. Production never consults eval content."""
 
+import gzip
 import hashlib
 import json
 from pathlib import Path
@@ -61,9 +62,13 @@ class Fixtures:
         meta = json.loads((self.directory / (key + ".page.json")).read_text())
         if meta.get("error"):
             raise ValueError(meta["error"])
-        return RawPage(
-            meta["url"], (self.directory / (key + ".page.bin")).read_bytes(), meta["content_type"]
+        raw = self.directory / (key + ".page.bin")
+        data = (
+            raw.read_bytes()
+            if raw.exists()
+            else gzip.decompress(raw.with_suffix(".bin.gz").read_bytes())
         )
+        return RawPage(meta["url"], data, meta["content_type"])
 
     def save_page(self, url: str, raw: RawPage) -> None:
         if self.recording:

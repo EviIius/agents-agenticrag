@@ -7,20 +7,29 @@ import json
 import math
 import re
 import sys
+import unicodedata
 from datetime import UTC, datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import monotonic
 from typing import Any
 
+import aiosqlite
 import httpx
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from prompt_trials import DIRECT_AND_CONSISTENT, TASK_AND_SCOPE, TASK_AND_SCOPE_V2  # noqa: E402
+from prompt_trials import (  # noqa: E402
+    CITED_EVIDENCE,
+    DIRECT_AND_CONSISTENT,
+    INTENT_PROMPT,
+    TASK_AND_SCOPE,
+    TASK_AND_SCOPE_V2,
+)
 
 from app.config import Settings  # noqa: E402
 from app.main import create_app  # noqa: E402
+from app.providers.ollama import Ollama  # noqa: E402
 from app.search import planner  # noqa: E402
 from app.search import prompt as answer_prompt  # noqa: E402
 from app.search.citations import cited  # noqa: E402
@@ -75,12 +84,43 @@ def percentile(values: list[float], p: float) -> float:
 
 
 async def evaluate(args: argparse.Namespace) -> None:
+    planner_wire_schema = planner.SCHEMA
     if args.planner_trial == "task-and-scope":
         planner.PROMPT += TASK_AND_SCOPE
     elif args.planner_trial == "task-and-scope-v2":
         planner.PROMPT += TASK_AND_SCOPE_V2
+    elif args.planner_trial == "intent-first":
+        planner.PROMPT = INTENT_PROMPT
+        original_json = Ollama.complete_json
+
+        planner_wire_schema = {
+            **planner.SCHEMA,
+            "required": ["task", "queries", "freshness"],
+            "properties": {
+                "task": {
+                    "type": "string",
+                    "enum": ["lookup", "transform", "creative", "calculate", "conversation"],
+                },
+                "queries": planner.SCHEMA["properties"]["queries"],
+                "freshness": planner.SCHEMA["properties"]["freshness"],
+            },
+        }
+
+        async def intent_json(self: Ollama, req: Any) -> dict[str, Any]:
+            if req.json_schema != planner.SCHEMA:
+                return await original_json(self, req)
+            req.json_schema = planner_wire_schema
+            raw = await original_json(self, req)
+            task = raw.pop("task")
+            if task != "lookup" and raw.get("queries"):
+                raise ValueError("Non-lookup plan contains search queries")
+            return {"search": task == "lookup", **raw}
+
+        Ollama.complete_json = intent_json
     if args.answer_trial == "direct-and-consistent":
         answer_prompt.PROMPT += DIRECT_AND_CONSISTENT
+    elif args.answer_trial == "cited-evidence":
+        answer_prompt.PROMPT = CITED_EVIDENCE
     cases = json.loads(Path(args.cases_file).read_text())
     if args.case:
         cases = [c for c in cases if c["id"] == args.case]
@@ -124,6 +164,18 @@ async def evaluate(args: argparse.Namespace) -> None:
                     else None,
                 },
             )
+            if args.search_key_db:
+                async with aiosqlite.connect(
+                    Path(args.search_key_db).resolve().as_uri() + "?mode=ro", uri=True
+                ) as key_store:
+                    row = await (
+                        await key_store.execute(
+                            "SELECT value_json FROM settings WHERE key='web.ollama_api_key'"
+                        )
+                    ).fetchone()
+                if not row or not json.loads(row[0]):
+                    raise SystemExit("No Ollama search key saved in the selected app database")
+                await client.patch("/api/settings", json={"web.ollama_api_key": json.loads(row[0])})
             print("Warming " + args.model, flush=True)
             loaded = await client.post(
                 "/api/models/load", json={"connection_id": conn["id"], "model_id": args.model}
@@ -219,7 +271,11 @@ async def evaluate(args: argparse.Namespace) -> None:
                         + f" · {(run.message.stats.ttft_ms or 0) / 1000:.2f}s TTFT",
                         flush=True,
                     )
-                answer = turns[-1]["message"]["content"]
+                # Typography must not count as a factual failure (e.g. a narrow
+                # no-break space in a name or a non-breaking hyphen in a score).
+                answer = unicodedata.normalize("NFKC", turns[-1]["message"]["content"]).translate(
+                    str.maketrans({c: "-" for c in "‐‑‒–—―−"})
+                )
                 expect = case["expect"]
                 patterns = expect.get("must_include_last", expect.get("must_include", []))
                 facts = all(re.search(p, answer, re.I) for p in patterns)
@@ -353,10 +409,11 @@ async def evaluate(args: argparse.Namespace) -> None:
                 "planner_trial": args.planner_trial,
                 "planner_prompt_sha256": hashlib.sha256(planner.PROMPT.encode()).hexdigest(),
                 "planner_prompt": planner.PROMPT,
+                "planner_wire_schema": planner_wire_schema,
                 "answer_trial": args.answer_trial,
                 "answer_prompt": answer_prompt.PROMPT,
                 "answer_prompt_sha256": hashlib.sha256(answer_prompt.PROMPT.encode()).hexdigest(),
-                "fixture_root": args.fixture_root if not args.live and not args.record else None,
+                "fixture_root": args.fixture_root if not args.live else None,
                 "metrics": metrics,
                 "results": results,
             },
@@ -403,7 +460,22 @@ if __name__ == "__main__":
     parser.add_argument("--case", default="")
     parser.add_argument("--cases-file", default=str(HERE / "cases.yaml"))
     parser.add_argument(
-        "--providers", choices=["searxng,ddgs", "searxng", "ddgs"], default="searxng,ddgs"
+        "--search-key-db",
+        default="",
+        help="Read only the saved search credential from the new app database, without logging it",
+    )
+    parser.add_argument(
+        "--providers",
+        choices=[
+            "ollama,searxng,exa,ddgs",
+            "ollama",
+            "searxng,exa,ddgs",
+            "searxng,ddgs",
+            "searxng",
+            "exa",
+            "ddgs",
+        ],
+        default="ollama,searxng,exa,ddgs",
     )
     parser.add_argument("--model", default="qwen3:30b-a3b-instruct-2507-q4_K_M")
     parser.add_argument("--url", default="http://127.0.0.1:11434")
@@ -413,7 +485,13 @@ if __name__ == "__main__":
     parser.add_argument("--embedding", default="qwen3-embedding:0.6b")
     parser.add_argument("--fixture-root", default=str(HERE / "fixtures"))
     parser.add_argument(
-        "--planner-trial", choices=["spec", "task-and-scope", "task-and-scope-v2"], default="spec"
+        "--planner-trial",
+        choices=["spec", "task-and-scope", "task-and-scope-v2", "intent-first"],
+        default="spec",
     )
-    parser.add_argument("--answer-trial", choices=["spec", "direct-and-consistent"], default="spec")
+    parser.add_argument(
+        "--answer-trial",
+        choices=["spec", "direct-and-consistent", "cited-evidence"],
+        default="spec",
+    )
     asyncio.run(evaluate(parser.parse_args()))

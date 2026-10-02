@@ -375,6 +375,13 @@ async def test_fixture_replay_and_page_cache(
     recording.save_search("ddgs", "facts", "any", [result])
     replay = Fixtures(tmp_path)
     assert replay.search("ddgs", "facts", "any") == [result]
+    assert replay.page(raw.url) == raw
+    import gzip
+
+    recording_file = next(tmp_path.glob("*.page.bin"))
+    recording_file.with_suffix(".bin.gz").write_bytes(gzip.compress(raw.data, mtime=0))
+    recording_file.unlink()
+    assert replay.page(raw.url) == raw
     page = await cache.read(app.state.store, raw.url, 7, replay)
     assert len(page.text) > 300
     again = await cache.read(app.state.store, raw.url, 7, Fixtures())
