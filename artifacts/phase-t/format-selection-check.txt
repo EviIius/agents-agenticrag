@@ -1,0 +1,36 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+All checks passed!
+. scripts/tool-env.sh; uv run --directory server ruff format --check app tests
+64 files already formatted
+. scripts/tool-env.sh; uv run --directory server mypy app tests
+Success: no issues found in 62 source files
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_coverage.py
+........................................................................ [ 36%]
+........................................................................ [ 72%]
+.......................................................                  [100%]
+199 passed in 18.01s
+providers line coverage: 343/400 = 85.8%
+runs line coverage: 381/427 = 89.2%
+search line coverage: 1547/1741 = 88.9%
+transcribe line coverage: 322/355 = 90.7%
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_contrast.py
+light: body/background 16.17:1; secondary 6.55:1; tertiary 4.96:1
+dark: body/background 14.34:1; secondary 6.56:1; tertiary 4.88:1
+Contrast: 56 token pairs passed.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/generate_api_types.py --check
+✨ openapi-typescript 7.13.0
+🚀 /var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/tmpo7640dfa/openapi.json → /var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/tmpo7640dfa/api-types.ts [41.9ms]
+API contract: up to date.
+. scripts/tool-env.sh; npm run check --prefix web
+npm notice run workbench-web@1.0.0-alpha.0 check
+npm notice run tsc --noEmit && eslint . && prettier --check src index.html vite.config.ts playwright.config.ts tests && vitest run src
+Checking formatting...
+All matched files use Prettier code style!
+
+ RUN  v5.0.3 /Users/evilius/Documents/GitHub/agents-agenticrag/web
+
+
+ Test Files  4 passed (4)
+      Tests  36 passed (36)
+   Start at  14:42:53
+   Duration  197ms (tests 52%, transform 32%, import 14%, worker 3%)

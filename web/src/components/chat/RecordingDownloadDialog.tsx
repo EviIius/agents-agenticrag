@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import type { Attachment } from "@/lib/api";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import {
@@ -190,12 +190,16 @@ export function RecordingDownloadDialog({
               return (
                 <Button
                   key={choice}
-                  variant={format === choice ? "secondary" : "outline"}
+                  variant={format === choice ? "default" : "outline"}
+                  className="h-auto min-h-11 whitespace-normal px-3 py-2"
                   aria-pressed={format === choice}
                   disabled={busy}
                   onClick={() => setFormat(choice)}
                 >
-                  {recordingFormats[choice]}
+                  {format === choice && (
+                    <Check aria-hidden="true" className="size-3.5" />
+                  )}
+                  <span className="min-w-0">{recordingFormats[choice]}</span>
                 </Button>
               );
             })}

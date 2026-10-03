@@ -174,4 +174,4 @@ This inventory combines source review with the browser checks listed below. It d
 
 ## Open questions for Jake
 
-The updated preview is restored. Recheck the Load button and Qwen 32K chat settings on the iPhone. The option inventory above records later polish priorities; it does not add agents or begin Phase 3.
+The mobile checkpoint was subsequently accepted by Jake on 3 October. The final recording download refinement and physical-phone approval are recorded in `docs/PHASE-T-MOBILE-REVIEW.md`. Phase 3 is ready to begin; the option inventory remains the record of later polish priorities.

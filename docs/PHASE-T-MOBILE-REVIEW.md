@@ -24,7 +24,7 @@ This refines T1. T2 and Phase 3 have not started.
 | Touch targets, overflow and accessibility | Passed focused checks | 44-pixel close target, no horizontal page overflow, no serious/critical axe findings in light/dark at 320/390/1440. |
 | Every new state on `/design` | Passed | Ready, preparing, failed, sharing, cancelled, share denied, returned; 28 synthetic screenshots and 28 axe scans, zero serious/critical findings (`mobile-design-review.json`). |
 | Regression gate | Passed after correction | Full run: 178 passed, two expected skips, two failed; both corrected via test cleanup. All 34 affected download/review checks then passed on Chromium/WebKit. `make check` and build passed. |
-| Physical iPhone share sheet after this change | Pending Jake | The actual OS sheet cannot be driven by headless browser tests; check Save to Files and native Cancel on the phone. |
+| Physical iPhone share sheet after this change | Accepted by Jake | User supplied physical-phone screenshots of the chooser/native share sheet and said the download flow is satisfactory. Screenshots and private filenames are not copied into the repo. |
 
 ## Comprehensive iPhone review
 
@@ -113,14 +113,29 @@ Synthetic recordings only; the supplied real screenshots were not copied into th
 
 Privacy audit: `mobile-privacy-audit.json` found no real filename matches or added audio media in the changed/new files. Only numeric real-run metadata was examined; no real transcript was read for this review.
 
+## Format selection and phone acceptance — 3 October 2026
+
+Jake accepted the revised physical iPhone download flow and requested a clearer
+selected format. Selected buttons now use the existing brand treatment and a
+checkmark; `aria-pressed` remains the accessible state. Labels wrap within 44-pixel
+minimum touch targets on narrow screens. No packages, API or runtime changes.
+
+- `make check`: 199 Python tests, 36 frontend tests and 56 contrast pairs passed;
+  lint/types/format/API contract passed (`format-selection-check.txt`).
+- `make build`: passed (`format-selection-build.txt`).
+- Existing focused browser suite: **14 passed** on Chromium/WebKit in 26.3 s;
+  covers format changes/downloads, 320/390/1440 layouts in both themes, nested
+  panels, touch targets, overflow and axe (`format-selection-e2e.txt`).
+- Updated `mobile-save-{320,390,1440}-{light,dark}-fake.png` screens show the brand
+  highlight and checkmark. Earlier seven-state previews remain historical evidence.
+- `format-selection-preview-status.json`: HTTP 200/current compiled index on
+  localhost and Tailscale, real transcription engine ready; unchanged background
+  preview environment restored.
+
 ## Open questions for Jake
 
-After the preview update, check Download → Details (.json) → Save or share on the
-physical iPhone. Cancel the native sheet, switch to Text, then reopen it and use
-Save to Files. Verify that the transcript and chat remain available. If the host
-browser doesn't support file sharing, use the explicitly separate download and
-return to the retained Workbench tab.
-
-Exact real-file upload time and Mac memory pressure were not measured in either
-physical-device check. The report does not claim those values or verified transcript
-accuracy. Review remains at T1 before T2 and Phase 3.
+The mobile save review is accepted. Phase 2's UI checkpoint is closed, and Phase 3
+is ready to start with the command palette, PWA/update flow, accessibility and
+performance measurements, legacy read-only import and deployment. T2 remains
+separate and unstarted. Exact real-file upload time and Mac memory pressure remain
+unmeasured; no full transcript-accuracy claim is made.
