@@ -1,3 +1,4 @@
+import { LegacyImportDialog } from "./LegacyImportDialog";
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
@@ -756,9 +757,12 @@ export function LiveSettingsPane({
         <div>Shift Enter · New line</div>
         <div>↑ in an empty composer · Edit last message</div>
         <div>Esc in the composer · Stop generating</div>
-        <div>⌘/Ctrl K · Search chats</div>
+        <div>⌘/Ctrl K · Command palette</div>
         <div>⌘/Ctrl , · Settings</div>
         <div>⌘/Ctrl Shift O · New chat</div>
+        <div>⌘/Ctrl B · Toggle sidebar</div>
+        <div>⌘/Ctrl Shift . · Chat settings</div>
+        <div>⌘/Ctrl / · Shortcuts</div>
       </dl>
     );
   if (pane === "About")
@@ -808,9 +812,7 @@ export function DataPane({ preview = false }: { preview?: boolean }) {
           Export all chats
         </a>
       </Button>
-      <p className="text-sm text-fg-3">
-        Import from Chat & Web 0.5 will be available in the deployment phase.
-      </p>
+      <LegacyImportDialog preview={preview ? "ready" : undefined} />
       <AlertDialog
         open={open}
         onOpenChange={(value) => {

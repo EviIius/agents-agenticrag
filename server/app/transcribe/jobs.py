@@ -9,11 +9,11 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from ..db import attachments
+from ..db import attachments, settings
 from ..db.connections import now
 from ..db.core import Store
 from ..errors import AppError
-from ..schemas import Attachment, TranscriptionEvent
+from ..schemas import Attachment, AudioStorage, TranscriptionEvent
 from .engine import Engine
 
 
@@ -87,6 +87,8 @@ class TranscriptionManager:
             ),
         )
         shutil.rmtree(self.data_dir / "transcribe-tmp", ignore_errors=True)
+        if not (await settings.get(self.store))["transcription.keep_audio"]:
+            await self.clear_audio(ready_only=True)
         await self.housekeeping()
         self.housekeeper = asyncio.create_task(self.maintain())
 
@@ -98,7 +100,10 @@ class TranscriptionManager:
     async def housekeeping(self) -> None:
         cutoff = (datetime.now(UTC) - timedelta(days=7)).isoformat()
         rows = await self.store.rows(
-            "SELECT id,path FROM attachments WHERE message_id IS NULL AND created_at<?", (cutoff,)
+            "SELECT a.id,a.path FROM attachments a LEFT JOIN transcripts t ON t.attachment_id=a.id "
+            "WHERE a.message_id IS NULL AND a.created_at<? "
+            "AND (t.status IS NULL OR t.status!='ready')",
+            (cutoff,),
         )
         for row in rows:
             await self.remove(str(row["id"]))
@@ -112,6 +117,10 @@ class TranscriptionManager:
             if old and not old.closed:
                 raise AppError(
                     "transcription_active", "This recording is still being processed.", 409
+                )
+            if not item.audio_available:
+                raise AppError(
+                    "audio_removed", "The audio was removed. Upload it again to transcribe.", 409
                 )
             if not (await self.engine.status()).ready:
                 raise AppError(
@@ -172,6 +181,11 @@ class TranscriptionManager:
                         job.id,
                     ),
                 )
+                if not (await settings.get(self.store))["transcription.keep_audio"]:
+                    try:
+                        await self.release_audio(job.id)
+                    except OSError:
+                        pass  # The durable transcript remains ready; Settings can retry cleanup.
         except asyncio.CancelledError:
             kind = "transcription.failed" if job.interrupted else "transcription.cancelled"
             await self.cancelled(job)
@@ -197,6 +211,57 @@ class TranscriptionManager:
                 )
             await job.emit("stream.closed", {})
             asyncio.get_running_loop().call_later(900, self.expire, job)
+
+    async def release_audio(self, identifier: str) -> int:
+        row = await self.store.one("SELECT path,bytes FROM attachments WHERE id=?", (identifier,))
+        if not row:
+            return 0
+        file = (self.data_dir / str(row["path"])).resolve()
+        if not file.is_relative_to(self.data_dir / "attachments"):
+            raise AppError("audio_storage_error", "The audio could not be removed.", 500)
+        size = file.stat().st_size if file.exists() else 0
+        await asyncio.to_thread(file.unlink, missing_ok=True)
+        await self.store.execute(
+            "UPDATE attachments SET audio_available=0 WHERE id=?", (identifier,)
+        )
+        return size
+
+    async def audio_storage(self) -> AudioStorage:
+        rows = await self.store.rows(
+            "SELECT a.id,a.path,t.status FROM attachments a LEFT JOIN transcripts t "
+            "ON t.attachment_id=a.id WHERE a.kind='audio' AND a.audio_available=1"
+        )
+        result = AudioStorage()
+        for row in rows:
+            file = (self.data_dir / str(row["path"])).resolve()
+            if file.is_relative_to(self.data_dir / "attachments") and file.is_file():
+                result.files += 1
+                result.bytes += file.stat().st_size
+                result.active_files += row["status"] in ("queued", "transcribing")
+        return result
+
+    async def clear_audio(self, ready_only: bool = False) -> AudioStorage:
+        rows = await self.store.rows(
+            "SELECT id FROM attachments WHERE kind='audio' AND audio_available=1"
+        )
+        removed = AudioStorage()
+        for row in rows:
+            identifier = str(row["id"])
+            async with self.lock(identifier):
+                record = await self.store.one(
+                    "SELECT a.audio_available,t.status FROM attachments a LEFT JOIN transcripts t "
+                    "ON t.attachment_id=a.id WHERE a.id=?",
+                    (identifier,),
+                )
+                job = self.jobs.get(identifier)
+                if not record or not record["audio_available"] or (job and not job.closed):
+                    continue
+                state = record["status"]
+                if state in ("queued", "transcribing") or (ready_only and state != "ready"):
+                    continue
+                removed.bytes += await self.release_audio(identifier)
+                removed.files += 1
+        return removed
 
     def expire(self, job: Job) -> None:
         if self.jobs.get(job.id) is job:

@@ -21,7 +21,11 @@ test.beforeEach(async ({ page, request }) => {
   for (const item of pending)
     await request.delete(`/api/attachments/${item.id}`);
   await request.patch("/api/settings", {
-    data: { "transcription.block_web": true, default_model_id: "fake-chat" },
+    data: {
+      "transcription.block_web": true,
+      "transcription.keep_audio": true,
+      default_model_id: "fake-chat",
+    },
   });
   await page.goto("/");
   await expect(

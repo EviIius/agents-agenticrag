@@ -13,6 +13,7 @@ from ..db import attachments
 from ..errors import AppError
 from ..schemas import (
     Attachment,
+    AudioStorage,
     TranscribeRequest,
     Transcript,
     TranscriptionEvent,
@@ -27,6 +28,18 @@ router = APIRouter(prefix="/api")
 async def status(request: Request, refresh: bool = False) -> TranscriptionStatus:
     manager: TranscriptionManager = request.app.state.transcription
     return await manager.engine.status(refresh)
+
+
+@router.get("/transcription/audio-storage")
+async def audio_storage(request: Request) -> AudioStorage:
+    manager: TranscriptionManager = request.app.state.transcription
+    return await manager.audio_storage()
+
+
+@router.delete("/transcription/audio-storage")
+async def clear_audio(request: Request) -> AudioStorage:
+    manager: TranscriptionManager = request.app.state.transcription
+    return await manager.clear_audio()
 
 
 @router.get("/_schema/transcription-event", response_model=TranscriptionEvent)

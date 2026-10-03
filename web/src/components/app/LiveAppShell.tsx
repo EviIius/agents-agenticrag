@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router";
 import {
   useQuery,
   useQueryClient,
@@ -23,12 +23,6 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import {
   Drawer,
   DrawerContent,
   DrawerTitle,
@@ -41,6 +35,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { CommandPalette } from "./CommandPalette";
+import { resolvedTheme } from "@/lib/theme";
 import { ChatList } from "./ChatList";
 import { ChatActionDialog } from "./ChatActionDialog";
 import { ModelPicker } from "./ModelPicker";
@@ -132,6 +128,16 @@ export function LiveAppShell() {
   } | null>(null);
   const scroll = useRef<HTMLDivElement>(null);
   const previousChat = useRef(chatId);
+  const stopRequested = useRef(false);
+  const restoreComposerFocus = useRef(false);
+  useLayoutEffect(() => {
+    if (restoreComposerFocus.current) {
+      restoreComposerFocus.current = false;
+      document
+        .querySelector<HTMLTextAreaElement>(".composer textarea")
+        ?.focus();
+    }
+  }, [chatId]);
   const bootstrap = useQuery({
     queryKey: ["bootstrap"],
     queryFn: () => api<Bootstrap>("/bootstrap"),
@@ -144,6 +150,19 @@ export function LiveAppShell() {
     enabled: !!bootstrap.data?.connections.length,
     refetchInterval: () => (document.hidden ? false : 30000),
   });
+  useEffect(() => {
+    if (
+      !bootstrap.data ||
+      (bootstrap.data.connections.length && models.isPending)
+    )
+      return;
+    if (performance.getEntriesByName("workbench:interactive").length) return;
+    performance.mark("workbench:interactive");
+    performance.measure("workbench:time-to-interactive", {
+      start: 0,
+      end: performance.now(),
+    });
+  }, [bootstrap.data, models.isPending]);
   const detail = useQuery({
     queryKey: ["chat", chatId],
     queryFn: () => api<Detail>("/chats/" + chatId),
@@ -282,12 +301,36 @@ export function LiveAppShell() {
         e.key.toLowerCase() === "o"
       ) {
         e.preventDefault();
+        ui.set({
+          command: false,
+          settings: false,
+          panel: false,
+          sidebar: false,
+        });
         navigate("/");
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        ui.set(
+          desktop ? { collapsed: !ui.collapsed } : { sidebar: !ui.sidebar },
+        );
+      }
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        e.shiftKey &&
+        (e.key === ">" || e.code === "Period")
+      ) {
+        e.preventDefault();
+        ui.set({ panel: !ui.panel });
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === "/") {
+        e.preventDefault();
+        ui.set({ settings: true, settingsPane: "Shortcuts", command: false });
       }
     };
     window.addEventListener("keydown", listener);
     return () => window.removeEventListener("keydown", listener);
-  }, [navigate, ui]);
+  }, [navigate, ui, desktop]);
   const refresh = () => {
     void query.invalidateQueries({ queryKey: ["chat", chatId] });
     void query.invalidateQueries({ queryKey: ["chats"] });
@@ -362,6 +405,7 @@ export function LiveAppShell() {
     if (!current || running || modelOperation.current || waitingForTranscript)
       return false;
     setSendError("");
+    stopRequested.current = false;
     setBusy(true);
     setPending(text);
     try {
@@ -388,11 +432,19 @@ export function LiveAppShell() {
         attachment_ids: effectiveFiles.map((f) => f.id),
         web: chat?.web_enabled ?? web,
       });
-      if (!chatId) navigate("/c/" + id);
+      if (!chatId) {
+        restoreComposerFocus.current =
+          document.activeElement?.matches(".composer textarea") ?? false;
+        navigate("/c/" + id);
+      }
       setFiles([]);
       void query.invalidateQueries({ queryKey: ["pending-recordings"] });
       setPending("");
       attachRun(response.run_id, id, response.assistant_message, query);
+      if (stopRequested.current) {
+        await api(`/runs/${response.run_id}/cancel`, {});
+        stopRequested.current = false;
+      }
       void query.invalidateQueries({ queryKey: ["chat", id] });
       void query.invalidateQueries({ queryKey: ["chats"] });
       if (bootstrap.data?.settings["new_chat_model"] !== "fixed")
@@ -424,6 +476,7 @@ export function LiveAppShell() {
   };
   const regenerate = async (message: Message, force = false, model?: Model) => {
     if (running) return;
+    stopRequested.current = false;
     setBusy(true);
     try {
       const response = await api<RunResponse>(
@@ -441,6 +494,10 @@ export function LiveAppShell() {
         response.assistant_message,
         query,
       );
+      if (stopRequested.current) {
+        await api(`/runs/${response.run_id}/cancel`, {});
+        stopRequested.current = false;
+      }
       refresh();
     } catch (e) {
       toast(String(e));
@@ -563,7 +620,14 @@ export function LiveAppShell() {
       disabled={!current || busy || !!loadingModel}
       running={running}
       onStop={() => {
-        if (runEntry) void api("/runs/" + runEntry[0] + "/cancel", {});
+        document
+          .querySelector<HTMLTextAreaElement>(".composer textarea")
+          ?.focus();
+        if (runEntry && runEntry[1].stage !== "done")
+          void api("/runs/" + runEntry[0] + "/cancel", {}).catch(() =>
+            toast.error("Couldn’t stop the response. Try again."),
+          );
+        else if (busy) stopRequested.current = true;
       }}
       onSend={(text) => onSend(text)}
       error={sendError}
@@ -761,9 +825,20 @@ export function LiveAppShell() {
     visible = visible.map((m) => (m.id === live.id ? live : m));
     if (!visible.some((m) => m.id === live.id)) visible.push(live);
   }
-  const all = [...(detail.data?.messages ?? [])];
-  if (runEntry && !all.some((m) => m.id === runEntry[1].message.id))
-    all.push(runEntry[1].message);
+  const runId = runEntry?.[1].message.id;
+  const all = useMemo(() => {
+    const rows = [...(detail.data?.messages ?? [])];
+    if (runId && !rows.some((m) => m.id === runId))
+      rows.push({
+        id: runId,
+        chat_id: chatId!,
+        role: "assistant",
+        content: "",
+        status: "streaming",
+        created_at: "",
+      });
+    return rows;
+  }, [detail.data?.messages, runId, chatId]);
   return (
     <div className="app-shell">
       <aside className="sidebar-desktop" data-collapsed={ui.collapsed}>
@@ -998,30 +1073,38 @@ export function LiveAppShell() {
           />
         )}
       />
-      <Dialog open={ui.command} onOpenChange={(command) => ui.set({ command })}>
-        <DialogContent>
-          <DialogTitle>Search chats</DialogTitle>
-          <DialogDescription>Search titles and messages</DialogDescription>
-          <Input
-            aria-label="Search chats"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <div className="max-h-[60dvh] overflow-y-auto">
-            {historyItems.map((chat) => (
-              <Link
-                key={chat.id}
-                to={"/c/" + chat.id}
-                onClick={() => ui.set({ command: false })}
-                className="block min-h-11 rounded-md p-3 hover:bg-surface-2"
-              >
-                {chat.title}
-                <p className="text-xs text-fg-3">{chat.snippet}</p>
-              </Link>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <CommandPalette
+        open={ui.command}
+        onOpenChange={(command) => ui.set({ command })}
+        onChat={(chat) => navigate("/c/" + chat.id)}
+        searchDisabled={webBlocked || !bootstrap.data?.features.web_search}
+        actions={{
+          newChat: () => navigate("/"),
+          switchModel: () =>
+            window.dispatchEvent(new Event("workbench:choose-model")),
+          toggleSearch: () => {
+            if (webBlocked || !bootstrap.data?.features.web_search) return;
+            const next = !(detail.data?.chat.web_enabled ?? web);
+            setWeb(next);
+            if (chatId)
+              void mutate("/chats/" + chatId, { web_enabled: next }, "PATCH");
+          },
+          chatSettings: () => ui.set({ panel: true }),
+          settings: () => ui.set({ settings: true }),
+          shortcuts: () =>
+            ui.set({ settings: true, settingsPane: "Shortcuts" }),
+          toggleTheme: () =>
+            ui.set({
+              theme:
+                resolvedTheme(
+                  ui.theme,
+                  matchMedia("(prefers-color-scheme: dark)").matches,
+                ) === "dark"
+                  ? "light"
+                  : "dark",
+            }),
+        }}
+      />
       <ChatActionDialog
         key={String(action?.chat.id) + String(action?.kind)}
         action={action}

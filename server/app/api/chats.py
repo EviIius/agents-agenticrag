@@ -1,6 +1,7 @@
 import base64
 import json
 import re
+import sqlite3
 from contextlib import AsyncExitStack
 from urllib.parse import quote
 
@@ -10,6 +11,7 @@ from fastapi.responses import Response
 from ..db import attachments as records
 from ..db import chats, messages, settings
 from ..db.connections import now, uid
+from ..db.legacy import import_legacy
 from ..errors import AppError
 from ..runs.context import assemble, path
 from ..schemas import (
@@ -20,11 +22,34 @@ from ..schemas import (
     ChatPatch,
     ContextInfo,
     DeleteChats,
+    LegacyImport,
+    LegacyStatus,
     RunResponse,
     Send,
 )
 
 router = APIRouter(prefix="/api/chats")
+
+
+@router.get("/legacy-import")
+async def legacy_status(request: Request) -> LegacyStatus:
+    return LegacyStatus(available=request.app.state.config.legacy_db.expanduser().is_file())
+
+
+@router.post("/legacy-import")
+async def legacy_import(request: Request) -> LegacyImport:
+    source = request.app.state.config.legacy_db
+    if not source.expanduser().is_file():
+        raise AppError(
+            "legacy_unavailable", "No Chat & Web 0.5 database was found on this Mac.", 404
+        )
+    try:
+        imported, skipped = await import_legacy(request.app.state.store, source)
+    except (OSError, sqlite3.Error, ValueError):
+        raise AppError(
+            "legacy_import_failed", "Couldn't import the old chats. Existing chats were kept.", 422
+        ) from None
+    return LegacyImport(imported=imported, skipped=skipped)
 
 
 @router.get("/export")

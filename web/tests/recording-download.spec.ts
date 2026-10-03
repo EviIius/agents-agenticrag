@@ -15,7 +15,7 @@ test.beforeEach(async ({ page, request }) => {
   for (const item of pending)
     await request.delete(`/api/attachments/${item.id}`);
   await request.patch("/api/settings", {
-    data: { default_model_id: "fake-chat" },
+    data: { default_model_id: "fake-chat", "transcription.keep_audio": true },
   });
   await page.addInitScript(() => {
     Object.defineProperty(navigator, "share", {
@@ -32,7 +32,11 @@ test.beforeEach(async ({ page, request }) => {
   await expect(
     page.getByRole("menuitem", { name: "Add recording", exact: true }),
   ).toBeVisible();
+  await page.getByRole("menu", { name: "Add attachment", exact: true }).focus();
   await page.keyboard.press("Escape");
+  await expect(
+    page.getByRole("menu", { name: "Add attachment", exact: true }),
+  ).not.toBeVisible();
   await page.locator('input[type="file"]').setInputFiles({
     name: "Synthetic recording.wav",
     mimeType: "audio/wav",

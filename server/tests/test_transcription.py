@@ -25,6 +25,7 @@ FAKE = Path(__file__).parent / "fake_transcribe"
 async def upload(
     app: FastAPI, client: httpx.AsyncClient, directive: str = "fake"
 ) -> dict[str, Any]:
+    await client.patch("/api/settings", json={"transcription.keep_audio": True})
     app.state.transcription.engine = Engine(FAKE)
     response = await client.post(
         "/api/attachments", files={"file": ("Synthetic.wav", directive.encode(), "audio/wav")}
@@ -301,3 +302,54 @@ async def test_version_one_migration_keeps_attachments(tmp_path: Path) -> None:
             "VALUES ('new','audio','synthetic.wav','audio/wav',4,'attachments/new.wav',"
             "'2000-01-01')"
         )
+
+
+async def test_temporary_audio_keeps_outputs_and_bulk_clear_skips_active(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+) -> None:
+    app, client, _ = chat_app
+    assert (await client.get("/api/settings")).json()["transcription.keep_audio"] is False
+    item = await upload(app, client, "#fake:slow 0.2")
+    await client.patch("/api/settings", json={"transcription.keep_audio": False})
+    result = await ready(app, item)
+    assert result["audio_available"] is False
+    assert result["transcript"]["status"] == "ready"
+    assert (await client.get(f"/api/attachments/{item['id']}")).status_code == 404
+    before = (await client.get(f"/api/attachments/{item['id']}/transcript")).json()
+    for fmt in ("txt", "srt", "json"):
+        assert (
+            await client.get(f"/api/attachments/{item['id']}/transcript/download?format={fmt}")
+        ).status_code == 200
+    assert (await client.post(f"/api/attachments/{item['id']}/transcribe", json={})).json()[
+        "error"
+    ]["code"] == "audio_removed"
+    assert (await client.get(f"/api/attachments/{item['id']}/transcript")).json() == before
+    retained = await upload(app, client)
+    assert (await ready(app, retained))["audio_available"] is True
+    failed = await upload(app, client, "#fake:fail Synthetic failure")
+    await ready(app, failed)
+    active = await upload(app, client, "#fake:slow 30")
+    stats = (await client.get("/api/transcription/audio-storage")).json()
+    assert stats["files"] == 3 and stats["active_files"] == 1
+    removed = (await client.delete("/api/transcription/audio-storage")).json()
+    assert removed["files"] == 2 and removed["bytes"] > 0
+    assert (await client.get("/api/transcription/audio-storage")).json()["files"] == 1
+    assert (await client.get(f"/api/attachments/{retained['id']}/transcript")).status_code == 200
+    assert (await client.delete("/api/transcription/audio-storage")).json()["files"] == 0
+    await client.post(f"/api/attachments/{active['id']}/cancel")
+    await client.delete("/api/transcription/audio-storage")
+    assert (await client.get("/api/transcription/audio-storage")).json()["files"] == 0
+    # Recovery frees historical completed audio without touching its output.
+    historical = await upload(app, client)
+    await ready(app, historical)
+    await client.patch("/api/settings", json={"transcription.keep_audio": False})
+    await app.state.transcription.close()
+    await app.state.transcription.recover()
+    assert (await client.get(f"/api/attachments/{historical['id']}/transcript")).status_code == 200
+    assert (await client.get(f"/api/attachments/{historical['id']}")).status_code == 404
+
+    await app.state.store.execute(
+        "UPDATE attachments SET created_at='2000-01-01' WHERE id=?", (historical["id"],)
+    )
+    await app.state.transcription.housekeeping()
+    assert (await client.get(f"/api/attachments/{historical['id']}/transcript")).status_code == 200

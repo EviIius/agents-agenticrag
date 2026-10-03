@@ -1,3 +1,4 @@
+import { PolishPreview } from "./PolishPreview";
 import { TranscriptionPreview } from "./TranscriptionPreview";
 import { lazy, Suspense, useState } from "react";
 import { Link } from "react-router";
@@ -260,6 +261,7 @@ export function DesignPage() {
         </h2>
         <DataPane preview />
       </section>
+      <PolishPreview />
       <TranscriptionPreview />
       <ReviewStates />
       <section aria-labelledby="models" className="mb-8">

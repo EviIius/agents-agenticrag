@@ -16,6 +16,7 @@ app = create_app(
     Settings(
         data_dir=Path(mkdtemp(prefix="workbench-e2e-")),
         dev=True,
+        legacy_db=Path(mkdtemp(prefix="workbench-legacy-fixture-")) / "missing.db",
         transcribe_home=Path(__file__).parent / "fake_transcribe",
         web_fixtures=Path(__file__).parent / "fixtures/web",
     )
@@ -35,3 +36,34 @@ async def lifespan(server: FastAPI) -> AsyncIterator[None]:
 
 
 app.router.lifespan_context = lifespan
+
+
+@app.post("/tests/long-chat/{chat_id}")
+async def seed_long_chat(chat_id: str) -> dict[str, int]:
+    """Synthetic history for the Phase 3 browser performance measurement only."""
+    from app.db.connections import now, uid
+
+    statements: list[tuple[str, tuple[object, ...]]] = []
+    parent = None
+    for i in range(300):
+        identifier = uid()
+        statements.append(
+            (
+                "INSERT INTO messages(id,chat_id,parent_id,role,content,status,"
+                "created_at,updated_at) "
+                "VALUES (?,?,?,?,?,'complete',?,?)",
+                (
+                    identifier,
+                    chat_id,
+                    parent,
+                    "user" if i % 2 == 0 else "assistant",
+                    f"Fake history item {i}. Synthetic.",
+                    now(),
+                    now(),
+                ),
+            )
+        )
+        parent = identifier
+    statements.append(("UPDATE chats SET current_leaf_id=? WHERE id=?", (parent, chat_id)))
+    await app.state.store.batch(statements)
+    return {"messages": 300}

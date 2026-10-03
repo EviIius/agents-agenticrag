@@ -22,6 +22,7 @@ export const fakeRecording: Attachment = {
   filename: "Synthetic recording.wav",
   mime_type: "audio/wav",
   bytes: 1024,
+  audio_available: true,
   transcript: {
     status: "ready",
     channels: "mix",
@@ -102,6 +103,7 @@ export function TranscriptionPreview() {
       },
     },
     fakeRecording,
+    { ...fakeRecording, id: "design-audio-removed", audio_available: false },
     {
       ...fakeRecording,
       id: "design-large",
@@ -257,6 +259,10 @@ export function TranscriptionPreview() {
       <div className="mt-6 space-y-4">
         <h3 className="font-medium">Ready · fake engine</h3>
         <TranscriptionSettings fixture={status} />
+        <h3 className="font-medium">Audio clearing · removing fixture</h3>
+        <TranscriptionSettings fixture={status} fixtureClearState="removing" />
+        <h3 className="font-medium">Audio clearing · failed fixture</h3>
+        <TranscriptionSettings fixture={status} fixtureClearState="failed" />
         <h3 className="font-medium">Not set up · fixture</h3>
         <TranscriptionSettings
           fixture={{

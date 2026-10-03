@@ -41,6 +41,7 @@ export function CitationPill({
   const finePointer = useMediaQuery("(hover: hover) and (pointer: fine)");
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const hover = useRef(false);
+  const restoringFocus = useRef(false);
   useEffect(() => () => clearTimeout(timer.current), []);
   const enter = () => {
     clearTimeout(timer.current);
@@ -65,6 +66,20 @@ export function CitationPill({
           onPointerEnter={(e) => {
             if (finePointer && e.pointerType === "mouse") enter();
           }}
+          onFocus={() => {
+            if (restoringFocus.current) {
+              restoringFocus.current = false;
+              return;
+            }
+            if (finePointer) enter();
+          }}
+          onBlur={(event) => {
+            if (
+              !(event.relatedTarget instanceof HTMLElement) ||
+              !event.relatedTarget.closest('[aria-label="Citation sources"]')
+            )
+              leave();
+          }}
           onPointerLeave={leave}
         >
           {sources[0]!.n}
@@ -75,6 +90,20 @@ export function CitationPill({
         aria-label="Citation sources"
         className="max-h-[min(70dvh,calc(var(--viewport-h,100dvh)-80px),var(--radix-popover-content-available-height))] w-[min(340px,calc(100vw-24px))] overflow-y-auto p-4"
         collisionPadding={12}
+        onKeyDownCapture={(event) => {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            event.stopPropagation();
+            clearTimeout(timer.current);
+            hover.current = false;
+            setOpen(false);
+          }
+        }}
+        onCloseAutoFocus={() => {
+          clearTimeout(timer.current);
+          hover.current = false;
+          restoringFocus.current = true;
+        }}
         onOpenAutoFocus={(event) => {
           if (hover.current) event.preventDefault();
         }}

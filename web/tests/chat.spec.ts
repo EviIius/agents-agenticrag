@@ -65,7 +65,9 @@ test("Stop persists partial text and closes runtime connection", async ({
   await send(page, "#long:500 #slow:50");
   await expect(page.getByText(/token0 token1/)).toBeVisible();
   await page.getByRole("button", { name: "Stop generating" }).click();
-  await expect(page.getByText(/stopped/i)).toBeVisible();
+  await expect(
+    page.locator(".meta").filter({ hasText: /stopped/i }),
+  ).toBeVisible();
   await expect
     .poll(
       async () =>
@@ -203,7 +205,7 @@ test("100 tokens/s render frame trace", async ({ page }) => {
   expect(sorted[Math.floor(sorted.length * 0.5)]).toBeLessThan(20);
 });
 
-test("first-token render delay under 300ms", async ({ page, request }) => {
+test("first-token render delay under 150ms", async ({ page, request }) => {
   await page.addInitScript(() => {
     const listener = new MutationObserver(() => {
       if (
@@ -238,7 +240,7 @@ test("first-token render delay under 300ms", async ({ page, request }) => {
   );
   const delay = at - first.at_ms;
   expect(delay).toBeGreaterThanOrEqual(0);
-  expect(delay).toBeLessThan(300);
+  expect(delay).toBeLessThan(150);
   await writeFile(
     `${dir}/first-token-${test.info().project.name}.json`,
     JSON.stringify({

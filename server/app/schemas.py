@@ -155,6 +155,7 @@ class Attachment(BaseModel):
     mime_type: str
     bytes: int
     transcript: "TranscriptInfo | None" = None
+    audio_available: bool = True
 
 
 class MessageModel(BaseModel):
@@ -210,6 +211,12 @@ class Transcript(BaseModel):
     cleaned_text: str | None = None
     segments: list[TranscriptSegment]
     corrections: list[Correction]
+
+
+class AudioStorage(BaseModel):
+    files: int = 0
+    bytes: int = 0
+    active_files: int = 0
 
 
 class TranscribeRequest(Input):
@@ -559,3 +566,12 @@ class SearchTestResult(BaseModel):
     results: list[SearchResult]
     ms: float
     error: str | None = None
+
+
+class LegacyStatus(BaseModel):
+    available: bool
+
+
+class LegacyImport(BaseModel):
+    imported: int
+    skipped: int

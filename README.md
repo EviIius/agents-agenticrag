@@ -1,52 +1,147 @@
 # Workbench
 
-A local chat app being rebuilt from [docs/SPEC.md](docs/SPEC.md). Phase 0 provides the server foundation and a responsive fixture interface. Live chat is Phase 1; web search is Phase 2; migration and deployment are Phase 3.
+Local Ollama chat, optional web search and local audio transcription. The build plan is
+[docs/SPEC.md](docs/SPEC.md); phase reports and synthetic evidence document verification.
 
-## Develop
+## Setup and development
 
-Requires Python ≥3.12, uv, Node ≥22.12 and npm. `scripts/tool-env.sh` also finds isolated build tools under `~/.local/share/workbench/tools` when available.
+Requires Python ≥3.12, uv, Node ≥22.12 and npm. `scripts/tool-env.sh` also finds the
+isolated tools under `~/.local/share/workbench/tools`. Ollama must already be running.
 
 ```sh
 make setup
+make build
+make dev-server
+# In a second terminal:
 make dev
 ```
 
-Open `http://127.0.0.1:5173` or `/design`. All answers and statistics in this preview are explicitly labelled **Fake runtime**. The current installed app remains on `127.0.0.1:8787` and its existing Tailscale address.
+The server uses **127.0.0.1:8787**, one worker. Vite uses 5173 and proxies `/api` to
+that server. Stop the installed launchd service before starting a development server.
+`/design` contains labelled synthetic states and is disabled in production.
 
 ```sh
-make build       # static output → server/app/static
-make check       # server lint/types/tests, contrast, API contract, web types/format/tests
-make e2e         # Chromium + WebKit, fixture runtime, accessibility and screenshots
-make api-types   # regenerate from FastAPI's OpenAPI after schema changes
+make check          # lint, types, unit/integration tests, coverage, contrast, API types
+make e2e            # Chromium + iPhone-sized WebKit; isolated fake runtime/data
+make api-types      # regenerate the frontend API contract after schema edits
+make eval-web       # repeatable Phase 2 search evaluation
 make fmt
 ```
 
-`make dev-server` binds to `127.0.0.1:8787` with one worker. Stop the existing installed service before using it; the foundation does not replace that service. Development mode enables `/design`; production excludes it. The dev server's API proxy points to 8787, but Phase 0 fixture UI makes no API calls.
+E2E owns 8787 while running; never point it at the live server. Fixtures and screenshots
+must use synthetic audio and text. Real recordings, their names, transcripts, account
+keys and personal glossary content do not belong in Git or logs.
 
-## Preservation
+## Use
 
-The previous app is preserved on branch `legacy/chat-web-0.5` and tag `legacy-0.5`; its source is under `legacy/` on this branch. Installed data is backed up separately. New database writes use `~/.local/share/workbench/data/workbench.db`; legacy data is never opened by the new server.
+Select a chat model; **Load** also selects it. Context presets respect the model's
+configured operational limit. Sampling controls left at **Model default** are omitted
+from requests. The standard Llama variant is hidden through a stored user preference.
 
-The standard `llama3.3:70b-instruct-q4_K_M` variant will be hidden through the stored model preference in Phase 1. The `llama3.3:70b-workbench-16k` variant and four other chat models will remain available. Model weights are preserved.
+Web search uses configured free providers, with Ollama Search preferred when its key
+is saved in Settings → Search. Keys stay in the private database. Search may send
+queries to those providers; chats containing recordings block it by default.
 
+**⌘/Ctrl+K** opens chat search and actions. **⌘/Ctrl+/** opens shortcuts. Chat menus
+support rename, pin, title-based Markdown/JSON export and deletion.
 
-## Local recording transcription (Phase T / T1)
+## Recordings and storage
 
-With the external engine configured and ready, use **Add attachment → Add recording** to
-upload a WAV or another supported audio file. The transcript can be reviewed as text or
-timestamps and downloaded as text, SRT or JSON. Ask a question to include it in a local
-Ollama chat. Web search stays off in chats with recordings by default.
+Use **Add attachment → Add recording** for WAV and supported audio formats. Upload
+progress is measured; transcription jobs run sequentially and continue if the browser
+closes. Review text or timestamps, download text/SRT/JSON, or ask the local Ollama model
+about the transcript. A transcript larger than the model's context can still be downloaded.
 
-The engine lives in the separate `Transcription` repository. Set its path when starting
-the development server; no transcription package is installed inside Workbench:
+**Audio is temporary by default.** Workbench removes its uploaded copy after saving the
+transcript to SQLite. Original/raw text, timestamps and metadata remain saved until the
+attachment or chat is removed. Original files on your phone or computer are unaffected.
+Failed/cancelled audio remains available for Retry; unfinished unsent attachments expire
+after seven days. Completed transcript outputs are preserved even before sending them
+to a chat; remove the attachment or chat explicitly when you no longer want its outputs.
+
+Settings → Transcription provides **Keep original audio after transcription** (opt-in)
+and **Clear stored audio**, with a confirmation and storage count. Clearing skips active
+jobs and preserves transcripts/chats. Removed audio cannot be downloaded or transcribed
+again without re-uploading the original. Startup also clears completed historical audio
+when retention is off. Clearing removes private copies directly rather than filling Trash.
+
+Engine source is under `transcribe/`, vendored from commit `1019564` of the Transcription
+repo. It runs as a subprocess, without an added package. Its weights, `config.json`,
+`glossary.txt` and `.python` are ignored by Git; recordings never belong there. The engine
+requires the existing ffmpeg, ffprobe and whisper-cli installation. With local engine
+assets prepared:
 
 ```sh
-WORKBENCH_TRANSCRIBE_HOME=~/Documents/GitHub/Transcription make dev-server
+WORKBENCH_TRANSCRIBE_HOME="$PWD/transcribe" make dev-server
 ```
 
-Settings → Transcription shows its setup checks. Unsent recordings return after reload;
-jobs continue if the browser closes. Unsent files older than seven days are removed.
-The build contract and acceptance evidence are in
-[TRANSCRIPTION-SPEC.md](docs/TRANSCRIPTION-SPEC.md) and
-[PHASE-T-REPORT.md](docs/PHASE-T-REPORT.md). T2 adds manual cleanup and glossary editing
-following the T1 review; Phase 3 deployment remains separate.
+Settings shows setup checks. T1 transcription is implemented; manual model cleanup and
+glossary editing remain the separate T2 checkpoint. See [the transcription spec](docs/TRANSCRIPTION-SPEC.md).
+
+## Deployment and Tailscale
+
+```sh
+./scripts/deploy.sh               # print and verify the deployment plan
+make deploy                      # build, back up, install and restart
+# When a known development preview currently owns 8787:
+make deploy DEPLOY_ARGS='--preview-pid <verified PID>'
+```
+
+Deployment discovers and **reuses the existing Workbench launchd label**, copies its
+allowed hosts, verifies the existing Tailscale route and keeps the bind/port unchanged.
+It installs code in `~/.local/share/workbench/app`, data in `~/.local/share/workbench/data`
+and private logs in `~/.local/share/workbench/logs`. The engine is installed inside
+`app/transcribe`; first deployment copies the ignored weights/config/glossary/interpreter
+selection. Later deployments preserve installed private engine assets. This avoids
+launchd access to the source checkout in macOS Documents. No recordings are copied.
+
+The script makes a consistent SQLite backup and keeps the latest ten timestamped backups.
+The original launchd plist is saved privately beside them. A failed bootstrap/health check
+restores the immediately previous plist. Existing installed package/data remain intact.
+For reverting a **new app build**, check out a previously verified Workbench commit and
+redeploy; restore a matching database backup if a migration requires it.
+
+The current service label is `dev.agenticrag.workbench`:
+
+```sh
+launchctl kickstart -k "gui/$(id -u)/dev.agenticrag.workbench"
+```
+
+Keep Tailscale Serve unchanged: HTTPS on the tailnet forwards to 127.0.0.1:8787. Put the
+MagicDNS hostname in `WORKBENCH_ALLOWED_HOSTS`; optionally restrict access further with
+`WORKBENCH_TAILSCALE_OWNER`. Service logs should contain operational identifiers and counts,
+never transcript content or original recording names.
+
+### iPhone installation and offline behavior
+
+Open the Tailscale HTTPS URL in Safari, choose **Share → Add to Home Screen**, then open
+Workbench from that icon. The standalone shell uses safe areas and the visible keyboard
+viewport. Verify installation and VoiceOver on a physical phone before closing Phase 3.
+
+The service worker caches public shell/hashed assets and never `/api` responses, audio,
+transcripts or streamed messages. Without the Mac connection, the shell shows a connection
+error; chat and transcription require connectivity. A waiting update displays **A new
+version is available → Reload**; content arriving does not force a reload. Clear Safari's
+site data if recovering an obsolete local cache.
+
+## Import and rollback to the old app
+
+Settings → Data → **Import old chats** reads the previous SQLite file read-only, converts
+conversations into linear message chains, and adds **Imported** to titles. Repeating the
+import skips conversations already imported. It imports text, not old recording files.
+CLI equivalent:
+
+```sh
+. scripts/tool-env.sh
+uv run --directory server python ../scripts/import_legacy.py \
+  --source "$HOME/.local/share/agenticrag/.data/workbench-chats.db" \
+  --data-dir "$HOME/.local/share/workbench/data"
+```
+
+The previous source remains recoverable on branch `legacy/chat-web-0.5` and tag `legacy-0.5`.
+For a full rollback, stop the Workbench job, restore
+`~/.local/share/workbench/data/backups/launchd-before-phase3.plist` to its original
+`~/Library/LaunchAgents/dev.agenticrag.workbench.plist` path, then bootstrap that plist.
+It points at the untouched old package under `~/.local/share/agenticrag`. Alternatively,
+check out the legacy branch in a separate checkout and follow its setup instructions.
+Legacy data is only read for import; the new database is independent.

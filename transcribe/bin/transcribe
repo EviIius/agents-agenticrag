@@ -1,0 +1,9 @@
+#!/bin/sh
+# Wrapper so the tool runs from anywhere: bin/transcribe run recording.wav
+REPO="$(cd "$(dirname "$0")/.." && pwd)"
+if [ -f "$REPO/.python" ]; then
+    PY="$(cat "$REPO/.python")"
+else
+    PY="python3"
+fi
+PYTHONPATH="$REPO${PYTHONPATH:+:$PYTHONPATH}" exec "$PY" -m localtranscribe "$@"

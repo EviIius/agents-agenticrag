@@ -34,4 +34,4 @@ eval-web:
 eval-web-record:
 	. scripts/tool-env.sh; uv run --directory server python evals/web/run_eval.py --record $(if $(CASE),--case $(CASE),) $(if $(MODEL),--model $(MODEL),)
 deploy:
-	@echo '$@ belongs to a later phase. See docs/SPEC.md §H1.'; exit 1
+	./scripts/deploy.sh --apply $(DEPLOY_ARGS)

@@ -84,6 +84,18 @@ export function AudioChip({
     if (!fixture) attachTranscription(attachment);
   }, [attachment, fixture]);
   useEffect(() => {
+    if (fixture) return;
+    const refresh = () => {
+      detachTranscription(item.id);
+      void api<Attachment>(`/attachments/${item.id}/info`).then(
+        attachTranscription,
+        () => undefined,
+      );
+    };
+    window.addEventListener("workbench:audio-cleared", refresh);
+    return () => window.removeEventListener("workbench:audio-cleared", refresh);
+  }, [attachment, fixture, item.id]);
+  useEffect(() => {
     if (meta?.status !== "transcribing") return;
     const timer = setInterval(() => setClock(Date.now()), 1000);
     return () => clearInterval(timer);
@@ -147,6 +159,13 @@ export function AudioChip({
           <span className="block break-words text-fg-2" role="status">
             {label}
           </span>
+          {item.audio_available === false && (
+            <span className="block text-fg-3">
+              {ready
+                ? "Transcript saved · audio removed"
+                : "Audio removed · upload again to retry"}
+            </span>
+          )}
           {ready && tooLarge && (
             <span className="block break-words text-warning">
               About {meta?.token_estimate?.toLocaleString()} tokens: more than{" "}
@@ -163,11 +182,11 @@ export function AudioChip({
           >
             <Square />
           </IconButton>
-        ) : !ready ? (
+        ) : !ready && item.audio_available !== false ? (
           <Button type="button" variant="outline" onClick={() => void retry()}>
             Retry
           </Button>
-        ) : (
+        ) : ready ? (
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <IconButton
@@ -185,7 +204,12 @@ export function AudioChip({
                 Open transcript
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              {["txt", "srt", "json", "audio"].map((format) => (
+              {[
+                "txt",
+                "srt",
+                "json",
+                ...(item.audio_available !== false ? ["audio"] : []),
+              ].map((format) => (
                 <DropdownMenuItem
                   key={format}
                   onSelect={() =>
@@ -202,15 +226,24 @@ export function AudioChip({
                 </DropdownMenuItem>
               ))}
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => void retry("mix")}>
+              <DropdownMenuItem
+                disabled={item.audio_available === false}
+                onSelect={() => void retry("mix")}
+              >
                 Transcribe again
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="whitespace-normal"
+                disabled={item.audio_available === false}
                 onSelect={() => void retry("split")}
               >
                 Transcribe again, one speaker per channel
               </DropdownMenuItem>
+              {item.audio_available === false && (
+                <p className="max-w-64 px-2 py-2 text-xs text-fg-2">
+                  Audio removed to save space. Upload it again to transcribe.
+                </p>
+              )}
               {onRemove && (
                 <>
                   <DropdownMenuSeparator />
@@ -221,7 +254,7 @@ export function AudioChip({
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-        )}
+        ) : null}
         {ready && tooLarge && (
           <Button
             type="button"
@@ -248,7 +281,7 @@ export function AudioChip({
         <RecordingDownloadDialog
           attachment={item}
           initial={download}
-          includeAudio
+          includeAudio={item.audio_available !== false}
           preview={fixture ? "ready" : undefined}
           onClose={() => setDownload(null)}
         />

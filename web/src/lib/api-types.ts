@@ -73,6 +73,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/attachments/{identifier}/info": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Info */
+        get: operations["info_api_attachments__identifier__info_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/transcription/status": {
         parameters: {
             query?: never;
@@ -85,6 +102,24 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/transcription/audio-storage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Audio Storage */
+        get: operations["audio_storage_api_transcription_audio_storage_get"];
+        put?: never;
+        post?: never;
+        /** Clear Audio */
+        delete: operations["clear_audio_api_transcription_audio_storage_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -186,6 +221,24 @@ export interface paths {
         get: operations["download_api_attachments__identifier__transcript_download_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/chats/legacy-import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Legacy Status */
+        get: operations["legacy_status_api_chats_legacy_import_get"];
+        put?: never;
+        /** Legacy Import */
+        post: operations["legacy_import_api_chats_legacy_import_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -619,6 +672,29 @@ export interface components {
             /** Bytes */
             bytes: number;
             transcript?: components["schemas"]["TranscriptInfo"] | null;
+            /**
+             * Audio Available
+             * @default true
+             */
+            audio_available: boolean;
+        };
+        /** AudioStorage */
+        AudioStorage: {
+            /**
+             * Files
+             * @default 0
+             */
+            files: number;
+            /**
+             * Bytes
+             * @default 0
+             */
+            bytes: number;
+            /**
+             * Active Files
+             * @default 0
+             */
+            active_files: number;
         };
         /** Body_upload_api_attachments_post */
         Body_upload_api_attachments_post: {
@@ -997,6 +1073,18 @@ export interface components {
              * @default 1.0.0-alpha.0
              */
             version: string;
+        };
+        /** LegacyImport */
+        LegacyImport: {
+            /** Imported */
+            imported: number;
+            /** Skipped */
+            skipped: number;
+        };
+        /** LegacyStatus */
+        LegacyStatus: {
+            /** Available */
+            available: boolean;
         };
         /** Message */
         Message: {
@@ -1767,6 +1855,37 @@ export interface operations {
             };
         };
     };
+    info_api_attachments__identifier__info_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Attachment"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     status_api_transcription_status_get: {
         parameters: {
             query?: {
@@ -1794,6 +1913,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    audio_storage_api_transcription_audio_storage_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AudioStorage"];
+                };
+            };
+        };
+    };
+    clear_audio_api_transcription_audio_storage_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AudioStorage"];
                 };
             };
         };
@@ -1978,6 +2137,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    legacy_status_api_chats_legacy_import_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LegacyStatus"];
+                };
+            };
+        };
+    };
+    legacy_import_api_chats_legacy_import_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LegacyImport"];
                 };
             };
         };

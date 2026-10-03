@@ -170,13 +170,23 @@ async def remove(identifier: str, request: Request) -> None:
     await request.app.state.transcription.remove(identifier)
 
 
+@router.get("/{identifier}/info")
+async def info(identifier: str, request: Request) -> Attachment:
+    return await records.attachment(request.app.state.store, identifier)
+
+
 @router.get("/{identifier}")
 async def get(identifier: str, request: Request) -> FileResponse:
     row = await request.app.state.store.one("SELECT * FROM attachments WHERE id=?", (identifier,))
     if not row:
         raise AppError("not_found", "Attachment not found.", 404)
+    path = request.app.state.config.data_dir / str(row["path"])
+    if not row["audio_available"] or not path.is_file():
+        raise AppError(
+            "audio_removed", "The audio was removed; the transcript is still available.", 404
+        )
     return FileResponse(
-        request.app.state.config.data_dir / str(row["path"]),
+        path,
         media_type=str(row["mime_type"]),
         filename=str(row["filename"]),
     )
