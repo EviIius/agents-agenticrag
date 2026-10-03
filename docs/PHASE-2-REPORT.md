@@ -2,115 +2,106 @@
 
 ## Summary
 
-The rebuilt app uses local Ollama chat with free Ollama Search → SearXNG → Exa → DuckDuckGo fallbacks.
-Phone safe areas, keyboard positioning, switches, completed-answer persistence and model-picker search are repaired.
-The current automated implementation checks pass, but repeated real-model answers still omit facts or misread numeric tables despite receiving the evidence.
-**Phase 2 remains incomplete. Phase 3 awaits the accuracy gates in SPEC §E13; the working preview is available over the unchanged Tailscale route.**
+The numeric-list accuracy fix and authorized temperature comparison are implemented and evaluated.
+The final 25-case recorded-web run passes 24/25; fresh live NBA research and the 32K Qwen replay return all 23 qualifying entries with a citation on every row.
+Native answer sampling is retained: the controlled temperature-0.2 run performs worse.
+**Phase 2 remains open:** one release-source coverage case fails, and the latest browser suite has two phone layout failures. Jake deferred iPhone work until these two tasks were finished; Phase 3 is held.
 
 ## Done-when checklist
 
 | Item | Status | Evidence |
 |---|---|---|
-| E-AC1: cited 2021 result, correct loser/opponent/4–2 | Latest live table passes semantic audit; earlier answers fail | Latest live table states Milwaukee 4 wins and Phoenix 2 wins with a citation. The evaluator originally rejected this equivalent format; the corrected assertions accept it and reject wrong counts/column labels. The latest offline keyword answer still omits essential facts/citations |
-| E-AC2: thanks skips search | Passed current keyword replay/browser checks | Real planner decision, no search requests, skipped notice; request logs retained |
-| E-AC3: standalone previous-year follow-up | Passed current keyword replay | `nba-followup` supplies its standalone query and a cited correct answer |
-| E-AC4: immediate activity, favicon, collapse | Passed Chromium/WebKit | Measured below 300 ms in `activity-latency-*.json`; `web.spec.ts` checks favicon fallback and completion collapse |
-| E-AC5: citation card/exact evidence/source panel | Passed interaction/storage checks | Sources persist across reload; cards and cited/not-cited/failed-page sections tested on phone/desktop in both themes. Citation validity is not proof of truth |
-| E-AC6: provider fallback/all failed | Passed measured fallback + automated failure paths | Earlier real SearXNG outage reached Exa in 904 ms; all-provider failure returns an answer with a separate notice. The user-approved free chain supersedes the original DDG-specific requirement |
-| E-AC7: SSRF | Passed | Private/all-DNS addresses, redirects, downgraded HTTP, ports, Unicode, payload bounds and credential URL tests |
-| E-AC8: complete offline targets and ranking comparison | **Open: answer accuracy fails** | Both ranking reports are attached below. Latest keyword has 96% required facts and support 0.901, but uncited output and forbidden list entries fail the individual acceptance gates |
-| E-AC9: live first-token P50 ≤12 seconds | Passed earlier measured live V6 | P50 6.31 s, P90 9.12 s, 22/22 searched turns have evidence. Latest live P50 6.39 s/P90 10.20 s; 22/22 searched turns have evidence |
-| E-AC10: controlled injection ignored | Passed actual-model replay | The selected passage contains the controlled `PWNED` attack; the model does not obey it. A live page is not counted as an injection test |
-| Sampling controls and chat actions | Passed covered paths | Real isolated API/native-payload checks plus browser rename, pin/unpin, exports, delete/cancel and persistence checks. Unset answer sampling is omitted |
-| Phone/desktop panels | Passed browser emulation | 320/390/768/1440 widths, safe top/bottom insets, a panned visual viewport, reduced-height picker, compact switches and reachable Save/Close. Physical post-fix iPhone confirmation remains pending |
-| Five approved models | Passed availability/smokes; full accuracy not established | All five are available. Four alternate-model cited NBA smoke checks pass; the 16K Llama variant takes 55.9 s to its first token. A full GPT-OSS comparison also has accuracy failures |
+| E-AC1: cited 2021 result, loser/opponent/4–2 | Passed final recorded run | `001904`; equivalent 4-win/2-win tables accepted, wrong counts rejected |
+| E-AC2: thanks skips search | Passed final recorded run and covered browser path | `001904`, real utility planner, no search |
+| E-AC3: standalone follow-up | Passed final recorded run | `001904`, `nba-followup` |
+| E-AC4: immediate activity/favicon/collapse | Passed covered browser paths | `e2e-selection-production.txt`, `activity-latency-*.json` |
+| E-AC5: exact citation evidence/source panel | Passed storage/interaction checks | Bound host citation cells persist as the actual model input; full cached page remains unchanged. Citation validity does not establish truth |
+| E-AC6: fallback/all failed | Passed covered paths | Free Ollama → SearXNG → Exa → DDG; earlier real outage reached Exa in 904 ms; current unit/browser failure paths |
+| E-AC7: SSRF | Passed | Private DNS, redirects, downgrade, ports, Unicode and payload/credential URL tests |
+| E-AC8: offline targets/ranking comparison | Aggregate and named-example gates pass; one individual coverage case open | Final `001904`: 24/25, required facts 100%, valid citations 100%, no forbidden/uncited cases. `ollama-latest` has one distinct cited source where its case requires two. Earlier keyword/hybrid comparison retained below |
+| E-AC9: live TTFT P50 ≤12 s | Earlier full live measurement passes; final targeted live passes | Earlier `160515` P50 6.39 s/P90 10.20 s; final live NBA `001926` TTFT 10.47 s. No new full 25-case live run on the final formatter |
+| E-AC10: controlled injection | Passed final recorded run | `001904` receives controlled attack and ignores it; live pages do not substitute for this test |
+| Comprehensive NBA losses | Passed final recorded, live and 32K Qwen checks | `001904`, `001926`, `001943`: all 23 qualifying entries, no excluded teams, per-row references, no false “all 28” conclusion |
+| Sampling and chat actions | Passed covered paths | Isolated real API/native payload evidence and browser rename/pin/export/delete/persistence; unset answer parameters omitted |
+| Phone/desktop layout | **Open; iPhone work deferred** | Latest Chromium/WebKit suite: 106 pass, 2 fail, 2 skip. Both failures are 390 px Chromium keyboard/thread bounds in light/dark themes |
+| Five approved models | Available; full accuracy not established for all five | Final formatter checked on Qwen 16K/32K. Intermediate selection smokes pass Gemma/GPT-OSS/16K Llama; these are not five final full suites |
 
 ## Changed files
 
-- `web/src/components/ui/switch.tsx`, `IconButton.tsx`, `drawer.tsx`, `sheet.tsx`, `web/src/styles/globals.css` and `ThemeProvider.tsx`: separate a 44 px switch hit target from its 32×18 px track; keep shell and panels within the visible viewport and safe areas; disable conflicting Vaul keyboard repositioning; use 16 px phone inputs to avoid Safari zoom.
-- `LiveChatSettings.tsx`, `ChatSettingsPanel.tsx`, `SourcesSheet.tsx`, UI store and `ModelPicker.tsx`: one phone settings heading, pinned source header/close, mutually exclusive phone panels, scrollable picker list and reachable footer. Removing an empty outer command group fixes search hiding every model; the tablet popover respects available height.
-- `useChatRun.ts` and regression tests: a late streaming chat GET cannot erase a terminal SSE answer or reattach a closed run. Rendering continues to use SSE and animation-frame batching.
-- `server/app/search/chunk.py`: retain complete split tables, correct header repetition, attach short captions, ignore navigation-only sections and store headings as metadata rather than factless passages. Repair missing Markdown separators for equal-width tables without changing cells; preserve malformed rows and escaped pipes.
-- `rank.py`: match regular English plurals, exclude zero lexical matches from lexical votes/source bonuses, and reduce dense bibliography-list relevance for factual requests. Reference queries retain those lists. No topical filters are used.
-- `cache.py` and `pipeline.py`: recording/replay bypass cache reuse; recent-information requests refresh snapshots older than 30 minutes regardless of 1/7/30-day retention. Ordered fetch waves preserve provider priority and stop starting requests after the source cap.
-- `planner.py`, `prompt.py`, SPEC §E4/E7/E8: generic intent classification and evidence V6. Comparison queries cover every requested property of each entity within three slots. No extra model call, answer sampling override or agent was added.
-- `server/evals/web/`: raw-answer capture, stricter comprehensive-list checks, Unicode score normalization, corpus/plan replay metadata, prompt hashes, controlled injection qualification and isolated generic experiments. Discarded answer V7/V8 and named-cell table trials remain outside production.
-- `server/tests/test_search.py`, browser/unit regressions, recorded public fixtures and the reports/screenshots linked below.
+- **Server:** `search/planner.py` adds an optional literal-word condition to the existing single planner call; `selection.py` conservatively binds a numeric column and selects matching rows; `pipeline.py` gives verified evidence priority and binds its row references; `prompt.py` labels source citations in host metadata; `schemas.py` records the condition and trusted selection flag.
+- **Web:** generated `api-types.ts` and the `/design` source fixture reflect the added fields. No new iPhone layout changes in this work.
+- **Tests:** `test_search.py`, `test_web_evidence.py`, `test_web_grading.py` cover immutable per-request schemas, ambiguous/unknown numeric data, row/cell preservation, source persistence, forged host annotations, citation binding and stricter list checks.
+- **Evals/docs:** `cases.yaml`, `grading.py`, `run_eval.py`, trial helpers, SPEC E4/E7/E8 and this report retain before/after answers, exact prompt/code hashes, failed trials, public fixtures and the isolated temperature comparison.
+- **Earlier Phase 2 changes retained:** table assembly/chunking, heading/plural/bibliography ranking, recent-page reuse, free search adapters, sampling/chat actions, phone safe areas/switches/picker filtering and terminal SSE persistence. See the historical test/evaluation artifacts for those changes.
 
 ## Deviations from SPEC.md
 
-Approved: Ollama-only runtime; five stored picker preferences; free provider order; continue Phase 3 after Phase 2 validation.
+User-approved scope: Ollama only; five stored picker preferences; free providers; continue Phase 3 after Phase 2 validation; isolate temperature tests; defer current iPhone work.
 
-Evaluated generic refinements are recorded in SPEC: intent JSON replaces the planner's `search` field, mapped to the same internal boolean; comparison-query coverage, evidence V6, table assembly, heading/plural/bibliography ranking and recent cache reuse. Before/after reports include failures. These changes do **not** establish that the phase passes.
+The generic E4/E7 refinement uses a nullable condition inside the existing planner call. Its property is constrained to literal request words, and the host applies it only to supported unambiguous numeric columns. Matching table rows include host citation labels, while unfiltered prose from that selected-table source is omitted from the answer evidence to avoid population-total confusion. Full raw pages remain cached. E8's V6 answer system prompt and answer sampling defaults are unchanged; source wrapper metadata now explicitly identifies `[N]`.
 
-No dependencies, agents, extra modes, extra model calls, forced sampling defaults, legacy-data writes, production port/bind, launchd label or Tailscale changes were introduced. Test temperature settings are explicit test-chat inputs, not app defaults.
+No additional dependency, agent, mode or model call was introduced. Existing source/token/per-source passage budgets remain. No legacy-data writes, port/bind, launchd label or Tailscale changes.
 
 ## Runtime observations
 
-### What caused the reported failures
+### Accuracy diagnosis and final fix
 
-1. **Evidence loss:** the extractor fragmented tables. Captions crowded out data, headings consumed passage slots, reference lists displaced the result summary, and plural query terms missed singular facts. The fixes preserve the full 28-row example table; the latest result-table selection has zero bibliography passages versus two before.
-2. **Incomplete queries:** four comparison properties were spread across a three-query limit, dropping one property's evidence. One query per entity now covers all requested properties without a further model call.
-3. **Stale reuse:** a recent request could reuse a seven-day retained page. Retention now stays separate from a 30-minute reuse window.
-4. **Model errors remain:** the supplied table distinguishes 23 positive-loss entries from five non-losing entries using dashes. Qwen sometimes omits final entries, reads dashes as one loss, or drops supported scores/citations. Named-cell table labels did not fix the comprehensive answer and were not promoted. Available sources and syntactically valid citations do not establish factual correctness.
-5. **UI bugs were independent:** switch sizing, safe-area positioning and nested command filtering caused the phone/picker defects. A separate GET/SSE race could blank a completed answer.
+The evidence contained a complete 28-row table: 23 positive loss counts and five missing markers. Earlier answers converted missing markers into losses, omitted final entries, confused numeric columns, copied a full-population total into a subset conclusion, or omitted inline references. Table formatting and lower temperature alone did not fix this. Related prose could also displace the direct data.
 
-### Latest source-format investigation
+The planner now names the literal qualifying property from the request within its existing JSON response. The host requires one matching numeric column and the stated comparison; unsupported/ambiguous conditions preserve the evidence. Missing values never become zero. Generic grammatical normalization binds action words to their numeric nouns. Occurrence selection requires nonnegative integer counts; unsupported units, compound thresholds and malformed values decline selection.
 
-The complete source table reaches the model with all 28 rows, including five dashes in the losses column and prose stating that only 23 entries have losses. The native-default baseline still emits all 28 teams and invents positive losses. Adding section headings does not fix it; neither does repairing the missing Markdown separator. The formatting repair is retained because it makes the evidence a valid table while preserving every original cell. **It is not an accuracy fix, and Phase 2 is still incomplete.**
+Verified selected tables take priority within the original budgets. Their unfiltered attached prose and other prose from the same source are withheld from the answer context. Each selected row retains its values and gains a host reference cell, bound after source numbering. The model receives and cites these exact passages; the UI is not adding citations after generation. Other sources remain available. This is a targeted numeric-list fix, not universal factual verification.
 
-- [Native baseline, `185419`](../server/evals/web/reports/2026-10-02-185419-qwen3-30b-a3b-instruct-2507-q4_K_M-offline-keyword.md): fails comprehensive-list exclusion, 11.20 s TTFT.
-- [Heading experiment, `185611`](../server/evals/web/reports/2026-10-02-185611-qwen3-30b-a3b-instruct-2507-q4_K_M-offline-keyword-sectioned.md): fails exclusion, 10.26 s TTFT. This changes ranking input too; it is not an answer-only A/B. It remains outside production.
-- [Delimiter repair, `190310`](../server/evals/web/reports/2026-10-02-190310-qwen3-30b-a3b-instruct-2507-q4_K_M-offline-keyword.md): fails exclusion, 11.20 s TTFT. Every table cell is preserved and the raw answer remains attached.
+| Final native-default run | Outcome | Evidence |
+|---|---|---|
+| [25-case recorded web, `001904`](../server/evals/web/reports/2026-10-03-001904-qwen3-30b-a3b-instruct-2507-q4_K_M-offline-keyword.md) | 24/25; required facts 100%; valid citations 100%; no forbidden or uncited output; support 0.9613; recorded-web TTFT P50 3.90/P90 6.10 s | All aggregate E12 and required E13 example gates pass. One release case needs another distinct source |
+| [Fresh live NBA, `001926`](../server/evals/web/reports/2026-10-03-001926-qwen3-30b-a3b-instruct-2507-q4_K_M-live-keyword.md) | 1/1; 23 matching entries, every row cited; no false 28-total; support 1.0; TTFT 10.47 s, total 20.28 s | Real search, pages, planner and answer |
+| [Qwen 32K NBA replay, `001943`](../server/evals/web/reports/2026-10-03-001943-qwen3-30b-a3b-workbench-32k-offline-keyword.md) | 1/1; 23 entries and per-row citations; support 1.0; TTFT 8.97 s, total 15.68 s | Actual completion context 32768 |
 
-All three use the same frozen public corpus, real planner/answer calls and native sampling. Planner variation still limits exact causal attribution. Lexical support scores of 0.94–1.00 accompany these wrong answers, demonstrating why that metric cannot establish truth. The failing individual case is enough to keep the phase open; another full suite was not run to seek a transient passing result.
+UTC report dates roll to October 3; the Mac's local work date remains October 2. Recorded web freezes public results/pages, not model output. The full final suite runs a fresh real planner; temperature comparison plans are frozen separately.
 
-### Real-model evaluation evidence
+**Stronger grading:** comprehensive lists now need a reference on every Markdown list/table item, and the regression rejects false “all 28” conclusions. Earlier runs with a cited introduction could pass the old grader despite uncited rows. [The saved-answer audit](../artifacts/phase-2/strict-list-citation-audit.json) documents these failures without rewriting old reports. Exact hashes in each new report identify its planner, answer builder, pipeline and selection implementation. Lexical support is not entailment and does not prove every numeric, date or explanatory claim.
 
-All answers use native sampling defaults. Recorded web freezes public provider results/pages, **not model outputs**. Source fixtures never run in production. Reports retain raw answers, selected passages, timings and prompt hashes.
+### Before/after and failed trials
 
-| Run | Cases passed | Required facts | Forbidden cases | Uncited cases | Support | Web TTFT P50 / P90 |
-|---|---:|---:|---:|---:|---:|---:|
-| Original generic baseline, `012844` | 19/25 | 96% | See report | See report | 0.893 | Recorded web; older list checks |
-| V6 + initial recall fixes, `144854` | 25/25 | 100% | 0 | 0 | 0.870 | 3.90 / 6.30 s |
-| V6 live, `145756` | 21/25 | 84% | 0 | 0 | 0.891 | 6.31 / 9.12 s |
-| Latest keyword + body ranking/query coverage, `155158` | 22/25 | 96% | 1 | 1 | 0.901 | 3.99 / 5.69 s |
-| Same corpus, hybrid, `155637` | 21/25 | 92% | 1 | 0 | 0.838 | 6.74 / 11.82 s |
-| Latest live production, `160515` | 23/25 | 96% | 1 | 0 | 0.916 | 6.39 / 10.20 s |
+- [Pre-selection baseline `190310`](../server/evals/web/reports/2026-10-02-190310-qwen3-30b-a3b-instruct-2507-q4_K_M-offline-keyword.md) supplies all rows but includes nonmatching teams. The earlier heading and delimiter repairs fail this accuracy gate.
+- Row-record, null-label, query-position and prompt-only trials fail; they remain evaluator-only. A human-provided predicate proof `230450` shows that a selected table can work but is explicitly not an automatic production result.
+- Automatic literal-word candidates `233347`, `233642`, `233704`, `233725` establish the condition approach. Early production `234311`/live `234345` still fail citations or scope. Priority/labels improve the same live corpus in `234643`.
+- Intermediate source-citation-label live `000040` has uncited rows and a false 28-total despite its old score. Final scoped tables/row references and stronger grading address those errors in `001904`, `001926`, `001943`.
+- Gemma `235306`, GPT-OSS `235335`, 16K Llama `235605` pass intermediate NBA selection smokes (TTFT 11.41/7.25/77.32 s respectively). Their final scoped formatter/full-suite accuracy remains untested. The earlier 32K citation failure `235057` is repaired in final `001943`.
 
-These are the scores originally recorded, before correcting equivalent-format grading. A [deterministic audit](../artifacts/phase-2/answer-format-regression-audit.json) of the saved answers now accepts the latest live 4-win/2-win table, yielding 25/25 required-fact checks. It also rejects listed non-losing teams regardless of an invented positive count. The comprehensive-list output remains forbidden in all three final comparisons; **none becomes an accepted phase**. Original report files remain unchanged with their original case hashes. Two new tests verify correct/wrong table scores and the stronger exclusion check.
+### Authorized temperature comparison
 
-Reports:
+| Controlled 25-case run | Cases passed | Required facts | Valid citations | Web TTFT P50 / P90 |
+|---|---:|---:|---:|---:|
+| [Native defaults, `222041`](../server/evals/web/reports/2026-10-02-222041-qwen3-30b-a3b-instruct-2507-q4_K_M-offline-keyword.md) | 24/25 | 96% | 100% | 2.81 / 5.04 s |
+| [Explicit temperature 0.2, `222231`](../server/evals/web/reports/2026-10-02-222231-qwen3-30b-a3b-instruct-2507-q4_K_M-offline-keyword-temperature-0p2.md) | 21/25 | 88% | 100% | 2.76 / 5.19 s |
 
-- [Baseline](../server/evals/web/reports/2026-10-02-012844-qwen3-30b-a3b-instruct-2507-q4_K_M-offline-keyword.md).
-- [25-case V6 recorded pass](../server/evals/web/reports/2026-10-02-144854-qwen3-30b-a3b-instruct-2507-q4_K_M-offline-keyword-cited-evidence-v6.md).
-- [V6 live failure](../server/evals/web/reports/2026-10-02-145756-qwen3-30b-a3b-instruct-2507-q4_K_M-live-keyword.md).
-- [Latest live production](../server/evals/web/reports/2026-10-02-160515-qwen3-30b-a3b-instruct-2507-q4_K_M-live-keyword.md).
-- [Latest keyword](../server/evals/web/reports/2026-10-02-155158-qwen3-30b-a3b-instruct-2507-q4_K_M-offline-keyword-entity-queries.md) and [functioning hybrid](../server/evals/web/reports/2026-10-02-155637-qwen3-30b-a3b-instruct-2507-q4_K_M-offline-hybrid-entity-queries.md).
+[Comparison data](../artifacts/phase-2/temperature-comparison.json) records changed cases, observed answer parameters and limitations. Plans and public web inputs are frozen to isolate answer sampling; these decision scores do not measure fresh planning. One run per setting is insufficient to establish statistical significance. Native sampling is retained. The temperature-0.2 full run omits the essential 4–2 detail, release citation coverage and three qualifying list entries. Its unanswerable response says the fact is not established, but misses the existing refusal regex; original scores remain unchanged. Native output also contains an unsupported closing exclusion claim despite passing the list-name checks. Neither a lexical support score nor a passing aggregate run proves every claim.
 
-**Default remains keyword.** The latest hybrid run actually uses embeddings on all 22 successful searched turns; none silently fall back. It adds embedding P50 2.73 s/P90 6.47 s without an accuracy improvement. Both runs share the recorded corpus; their planners execute independently, so query variation limits causal attribution. The earlier frozen-plan comparison (`135951` keyword versus `140319` hybrid) isolates plan variation: keyword P50 3.02 s versus hybrid 5.94 s; hybrid is used on 20 turns with two embedding timeouts. Both comparisons fail answer acceptance and remain visible.
+The harness now creates a chat through the supported API and PATCHes its explicitly requested temperature, instead of attempting an unsupported create field. It checks completion stats for the value. These test chats use isolated temporary storage; no user chat or model preference changes.
 
-The six original everyday questions pass their basic live checks (6/6, `142011`), with P50 6.02 s/P90 10.87 s. Their support average is only 0.693: these smoke checks do not validate every factual claim, restaurant recommendation or weather observation.
+### Ranking and historical live evidence
 
-Additional model smokes: Qwen 32K 5.75 s, Gemma 8.04 s, GPT-OSS 5.46 s, 16K Llama 55.92 s (`141702`, `141731`, `141748`, `141910`). A full GPT-OSS run (`142945`) passes 20/25, with missing facts and retrieval gaps. These are not five full passing suites.
+**Default remains keyword.** Earlier same-corpus keyword `155158` passes 22/25 with TTFT P50 3.99/P90 5.69 s; functioning hybrid `155637` passes 21/25 with P50 6.74/P90 11.82 s, including embeddings on all 22 searched turns. Independent planners limit exact attribution. Frozen-plan `135951` versus `140319` also favors keyword latency (3.02 versus 5.94 s P50). These original failures remain recorded; hybrid was not rerun with the final formatter.
+
+Earlier full live `160515` passes 23/25 under its then-current assertions; the original V6 replay `144854` passes 25/25 but subsequent runs expose numeric-list failures. The six everyday-question smoke checks `142011` pass basic checks with support only 0.693, so they do not validate every recommendation or weather claim. These historical results are not substituted for final-code validation.
 
 ### Preview and storage
 
-[Actual Workbench preview](https://jakes-mac-mini.tailc4d343.ts.net/) is served by the rebuilt backend and built UI at the original 127.0.0.1:8787 route. HTTPS health is 200, the picker has exactly five approved models, and the saved key remains write-only. Live browser checks filter to one model without overflow at 390/1440. This is a development preview; the installed launchd package/plist remains unchanged and the preview exit trap restores its existing job. Phase 3 deployment is pending.
+[Workbench development preview](https://jakes-mac-mini.tailc4d343.ts.net/) uses the rebuilt backend/UI at unchanged 127.0.0.1:8787. [Final preview health](../artifacts/phase-2/selection-preview-health.json) verifies local/HTTPS health, exactly five approved models and the standard Qwen warmed at 16K. The saved search key remains write-only. Installed-package deployment and legacy read-only import are Phase 3 work; the preview exit trap restores the existing launchd job.
 
-Public raw recordings are gzip-compressed with original-byte SHA-256 manifests and decompression equality checks. The latest two 25-case recordings contain 241 compressed pages; the final production live recording adds 126 pages, compressed and byte-verified separately; earlier compressed recordings remain readable. Evidence files are not loaded by normal chat, so their presence does not cause inference latency. Legacy removal is a Phase 3 task, following the specified read-only import.
+Public page recordings are lossless gzip with SHA-256 manifests and decompression equality checks. [Compression evidence](../artifacts/phase-2/selection-fixture-compression.json) covers this investigation's four new live fixture roots. Reports and fixtures are not loaded during normal chat and do not add inference latency.
 
 ## Test output
 
-- [Latest `make check`](../artifacts/phase-2/check-table-delimiter-current.txt): **164 Python tests**, **36 Vitest tests**, lint/format, strict types, API generation and **56 contrast pairs** pass. The new table regression checks preservation of all rows, empty cells/dashes, escaped pipes, malformed tables and repeated headers under the 3,000-character limit. The [focused search suite](../artifacts/phase-2/table-format-tests.txt) passes **83 tests**. No UI code changed in this investigation; the existing browser/screenshot evidence below remains applicable.
-- [Current `make check`](../artifacts/phase-2/check-phase2-current.txt): **163 Python tests**, **36 Vitest tests**, lint/format, strict types, API types and **56 contrast pairs** pass. Providers coverage 83.3%, runs 88.3%, search 87.6%.
-- [Full browser suite](../artifacts/phase-2/e2e-final-current.txt): **106 passed, 2 deliberate duplicate skips**, Chromium/WebKit. It includes actions/parameters, stop/reconnect, long streams/timeouts, mobile panels and citation/source states in both themes.
-- [Post-picker-fix focused suite](../artifacts/phase-2/e2e-panels-search-fixed.txt): **24 passed**, including the new reduced-viewport/filtering regression and all web interaction regressions. The earlier failing attempt is retained in `e2e-panels-ranking-final.txt`; it exposed the command-group bug.
-- [Build](../artifacts/phase-2/build-current.txt): passes. Markdown lazy chunk is 938.90 kB raw / 287.94 kB gzip; the Phase 3 bundle budget remains open.
-- [Real controls](../artifacts/phase-2/live-controls.json): explicit sampling/context/system values forwarded, unset parameters omitted; exports, deletion and model-default resets checked in isolated data.
-- [Safe-area/keyboard measurements](../artifacts/phase-2/phone-safe-layout-check.txt) and [live picker filtering](../artifacts/phase-2/model-search-live.json): reachable controls, one matching model and no horizontal overflow.
-- [Credential scan](../artifacts/phase-2/credential-leak-check-current.json): saved key absent from changed source, screenshots, reports and recordings; compressed page bytes are checked after decompression.
-- Full real-model suites return a failing exit status when accuracy fails. They are not reported as successful implementation gates merely because provider requests succeeded.
+- [Final `make check`](../artifacts/phase-2/check-selection-final.txt): **180 Python tests**, **36 Vitest tests**, lint/format, strict types, generated API contract and **56 contrast pairs** pass. Search coverage 87.7%.
+- [Focused accuracy tests](../artifacts/phase-2/accuracy-selection-tests.txt): **101 passed** before the last additional grading assertion; final full check includes it.
+- [Latest full browser suite](../artifacts/phase-2/e2e-selection-production.txt): **106 passed, 2 failed, 2 skipped**. Both 390 px Chromium review-screen tests fail keyboard/thread bounds (light/dark). This is not a passing UI gate; Jake deferred its repair.
+- [Final build](../artifacts/phase-2/build-selection-final.txt): passes. Markdown lazy chunk remains 938.90 kB raw / 287.94 kB gzip; the Phase 3 bundle budget is still open.
+- [Real parameter/chat action evidence](../artifacts/phase-2/live-controls.json) remains available. Explicit answer parameters forward; omitted defaults are not sent.
+- [Credential check](../artifacts/phase-2/credential-leak-check-selection.json): scans changed/new source and artifacts, including decompressed recordings, without logging the saved key.
+- Full evals report their failing case even when aggregate targets pass. The remaining release source-count assertion was not weakened.
 
 ## Screenshots
 
@@ -124,6 +115,4 @@ Visually inspected against the actual preview; safe-area/keyboard dimensions are
 
 ## Open questions for Jake
 
-Post-fix physical iPhone review is still pending: keyboard, sidebar, settings Save/Close and citation/source drawers. The earlier eight photos were the before-fix evidence; browser emulation does not replace this confirmation.
-
-No additional key, paid search subscription or Docker approval is needed. An optional isolated temperature comparison is ready, with a pending choice from Jake; AGENTS.md prohibits setting an unrequested sampling value. No lower-temperature answer has been sent and the app/model defaults are unchanged. The remaining Phase 2 gate is consistent answer accuracy, especially full numeric lists and essential result details. Extra model validators, agents or forced sampling would change the agreed design and have not been added to hide these failures. Phase 3 remains conditional on the accuracy acceptance checks.
+No key, paid search subscription or Docker approval is needed. Native temperature is retained after the authorized comparison. The two requested backend/evaluation tasks are finished; Phase 2 still needs the release-source coverage case and deferred iPhone keyboard/panel repair plus physical confirmation before Phase 3.

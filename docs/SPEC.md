@@ -996,8 +996,9 @@ When searching:
 - Keep exact names, numbers, versions and quoted phrases. Resolve short follow-ups from the conversation.
 - A date naming a historical event does not require recent publications. Use freshness=any for historical/stable facts; day/week for current news, weather, prices, scores and releases; month/year for recent developments.
 
-First output task: lookup, transform, creative, calculate, or conversation. Lookup means external facts are requested, even when you already know the answer. Transform means edit, shorten, translate or summarize supplied text. Creative means compose fictional text. Calculate means pure math/code. Conversation means small talk or thanks. Only lookup needs queries; all other tasks have queries=[] and freshness=any. Return JSON only with task, queries and freshness. For release notes use freshness=week; reserve day for today's changing conditions.
+First output task: lookup, transform, creative, calculate, or conversation. Lookup means external facts are requested, even when you already know the answer. Transform means edit, shorten, translate or summarize supplied text. Creative means compose fictional text. Calculate means pure math/code. Conversation means small talk or thanks. Only lookup needs queries; all other tasks have queries=[] and freshness=any. Return JSON only with task, queries, freshness and selection_condition. For release notes use freshness=week; reserve day for today's changing conditions.
 For comparisons of entities, use one query per entity covering every requested property of that entity. Cover all requested properties within the three-query limit; do not spend all query slots on only some properties.
+For a request to list a population with a qualifying condition, also return selection_condition. It must describe the required condition, including whether an event ever happened; this need not mention a number. A selection_condition has property_word, operator and value. property_word is one literal word from the latest request that identifies the measurable property or qualifying event. For occurred/not_occurred, use the qualifying action verb, not the name of a stage, place, population or prerequisite. Do not combine events. Use operator=occurred and value=null when the event happened at least once; not_occurred and null when it never happened. For an explicit numeric condition use gt/gte/lt/lte/eq/ne with its number as value. Return null for single facts, single-event results, ordinary entity comparisons and non-lookup tasks. Do not turn an 'including' clause into a required restriction or add inferred requirements or dates. If the required condition is unclear, use null.
 ```
 
 **JSON schema:**
@@ -1009,7 +1010,8 @@ For comparisons of entities, use one query per entity covering every requested p
   "required": [
     "task",
     "queries",
-    "freshness"
+    "freshness",
+    "selection_condition"
   ],
   "properties": {
     "task": {
@@ -1040,13 +1042,55 @@ For comparisons of entities, use one query per entity covering every requested p
         "month",
         "year"
       ]
+    },
+    "selection_condition": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "property_word",
+        "operator",
+        "value"
+      ],
+      "properties": {
+        "property_word": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "pattern": "^[a-zA-Z]+$"
+        },
+        "operator": {
+          "type": "string",
+          "enum": [
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "eq",
+            "ne",
+            "occurred",
+            "not_occurred"
+          ]
+        },
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
     }
   }
 }
 ```
 
+**Evaluated numeric-selection refinement — 2 October 2026:** the baseline still invents matches from blank table cells (`190310`). The single planner call can now return a nullable selection condition, with its property word constrained by a per-request enum of literal words in the latest 2,000 characters. The host binds it to one unambiguous numeric column; unknown values never become zero. The automatic candidate passes the broad regression in `233347`, `233642` (full suite), `233704` and `233725`; the full suite passes all E12 aggregate/E13 example gates, with two remaining per-case failures. Earlier span/phrase extraction prototypes fail and are retained. Native answer sampling and the answer prompt are unchanged. This qualifies a targeted fix, not Phase 2 completion; production/live evidence is recorded in the phase report.
+
 **Validation:**
 
+- validate the optional condition separately; malformed/unbound conditions are discarded without losing valid search queries; non-lookup plans have no condition; the enum is built without shared schema mutation;
 - map the single planner response to `search = (task == "lookup")`; reject non-lookup plans with queries; this remains the same one planner call, with no agent or extra routing call;
 - trim queries, drop duplicates (case-insensitive) and empties;
 - if `search` is true but no queries remain, use the fallback;
@@ -1130,6 +1174,10 @@ For comparisons of entities, use one query per entity covering every requested p
 
 **Bibliography relevance:** when the query does not ask for references, citations or a bibliography, multiply the fused score of dense numbered citation lists under `References`, `Bibliography` or `Works cited` by 0.25. Keep their exact text available; factual article text takes priority.
 
+**Numeric table condition (`search/selection.py`):** before ranking, apply the nullable planner condition only when its literal property binds to exactly one numeric column and no undeclared units/measure appear in its header. A positive occurrence requires nonnegative integer values; negated occurrence requires explicit request negation. Explicit thresholds must have the requested comparison and number in the request. Unsupported units/scales, nonnumeric values, malformed/ambiguous columns or unclear conditions preserve the original table. Non-numeric missing markers cannot qualify as zero. Table fragments are assembled first, matching row values remain exact, and the selected cell repeats its column label to prevent column confusion. The result is rechunked under the existing 3,000-character cap. An explicit host annotation reports the supported selected-row count and that missing values were not zero; the cache retains the unfiltered page. The scoped table omits its attached unfiltered prose and population totals. Once a source supplies a verified table, omit its other unfiltered prose from answer evidence. A host reference column is added before rechunking, then bound to the assigned source number; only the host-added last cell is replaced. The answer builder labels each source wrapper with its citation label. No citations are appended after generation. The selected annotated passages are persisted as the exact model evidence for citations. This is host evidence selection within the existing call/budget limits, not another model validator or an agent.
+
+**Condition priority:** passages containing a host-verified selection carry `selection_applied=true` (page text cannot set it). Add the highest fused score to their fused score before ordering, so data directly establishing the condition precedes background articles. The source cap, diversity pass, per-source passage cap and token budget remain unchanged. Before/after evidence: the live selection-only failure `234345` versus the same live corpus with priority/labels `234643`; later citation failures remain visible in the phase report. Final scoped-table/row-reference evidence is `2026-10-03-001904` (24/25 full recorded cases; aggregate/example gates pass), `001926` (fresh live list) and `001943` (32K list). The comprehensive-list grader now requires citations per list/table item and rejects an unfiltered total presented as the subset size; prior scores are preserved with a separate saved-answer audit. This qualifies the targeted accuracy fix, not phase completion.
+
 **Selection** (budget-aware; fills the model's context sensibly):
 
 ```text
@@ -1180,6 +1228,8 @@ Who lost the 2021 NBA Finals? Show a table.
 - **previous turns' search results are never re-sent.** History carries earlier answers with their citations stripped;
 - **no extra instructions.** No table rules, no "cite every row", nothing topic-specific;
 - generation uses the chat's normal parameters (Part D5). Reasoning is allowed.
+
+**Citation identifier formatting:** each source wrapper includes `Citation label: [N]` before its passages, using its assigned source number. This is host metadata; original page text/cache remain unchanged and no citations are fabricated or appended after generation. The answer instructions and sampling defaults remain unchanged. Before/after reports and builder hashes are linked in the phase report.
 
 ## E9. Citations
 

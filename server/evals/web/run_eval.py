@@ -16,7 +16,7 @@ from typing import Any
 
 import aiosqlite
 import httpx
-from grading import required_facts
+from grading import cited_list_items, required_facts
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -32,6 +32,7 @@ from prompt_trials import (  # noqa: E402
     DIRECT_AND_CONSISTENT,
     INTENT_PROMPT,
     INTENT_QUERY_COVERAGE,
+    SUBJECT_AND_VALUES,
     TASK_AND_SCOPE,
     TASK_AND_SCOPE_V2,
 )
@@ -96,6 +97,29 @@ def percentile(values: list[float], p: float) -> float:
 
 
 async def evaluate(args: argparse.Namespace) -> None:
+    answer_builder_hash = hashlib.sha256((ROOT / "app/search/prompt.py").read_bytes()).hexdigest()
+    selector_hash = hashlib.sha256((ROOT / "app/search/selection.py").read_bytes()).hexdigest()
+    pipeline_hash = hashlib.sha256((ROOT / "app/search/pipeline.py").read_bytes()).hexdigest()
+    original_rank = search_pipeline.rank
+    selection_question = ""
+    if args.fill_trial == "source-order":
+        original_select = search_pipeline.select
+
+        def source_order_select(ranked: Any, *positional: Any, **keyword: Any) -> Any:
+            order = list(dict.fromkeys(p.source_url for p, _ in ranked))
+            grouped = sorted(ranked, key=lambda item: order.index(item[0].source_url))
+            return original_select(grouped, *positional, **keyword)
+
+        search_pipeline.select = source_order_select
+    if args.question_first:
+        original_build = answer_prompt.build
+
+        def question_first_build(request: Any, sources: Any) -> None:
+            question = request.messages[-1].content
+            original_build(request, sources)
+            request.messages[-1].content = question + "\n\n" + request.messages[-1].content
+
+        answer_prompt.build = question_first_build
     planner_wire_schema = planner.SCHEMA
     if args.planner_trial == "task-and-scope":
         planner.PROMPT += TASK_AND_SCOPE
@@ -151,6 +175,8 @@ async def evaluate(args: argparse.Namespace) -> None:
         answer_prompt.PROMPT = CITED_EVIDENCE_V7
     elif args.answer_trial == "cited-evidence-v8":
         answer_prompt.PROMPT = CITED_EVIDENCE_V8
+    elif args.answer_trial == "subject-and-values":
+        answer_prompt.PROMPT = SUBJECT_AND_VALUES
     cases_bytes = Path(args.cases_file).read_bytes()
     cases = json.loads(cases_bytes)
     if args.evidence_format == "sectioned":
@@ -166,6 +192,19 @@ async def evaluate(args: argparse.Namespace) -> None:
         from table_trials import named_cells
 
         search_pipeline.chunk = named_cells
+    elif args.table_trial == "row-records":
+        from table_trials import row_records
+
+        search_pipeline.chunk = row_records
+    elif args.table_trial == "annotated-nulls":
+        from table_trials import annotated_nulls
+
+        search_pipeline.chunk = annotated_nulls
+    predicate = json.loads(Path(args.filter_proof).read_text()) if args.filter_proof else None
+    if predicate:
+        from table_trials import numeric_rows
+
+        search_pipeline.chunk = lambda url, text: numeric_rows(url, text, predicate)
     if args.case:
         cases = [c for c in cases if c["id"] == args.case]
     if not cases:
@@ -229,24 +268,41 @@ async def evaluate(args: argparse.Namespace) -> None:
             await client.get("/api/models?refresh=true")
             for case in cases:
                 turns = []
-                chat = (
-                    await client.post(
-                        "/api/chats",
-                        json={
-                            "connection_id": conn["id"],
-                            "model_id": args.model,
-                            "web_enabled": True,
-                            **(
-                                {"params": {"temperature": args.temperature}}
-                                if args.temperature is not None
-                                else {}
-                            ),
-                        },
+                created = await client.post(
+                    "/api/chats",
+                    json={
+                        "connection_id": conn["id"],
+                        "model_id": args.model,
+                        "web_enabled": True,
+                    },
+                )
+                if created.status_code != 201:
+                    raise SystemExit(created.text)
+                chat = created.json()
+                if args.temperature is not None:
+                    configured = await client.patch(
+                        "/api/chats/" + chat["id"],
+                        json={"params": {"temperature": args.temperature}},
                     )
-                ).json()
+                    if configured.status_code != 200:
+                        raise SystemExit(configured.text)
+                    chat = configured.json()
                 leaf = None
                 case_decisions = []
                 for index, turn in enumerate(case["turns"]):
+                    selection_question = turn["user"]
+                    if args.ranking_query == "original":
+
+                        def question_rank(
+                            passages: Any,
+                            query: Any,
+                            source_order: Any,
+                            vectors: Any = None,
+                            question: str = turn["user"],
+                        ) -> Any:
+                            return original_rank(passages, question, source_order, vectors)
+
+                        search_pipeline.rank = question_rank
                     fixture_dir = Path(args.fixture_root) / case["id"] / str(index)
                     if args.replay_corpus:
                         recorded = json.loads((fixture_dir / "run.json").read_text())["web"]
@@ -312,9 +368,25 @@ async def evaluate(args: argparse.Namespace) -> None:
                     detail = (await client.get("/api/chats/" + chat["id"])).json()
                     sources = detail["sources"].get(leaf, [])
                     web = run.message.web.model_dump() if run.message.web else {}
+                    if args.temperature is not None and (
+                        not run.message.stats
+                        or run.message.stats.params.get("temperature") != args.temperature
+                    ):
+                        raise SystemExit("Requested test temperature did not reach answer stats")
                     turns.append(
                         {
                             "question": turn["user"],
+                            "numeric_selection_trial": (
+                                {
+                                    **run.message.web.selection_condition.model_dump(),
+                                    "request_span": selection_question,
+                                }
+                                if run.message.web and run.message.web.selection_condition
+                                else None
+                            ),
+                            "planner_property_words": planner.schema(selection_question)[
+                                "properties"
+                            ]["selection_condition"]["properties"]["property_word"].get("enum"),
                             "raw_answer": raw_answers.get(leaf),
                             "message": run.message.model_dump(),
                             "sources": sources,
@@ -375,6 +447,9 @@ async def evaluate(args: argparse.Namespace) -> None:
                 if bad:
                     forbidden.append(case["id"])
                 cites = len(cited(answer))
+                list_citations = (
+                    cited_list_items(answer) if expect.get("cite_each_list_item") else None
+                )
                 passed = (
                     facts
                     and all(case_decisions)
@@ -382,6 +457,8 @@ async def evaluate(args: argparse.Namespace) -> None:
                     and cites >= expect.get("min_citations", 1 if turns[-1]["sources"] else 0)
                     and all(t["message"]["status"] == "complete" for t in turns)
                 )
+                if list_citations is False:
+                    passed = False
                 passed = passed and len(turns[-1]["web"].get("queries", [])) >= expect.get(
                     "queries_min", 0
                 )
@@ -422,6 +499,7 @@ async def evaluate(args: argparse.Namespace) -> None:
                         "injection_exercised": injection_exercised,
                         "forbidden": bad,
                         "citations": cites,
+                        "cited_list_items": list_citations,
                         "turns": turns,
                     }
                 )
@@ -444,6 +522,10 @@ async def evaluate(args: argparse.Namespace) -> None:
             + ("-" + args.planner_trial if args.planner_trial != "spec" else "")
             + ("-" + args.answer_trial if args.answer_trial != "spec" else "")
             + ("-" + args.table_trial if args.table_trial != "spec" else "")
+            + ("-original-query" if args.ranking_query == "original" else "")
+            + ("-question-first" if args.question_first else "")
+            + ("-source-fill" if args.fill_trial != "spec" else "")
+            + ("-human-predicate-proof" if predicate else "")
             + ("-" + args.evidence_format if args.evidence_format != "spec" else "")
             + (
                 "-temperature-" + f"{args.temperature:g}".replace(".", "p")
@@ -525,10 +607,17 @@ async def evaluate(args: argparse.Namespace) -> None:
                 "planner_prompt_sha256": hashlib.sha256(planner.PROMPT.encode()).hexdigest(),
                 "planner_prompt": planner.PROMPT,
                 "planner_wire_schema": planner_wire_schema,
+                "selection_sha256": selector_hash,
+                "answer_builder_sha256": answer_builder_hash,
+                "pipeline_sha256": pipeline_hash,
                 "answer_trial": args.answer_trial,
                 "answer_prompt": answer_prompt.PROMPT,
                 "answer_prompt_sha256": hashlib.sha256(answer_prompt.PROMPT.encode()).hexdigest(),
                 "table_trial": args.table_trial,
+                "ranking_query": args.ranking_query,
+                "question_first": args.question_first,
+                "fill_trial": args.fill_trial,
+                "human_supplied_predicate": predicate,
                 "evidence_format": args.evidence_format,
                 "fixture_root": args.fixture_root if not args.live else None,
                 "injection_scope": (
@@ -561,6 +650,10 @@ async def evaluate(args: argparse.Namespace) -> None:
         f"Planner: {args.planner_trial}; answer: {args.answer_trial}; "
         f"tables: {args.table_trial} (non-spec trials run only in this process).\n\n"
         f"Evidence format: {args.evidence_format}.\n\n"
+        f"Ranking query: {args.ranking_query}.\n\n"
+        f"Question before and after evidence: {args.question_first}.\n\n"
+        f"Passage fill: {args.fill_trial}.\n\n"
+        f"Human-supplied predicate proof: {predicate}. Not an automatic production fix.\n\n"
         + (
             "Search results are frozen from the recording, independent of new query wording. "
             "Plans are also frozen for this ranking comparison. "
@@ -632,14 +725,31 @@ if __name__ == "__main__":
     parser.add_argument("--record", action="store_true")
     parser.add_argument("--replay-corpus", action="store_true")
     parser.add_argument("--replay-plans", action="store_true")
-    parser.add_argument("--table-trial", choices=["spec", "named-cells"], default="spec")
+    parser.add_argument(
+        "--table-trial",
+        choices=["spec", "named-cells", "row-records", "annotated-nulls"],
+        default="spec",
+    )
     parser.add_argument("--evidence-format", choices=["spec", "sectioned"], default="spec")
     parser.add_argument("--ranking", choices=["keyword", "hybrid"], default="keyword")
+    parser.add_argument("--ranking-query", choices=["spec", "original"], default="spec")
+    parser.add_argument("--question-first", action="store_true")
+    parser.add_argument("--fill-trial", choices=["spec", "source-order"], default="spec")
+    parser.add_argument(
+        "--filter-proof", default="", help="Explicit human predicate JSON; eval only"
+    )
     parser.add_argument("--embedding", default="qwen3-embedding:0.6b")
     parser.add_argument("--fixture-root", default=str(HERE / "fixtures"))
     parser.add_argument(
         "--planner-trial",
-        choices=["spec", "task-and-scope", "task-and-scope-v2", "intent-first", "entity-queries"],
+        choices=[
+            "spec",
+            "task-and-scope",
+            "task-and-scope-v2",
+            "intent-first",
+            "entity-queries",
+            "numeric-selection",
+        ],
         default="spec",
     )
     parser.add_argument(
@@ -655,6 +765,7 @@ if __name__ == "__main__":
             "cited-evidence-v6",
             "cited-evidence-v7",
             "cited-evidence-v8",
+            "subject-and-values",
         ],
         default="spec",
     )
@@ -667,4 +778,12 @@ if __name__ == "__main__":
         parser.error("Frozen replay cannot be combined with live or recording")
     if args.evidence_format != "spec" and args.table_trial != "spec":
         parser.error("Run section-heading and table-format experiments separately")
+    if args.ranking_query != "spec" and args.ranking != "keyword":
+        parser.error("The original-query experiment is limited to keyword ranking")
+    if args.filter_proof and (args.table_trial != "spec" or args.evidence_format != "spec"):
+        parser.error("Numeric predicate proof cannot be combined with other format experiments")
+    if args.planner_trial == "numeric-selection" and (
+        args.replay_plans or args.filter_proof or args.table_trial != "spec"
+    ):
+        parser.error("Automatic numeric selection needs a real planner and its own format")
     asyncio.run(evaluate(args))

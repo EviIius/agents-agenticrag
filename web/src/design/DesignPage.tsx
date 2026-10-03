@@ -33,6 +33,7 @@ const webSource: Source = {
       source_url: "https://example.org",
       heading: "Example",
       ord: 0,
+      selection_applied: false,
       text: "This is a synthetic source passage used to review the interface. It is not real research.",
     },
   ],

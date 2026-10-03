@@ -181,6 +181,7 @@ class Passage(BaseModel):
     heading: str = ""
     ord: int
     text: str
+    selection_applied: bool = False
 
 
 class Source(BaseModel):
@@ -196,6 +197,12 @@ class Source(BaseModel):
     cited: bool = False
 
 
+class SelectionCondition(Input):
+    property_word: str = Field(min_length=1, max_length=40, pattern=r"^[a-zA-Z]+$")
+    operator: Literal["gt", "gte", "lt", "lte", "eq", "ne", "occurred", "not_occurred"]
+    value: float | None = Field(default=None, allow_inf_nan=False)
+
+
 class WebInfo(BaseModel):
     status: Literal["used", "skipped", "failed"]
     freshness: Literal["any", "day", "week", "month", "year"] | None = None
@@ -206,6 +213,7 @@ class WebInfo(BaseModel):
     plan_fallback: bool = False
     providers: list[str] = Field(default_factory=list)
     ranking: str = "keyword"
+    selection_condition: SelectionCondition | None = None
 
 
 class WebRead(BaseModel):

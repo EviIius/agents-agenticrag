@@ -6,6 +6,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from ..providers.base import Adapter, ChatRequest, ProviderMessage
+from ..schemas import SelectionCondition
 
 PROMPT = (
     "You plan web searches; you do not answer the user's question.\nToday "
@@ -35,11 +36,24 @@ PROMPT = (
     "eative means compose fictional text. Calculate means pure math/code."
     " Conversation means small talk or thanks. Only lookup needs queries;"
     " all other tasks have queries=[] and freshness=any. Return JSON only"
-    " with task, queries and freshness. For release notes use freshness=w"
+    " with task, queries, freshness and selection_condition. For release notes use freshness=w"
     "eek; reserve day for today's changing conditions.\nFor comparisons of"
     " entities, use one query per entity covering every requested propert"
     "y of that entity. Cover all requested properties within the three-qu"
     "ery limit; do not spend all query slots on only some properties."
+    "\nFor a request to list a population with a qualifying condition, also return "
+    "selection_condition. It must describe the required condition, including whether "
+    "an event ever happened; this need not mention a number. A selection_condition "
+    "has property_word, operator and value. property_word is one literal word from "
+    "the latest request that identifies the measurable property or qualifying event. "
+    "For occurred/not_occurred, use the qualifying action verb, not the name of a "
+    "stage, place, population or prerequisite. Do not combine events. "
+    "Use operator=occurred and value=null when the event happened at least once; "
+    "not_occurred and null when it never happened. For an explicit numeric condition "
+    "use gt/gte/lt/lte/eq/ne with its number as value. Return null for single facts, "
+    "single-event results, ordinary entity comparisons and non-lookup tasks. "
+    "Do not turn an 'including' clause into a required restriction or add inferred "
+    "requirements or dates. If the required condition is unclear, use null."
 )
 
 
@@ -48,6 +62,7 @@ class Plan(BaseModel):
     search: bool
     queries: list[str] = Field(max_length=3)
     freshness: Literal["any", "day", "week", "month", "year"]
+    selection_condition: SelectionCondition | None = None
 
 
 class Intent(BaseModel):
@@ -60,7 +75,7 @@ class Intent(BaseModel):
 SCHEMA: dict[str, Any] = {
     "type": "object",
     "additionalProperties": False,
-    "required": ["task", "queries", "freshness"],
+    "required": ["task", "queries", "freshness", "selection_condition"],
     "properties": {
         "task": {
             "type": "string",
@@ -72,8 +87,45 @@ SCHEMA: dict[str, Any] = {
             "items": {"type": "string", "minLength": 2, "maxLength": 120},
         },
         "freshness": {"type": "string", "enum": ["any", "day", "week", "month", "year"]},
+        "selection_condition": {
+            "type": ["object", "null"],
+            "additionalProperties": False,
+            "required": ["property_word", "operator", "value"],
+            "properties": {
+                "property_word": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 40,
+                    "pattern": "^[a-zA-Z]+$",
+                },
+                "operator": {
+                    "type": "string",
+                    "enum": ["gt", "gte", "lt", "lte", "eq", "ne", "occurred", "not_occurred"],
+                },
+                "value": {"type": ["number", "null"]},
+            },
+        },
     },
 }
+
+
+def schema(latest: str) -> dict[str, Any]:
+    """Bind the optional property to the current request without shared mutations."""
+    words = list(dict.fromkeys(re.findall(r"\b[a-zA-Z]{1,40}\b", latest[:2000])))
+    condition = SCHEMA["properties"]["selection_condition"]
+    return {
+        **SCHEMA,
+        "properties": {
+            **SCHEMA["properties"],
+            "selection_condition": {
+                **condition,
+                "properties": {
+                    **condition["properties"],
+                    "property_word": {"type": "string", "enum": words or [""]},
+                },
+            },
+        },
+    }
 
 
 def heuristic(latest: str, history: list[ProviderMessage]) -> str:
@@ -123,17 +175,29 @@ async def plan(
         {"temperature": 0.2, "max_tokens": 256},
         context,
         "off",
-        SCHEMA,
+        schema(latest),
     )
     try:
         async with asyncio.timeout(20 if loaded else 60):
             raw = await adapter.complete_json(req)
+        raw = dict(raw)
+        selection = raw.pop("selection_condition", None)
         intent = Intent.model_validate(raw, strict=True)
         if intent.task != "lookup" and intent.queries:
             raise ValueError("Non-lookup plan contains search queries")
         result = Plan(
             search=intent.task == "lookup", queries=intent.queries, freshness=intent.freshness
         )
+        if selection is not None and intent.task == "lookup":
+            try:
+                condition = SelectionCondition.model_validate(selection, strict=True)
+                if condition.property_word.casefold() in {
+                    word.casefold() for word in re.findall(r"\b[a-zA-Z]{1,40}\b", latest)
+                }:
+                    result.selection_condition = condition
+            except ValueError:
+                # A bad optional restriction must not discard useful search queries.
+                pass
         queries: list[str] = []
         seen: set[str] = set()
         for q in result.queries:

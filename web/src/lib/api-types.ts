@@ -938,6 +938,11 @@ export interface components {
             ord: number;
             /** Text */
             text: string;
+            /**
+             * Selection Applied
+             * @default false
+             */
+            selection_applied: boolean;
         };
         /** QueuedData */
         QueuedData: {
@@ -1041,6 +1046,18 @@ export interface components {
             ms: number;
             /** Error */
             error?: string | null;
+        };
+        /** SelectionCondition */
+        SelectionCondition: {
+            /** Property Word */
+            property_word: string;
+            /**
+             * Operator
+             * @enum {string}
+             */
+            operator: "gt" | "gte" | "lt" | "lte" | "eq" | "ne" | "occurred" | "not_occurred";
+            /** Value */
+            value?: number | null;
         };
         /** Send */
         Send: {
@@ -1228,6 +1245,7 @@ export interface components {
              * @default keyword
              */
             ranking: string;
+            selection_condition?: components["schemas"]["SelectionCondition"] | null;
         };
         /** WebRead */
         WebRead: {

@@ -42,6 +42,6 @@ def build(request: ChatRequest, sources: list[Source]) -> None:
             attrs += f' published="{escape(s.published_at, quote=True)}"'
         text = "\n\n".join(p.text for p in s.passages)
         text = re.sub(r"</(?:source|search_results)\s*>", "", text, flags=re.I)
-        blocks.append(f"<source {attrs}>\n{text}\n</source>")
+        blocks.append(f"<source {attrs}>\nCitation label: [{s.n}]\n\n{text}\n</source>")
     blocks.append("</search_results>")
     request.messages[-1].content = "\n".join(blocks) + "\n\n" + request.messages[-1].content

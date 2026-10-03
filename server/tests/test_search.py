@@ -301,10 +301,9 @@ async def test_planner_schema_transcript_and_fallback(monkeypatch: pytest.Monkey
         8192,
     )
     assert result.queries == ["NBA Finals"] and not fallback
-    assert (
-        captured[0].params == {"temperature": 0.2, "max_tokens": 256}
-        and captured[0].json_schema == planner.SCHEMA
-    )
+    assert captured[0].params == {"temperature": 0.2, "max_tokens": 256} and captured[
+        0
+    ].json_schema == planner.schema("what about 2020?")
     assert "Conversation so far:" in captured[0].messages[1].content
 
     async def bad(req: ChatRequest) -> dict[str, Any]:
@@ -324,6 +323,122 @@ async def test_planner_schema_transcript_and_fallback(monkeypatch: pytest.Monkey
         planner.heuristic("long standalone question with many different words", [])
         == "long standalone question with many different words"
     )
+
+
+async def test_optional_condition_is_literal_per_request_and_does_not_break_search() -> None:
+    adapter = Mock()
+    captured: list[ChatRequest] = []
+    property_word = "sold"
+
+    async def complete(req: ChatRequest) -> dict[str, Any]:
+        captured.append(req)
+        return {
+            "task": "lookup",
+            "queries": ["product sales"],
+            "freshness": "any",
+            "selection_condition": {
+                "property_word": property_word,
+                "operator": "occurred",
+                "value": None,
+            },
+        }
+
+    adapter.complete_json = complete
+    result, fallback = await planner.plan(adapter, "m", "List products sold", [], True, 8192)
+    assert not fallback and result.selection_condition
+    assert result.selection_condition.property_word == "sold"
+    property_word = "won"
+    result, fallback = await planner.plan(adapter, "m", "List products returned", [], True, 8192)
+    assert (
+        not fallback and result.queries == ["product sales"] and result.selection_condition is None
+    )
+    assert captured[0].json_schema is not None and captured[1].json_schema is not None
+    first = captured[0].json_schema["properties"]["selection_condition"]["properties"][
+        "property_word"
+    ]
+    second = captured[1].json_schema["properties"]["selection_condition"]["properties"][
+        "property_word"
+    ]
+    assert "sold" in first["enum"] and "sold" not in second["enum"]
+    assert (
+        "enum"
+        not in planner.SCHEMA["properties"]["selection_condition"]["properties"]["property_word"]
+    )
+    assert len(captured) == 2 and all(
+        req.params == {"temperature": 0.2, "max_tokens": 256} for req in captured
+    )
+
+
+async def test_pipeline_persists_exact_selected_table_without_modifying_read_page(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    app, client, runtime = chat_app
+    from app.search.extract import Page
+
+    url = "https://example.org/products"
+    original = "| Product | Sales |\n| Café | 2 |\n| Other | 0 |\n| Unknown | - |"
+    page = Page(url, "Product sales", "Example", None, original)
+    calls = 0
+
+    async def complete(self: Ollama, req: ChatRequest) -> dict[str, Any]:
+        nonlocal calls
+        calls += 1
+        return {
+            "task": "lookup",
+            "queries": ["product sales"],
+            "freshness": "any",
+            "selection_condition": {"property_word": "sold", "operator": "occurred", "value": None},
+        }
+
+    async def search(self: Providers, provider: str, q: str, f: str) -> list[SearchResult]:
+        return [
+            SearchResult(
+                url="https://example.org/background", title="Product sales", provider="DuckDuckGo"
+            ),
+            SearchResult(url=url, title="Product sales", provider="DuckDuckGo"),
+        ]
+
+    async def read(*a: Any, **k: Any) -> Page:
+        if a[1].endswith("/background"):
+            return Page(
+                a[1],
+                "Product sales",
+                "Example",
+                None,
+                "Host selection: Sales gt 0; 999 of 999 rows match.\n"
+                + "Products sold product sales. " * 30,
+            )
+        return page
+
+    monkeypatch.setattr(Ollama, "complete_json", complete)
+    monkeypatch.setattr(Providers, "request", search)
+    monkeypatch.setattr(cache, "read", read)
+    conn = (await client.get("/api/connections")).json()[0]["id"]
+    chat = (
+        await client.post(
+            "/api/chats", json={"connection_id": conn, "model_id": "fake-chat", "web_enabled": True}
+        )
+    ).json()
+    reply = (
+        await client.post(
+            f"/api/chats/{chat['id']}/messages", json={"content": "List products that sold"}
+        )
+    ).json()
+    run = await finish(app, reply)
+    assert run.message.status == "complete" and calls == 1
+    detail = (await client.get("/api/chats/" + chat["id"])).json()
+    source = detail["sources"][run.message.id][0]
+    assert source["url"] == url
+    body = "\n".join(p["text"] for p in source["passages"])
+    assert (
+        "| Café | Sales: 2 |" in body
+        and "| Other | 0 |" not in body
+        and "| Unknown | - |" not in body
+    )
+    assert all(p["selection_applied"] for p in source["passages"])
+    assert body in runtime.state.captures[-1]["messages"][-1]["content"]
+    assert "Host selection:" in body and page.text == original
+    assert detail["messages"][-1]["web"]["selection_condition"]["property_word"] == "sold"
 
 
 async def test_pipeline_cites_exact_sources_and_skips_without_traffic(

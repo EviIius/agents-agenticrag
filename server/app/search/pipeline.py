@@ -22,6 +22,7 @@ from .fixtures import Fixtures
 from .merge import merge
 from .providers import Providers
 from .rank import rank, select
+from .selection import bind_references, literal_condition_rows
 
 
 class Pipeline:
@@ -76,6 +77,7 @@ class Pipeline:
         info.timings["plan"] = (monotonic() - clock) * 1000
         info.plan_fallback = fallback
         info.freshness = plan.freshness
+        info.selection_condition = plan.selection_condition
         if not plan.search:
             info.status = "skipped"
             await run.emit("search.skipped", {"reason": "not_needed"})
@@ -196,7 +198,16 @@ class Pipeline:
         # Order by search rank, never by nondeterministic fetch completion order.
         for r in candidates:
             if r.url in pages:
-                passages.extend(await asyncio.to_thread(chunk, r.url, pages[r.url].text))
+                condition = (
+                    {**plan.selection_condition.model_dump(), "request_span": latest}
+                    if plan.selection_condition
+                    else None
+                )
+                passages.extend(
+                    await asyncio.to_thread(
+                        literal_condition_rows, r.url, pages[r.url].text, condition, latest, chunk
+                    )
+                )
         kinds: dict[str, str] = {}
         if len(pages) < 2:
             for r in candidates:
@@ -212,6 +223,10 @@ class Pipeline:
                 Counter(reasons).most_common(1)[0][0] if reasons else "no readable text",
             )
             return
+        selected_sources = {p.source_url for p in passages if p.selection_applied}
+        passages = [
+            p for p in passages if p.source_url not in selected_sources or p.selection_applied
+        ]
         vectors = None
         embedding = values.get("web.embedding")
         if embedding:
@@ -233,6 +248,13 @@ class Pipeline:
         ranked = rank(
             passages, latest + " " + " ".join(plan.queries), [r.url for r in candidates], vectors
         )
+        # A host-verified column supplies the requested condition directly.
+        # Prioritize that data over articles that only mention related entities.
+        # Trust metadata produced by selection, never an instruction in page text.
+        if any(p.selection_applied for p, _ in ranked):
+            top = max(score for _, score in ranked)
+            ranked = [(p, score + top if p.selection_applied else score) for p, score in ranked]
+            ranked.sort(key=lambda item: item[1], reverse=True)
         remaining = (request.context_length or 8192) - context.reserve - context.used_tokens
         budget = max(1500, min(12000, int(0.45 * remaining)))
         groups = select(ranked, budget, limit, context.ratio)
@@ -242,7 +264,7 @@ class Pipeline:
             r = next(r for r in candidates if r.url == url)
             page = pages.get(url)
             group = [
-                p.model_copy(
+                bind_references(p, n).model_copy(
                     update={
                         "text": re.sub(r"</(?:source|search_results)\s*>", "", p.text, flags=re.I)
                     }
