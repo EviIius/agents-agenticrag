@@ -5,14 +5,14 @@
 Phase 3 implements the command palette, installable PWA shell, update prompt, read-only legacy import and deployment tooling.
 Finished message rows are memoized; streaming and long-chat budgets have synthetic browser measurements.
 Transcription source now lives under the Workbench repo. Audio copies are temporary by default; saved transcript outputs remain available.
-**Deployed; physical acceptance pending.** Workbench is running under the existing launchd identity. Audio cleanup freed 1,434,891,416 bytes while preserving both existing transcripts and all six output downloads. Physical iPhone installation, human keyboard review and warm-load acceptance remain open; Phase 3 is not complete. Jake reported VoiceOver did not work and deferred it for this build; it is a known limitation, not a release blocker.
+**Deployed; remaining physical acceptance pending.** Workbench is running under the existing launchd identity. Audio cleanup freed 1,434,891,416 bytes while preserving both existing transcripts and all six output downloads. Jake confirmed physical iPhone Home Screen installation, standalone launch and use through the Tailscale URL on 3 October. Human keyboard review, physical Safari offline behavior and warm-load acceptance remain open; Phase 3 is not complete. Jake reported VoiceOver did not work and deferred it for this build; it is a known limitation, not a release blocker.
 
 ## Done-when checklist
 
 | Item | Status | Evidence (test name / file / screenshot / command output) |
 |---|---|---|
 | Command palette: chat FTS and seven actions | Passed browser verification | `polish.spec.ts`, `CommandPalette.tsx`; `/design` includes ready/empty/loading/error |
-| PWA manifest, public shell cache and update prompt | Automated verification; phone installation pending | `pwa.spec.ts`; API responses never cached; Chromium offline navigation and both engines' update/privacy checks |
+| PWA manifest, public shell cache and update prompt | Automated verification; physical phone installation and standalone launch confirmed | `pwa.spec.ts`; API responses never cached; Chromium offline navigation and both engines' update/privacy checks; Jake's 3 October Home Screen screenshots and confirmation |
 | Accessibility: all screens, both themes, keyboard | Passed automated audits | Existing screen audits plus `phase3-accessibility.spec.ts`; loading/error listbox semantics and citation focus/close corrected |
 | iPhone VoiceOver | **Reported failure; deferred by Jake** | 3 October user report; failure mechanism not diagnosed, support not claimed; release gate waived by user amendment |
 | Human keyboard walkthrough | **Pending review** | Automated keyboard walkthrough passes; a human check is still separate |
@@ -24,7 +24,7 @@ Transcription source now lives under the Workbench repo. Audio copies are tempor
 | Legacy import idempotent, read-only, linear chain, title retained | Passed | `test_legacy_import.py`: source database/WAL/SHM hashes and mtimes unchanged; committed WAL data imported, concurrent/idempotent behavior, invalid input rolls back; actual legacy schema read check in `legacy-readonly-live.json` |
 | Delete legacy source; retain old installed data | Implemented | `legacy-removal.json`: 92 source files removed, zero data files; recoverable branch/tag retained |
 | Architecture and setup/run/deploy/rollback docs | Written | `architecture.md`, `README.md` |
-| launchd installation and phone confirmation | **Deployed; phone confirmation pending** | `deploy.py`, `test_deployment.py`, `deploy-plan.json`, `deployment-verification.json`; existing label/bind/Tailscale route retained |
+| launchd installation and phone confirmation | **Deployed; phone launch and request use confirmed** | `deploy.py`, `test_deployment.py`, `deploy-plan.json`, `deployment-verification.json`; existing label/bind/Tailscale route retained; Jake's 3 October confirmation of use from the Home Screen |
 | Transcript-preserving audio cleanup | Passed synthetic and live storage checks | `test_temporary_audio_keeps_outputs_and_bulk_clear_skips_active`, `audio-storage.spec.ts`, `storage-after-deployment.json`; startup cleanup, opt-in retention, active-job exclusion and idempotence |
 
 ## Changed files
@@ -43,7 +43,7 @@ Transcription source now lives under the Workbench repo. Audio copies are tempor
 - Playwright WebKit's offline reload returns an internal navigation error. That one offline-navigation test is skipped with its reason; worker install/cache privacy/update checks run on both engines. Physical Safari offline verification remains open.
 - Jake reported VoiceOver did not work and explicitly deferred it for this build. Its physical acceptance gate is waived by his amendment; the issue remains recorded and was not diagnosed.
 - Optional presets and PDF attachments are deferred. T2 cleanup/glossary editing and Part F agents are outside this phase.
-- Failed exploratory runs remain attached for transparency; only the final green run is acceptance evidence. Physical iPhone gates cannot be replaced by emulation.
+- Failed exploratory runs remain attached for transparency; the full run and passing targeted closeout provide automated acceptance evidence as detailed below. Physical iPhone gates cannot be replaced by emulation.
 
 ## Runtime observations
 
@@ -55,6 +55,7 @@ Transcription source now lives under the Workbench repo. Audio copies are tempor
 - Startup released two uploaded copies totaling 1,434,891,416 bytes (1.43 GB / 1.34 GiB). A private pre-deployment digest confirms transcript text/raw text/segments/metadata are unchanged. All six existing text/SRT/JSON downloads return HTTP 200; removed audio returns HTTP 404. Original user files remain untouched.
 - The deployed launchd subprocess also transcribed generated synthetic speech, removed its audio and retained all three exports; its temporary test attachment was removed afterward (`live-synthetic-transcription.json`).
 - Actual Tailscale HTTPS fresh-context readiness on this host: Chromium 88.8–114.1 ms; WebKit 106–119 ms across three samples each (`tailscale-headless-warmload.json`). This is **not physical iPhone evidence** and cannot close the phone performance gate.
+- Jake confirmed Home Screen installation and supplied a standalone iPhone screenshot on 3 October, reporting that it opens the Tailscale URL for requests. The saved AgenticRAG label/icon appear to be retained from an earlier installation; the current manifest names the app Workbench. The screenshot containing real recording metadata is not archived. This closes installation and standalone-launch acceptance, without establishing a measured load time or offline behavior.
 
 ## Test output
 
@@ -78,4 +79,4 @@ All contain synthetic data. Representative screenshots under `artifacts/phase-3/
 
 ## Open questions for Jake
 
-Confirm Home Screen installation/standalone launch, keyboard/composer behavior and the offline connection error. A physical warm-load timing below 1.5 seconds is still needed. Jake supplied a screenshot of the live phone home screen showing the updated audio-removal state; the screenshot is not archived because it contains real recording metadata. It does not establish installation, performance or screen-reader support. VoiceOver is explicitly deferred after Jake reported it did not work. The other checks remain Phase 3 acceptance gates; deployment is already complete.
+Home Screen installation, standalone launch and phone use through Tailscale are confirmed by Jake. The remaining checks are human keyboard/composer behavior, the physical Safari offline connection error and a measured physical warm-load time below 1.5 seconds. VoiceOver is explicitly deferred after Jake reported it did not work. Deployment is complete; installation does not need reconfirmation.
