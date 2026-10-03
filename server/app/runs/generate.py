@@ -6,10 +6,10 @@ import asyncio
 from time import monotonic
 from typing import TYPE_CHECKING, Any
 
-from ..db import chats, messages
+from ..db import chats, messages, settings
 from ..errors import AppError
 from ..providers.base import ChatRequest, Finish, ReasoningDelta, TextDelta, Timing, Usage
-from ..schemas import ErrorDetail, ModelInfo, Stats
+from ..schemas import ErrorDetail, ModelInfo, Stats, WebInfo
 from .context import Context
 
 if TYPE_CHECKING:
@@ -80,7 +80,16 @@ async def generate(
                 params.get("reasoning"),
             )
             chat = await chats.chat(manager.store, run.message.chat_id)
-            if manager.web_hook and (chat.web_enabled or force_web):
+            if (
+                context.has_recording
+                and (await settings.get(manager.store))["transcription.block_web"]
+            ):
+                run.message.web = WebInfo(
+                    status="skipped",
+                    notice=ErrorDetail(code="search_blocked_recording", message=""),
+                )
+                await run.emit("search.skipped", {"reason": "recording"})
+            elif manager.web_hook and (chat.web_enabled or force_web):
                 await manager.web_hook(run, request, context, force_web)
             stream = adapter.stream(request)
             async for event in stream:

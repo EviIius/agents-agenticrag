@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     dev: bool = False
     log_level: str = "INFO"
     web_fixtures: Path | None = None
+    transcribe_home: Path | None = None
 
     @property
     def hosts(self) -> set[str]:

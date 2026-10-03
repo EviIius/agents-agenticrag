@@ -9,7 +9,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "server"))
-TARGETS = [ROOT / 'server/app' / name for name in ('providers', 'runs', 'search')]
+TARGETS = [ROOT / 'server/app' / name for name in ('providers', 'runs', 'search', 'transcribe')]
 hits: dict[str, set[int]] = {}
 
 def trace(frame, event, arg):

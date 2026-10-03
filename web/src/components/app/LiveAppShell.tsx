@@ -69,9 +69,11 @@ import {
 import type { components } from "@/lib/api-types";
 import { ApiError } from "@/lib/api";
 import { errorCopy } from "@/lib/errors";
-import { attachRun } from "@/lib/sse";
+import { attachTranscription, detachTranscription, attachRun } from "@/lib/sse";
 import { latestLeaf, visiblePath } from "@/lib/tree";
-import { prepareImage } from "@/lib/attachments";
+import { useTranscripts } from "@/stores/transcripts";
+import type { AudioUpload } from "@/components/chat/AudioChip";
+import { prepareImage, uploadWithProgress } from "@/lib/attachments";
 import { usePreferenceSync } from "@/hooks/usePreferenceSync";
 export function LiveAppShell() {
   const ui = useUI(),
@@ -91,6 +93,36 @@ export function LiveAppShell() {
     [busy, setBusy] = useState(false),
     [pending, setPending] = useState("");
   const [loadingModel, setLoadingModel] = useState<string | null>(null);
+  const [uploads, setUploads] = useState<AudioUpload[]>([]);
+  const uploadControllers = useRef(new Map<string, AbortController>());
+  const [dragging, setDragging] = useState(false);
+  const dragDepth = useRef(0);
+  const transcriptState = useTranscripts((state) => state.attachments);
+  const effectiveFiles = files.map((file) =>
+    file.kind === "audio" ? (transcriptState[file.id] ?? file) : file,
+  );
+  const waitingForTranscript =
+    uploads.some((upload) => !upload.failed) ||
+    effectiveFiles.some(
+      (file) => file.kind === "audio" && file.transcript?.status !== "ready",
+    );
+  const restored = useRef(false);
+  const pendingRecordings = useQuery({
+    queryKey: ["pending-recordings"],
+    queryFn: () => api<Attachment[]>("/attachments/pending"),
+    refetchOnWindowFocus: false,
+  });
+  useEffect(() => {
+    if (!pendingRecordings.data || restored.current) return;
+    restored.current = true;
+    setFiles((files) => [
+      ...files,
+      ...pendingRecordings.data.filter(
+        (item) => !files.some((file) => file.id === item.id),
+      ),
+    ]);
+    pendingRecordings.data.forEach(attachTranscription);
+  }, [pendingRecordings.data]);
   const modelOperation = useRef(false);
   const [sendError, setSendError] = useState("");
   const [draftPrompt, setDraftPrompt] = useState<string | null>(null);
@@ -227,7 +259,6 @@ export function LiveAppShell() {
     }
   }, [active.data, detail.data, chatId, query]);
   useEffect(() => {
-    setFiles([]);
     setPending("");
   }, [chatId]);
   useEffect(() => {
@@ -328,7 +359,8 @@ export function LiveAppShell() {
     }
   };
   const onSend = async (text: string, parent?: string | null) => {
-    if (!current || running || modelOperation.current) return false;
+    if (!current || running || modelOperation.current || waitingForTranscript)
+      return false;
     setSendError("");
     setBusy(true);
     setPending(text);
@@ -353,11 +385,12 @@ export function LiveAppShell() {
         content: text,
         parent_id:
           parent === undefined ? (chat?.current_leaf_id ?? null) : parent,
-        attachment_ids: files.map((f) => f.id),
+        attachment_ids: effectiveFiles.map((f) => f.id),
         web: chat?.web_enabled ?? web,
       });
       if (!chatId) navigate("/c/" + id);
       setFiles([]);
+      void query.invalidateQueries({ queryKey: ["pending-recordings"] });
       setPending("");
       attachRun(response.run_id, id, response.assistant_message, query);
       void query.invalidateQueries({ queryKey: ["chat", id] });
@@ -418,6 +451,72 @@ export function LiveAppShell() {
   const upload = async (incoming: File[]) => {
     for (let file of incoming) {
       try {
+        const suffix = "." + file.name.split(".").at(-1)?.toLowerCase();
+        const audio = [
+          ".wav",
+          ".mp3",
+          ".m4a",
+          ".flac",
+          ".aif",
+          ".aiff",
+          ".aac",
+          ".amr",
+          ".caf",
+          ".mka",
+          ".mov",
+          ".mp4",
+          ".oga",
+          ".ogg",
+          ".opus",
+          ".webm",
+          ".wma",
+        ].includes(suffix);
+        if (audio) {
+          if (!bootstrap.data?.features.transcription)
+            throw new Error("Recordings need the transcription engine");
+          if (file.size > 4 * 1024 ** 3)
+            throw new Error("Recordings can be up to 4 GB.");
+          const id = crypto.randomUUID(),
+            controller = new AbortController();
+          uploadControllers.current.set(id, controller);
+          setUploads((uploads) => [
+            ...uploads,
+            { id, filename: file.name, percent: 0 },
+          ]);
+          try {
+            const attachment = await uploadWithProgress(
+              file,
+              (percent) =>
+                setUploads((uploads) =>
+                  uploads.map((upload) =>
+                    upload.id === id ? { ...upload, percent } : upload,
+                  ),
+                ),
+              controller.signal,
+            );
+            setFiles((files) => [...files, attachment]);
+            attachTranscription(attachment);
+            setUploads((uploads) =>
+              uploads.filter((upload) => upload.id !== id),
+            );
+          } catch (error) {
+            if (error instanceof DOMException && error.name === "AbortError")
+              setUploads((uploads) =>
+                uploads.filter((upload) => upload.id !== id),
+              );
+            else
+              setUploads((uploads) =>
+                uploads.map((upload) =>
+                  upload.id === id
+                    ? { ...upload, failed: true, reason: String(error) }
+                    : upload,
+                ),
+              );
+          } finally {
+            uploadControllers.current.delete(id);
+          }
+          continue;
+        }
         if (file.type.startsWith("image/")) {
           if (current?.vision !== true)
             throw new Error("Images need a vision model.");
@@ -447,6 +546,16 @@ export function LiveAppShell() {
       setDraftPrompt(prompt);
     }
   };
+  const webBlocked =
+    bootstrap.data?.settings["transcription.block_web"] !== false &&
+    (effectiveFiles.some((file) => file.kind === "audio") ||
+      uploads.some((upload) => !upload.failed) ||
+      visiblePath(
+        detail.data?.messages ?? [],
+        detail.data?.chat.current_leaf_id ?? null,
+      ).some((message) =>
+        message.attachments?.some((file) => file.kind === "audio"),
+      ));
   const composer = (
     <Composer
       suggestions={!chatId}
@@ -458,22 +567,46 @@ export function LiveAppShell() {
       }}
       onSend={(text) => onSend(text)}
       error={sendError}
-      files={files}
+      files={effectiveFiles}
+      uploads={uploads}
+      transcriptionReady={Boolean(bootstrap.data?.features.transcription)}
+      webBlocked={webBlocked}
+      onCancelUpload={(id) => {
+        uploadControllers.current.get(id)?.abort();
+        setUploads((uploads) => uploads.filter((upload) => upload.id !== id));
+      }}
       onAttach={(incoming) => void upload(incoming)}
-      onRemove={(id) => setFiles((f) => f.filter((a) => a.id !== id))}
+      onRemove={(id) => {
+        const remove = () => {
+          setFiles((files) => files.filter((file) => file.id !== id));
+          detachTranscription(id);
+          useTranscripts.getState().remove(id);
+        };
+        if (effectiveFiles.find((file) => file.id === id)?.kind === "audio")
+          void api(`/attachments/${id}`, undefined, "DELETE").then(
+            remove,
+            (error) => toast.error(String(error)),
+          );
+        else remove();
+      }}
       context={
-        context.data ??
-        (current
+        current
           ? {
-              used_tokens: files.reduce(
-                (total, a) =>
-                  total +
-                  (a.kind === "image" ? 800 : Math.round(a.bytes * 0.3)),
-                0,
-              ),
+              used_tokens:
+                (context.data?.used_tokens ?? 0) +
+                effectiveFiles.reduce(
+                  (total, a) =>
+                    total +
+                    (a.kind === "image"
+                      ? 800
+                      : a.kind === "audio"
+                        ? (a.transcript?.token_estimate ?? 0)
+                        : Math.round(a.bytes * 0.3)),
+                  0,
+                ),
               context_length: current.context_length ?? 8192,
             }
-          : undefined)
+          : undefined
       }
       thinkValue={chatParams.reasoning as string | undefined}
       onThinkChange={(value) => {
@@ -639,11 +772,33 @@ export function LiveAppShell() {
       <main
         className="app-main"
         onDragOver={(e) => e.preventDefault()}
+        onDragEnter={(e) => {
+          if (e.dataTransfer.types.includes("Files")) {
+            dragDepth.current++;
+            setDragging(true);
+          }
+        }}
+        onDragLeave={() => {
+          if (--dragDepth.current <= 0) {
+            dragDepth.current = 0;
+            setDragging(false);
+          }
+        }}
         onDrop={(e) => {
           e.preventDefault();
+          dragDepth.current = 0;
+          setDragging(false);
           void upload(Array.from(e.dataTransfer.files));
         }}
       >
+        {dragging && (
+          <div
+            role="status"
+            className="pointer-events-none absolute inset-4 z-40 flex items-center justify-center rounded-xl border border-brand bg-surface text-sm"
+          >
+            Drop images, text files or recordings
+          </div>
+        )}
         <header className="topbar">
           <div className="flex min-w-0 flex-1 items-center">
             {(!desktop || ui.collapsed) && (
@@ -721,6 +876,7 @@ export function LiveAppShell() {
         ) : (
           <>
             <LiveThread
+              selectedModel={current}
               messages={visible}
               all={all}
               stage={runEntry?.[1].stage}

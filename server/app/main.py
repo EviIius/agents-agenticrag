@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
-from .api import attachments, chats, connections, messages, models, runs, search
+from .api import attachments, chats, connections, messages, models, runs, search, transcription
 from .api import settings as settings_api
 from .api.health import router as health_router
 from .config import APP_NAME, VERSION, Settings
@@ -18,6 +18,7 @@ from .providers.registry import Registry
 from .runs.manager import RunManager
 from .search.pipeline import Pipeline
 from .security import SecurityMiddleware
+from .transcribe.jobs import TranscriptionManager
 
 
 def create_app(settings: Settings | None = None, static_dir: Path | None = None) -> FastAPI:
@@ -36,10 +37,15 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
             app.state.search = Pipeline(app.state.runs, config.web_fixtures)
             app.state.runs.web_hook = app.state.search
             app.state.runs.web_finalize = app.state.search.finalize
+            app.state.transcription = TranscriptionManager(
+                app.state.store, config.transcribe_home, config.data_dir
+            )
             await app.state.runs.recover()
+            await app.state.transcription.recover()
             try:
                 yield
             finally:
+                await app.state.transcription.close()
                 await app.state.runs.close()
                 await app.state.registry.close()
 
@@ -59,11 +65,13 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
             allow_methods=["*"],
             allow_headers=["*"],
         )
+    app.add_middleware(attachments.UploadSpaceGuard, data_dir=config.data_dir)
     app.add_middleware(SecurityMiddleware, settings=config)
 
     app.include_router(health_router)
     for router in (
         attachments.router,
+        transcription.router,
         chats.router,
         connections.router,
         messages.router,

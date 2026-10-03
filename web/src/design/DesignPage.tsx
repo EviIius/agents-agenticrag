@@ -1,3 +1,4 @@
+import { TranscriptionPreview } from "./TranscriptionPreview";
 import { lazy, Suspense, useState } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
@@ -259,6 +260,7 @@ export function DesignPage() {
         </h2>
         <DataPane preview />
       </section>
+      <TranscriptionPreview />
       <ReviewStates />
       <section aria-labelledby="models" className="mb-8">
         <h2 id="models" className="mb-4 text-lg font-medium">

@@ -22,7 +22,10 @@ async def bootstrap(request: Request) -> Bootstrap:
         data_dir=str(request.app.state.config.data_dir.expanduser().resolve()),
         settings=await settings.get(request.app.state.store, True),
         connections=await listing(request),
-        features={"web_search": any(service.configured(p) for p in values["web.provider_order"])},
+        features={
+            "web_search": any(service.configured(p) for p in values["web.provider_order"]),
+            "transcription": (await request.app.state.transcription.engine.status()).ready,
+        },
     )
 
 

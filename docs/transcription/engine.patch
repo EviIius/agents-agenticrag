@@ -1,0 +1,234 @@
+diff --git a/localtranscribe/__main__.py b/localtranscribe/__main__.py
+index 7a4aebf..4914cb7 100644
+--- a/localtranscribe/__main__.py
++++ b/localtranscribe/__main__.py
+@@ -2,14 +2,18 @@
+ from __future__ import annotations
+ 
+ import argparse
++import signal
+ import sys
+ from pathlib import Path
+ 
+-from . import __version__, doctor, launchd, watcher
++from . import __version__, doctor, launchd, proc, watcher
+ from .config import load_config
+ from .pipeline import transcribe_file
+ 
+ 
++EXIT_CANCELLED = 130  # `run` was stopped by SIGTERM or Ctrl-C
++
++
+ def build_parser() -> argparse.ArgumentParser:
+     parser = argparse.ArgumentParser(
+         prog="transcribe", description="Local, offline transcription with whisper.cpp.")
+@@ -29,7 +33,9 @@ def build_parser() -> argparse.ArgumentParser:
+     watch.add_argument("--once", action="store_true",
+                        help="transcribe what is in the inbox now, then exit")
+ 
+-    sub.add_parser("doctor", help="check binaries, models and folders")
++    doc = sub.add_parser("doctor", help="check binaries, models and folders")
++    doc.add_argument("--json", action="store_true",
++                     help="print the checks as JSON (for other programs)")
+     agent = sub.add_parser("install-agent", help="install and start the launchd watcher")
+     agent.add_argument("--plist-only", metavar="PATH",
+                        help="write the plist to PATH without loading it")
+@@ -45,8 +51,15 @@ def main(argv=None) -> int:
+     if args.command == "run":
+         src = Path(args.file).expanduser()
+         out_dir = Path(args.out_dir).expanduser() if args.out_dir else src.parent
++        # SIGTERM / Ctrl-C stop ffmpeg and whisper-cli too, and clean up
++        # scratch files, instead of leaving them running in the background.
++        for signum in (signal.SIGTERM, signal.SIGINT):
++            signal.signal(signum, lambda *_: proc.request_stop())
+         try:
+             result = transcribe_file(src, out_dir, cfg, channels=args.channels)
++        except proc.Stopped:
++            print("Transcription cancelled.", file=sys.stderr)
++            return EXIT_CANCELLED
+         except Exception as exc:  # noqa: BLE001 - report plainly, exit non-zero
+             print("Transcription failed: %s" % exc, file=sys.stderr)
+             return 1
+@@ -61,7 +74,7 @@ def main(argv=None) -> int:
+         return watcher.main(cfg, once=args.once)
+     if args.command == "doctor":
+         cfg.ensure_dirs()
+-        return doctor.report(cfg)
++        return doctor.report_json(cfg) if args.json else doctor.report(cfg)
+     if args.command == "install-agent":
+         if args.plist_only:
+             print(launchd.write_plist(cfg, Path(args.plist_only).expanduser()))
+diff --git a/localtranscribe/doctor.py b/localtranscribe/doctor.py
+index 3af12b6..87ec3ad 100644
+--- a/localtranscribe/doctor.py
++++ b/localtranscribe/doctor.py
+@@ -1,11 +1,13 @@
+ """Checks that everything the pipeline needs is in place."""
+ from __future__ import annotations
+ 
++import json
+ import os
+ import subprocess
+-from typing import List, NamedTuple
++from typing import Dict, List, NamedTuple
+ 
+-from .config import Config
++from . import __version__
++from .config import AUDIO_EXTENSIONS, Config
+ from .glossary import Glossary
+ 
+ 
+@@ -88,3 +90,28 @@ def report(cfg: Config) -> int:
+     print("\n%s" % ("Ready." if not failed else
+                     "%d problem(s) must be fixed before transcription can run." % len(failed)))
+     return 1 if failed else 0
++
++
++def report_json(cfg: Config) -> int:
++    """The same checks as report(), as one JSON object on stdout.
++
++    This is the interface other programs use to ask "is the engine ready?"
++    and to find the glossary file. Keys are only ever added, never renamed.
++    """
++    checks = run_checks(cfg)
++    failed = [c for c in checks if c.blocking and not c.ok]
++    payload: Dict = {
++        "ok": not failed,
++        "version": __version__,
++        "config": str(cfg.source) if cfg.source else None,
++        "checks": [c._asdict() for c in checks],
++        "paths": {
++            "data_dir": str(cfg.data_dir),
++            "glossary": str(cfg.path("glossary")),
++            "model": str(cfg.path("model")),
++        },
++        "channels": cfg["channels"],
++        "audio_extensions": sorted(AUDIO_EXTENSIONS),
++    }
++    print(json.dumps(payload, indent=2))
++    return 1 if failed else 0
+diff --git a/tests/fake_whisper_cli.py b/tests/fake_whisper_cli.py
+index a5c824c..05aa6ec 100755
+--- a/tests/fake_whisper_cli.py
++++ b/tests/fake_whisper_cli.py
+@@ -9,6 +9,8 @@ tests can check timing and channel handling.
+ Controlled by environment variables:
+   FAKE_WHISPER_TEXT       text for the segments (default: "speech")
+   FAKE_WHISPER_FAIL       exit 1 with an error message
++  FAKE_WHISPER_SLEEP      seconds to wait before answering (a long job)
++  FAKE_WHISPER_PID_FILE   write this process's pid here
+   FAKE_WHISPER_OLD_BUILD  behave like a build without --vad / --carry-initial-prompt
+   FAKE_WHISPER_ARGS_LOG   append the received arguments (JSON lines) here
+ """
+@@ -54,6 +56,12 @@ def main(argv):
+     if log_path:
+         with open(log_path, "a") as fh:
+             fh.write(json.dumps(argv) + "\n")
++    if os.environ.get("FAKE_WHISPER_PID_FILE"):
++        with open(os.environ["FAKE_WHISPER_PID_FILE"], "w") as fh:
++            fh.write(str(os.getpid()))
++    if os.environ.get("FAKE_WHISPER_SLEEP"):
++        import time
++        time.sleep(float(os.environ["FAKE_WHISPER_SLEEP"]))
+     if os.environ.get("FAKE_WHISPER_FAIL"):
+         print("error: failed to initialize whisper context", file=sys.stderr)
+         return 1
+diff --git a/tests/test_cli.py b/tests/test_cli.py
+new file mode 100644
+index 0000000..3f18f57
+--- /dev/null
++++ b/tests/test_cli.py
+@@ -0,0 +1,93 @@
++"""The command line as another program would use it."""
++import json
++import os
++import signal
++import subprocess
++import sys
++import time
++import unittest
++from pathlib import Path
++
++from .helpers import HAVE_FFMPEG, PipelineCase, make_recording
++
++REPO = Path(__file__).resolve().parents[1]
++
++
++class CliCase(PipelineCase):
++    def cli(self, *args):
++        env = dict(os.environ, PYTHONPATH=str(REPO))
++        return [sys.executable, "-m", "localtranscribe", "--config", str(self.cfg.source), *args], env
++
++    def run_cli(self, *args):
++        cmd, env = self.cli(*args)
++        return subprocess.run(cmd, env=env, capture_output=True, text=True, timeout=120)
++
++
++class DoctorJsonTests(CliCase):
++    def test_reports_ready_setup_as_json(self):
++        done = self.run_cli("doctor", "--json")
++        data = json.loads(done.stdout)
++        if not HAVE_FFMPEG:
++            self.assertFalse(data["ok"])
++            return
++        self.assertEqual(done.returncode, 0, done.stdout)
++        self.assertTrue(data["ok"])
++        self.assertEqual(data["paths"]["glossary"], str(self.glossary))
++        self.assertIn(".wav", data["audio_extensions"])
++        self.assertEqual({c["name"] for c in data["checks"]} >= {"ffmpeg", "whisper_cli", "model"}, True)
++
++    def test_reports_missing_model(self):
++        self.model.unlink()
++        done = self.run_cli("doctor", "--json")
++        data = json.loads(done.stdout)
++        self.assertEqual(done.returncode, 1)
++        self.assertFalse(data["ok"])
++        model = next(c for c in data["checks"] if c["name"] == "model")
++        self.assertFalse(model["ok"])
++        self.assertTrue(model["blocking"])
++
++
++@unittest.skipUnless(HAVE_FFMPEG, "ffmpeg and ffprobe are required")
++class RunTests(CliCase):
++    def test_quiet_run_writes_json_and_prints_no_transcript(self):
++        src = make_recording(self.tmp / "a.wav", {0: [(1.0, 2.0)]}, channels=1)
++        done = self.run_cli("run", str(src), "--out-dir", str(self.tmp / "out"), "--quiet")
++        self.assertEqual(done.returncode, 0, done.stderr)
++        self.assertEqual(done.stdout, "")
++        data = json.loads((self.tmp / "out" / "a.json").read_text())
++        self.assertEqual(data["text"], "speech\n")
++
++    def test_failure_exits_1_with_a_message(self):
++        junk = self.tmp / "junk.wav"
++        junk.write_bytes(b"not audio")
++        done = self.run_cli("run", str(junk), "--out-dir", str(self.tmp / "out"), "--quiet")
++        self.assertEqual(done.returncode, 1)
++        self.assertIn("Transcription failed: ffprobe could not read junk.wav", done.stderr)
++
++    def test_sigterm_stops_children_and_cleans_up(self):
++        src = make_recording(self.tmp / "a.wav", {0: [(1.0, 2.0)]}, channels=1)
++        cmd, env = self.cli("run", str(src), "--out-dir", str(self.tmp / "out"), "--quiet")
++        env["FAKE_WHISPER_SLEEP"] = "60"
++        marker = self.tmp / "whisper.pid"
++        env["FAKE_WHISPER_PID_FILE"] = str(marker)
++        child = subprocess.Popen(cmd, env=env, stderr=subprocess.PIPE, text=True)
++        deadline = time.time() + 30
++        while not marker.exists() and time.time() < deadline:
++            time.sleep(0.1)
++        self.assertTrue(marker.exists(), "whisper stand-in never started")
++        whisper_pid = int(marker.read_text())
++        started = time.time()
++        child.send_signal(signal.SIGTERM)
++        _, err = child.communicate(timeout=20)
++        self.assertLess(time.time() - started, 10)
++        self.assertEqual(child.returncode, 130)
++        self.assertIn("Transcription cancelled.", err)
++        time.sleep(0.5)
++        with self.assertRaises(ProcessLookupError, msg="whisper child must not outlive the run"):
++            os.kill(whisper_pid, 0)
++        self.assertEqual(list(self.cfg.work_dir.iterdir()), [])
++        self.assertFalse((self.tmp / "out" / "a.json").exists())
++
++
++if __name__ == "__main__":
++    unittest.main()

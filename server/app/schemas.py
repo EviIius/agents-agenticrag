@@ -150,16 +150,152 @@ class ChatList(BaseModel):
 
 class Attachment(BaseModel):
     id: str
-    kind: Literal["image", "text"]
+    kind: Literal["image", "text", "audio"]
     filename: str
     mime_type: str
     bytes: int
+    transcript: "TranscriptInfo | None" = None
 
 
 class MessageModel(BaseModel):
     connection_id: str
     model_id: str
     display_name: str
+
+
+class CleanupInfo(BaseModel):
+    status: Literal["running", "ready", "failed"]
+    model: MessageModel | None = None
+    chunks: int = 0
+    done: int = 0
+    kept_original: int = 0
+    changed_words: int = 0
+    error: ErrorDetail | None = None
+
+
+class TranscriptInfo(BaseModel):
+    status: Literal["queued", "transcribing", "ready", "failed", "cancelled"]
+    channels: Literal["mix", "split"] = "mix"
+    started_at: str | None = None
+    error: ErrorDetail | None = None
+    duration_seconds: float | None = None
+    word_count: int | None = None
+    token_estimate: int | None = None
+    elapsed_seconds: float | None = None
+    speed_x_realtime: float | None = None
+    engine_model: str | None = None
+    warnings: list[str] = Field(default_factory=list)
+    correction_count: int = 0
+    cleanup: CleanupInfo | None = None
+
+
+class TranscriptSegment(BaseModel):
+    start: float
+    end: float
+    speaker: str | None = None
+    text: str
+    raw_text: str
+
+
+class Correction(BaseModel):
+    found: str
+    replaced_with: str
+    count: int
+
+
+class Transcript(BaseModel):
+    attachment: Attachment
+    text: str
+    raw_text: str
+    cleaned_text: str | None = None
+    segments: list[TranscriptSegment]
+    corrections: list[Correction]
+
+
+class TranscribeRequest(Input):
+    channels: Literal["mix", "split"] = "mix"
+
+
+class EngineCheck(BaseModel):
+    name: str
+    ok: bool
+    detail: str
+    blocking: bool
+
+
+class TranscriptionStatus(BaseModel):
+    configured: bool
+    ready: bool
+    version: str | None = None
+    checks: list[EngineCheck] = Field(default_factory=list)
+    glossary_terms: int = 0
+    audio_extensions: list[str] = Field(default_factory=list)
+
+
+class TranscriptionStartedData(BaseModel):
+    started_at: str
+
+
+class TranscriptionAttachmentData(BaseModel):
+    attachment: Attachment
+
+
+class CleanupProgressData(BaseModel):
+    done: int
+    total: int
+
+
+class TranscriptionQueuedEvent(BaseModel):
+    type: Literal["transcription.queued"]
+    data: "QueuedData"
+
+
+class TranscriptionStartedEvent(BaseModel):
+    type: Literal["transcription.started"]
+    data: TranscriptionStartedData
+
+
+class TranscriptionAttachmentEvent(BaseModel):
+    type: Literal[
+        "transcription.done",
+        "transcription.failed",
+        "transcription.cancelled",
+        "cleanup.started",
+        "cleanup.done",
+        "cleanup.failed",
+    ]
+    data: TranscriptionAttachmentData
+
+
+class CleanupProgressEvent(BaseModel):
+    type: Literal["cleanup.progress"]
+    data: CleanupProgressData
+
+
+class TranscriptionClosedEvent(BaseModel):
+    type: Literal["stream.closed"]
+    data: dict[str, Any]
+
+
+class TranscriptionEvent(
+    RootModel[
+        Annotated[
+            TranscriptionQueuedEvent
+            | TranscriptionStartedEvent
+            | TranscriptionAttachmentEvent
+            | CleanupProgressEvent
+            | TranscriptionClosedEvent,
+            Field(discriminator="type"),
+        ]
+    ]
+):
+    @property
+    def type(self) -> str:
+        return self.root.type
+
+    @property
+    def data(self) -> dict[str, Any]:
+        return dict(self.root.model_dump()["data"])
 
 
 class Stats(BaseModel):

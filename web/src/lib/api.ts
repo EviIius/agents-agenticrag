@@ -48,3 +48,6 @@ export async function api<T>(
     ? (undefined as T)
     : (response.json() as Promise<T>);
 }
+export type Transcript = components["schemas"]["Transcript"];
+export type TranscriptionStatus = components["schemas"]["TranscriptionStatus"];
+export type TranscriptionEvent = components["schemas"]["TranscriptionEvent"];

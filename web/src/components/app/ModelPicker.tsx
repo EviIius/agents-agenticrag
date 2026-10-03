@@ -50,6 +50,11 @@ export function ModelPicker({
   onModelAction?: (model: import("@/lib/api").Model) => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    const show = () => setOpen(true);
+    window.addEventListener("workbench:choose-model", show);
+    return () => window.removeEventListener("workbench:choose-model", show);
+  }, []);
   const [selected, setSelected] = useState("fake-chat");
   const [busy, setBusy] = useState<string | null>(null),
     [elapsed, setElapsed] = useState(0);

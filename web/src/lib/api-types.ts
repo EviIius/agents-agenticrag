@@ -38,6 +38,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/attachments/pending": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Pending */
+        get: operations["pending_api_attachments_pending_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/attachments/{identifier}": {
         parameters: {
             query?: never;
@@ -47,6 +64,126 @@ export interface paths {
         };
         /** Get */
         get: operations["get_api_attachments__identifier__get"];
+        put?: never;
+        post?: never;
+        /** Remove */
+        delete: operations["remove_api_attachments__identifier__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/transcription/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status */
+        get: operations["status_api_transcription_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/_schema/transcription-event": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Schema */
+        get: operations["schema_api__schema_transcription_event_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/attachments/{identifier}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Events */
+        get: operations["events_api_attachments__identifier__events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/attachments/{identifier}/transcript": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Transcript */
+        get: operations["transcript_api_attachments__identifier__transcript_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/attachments/{identifier}/transcribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retry */
+        post: operations["retry_api_attachments__identifier__transcribe_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/attachments/{identifier}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel */
+        post: operations["cancel_api_attachments__identifier__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/attachments/{identifier}/transcript/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download */
+        get: operations["download_api_attachments__identifier__transcript_download_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -474,18 +611,25 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "image" | "text";
+            kind: "image" | "text" | "audio";
             /** Filename */
             filename: string;
             /** Mime Type */
             mime_type: string;
             /** Bytes */
             bytes: number;
+            transcript?: components["schemas"]["TranscriptInfo"] | null;
         };
         /** Body_upload_api_attachments_post */
         Body_upload_api_attachments_post: {
             /** File */
             file: string;
+            /**
+             * Channels
+             * @default mix
+             * @enum {string}
+             */
+            channels: "mix" | "split";
         };
         /** Bootstrap */
         Bootstrap: {
@@ -594,6 +738,52 @@ export interface components {
             /** Web Enabled */
             web_enabled?: boolean | null;
         };
+        /** CleanupInfo */
+        CleanupInfo: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "running" | "ready" | "failed";
+            model?: components["schemas"]["MessageModel"] | null;
+            /**
+             * Chunks
+             * @default 0
+             */
+            chunks: number;
+            /**
+             * Done
+             * @default 0
+             */
+            done: number;
+            /**
+             * Kept Original
+             * @default 0
+             */
+            kept_original: number;
+            /**
+             * Changed Words
+             * @default 0
+             */
+            changed_words: number;
+            error?: components["schemas"]["ErrorDetail"] | null;
+        };
+        /** CleanupProgressData */
+        CleanupProgressData: {
+            /** Done */
+            done: number;
+            /** Total */
+            total: number;
+        };
+        /** CleanupProgressEvent */
+        CleanupProgressEvent: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "cleanup.progress";
+            data: components["schemas"]["CleanupProgressData"];
+        };
         /** ClosedEvent */
         ClosedEvent: {
             /**
@@ -695,6 +885,15 @@ export interface components {
             /** Dropped Message Count */
             dropped_message_count: number;
         };
+        /** Correction */
+        Correction: {
+            /** Found */
+            found: string;
+            /** Replaced With */
+            replaced_with: string;
+            /** Count */
+            count: number;
+        };
         /** DeleteChats */
         DeleteChats: {
             /**
@@ -749,6 +948,17 @@ export interface components {
              */
             type: "message.done";
             data: components["schemas"]["DoneData"];
+        };
+        /** EngineCheck */
+        EngineCheck: {
+            /** Name */
+            name: string;
+            /** Ok */
+            ok: boolean;
+            /** Detail */
+            detail: string;
+            /** Blocking */
+            blocking: boolean;
         };
         /** ErrorDetail */
         ErrorDetail: {
@@ -1201,6 +1411,147 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** TranscribeRequest */
+        TranscribeRequest: {
+            /**
+             * Channels
+             * @default mix
+             * @enum {string}
+             */
+            channels: "mix" | "split";
+        };
+        /** Transcript */
+        Transcript: {
+            attachment: components["schemas"]["Attachment"];
+            /** Text */
+            text: string;
+            /** Raw Text */
+            raw_text: string;
+            /** Cleaned Text */
+            cleaned_text?: string | null;
+            /** Segments */
+            segments: components["schemas"]["TranscriptSegment"][];
+            /** Corrections */
+            corrections: components["schemas"]["Correction"][];
+        };
+        /** TranscriptInfo */
+        TranscriptInfo: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "queued" | "transcribing" | "ready" | "failed" | "cancelled";
+            /**
+             * Channels
+             * @default mix
+             * @enum {string}
+             */
+            channels: "mix" | "split";
+            /** Started At */
+            started_at?: string | null;
+            error?: components["schemas"]["ErrorDetail"] | null;
+            /** Duration Seconds */
+            duration_seconds?: number | null;
+            /** Word Count */
+            word_count?: number | null;
+            /** Token Estimate */
+            token_estimate?: number | null;
+            /** Elapsed Seconds */
+            elapsed_seconds?: number | null;
+            /** Speed X Realtime */
+            speed_x_realtime?: number | null;
+            /** Engine Model */
+            engine_model?: string | null;
+            /** Warnings */
+            warnings?: string[];
+            /**
+             * Correction Count
+             * @default 0
+             */
+            correction_count: number;
+            cleanup?: components["schemas"]["CleanupInfo"] | null;
+        };
+        /** TranscriptSegment */
+        TranscriptSegment: {
+            /** Start */
+            start: number;
+            /** End */
+            end: number;
+            /** Speaker */
+            speaker?: string | null;
+            /** Text */
+            text: string;
+            /** Raw Text */
+            raw_text: string;
+        };
+        /** TranscriptionAttachmentData */
+        TranscriptionAttachmentData: {
+            attachment: components["schemas"]["Attachment"];
+        };
+        /** TranscriptionAttachmentEvent */
+        TranscriptionAttachmentEvent: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "cleanup.done" | "cleanup.failed" | "cleanup.started" | "transcription.cancelled" | "transcription.done" | "transcription.failed";
+            data: components["schemas"]["TranscriptionAttachmentData"];
+        };
+        /** TranscriptionClosedEvent */
+        TranscriptionClosedEvent: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "stream.closed";
+            /** Data */
+            data: {
+                [key: string]: unknown;
+            };
+        };
+        /** TranscriptionEvent */
+        TranscriptionEvent: components["schemas"]["TranscriptionQueuedEvent"] | components["schemas"]["TranscriptionStartedEvent"] | components["schemas"]["TranscriptionAttachmentEvent"] | components["schemas"]["CleanupProgressEvent"] | components["schemas"]["TranscriptionClosedEvent"];
+        /** TranscriptionQueuedEvent */
+        TranscriptionQueuedEvent: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "transcription.queued";
+            data: components["schemas"]["QueuedData"];
+        };
+        /** TranscriptionStartedData */
+        TranscriptionStartedData: {
+            /** Started At */
+            started_at: string;
+        };
+        /** TranscriptionStartedEvent */
+        TranscriptionStartedEvent: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "transcription.started";
+            data: components["schemas"]["TranscriptionStartedData"];
+        };
+        /** TranscriptionStatus */
+        TranscriptionStatus: {
+            /** Configured */
+            configured: boolean;
+            /** Ready */
+            ready: boolean;
+            /** Version */
+            version?: string | null;
+            /** Checks */
+            checks?: components["schemas"]["EngineCheck"][];
+            /**
+             * Glossary Terms
+             * @default 0
+             */
+            glossary_terms: number;
+            /** Audio Extensions */
+            audio_extensions?: string[];
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -1336,9 +1687,273 @@ export interface operations {
             };
         };
     };
+    pending_api_attachments_pending_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Attachment"][];
+                };
+            };
+        };
+    };
     get_api_attachments__identifier__get: {
         parameters: {
             query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_api_attachments__identifier__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    status_api_transcription_status_get: {
+        parameters: {
+            query?: {
+                refresh?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TranscriptionStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    schema_api__schema_transcription_event_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TranscriptionEvent"];
+                };
+            };
+        };
+    };
+    events_api_attachments__identifier__events_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    transcript_api_attachments__identifier__transcript_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Transcript"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_api_attachments__identifier__transcribe_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TranscribeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Attachment"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_api_attachments__identifier__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_api_attachments__identifier__transcript_download_get: {
+        parameters: {
+            query?: {
+                format?: string;
+                variant?: string;
+            };
             header?: never;
             path: {
                 identifier: string;

@@ -9,7 +9,10 @@ Commands: `make setup` · `make dev` · `make check` (lint, types, unit tests, c
 Hard rules:
 - Stack and dependencies per SPEC §C1 only. Ask before adding any.
 - Port 8787, bind 127.0.0.1, launchd label and Tailscale config never change.
-- No extra modes/agents/model calls. Allowed model calls: answer, search planner, title.
+- No extra modes/agents/model calls. Allowed model calls: answer, search planner, title,
+  transcript clean-up (TRANSCRIPTION-SPEC §6).
+- Transcription runs the external engine at WORKBENCH_TRANSCRIBE_HOME as a subprocess. No new packages.
+- Never commit, log or screenshot a real recording, its filename or transcript text.
 - No topic-specific prompt rules. Prompt edits require eval reports (SPEC §E12).
 - Never send sampling params the user didn't set. Never infer capabilities from model names.
 - Streaming = SSE events + rAF batching. Never poll. Never append notices to message content.

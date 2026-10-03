@@ -2,8 +2,10 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 from html import escape
+from ipaddress import ip_address
 from pathlib import Path
 from typing import Any, cast
+from urllib.parse import urlsplit
 
 from ..db.core import Store
 from ..errors import AppError
@@ -18,6 +20,7 @@ class Context:
     dropped: int
     reserve: int
     ratio: float
+    has_recording: bool = False
 
 
 def path(messages: list[Message], leaf: str | None) -> list[Message]:
@@ -55,6 +58,21 @@ async def assemble(
             "\n\nCurrent date: " + datetime.now().astimezone().strftime("%A, %B %-d, %Y") + "."
         )
     selected = path(messages, leaf)
+    has_recording = any(a.kind == "audio" for m in selected for a in m.attachments)
+    if has_recording:
+        connection = await store.one(
+            "SELECT base_url FROM connections WHERE id=?", (model.connection_id,)
+        )
+        host = urlsplit(str(connection["base_url"])).hostname if connection else None
+        local = host == "localhost"
+        try:
+            local = local or bool(host and ip_address(host).is_loopback)
+        except ValueError:
+            pass
+        if not local:
+            raise AppError(
+                "recording_requires_local", "Recordings can only be sent to local Ollama.", 422
+            )
     last_users = {m.id for m in [m for m in selected if m.role == "user"][-3:]}
     output = [ProviderMessage("system", system)]
     for m in selected:
@@ -74,6 +92,19 @@ async def assemble(
                     f'<file name="{escape(attachment.filename, quote=True)}">'
                     + file.read_text(errors="replace")
                     + "</file>\n"
+                    + content
+                )
+            elif attachment.kind == "audio":
+                from ..db.attachments import best_text
+
+                text, duration = await best_text(store, attachment.id)
+                seconds = int(duration)
+                clock = f"{seconds // 3600}:{seconds // 60 % 60:02}:{seconds % 60:02}"
+                content = (
+                    f'<transcript name="{escape(attachment.filename, quote=True)}" '
+                    f'duration="{clock}">\n'
+                    + text.replace("</transcript>", "&lt;/transcript&gt;")
+                    + "\n</transcript>\n"
                     + content
                 )
             elif m.id in last_users:
@@ -98,4 +129,4 @@ async def assemble(
         )
     if any(m.images for m in output) and model.vision is not True:
         raise AppError("vision_required", "Images need a vision model.", 422)
-    return Context(output, size(), dropped, reserve, ratio)
+    return Context(output, size(), dropped, reserve, ratio, has_recording)

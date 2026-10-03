@@ -46,8 +46,13 @@ export function SettingsDialog({
   searchEnabled?: boolean;
 }) {
   const panes: string[] = searchEnabled
-    ? [...basePanes.slice(0, 2), "Search", ...basePanes.slice(2)]
-    : [...basePanes];
+    ? [
+        ...basePanes.slice(0, 2),
+        "Search",
+        "Transcription",
+        ...basePanes.slice(2),
+      ]
+    : [...basePanes.slice(0, 2), "Transcription", ...basePanes.slice(2)];
   const ui = useUI();
   const pane = ui.settingsPane;
   const navigation = useRef<HTMLElement>(null);

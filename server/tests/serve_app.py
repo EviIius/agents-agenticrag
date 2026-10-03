@@ -16,6 +16,7 @@ app = create_app(
     Settings(
         data_dir=Path(mkdtemp(prefix="workbench-e2e-")),
         dev=True,
+        transcribe_home=Path(__file__).parent / "fake_transcribe",
         web_fixtures=Path(__file__).parent / "fixtures/web",
     )
 )

@@ -14,6 +14,7 @@ DEFAULTS: dict[str, Any] = {
     "auto_title": True,
     "utility_model": None,
     "user_name": "",
+    "transcription.block_web": True,
     "web.provider_order": ["ollama", "searxng", "exa", "ddgs"],
     "web.ollama_api_key": None,
     "web.searxng_url": "http://127.0.0.1:8888",
@@ -73,7 +74,7 @@ async def patch(store: Store, values: dict[str, Any]) -> None:
         set(values["web.provider_order"]) - {"ollama", "searxng", "exa", "ddgs", "brave"}
     ):
         raise ValueError("Unknown search provider")
-    for key in ("auto_title", "include_current_date", "web.default_on"):
+    for key in ("auto_title", "include_current_date", "web.default_on", "transcription.block_web"):
         if key in values and not isinstance(values[key], bool):
             raise ValueError("Expected a boolean setting")
     for key in ("default_system_prompt", "user_name", "web.searxng_url"):

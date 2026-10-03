@@ -1,3 +1,4 @@
+import { AudioChip } from "./AudioChip";
 import {
   lazy,
   Suspense,
@@ -74,6 +75,7 @@ export function LiveThread({
   sources,
   reads,
   renderSources,
+  selectedModel,
   models = [],
   connections = [],
   onSettings,
@@ -83,6 +85,7 @@ export function LiveThread({
 }: {
   onRegenerateWith?: (message: Message, model: Model) => void;
   models?: Model[];
+  selectedModel?: Model;
   connections?: Bootstrap["connections"];
   onSettings?: (pane?: string) => void;
   onChatSettings?: () => void;
@@ -149,6 +152,12 @@ export function LiveThread({
             {message.role === "user" ? (
               editing === message.id ? (
                 <div>
+                  {!!message.attachments?.length && (
+                    <p className="mb-3 text-xs text-fg-2">
+                      Attachments aren't carried over when you edit. Ask a
+                      follow-up instead.
+                    </p>
+                  )}
                   <Textarea
                     aria-label="Edit message"
                     value={draft}
@@ -173,17 +182,25 @@ export function LiveThread({
                   <p className="whitespace-pre-wrap break-words">
                     {message.content}
                   </p>
-                  {(message.attachments ?? []).map((a) => (
-                    <a
-                      className="block text-xs text-brand"
-                      key={a.id}
-                      href={"/api/attachments/" + a.id}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {a.filename}
-                    </a>
-                  ))}
+                  {(message.attachments ?? []).map((a) =>
+                    a.kind === "audio" ? (
+                      <AudioChip
+                        key={a.id}
+                        attachment={a}
+                        model={selectedModel}
+                      />
+                    ) : (
+                      <a
+                        className="block text-xs text-brand"
+                        key={a.id}
+                        href={"/api/attachments/" + a.id}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {a.filename}
+                      </a>
+                    ),
+                  )}
                 </div>
               )
             ) : (

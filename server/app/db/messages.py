@@ -3,7 +3,6 @@ from urllib.parse import urlsplit
 
 from ..errors import AppError
 from ..schemas import (
-    Attachment,
     ErrorDetail,
     Message,
     MessageModel,
@@ -12,6 +11,7 @@ from ..schemas import (
     WebInfo,
     WebRead,
 )
+from .attachments import attachment
 from .core import Store
 
 
@@ -20,7 +20,7 @@ async def message(store: Store, identifier: str) -> Message:
     if not row:
         raise AppError("not_found", "Message not found.", 404)
     attachments = [
-        Attachment(**r)
+        await attachment(store, str(r["id"]))
         for r in await store.rows("SELECT * FROM attachments WHERE message_id=?", (identifier,))
     ]
     model = None

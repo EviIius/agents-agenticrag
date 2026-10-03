@@ -1,4 +1,5 @@
-import type { Message, Detail } from "./api";
+import { useTranscripts } from "@/stores/transcripts";
+import type { Message, Detail, TranscriptionEvent } from "./api";
 import { useRuns } from "@/stores/runs";
 import { cited } from "./citations";
 import type { QueryClient } from "@tanstack/react-query";
@@ -103,7 +104,11 @@ export function attachRun(
           if (type === "search.queries") web.queries = data.queries;
           if (type === "search.results")
             web.providers = data.provider ? data.provider.split(", ") : [];
-          if (type === "search.skipped") web.status = "skipped";
+          if (type === "search.skipped") {
+            web.status = "skipped";
+            if (data.reason === "recording")
+              web.notice = { code: "search_blocked_recording", message: "" };
+          }
           if (type === "search.failed") {
             web.status = "failed";
             web.notice = { code: data.code, message: data.message };
@@ -232,4 +237,57 @@ export function attachRun(
       });
   };
   return source;
+}
+
+const transcriptionStreams = new Map<string, EventSource>();
+export function detachTranscription(id: string) {
+  transcriptionStreams.get(id)?.close();
+  transcriptionStreams.delete(id);
+}
+export function attachTranscription(attachment: import("./api").Attachment) {
+  if (transcriptionStreams.has(attachment.id)) return;
+  useTranscripts.getState().put(attachment);
+  if (
+    !attachment.transcript ||
+    !["queued", "transcribing"].includes(attachment.transcript.status)
+  )
+    return;
+  const source = new EventSource(`/api/attachments/${attachment.id}/events`);
+  transcriptionStreams.set(attachment.id, source);
+  for (const type of [
+    "transcription.queued",
+    "transcription.started",
+    "transcription.done",
+    "transcription.failed",
+    "transcription.cancelled",
+    "stream.closed",
+  ]) {
+    source.addEventListener(type, (event) => {
+      const payload = {
+        type,
+        data: JSON.parse((event as MessageEvent<string>).data),
+      } as TranscriptionEvent;
+      const item = useTranscripts.getState().attachments[attachment.id];
+      if (payload.type === "transcription.started" && item?.transcript)
+        useTranscripts.getState().put({
+          ...item,
+          transcript: {
+            ...item.transcript,
+            status: "transcribing",
+            started_at: payload.data.started_at,
+          },
+        });
+      if (payload.type === "transcription.queued" && item?.transcript)
+        useTranscripts.getState().put({
+          ...item,
+          transcript: { ...item.transcript, status: "queued" },
+        });
+      if ("attachment" in payload.data)
+        useTranscripts
+          .getState()
+          .put(payload.data.attachment as import("./api").Attachment);
+      if (payload.type === "stream.closed") detachTranscription(attachment.id);
+    });
+  }
+  // EventSource resumes using Last-Event-ID after a disconnect, without polling.
 }

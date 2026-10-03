@@ -29,6 +29,7 @@ import {
   CollapsibleTrigger,
   CollapsibleContent,
 } from "@/components/ui/collapsible";
+import { TranscriptionSettings } from "./TranscriptionSettings";
 import { LiveChatSettings } from "./LiveChatSettings";
 import { OllamaSearchKey } from "./OllamaSearchKey";
 import { Textarea } from "@/components/ui/textarea";
@@ -84,6 +85,8 @@ export function LiveSettingsPane({
       return false;
     }
   };
+  if (pane === "Transcription")
+    return <TranscriptionSettings bootstrap={bootstrap} />;
   if (pane === "Connections")
     return (
       <>

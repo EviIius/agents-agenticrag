@@ -28,3 +28,25 @@ make fmt
 The previous app is preserved on branch `legacy/chat-web-0.5` and tag `legacy-0.5`; its source is under `legacy/` on this branch. Installed data is backed up separately. New database writes use `~/.local/share/workbench/data/workbench.db`; legacy data is never opened by the new server.
 
 The standard `llama3.3:70b-instruct-q4_K_M` variant will be hidden through the stored model preference in Phase 1. The `llama3.3:70b-workbench-16k` variant and four other chat models will remain available. Model weights are preserved.
+
+
+## Local recording transcription (Phase T / T1)
+
+With the external engine configured and ready, use **Add attachment → Add recording** to
+upload a WAV or another supported audio file. The transcript can be reviewed as text or
+timestamps and downloaded as text, SRT or JSON. Ask a question to include it in a local
+Ollama chat. Web search stays off in chats with recordings by default.
+
+The engine lives in the separate `Transcription` repository. Set its path when starting
+the development server; no transcription package is installed inside Workbench:
+
+```sh
+WORKBENCH_TRANSCRIBE_HOME=~/Documents/GitHub/Transcription make dev-server
+```
+
+Settings → Transcription shows its setup checks. Unsent recordings return after reload;
+jobs continue if the browser closes. Unsent files older than seven days are removed.
+The build contract and acceptance evidence are in
+[TRANSCRIPTION-SPEC.md](docs/TRANSCRIPTION-SPEC.md) and
+[PHASE-T-REPORT.md](docs/PHASE-T-REPORT.md). T2 adds manual cleanup and glossary editing
+following the T1 review; Phase 3 deployment remains separate.

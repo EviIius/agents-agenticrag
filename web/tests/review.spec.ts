@@ -26,6 +26,7 @@ for (const width of [390, 1440])
       await mkdir(dir, { recursive: true });
       const shot = (name: string) =>
         page.screenshot({
+          animations: "disabled",
           path: `${dir}/${name}-${width}-${theme}-fake-runtime.png`,
         });
       await shot("new-chat");

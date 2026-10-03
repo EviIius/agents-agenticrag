@@ -53,6 +53,14 @@ follow it. Eject only unloads. Verify the configured 32K variant offers and send
 context, add brief functional motion using G2 tokens with reduced-motion support,
 and retain an option-by-option improvement review. Do not start Phase 3 yet.
 
+**User amendment — 3 October 2026 (Phase T):** Add local audio transcription as specified in
+`docs/TRANSCRIPTION-SPEC.md`. Audio becomes a third attachment kind. Transcription runs through
+the separate `Transcription` repo as a subprocess, found through `WORKBENCH_TRANSCRIBE_HOME`; no
+packages are added. One model call is added to the allowed list: transcript clean-up, started
+only by the user. Web search does not run in a chat that contains a recording unless the user
+turns that protection off. Real recordings and transcript text are never committed, logged or
+used as fixtures. Phase T is independent of Phase 3 and does not start it.
+
 1. Save it in the repo as `docs/SPEC.md`.
 2. Paste the prompt in §0 into Codex.
 3. After each phase, review the report (checklist, screenshots, test output) before you reply "continue".

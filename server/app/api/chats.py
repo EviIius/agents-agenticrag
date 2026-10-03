@@ -1,11 +1,13 @@
 import base64
 import json
 import re
+from contextlib import AsyncExitStack
 from urllib.parse import quote
 
 from fastapi import APIRouter, Request
 from fastapi.responses import Response
 
+from ..db import attachments as records
 from ..db import chats, messages, settings
 from ..db.connections import now, uid
 from ..errors import AppError
@@ -43,6 +45,7 @@ async def delete_all(body: DeleteChats, request: Request) -> None:
     for run in list(request.app.state.runs.runs.values()):
         if not run.closed:
             await request.app.state.runs.cancel(run.id)
+    await request.app.state.transcription.cancel_chat()
     files = await store.rows("SELECT path FROM attachments WHERE message_id IS NOT NULL")
     await store.batch([("DELETE FROM chat_search", ()), ("DELETE FROM chats", ())])
     request.app.state.runs.runs.clear()
@@ -132,6 +135,7 @@ async def delete(identifier: str, request: Request) -> None:
     for run in list(request.app.state.runs.runs.values()):
         if run.message.chat_id == identifier and not run.closed:
             await request.app.state.runs.cancel(run.id)
+    await request.app.state.transcription.cancel_chat(identifier)
     files = await store.rows(
         "SELECT path FROM attachments WHERE message_id IN "
         "(SELECT id FROM messages WHERE chat_id=?)",
@@ -209,7 +213,9 @@ async def context(identifier: str, request: Request, leaf: str | None = None) ->
 
 @router.post("/{identifier}/messages", status_code=202)
 async def send(identifier: str, body: Send, request: Request) -> RunResponse:
-    async with request.app.state.runs.chat_lock(identifier):
+    async with request.app.state.runs.chat_lock(identifier), AsyncExitStack() as stack:
+        for attachment_id in sorted(set(body.attachment_ids)):
+            await stack.enter_async_context(request.app.state.transcription.lock(attachment_id))
         return await start_message(identifier, body, request)
 
 
@@ -232,7 +238,7 @@ async def start_message(identifier: str, body: Send, request: Request) -> RunRes
         attachments.append(a)
     if sum(a["kind"] == "image" for a in attachments) > 4:
         raise AppError("validation_error", "At most four images per message.", 422)
-    from ..schemas import Attachment, Message
+    from ..schemas import Message
 
     user_id, assistant_id, date = uid(), uid(), now()
     assistant_date = now()
@@ -244,8 +250,13 @@ async def start_message(identifier: str, body: Send, request: Request) -> RunRes
         content=body.content,
         status="complete",
         created_at=date,
-        attachments=[Attachment(**a) for a in attachments],
+        attachments=[await records.attachment(store, str(a["id"])) for a in attachments],
     )
+    if any(
+        a.kind == "audio" and (not a.transcript or a.transcript.status != "ready")
+        for a in user.attachments
+    ):
+        raise AppError("transcript_not_ready", "Waiting for the transcript", 422)
     params = await request.app.state.registry.params(model, data.chat.params)
     assembled = await assemble(
         store,

@@ -15,7 +15,7 @@ async def test_migration_is_idempotent_and_private(tmp_path: Path) -> None:
     for _ in range(2):
         async with connect(tmp_path) as db:
             async with db.execute("PRAGMA user_version") as cursor:
-                assert await cursor.fetchone() == (1,)
+                assert await cursor.fetchone() == (2,)
             async with db.execute("PRAGMA journal_mode") as cursor:
                 assert await cursor.fetchone() == ("wal",)
             async with db.execute("PRAGMA foreign_keys") as cursor:

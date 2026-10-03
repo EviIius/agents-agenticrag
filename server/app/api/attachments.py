@@ -1,11 +1,19 @@
+import asyncio
+import mimetypes
+import shutil
 from pathlib import Path
+from typing import Literal
 
-from fastapi import APIRouter, Request, UploadFile
+from fastapi import APIRouter, Form, Request, UploadFile
 from fastapi.responses import FileResponse
+from starlette.types import ASGIApp, Receive, Scope, Send
 
+from ..db import attachments as records
 from ..db.connections import now, uid
-from ..errors import AppError
+from ..errors import AppError, error_response
 from ..schemas import Attachment
+from ..transcribe.engine import AUDIO
+from ..transcribe.jobs import TranscriptionManager
 
 router = APIRouter(prefix="/api/attachments")
 TEXT = {
@@ -27,11 +35,80 @@ TEXT = {
 }
 
 
+AUDIO_LIMIT = 4 * 1024**3
+
+
+class UploadSpaceGuard:
+    """Check disk headroom before Starlette's multipart parser consumes the body."""
+
+    def __init__(self, app: ASGIApp, data_dir: Path) -> None:
+        self.app, self.data_dir = app, data_dir.expanduser()
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if (
+            scope["type"] == "http"
+            and scope["method"] == "POST"
+            and scope["path"] == "/api/attachments"
+        ):
+            headers = dict(scope["headers"])
+            try:
+                length = int(headers.get(b"content-length", b"0"))
+            except ValueError:
+                length = 0
+            self.data_dir.mkdir(parents=True, exist_ok=True)
+            if length and shutil.disk_usage(self.data_dir).free < length + 5 * 1024**3:
+                await error_response(
+                    "disk_full", "There isn't enough free space on the Mac for this recording.", 507
+                )(scope, receive, send)
+                return
+        await self.app(scope, receive, send)
+
+
 @router.post("", status_code=201)
-async def upload(file: UploadFile, request: Request) -> Attachment:
+async def upload(
+    file: UploadFile, request: Request, channels: Literal["mix", "split"] = Form("mix")
+) -> Attachment:
     filename = Path(file.filename or "attachment").name
     suffix = Path(filename).suffix.lower()
     image = suffix in {".png", ".jpg", ".jpeg", ".webp", ".gif"}
+    if suffix in AUDIO:
+        manager: TranscriptionManager = request.app.state.transcription
+        status = await manager.engine.status()
+        if not status.ready or suffix not in status.audio_extensions:
+            raise AppError(
+                "transcription_unavailable", "Recordings need the transcription engine", 422
+            )
+        identifier = uid()
+        relative = f"attachments/{identifier}{suffix}"
+        target = request.app.state.config.data_dir / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        partial = target.with_suffix(target.suffix + ".part")
+        total = 0
+        try:
+            with partial.open("xb") as destination:
+                partial.chmod(0o600)
+                while chunk := await file.read(1024 * 1024):
+                    total += len(chunk)
+                    if total > AUDIO_LIMIT:
+                        raise AppError("audio_too_large", "Recordings can be up to 4 GB.", 413)
+                    await asyncio.to_thread(destination.write, chunk)
+            partial.replace(target)
+            mime = mimetypes.guess_type("recording" + suffix)[0] or "application/octet-stream"
+            await request.app.state.store.execute(
+                "INSERT INTO attachments(id,kind,filename,mime_type,bytes,path,"
+                "created_at) VALUES (?,'audio',?,?,?,?,?)",
+                (identifier, filename, mime, total, relative, now()),
+            )
+            return await manager.start(identifier, channels)
+        except BaseException:
+            partial.unlink(missing_ok=True)
+            target.unlink(missing_ok=True)
+            await request.app.state.store.execute(
+                "DELETE FROM attachments WHERE id=?", (identifier,)
+            )
+            raise
+        finally:
+            await file.close()
     if not image and suffix not in TEXT:
         raise AppError("unsupported_type", "PDF and Office support comes later.", 422)
     limit = 20 * 1024 * 1024 if image else 512 * 1024
@@ -74,6 +151,23 @@ async def upload(file: UploadFile, request: Request) -> Attachment:
         (identifier, attachment.kind, filename, mime, len(data), relative, now()),
     )
     return attachment
+
+
+@router.get("/pending")
+async def pending(request: Request) -> list[Attachment]:
+    store = request.app.state.store
+    return [
+        await records.attachment(store, str(row["id"]))
+        for row in await store.rows(
+            "SELECT id FROM attachments WHERE kind='audio' AND message_id IS NU"
+            "LL ORDER BY created_at DESC,id DESC"
+        )
+    ]
+
+
+@router.delete("/{identifier}", status_code=204)
+async def remove(identifier: str, request: Request) -> None:
+    await request.app.state.transcription.remove(identifier)
 
 
 @router.get("/{identifier}")

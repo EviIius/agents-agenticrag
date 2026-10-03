@@ -30,6 +30,16 @@ export function SearchActivity({
     ]),
   ).slice(0, 4);
   if (!info && !steps?.length) return null;
+  if (info?.notice?.code === "search_blocked_recording")
+    return (
+      <p
+        role="status"
+        className="mb-3 rounded-lg border border-line p-3 text-xs text-fg-2"
+      >
+        Web search is off in chats with a recording, so nothing from it leaves
+        this Mac.
+      </p>
+    );
   if (info?.status === "skipped")
     return (
       <p className="mb-3 text-xs text-fg-3">
