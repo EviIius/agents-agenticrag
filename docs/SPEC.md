@@ -78,6 +78,8 @@ Preserve the launchd identity and Tailscale route; retain verification/report ev
 
 **User amendment — 3 October 2026 (VoiceOver):** Jake reports VoiceOver did not work and asked to defer it for this build. Record the reported failure as an unresolved accessibility limitation; VoiceOver is no longer a release-blocking Phase 3 acceptance gate. Do not claim VoiceOver support passed. Other phase evidence and phone checks remain applicable.
 
+**User confirmation — 3 October 2026 (Phase 3 phone closeout):** After the keyboard-only walkthrough and <1.5 s phone readiness target were explained, Jake confirmed "both those work." Record these as user-confirmed acceptance and the supplied airplane-mode screenshot as offline-shell evidence. No instrumented physical timing sample was collected; retain that evidence limitation without inventing a numeric result. Phase 3 closes with this acceptance and the deferred VoiceOver limitation.
+
 1. Save it in the repo as `docs/SPEC.md`.
 2. Paste the prompt in §0 into Codex.
 3. After each phase, review the report (checklist, screenshots, test output) before you reply "continue".
