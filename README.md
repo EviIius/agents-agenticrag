@@ -116,7 +116,9 @@ never transcript content or original recording names.
 
 Open the Tailscale HTTPS URL in Safari, choose **Share → Add to Home Screen**, then open
 Workbench from that icon. The standalone shell uses safe areas and the visible keyboard
-viewport. Verify installation and VoiceOver on a physical phone before closing Phase 3.
+viewport. Verify installed-app input, offline behavior and warm-load performance on a
+physical phone before closing Phase 3. VoiceOver has a reported failure and is
+deferred for this build; support is not claimed.
 
 The service worker caches public shell/hashed assets and never `/api` responses, audio,
 transcripts or streamed messages. Without the Mac connection, the shell shows a connection
