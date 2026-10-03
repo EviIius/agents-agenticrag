@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Popover,
   PopoverTrigger,
   PopoverContent,
 } from "@/components/ui/popover";
+import { X } from "lucide-react";
+import { IconButton } from "@/components/app/IconButton";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { bestPassage } from "@/lib/citations";
 import type { Source } from "@/lib/api";
 export function Favicon({ domain }: { domain: string }) {
@@ -35,29 +38,68 @@ export function CitationPill({
   sentence: string;
 }) {
   const [open, setOpen] = useState(false);
+  const finePointer = useMediaQuery("(hover: hover) and (pointer: fine)");
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const hover = useRef(false);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const enter = () => {
+    clearTimeout(timer.current);
+    hover.current = true;
+    timer.current = setTimeout(() => setOpen(true), 150);
+  };
+  const leave = () => {
+    clearTimeout(timer.current);
+    if (hover.current) timer.current = setTimeout(() => setOpen(false), 200);
+  };
   if (!sources.length) return null;
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
-          className="mx-0.5 inline-flex min-h-11 max-w-full items-center rounded-md bg-cite px-2 align-baseline font-sans text-xs font-medium text-cite-fg break-all hover:bg-cite-hover focus-visible:outline-brand"
-          onClick={(e) => {
-            e.preventDefault();
-            setOpen(true);
+          className="citation-pill mx-0.5 inline-flex items-center bg-cite font-sans text-xs font-medium text-cite-fg hover:bg-cite-hover focus-visible:outline-brand"
+          onClick={() => {
+            clearTimeout(timer.current);
+            hover.current = false;
           }}
           aria-label={"View source: " + sources.map((s) => s.title).join("; ")}
           onPointerEnter={(e) => {
-            if (e.pointerType === "mouse") setOpen(true);
+            if (finePointer && e.pointerType === "mouse") enter();
           }}
+          onPointerLeave={leave}
         >
-          {sources[0]!.domain}
+          {sources[0]!.n}
           {sources.length > 1 ? ` +${sources.length - 1}` : ""}
         </button>
       </PopoverTrigger>
       <PopoverContent
         aria-label="Citation sources"
-        className="max-h-[70dvh] w-[min(360px,calc(100vw-24px))] overflow-y-auto p-4"
+        className="max-h-[min(70dvh,calc(var(--viewport-h,100dvh)-80px),var(--radix-popover-content-available-height))] w-[min(340px,calc(100vw-24px))] overflow-y-auto p-4"
+        collisionPadding={12}
+        onOpenAutoFocus={(event) => {
+          if (hover.current) event.preventDefault();
+        }}
+        onPointerEnter={() => clearTimeout(timer.current)}
+        onPointerLeave={leave}
+        onFocusCapture={() => {
+          clearTimeout(timer.current);
+          hover.current = false;
+        }}
       >
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs font-medium text-fg-2">
+            Source {sources[0]!.n}
+          </p>
+          <IconButton
+            label="Close citation"
+            onClick={() => {
+              clearTimeout(timer.current);
+              hover.current = false;
+              setOpen(false);
+            }}
+          >
+            <X />
+          </IconButton>
+        </div>
         {sources.map((s) => (
           <div
             key={s.n}

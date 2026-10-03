@@ -53,10 +53,15 @@ export function LiveChatSettings({
       (chat?.system_prompt ?? draftPrompt) == null,
     ),
     [context, setContext] = useState(model?.context_length ?? 8192);
+  const limit = model?.context_limit ?? model?.context_max;
+  const validContext =
+    Number.isInteger(context) &&
+    context >= 1024 &&
+    (!limit || context <= limit);
   return (
     <section className="p-5" aria-label="Chat settings controls">
       {!drawer && (
-        <header className="mb-6 flex items-center justify-between">
+        <header className="sticky top-0 z-10 -mx-5 -mt-5 mb-6 flex items-center justify-between bg-surface px-5 py-3">
           <h2 className="font-medium">
             {defaultsOnly ? "Model defaults" : "Chat settings"}
           </h2>
@@ -151,7 +156,7 @@ export function LiveChatSettings({
               <SelectItem value="default">Model default</SelectItem>
               {model.reasoning.options.map((value) => (
                 <SelectItem key={value} value={value}>
-                  {value}
+                  {value[0].toUpperCase() + value.slice(1)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -164,14 +169,25 @@ export function LiveChatSettings({
           aria-label="Context length"
           type="number"
           min={1024}
-          max={model?.context_max ?? undefined}
+          max={limit ?? undefined}
+          aria-invalid={!validContext}
+          aria-describedby="context-limit"
           value={context}
           onChange={(e) => setContext(Number(e.target.value))}
         />
       </label>
+      <p
+        id="context-limit"
+        className={`mb-3 text-xs ${validContext ? "text-fg-3" : "text-danger"}`}
+      >
+        {limit
+          ? `Configured limit: ${limit / 1024}K tokens.`
+          : "Minimum: 1K tokens."}
+        {!validContext && " Choose a context within this limit."}
+      </p>
       <div className="mb-4 flex flex-wrap gap-1">
         {[4096, 8192, 16384, 32768, 65536]
-          .filter((n) => !model?.context_max || n <= model.context_max)
+          .filter((n) => !limit || n <= limit)
           .map((n) => (
             <Button
               key={n}
@@ -186,7 +202,7 @@ export function LiveChatSettings({
       <div className="flex flex-col gap-2">
         {!defaultsOnly && (
           <Button
-            disabled={!model}
+            disabled={!model || !validContext}
             onClick={() => {
               onSave(useDefault ? null : prompt, params);
               onContext(context);
@@ -197,7 +213,7 @@ export function LiveChatSettings({
         )}
         <Button
           variant="outline"
-          disabled={!model}
+          disabled={!model || !validContext}
           onClick={() => {
             setParams({});
             onSave(useDefault ? null : prompt, {});
@@ -207,7 +223,7 @@ export function LiveChatSettings({
         </Button>
         <Button
           variant="ghost"
-          disabled={!model}
+          disabled={!model || !validContext}
           onClick={() => {
             onDefaults(params);
             if (defaultsOnly) onContext(context);

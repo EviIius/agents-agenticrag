@@ -65,6 +65,8 @@ class Registry:
                         if pref.get("context_length")
                         else m.context_length
                     )
+                    if m.context_limit and m.context_length:
+                        m.context_length = min(m.context_length, m.context_limit)
                     if pref.get("vision_override") is not None:
                         m.vision = bool(pref["vision_override"])
                     m.hidden = bool(pref.get("hidden"))

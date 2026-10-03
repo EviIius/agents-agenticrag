@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from "react";
+import { Pin } from "lucide-react";
 import { Link } from "react-router";
 import type { Chat } from "@/lib/api";
 function group(chat: Chat) {
@@ -62,12 +63,19 @@ export function ChatList({
             >
               <Link
                 to={"/c/" + chat.id}
-                title={chat.title}
+                aria-label={chat.title}
                 onClick={onOpen}
                 className="min-w-0 flex-1 truncate px-3 py-2 text-sm"
               >
                 {chat.title}
               </Link>
+              {chat.pinned && (
+                <Pin
+                  className="size-4 shrink-0 text-brand"
+                  role="img"
+                  aria-label="Pinned chat"
+                />
+              )}
               {menu(chat)}
             </div>
           </div>

@@ -90,11 +90,13 @@ export function LiveAppShell() {
     [above, setAbove] = useState(false),
     [busy, setBusy] = useState(false),
     [pending, setPending] = useState("");
+  const [loadingModel, setLoadingModel] = useState<string | null>(null);
+  const modelOperation = useRef(false);
   const [sendError, setSendError] = useState("");
   const [draftPrompt, setDraftPrompt] = useState<string | null>(null);
   const [action, setAction] = useState<{
     chat: Chat;
-    kind: "rename" | "delete";
+    kind: "rename" | "delete" | "export-md" | "export-json";
   } | null>(null);
   const scroll = useRef<HTMLDivElement>(null);
   const previousChat = useRef(chatId);
@@ -265,21 +267,68 @@ export function LiveAppShell() {
     try {
       await api(url, body, method);
       refresh();
+      return true;
     } catch (e) {
-      toast(String(e));
+      toast.error(String(e));
+      return false;
     }
   };
-  const changeModel = (model: Model) => {
-    setSelected(model);
-    if (chatId)
-      void mutate(
-        "/chats/" + chatId,
-        { connection_id: model.connection_id, model_id: model.model_id },
-        "PATCH",
+  const operateModel = async (model: Model, unload = false) => {
+    if (modelOperation.current) return;
+    modelOperation.current = true;
+    setLoadingModel(model.connection_id + model.model_id);
+    const notice = toast.loading(
+      `${unload ? "Ejecting" : "Loading"} ${model.display_name}…`,
+    );
+    try {
+      await api(unload ? "/models/unload" : "/models/load", {
+        connection_id: model.connection_id,
+        model_id: model.model_id,
+      });
+      query.setQueryData(
+        ["models"],
+        await api<Model[]>("/models?refresh=true"),
       );
+      void query.invalidateQueries({ queryKey: ["context", chatId] });
+      toast.success(`${model.display_name} ${unload ? "ejected" : "loaded"}`, {
+        id: notice,
+      });
+    } catch (e) {
+      toast.error(
+        `Couldn’t ${unload ? "eject" : "load"} ${model.display_name}`,
+        { id: notice, description: String(e) },
+      );
+    } finally {
+      modelOperation.current = false;
+      setLoadingModel(null);
+    }
+  };
+  const changeModel = async (model: Model) => {
+    if (modelOperation.current) return;
+    try {
+      if (chatId) {
+        const updated = await api<Chat>(
+          "/chats/" + chatId,
+          {
+            connection_id: model.connection_id,
+            model_id: model.model_id,
+          },
+          "PATCH",
+        );
+        query.setQueryData<Detail>(
+          ["chat", chatId],
+          (previous) => previous && { ...previous, chat: updated },
+        );
+        void query.invalidateQueries({ queryKey: ["context", chatId] });
+      }
+      setSelected(model);
+      if (!model.loaded) await operateModel(model);
+    } catch (e) {
+      toast.error("Couldn’t switch models", { description: String(e) });
+    }
   };
   const onSend = async (text: string, parent?: string | null) => {
-    if (!current || running) return false;
+    if (!current || running || modelOperation.current) return false;
     setSendError("");
     setBusy(true);
     setPending(text);
@@ -402,7 +451,7 @@ export function LiveAppShell() {
     <Composer
       suggestions={!chatId}
       model={current}
-      disabled={!current || busy}
+      disabled={!current || busy || !!loadingModel}
       running={running}
       onStop={() => {
         if (runEntry) void api("/runs/" + runEntry[0] + "/cancel", {});
@@ -500,22 +549,35 @@ export function LiveAppShell() {
           Rename
         </DropdownMenuItem>
         <DropdownMenuItem
-          onSelect={() =>
-            void mutate("/chats/" + chat.id, { pinned: !chat.pinned }, "PATCH")
-          }
+          onSelect={async () => {
+            if (
+              await mutate(
+                "/chats/" + chat.id,
+                { pinned: !chat.pinned },
+                "PATCH",
+              )
+            )
+              toast.success(chat.pinned ? "Chat unpinned" : "Chat pinned", {
+                description: chat.title,
+              });
+          }}
         >
           {chat.pinned ? "Unpin" : "Pin"}
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <a href={"/api/chats/" + chat.id + "/export?format=md"}>
-            Export Markdown
-          </a>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <a href={"/api/chats/" + chat.id + "/export?format=json"}>
-            Export JSON
-          </a>
-        </DropdownMenuItem>
+        {(["md", "json"] as const).map((format) => (
+          <DropdownMenuItem
+            key={format}
+            onSelect={() => {
+              ui.set({ sidebar: false });
+              setAction({
+                chat,
+                kind: format === "md" ? "export-md" : "export-json",
+              });
+            }}
+          >
+            Export {format === "md" ? "Markdown" : "JSON"}
+          </DropdownMenuItem>
+        ))}
         <DropdownMenuItem
           onSelect={() => {
             ui.set({ sidebar: false });
@@ -599,13 +661,11 @@ export function LiveAppShell() {
               models={models.data ?? []}
               connections={bootstrap.data?.connections}
               current={current}
-              onChoose={changeModel}
-              onModelAction={(model) =>
-                mutate(model.loaded ? "/models/unload" : "/models/load", {
-                  connection_id: model.connection_id,
-                  model_id: model.model_id,
-                })
-              }
+              onChoose={(model) => {
+                void changeModel(model);
+              }}
+              loadingModel={loadingModel}
+              onModelAction={(model) => operateModel(model, !!model.loaded)}
             />
           </div>
           <span className="hidden max-w-64 truncate text-xs text-fg-3 md:block">

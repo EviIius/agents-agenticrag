@@ -3,7 +3,9 @@ import {
   DialogContent,
   DialogTitle,
   DialogDescription,
+  DialogClose,
 } from "@/components/ui/dialog";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -42,8 +44,18 @@ export function SettingsDialog({
       open={ui.settings}
       onOpenChange={(settings) => ui.set({ settings })}
     >
-      <DialogContent className="settings-dialog flex max-h-[min(640px,90dvh)] max-w-[920px] sm:max-w-[920px] flex-col overflow-y-auto p-6 sm:w-[calc(100vw-48px)]">
-        <DialogTitle>Settings</DialogTitle>
+      <DialogContent
+        showCloseButton={false}
+        className="settings-dialog flex max-h-[min(640px,90dvh)] max-w-[920px] sm:max-w-[920px] flex-col overflow-hidden p-6 sm:w-[calc(100vw-48px)]"
+      >
+        <header className="flex shrink-0 items-center justify-between gap-3">
+          <DialogTitle>Settings</DialogTitle>
+          <DialogClose asChild>
+            <Button variant="ghost" size="icon" aria-label="Close settings">
+              <X />
+            </Button>
+          </DialogClose>
+        </header>
         <DialogDescription>
           {renderPane
             ? "Local models · your preferences"
@@ -52,14 +64,14 @@ export function SettingsDialog({
         <div className="mt-4 flex min-h-0 flex-1 flex-col gap-6 sm:flex-row">
           <nav
             aria-label="Settings sections"
-            className="flex shrink-0 flex-wrap gap-1 sm:w-40 sm:flex-col"
+            className="flex shrink-0 gap-1 overflow-x-auto py-1 sm:w-40 sm:flex-col"
           >
             {panes.map((name) => (
               <Button
                 key={name}
                 variant="ghost"
                 onClick={() => setPane(name)}
-                className={`min-h-11 justify-start ${pane === name ? "bg-surface-2" : ""}`}
+                className={`min-h-11 shrink-0 justify-start ${pane === name ? "bg-brand-soft text-brand" : ""}`}
                 aria-current={pane === name ? "page" : undefined}
               >
                 {name}
@@ -68,7 +80,7 @@ export function SettingsDialog({
           </nav>
           <section
             aria-label={pane}
-            className="min-w-0 flex-1 space-y-5 overflow-y-auto pb-6"
+            className="min-h-0 min-w-0 flex-1 space-y-5 overflow-y-auto pb-6"
           >
             <h2 className="text-lg font-medium">{pane}</h2>
             {pane !== "Appearance" && renderPane ? (
@@ -77,7 +89,7 @@ export function SettingsDialog({
               <>
                 <fieldset>
                   <legend className="mb-2 font-medium">Theme</legend>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {(["system", "light", "dark"] as ThemePreference[]).map(
                       (theme) => (
                         <Button
@@ -95,7 +107,7 @@ export function SettingsDialog({
                 </fieldset>
                 <fieldset>
                   <legend className="mb-2 font-medium">Answer font</legend>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {(["serif", "sans"] as const).map((answerFont) => (
                       <Button
                         key={answerFont}
@@ -115,7 +127,7 @@ export function SettingsDialog({
                 </fieldset>
                 <fieldset>
                   <legend className="mb-2 font-medium">Text size</legend>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {(["S", "M", "L"] as const).map((textSize) => (
                       <Button
                         key={textSize}

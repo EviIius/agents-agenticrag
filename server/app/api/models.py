@@ -19,9 +19,10 @@ async def listing(
 @router.post("/load")
 async def load(body: ModelAction, request: Request) -> dict[str, bool]:
     model = await request.app.state.registry.resolve(body.connection_id, body.model_id)
-    if body.context_length and model.context_max and body.context_length > model.context_max:
+    limit = model.context_limit or model.context_max
+    if body.context_length and limit and body.context_length > limit:
         raise AppError(
-            "validation_error", "Context length exceeds the runtime-reported maximum.", 422
+            "validation_error", "Context length exceeds this model’s configured limit.", 422
         )
     await (await request.app.state.registry.adapter(body.connection_id)).load(
         body.model_id, body.context_length or model.context_length
@@ -50,9 +51,10 @@ async def prefs(body: ModelPrefs, request: Request) -> dict[str, bool]:
     )
     if model is None:
         raise AppError("model_not_found", "Choose an available Ollama model.", 422)
-    if body.context_length and model.context_max and body.context_length > model.context_max:
+    limit = model.context_limit or model.context_max
+    if body.context_length and limit and body.context_length > limit:
         raise AppError(
-            "validation_error", "Context length exceeds the runtime-reported maximum.", 422
+            "validation_error", "Context length exceeds this model’s configured limit.", 422
         )
     await store.execute(
         "INSERT OR IGNORE INTO model_prefs(connection_id,model_id) VALUES (?,?)",

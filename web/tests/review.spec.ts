@@ -75,9 +75,24 @@ for (const width of [390, 1440])
         ).not.toBeVisible();
         await page.setViewportSize({ width, height: 480 });
         await page.locator(".composer textarea").focus();
-        const thread = await page.getByTestId("thread").boundingBox(),
-          composer = await page.getByTestId("composer-row").boundingBox();
-        expect(thread!.y + thread!.height).toBeLessThanOrEqual(composer!.y + 1);
+        const bounds = await page.evaluate(() => {
+          const thread = document
+            .querySelector('[data-testid="thread"]')!
+            .getBoundingClientRect();
+          const composer = document
+            .querySelector('[data-testid="composer-row"]')!
+            .getBoundingClientRect();
+          return {
+            threadBottom: thread.bottom,
+            composerTop: composer.top,
+            composerBottom: composer.bottom,
+            viewportHeight: innerHeight,
+          };
+        });
+        expect(bounds.threadBottom).toBeLessThanOrEqual(bounds.composerTop + 1);
+        expect(bounds.composerBottom).toBeLessThanOrEqual(
+          bounds.viewportHeight + 1,
+        );
         await shot("keyboard-simulated");
         await page.setViewportSize({ width, height: 844 });
       }

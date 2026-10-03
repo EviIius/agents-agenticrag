@@ -77,7 +77,10 @@ class Ollama:
             maximum = info.get(f"{info.get('general.architecture')}.context_length")
             context = loaded.get(name, {}).get("context_length")
             param = re.search(r"^num_ctx\s+(\d+)", show.get("parameters", ""), re.M)
-            context = context or (int(param[1]) if param else None) or min(maximum or 8192, 16384)
+            # Operational ceiling comes from runtime configuration, not model names.
+            configured = int(param[1]) if param else min(maximum or 8192, 16384)
+            limit = min(configured, maximum) if maximum else configured
+            context = min(context or limit, limit)
             reasoning = None
             thinking = show.get("thinking")
             if thinking:
@@ -102,6 +105,7 @@ class Ollama:
                     quant=details.get("quantization_level"),
                     size_bytes=tag.get("size"),
                     context_max=maximum,
+                    context_limit=limit,
                     context_length=context,
                     vision="vision" in caps,
                     tools="tools" in caps,

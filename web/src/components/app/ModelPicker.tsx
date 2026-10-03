@@ -39,7 +39,9 @@ export function ModelPicker({
   onChoose,
   connections,
   onModelAction,
+  loadingModel,
 }: {
+  loadingModel?: string | null;
   state?: PickerState;
   models?: import("@/lib/api").Model[];
   current?: import("@/lib/api").Model;
@@ -53,14 +55,15 @@ export function ModelPicker({
     [elapsed, setElapsed] = useState(0);
   const started = useRef(0);
   useEffect(() => {
-    if (!busy) return;
+    if (!busy && !loadingModel) return;
+    if (loadingModel) started.current = Date.now();
     setElapsed(0);
     const timer = setInterval(
       () => setElapsed(Math.floor((Date.now() - started.current) / 1000)),
       1000,
     );
     return () => clearInterval(timer);
-  }, [busy]);
+  }, [busy, loadingModel]);
   const phone = useMediaQuery("(max-width: 639px)");
   const trigger = (
     <Button
@@ -70,17 +73,29 @@ export function ModelPicker({
       onClick={() => setOpen(true)}
     >
       <span className="text-success" aria-hidden>
-        {models
-          ? current?.loaded == null
-            ? ""
-            : current.loaded
-              ? "●"
-              : "○"
-          : "●"}
+        {loadingModel ===
+        (current?.connection_id ?? "") + (current?.model_id ?? "") ? (
+          <LoaderCircle className="size-4 animate-spin" />
+        ) : models ? (
+          current?.loaded == null ? (
+            ""
+          ) : current.loaded ? (
+            "●"
+          ) : (
+            "○"
+          )
+        ) : (
+          "●"
+        )}
       </span>
       <span className="truncate font-medium">
         {models ? (current?.display_name ?? "Choose model") : selected}
       </span>
+      {loadingModel && (
+        <span role="status" className="text-xs text-fg-2">
+          Loading… {elapsed}s
+        </span>
+      )}
       <span className="hidden text-xs text-fg-3 sm:block">
         {models ? "Ollama" : "Fake runtime"}
       </span>
@@ -92,7 +107,7 @@ export function ModelPicker({
       <CommandInput placeholder="Search models…" aria-label="Search models" />
       <CommandList className="min-h-0 flex-1">
         <CommandEmpty>No matching models.</CommandEmpty>
-        <div>
+        <>
           {!models && (
             <div className="px-2 py-1.5 text-xs font-medium text-fg-3">
               Fake runtime · fixture connection
@@ -114,11 +129,12 @@ export function ModelPicker({
                       <CommandItem
                         key={model.connection_id + model.model_id}
                         value={model.display_name + " " + model.connection_id}
+                        disabled={!!loadingModel}
                         onSelect={() => {
                           onChoose?.(model);
                           setOpen(false);
                         }}
-                        className="group min-h-16 gap-3"
+                        className="group min-h-16 gap-2"
                       >
                         <span
                           aria-hidden
@@ -129,7 +145,7 @@ export function ModelPicker({
                           {model.loaded == null ? "" : model.loaded ? "●" : "○"}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <span className="flex items-center gap-2 break-all">
+                          <span className="flex flex-wrap items-center gap-2 break-words">
                             {model.display_name}
                             {model.reasoning && (
                               <Brain
@@ -171,8 +187,8 @@ export function ModelPicker({
                           <Button
                             variant="outline"
                             size="sm"
-                            className="min-h-11 shrink-0 opacity-0 group-hover:opacity-100 focus:opacity-100 [@media(pointer:coarse)]:hidden"
-                            disabled={busy !== null}
+                            className="min-h-11 shrink-0 px-2"
+                            disabled={busy !== null || !!loadingModel}
                             aria-label={`${model.loaded ? "Eject" : "Load"} ${model.display_name}`}
                             onKeyDown={(event) => event.stopPropagation()}
                             onClick={async (event) => {
@@ -277,9 +293,9 @@ export function ModelPicker({
               Loading fake-chat… 12 s
             </p>
           )}
-        </div>
+        </>
       </CommandList>
-      <p className="border-t border-line p-3 text-xs text-fg-2">
+      <p className="shrink-0 border-t border-line p-3 text-xs text-fg-2">
         {models
           ? `${models.length} models · capabilities reported by Ollama`
           : "Fixture models only · connections arrive in Phase 1"}

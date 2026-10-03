@@ -21,13 +21,72 @@ export function ChatActionDialog({
   action,
   onClose,
   onApply,
+  preview = false,
 }: {
-  action: { chat: Chat; kind: "rename" | "delete" } | null;
+  action: {
+    chat: Chat;
+    kind: "rename" | "delete" | "export-md" | "export-json";
+  } | null;
   onClose: () => void;
   onApply: (title?: string) => void;
+  preview?: boolean;
 }) {
   const [title, setTitle] = useState(action?.chat.title ?? "");
   if (!action) return null;
+  if (action.kind.startsWith("export-")) {
+    const format = action.kind === "export-md" ? "md" : "json";
+    const safeTitle = Array.from(action.chat.title, (character) =>
+      character.charCodeAt(0) < 32 ||
+      character.charCodeAt(0) === 127 ||
+      '/\\:*?"<>|'.includes(character)
+        ? "-"
+        : character,
+    )
+      .join("")
+      .replace(/^[ .]+|[ .]+$/g, "");
+    const filename =
+      (Array.from(safeTitle).slice(0, 120).join("") || "Untitled chat") +
+      "." +
+      format;
+    return (
+      <Dialog
+        open
+        onOpenChange={(open) => {
+          if (!open) onClose();
+        }}
+      >
+        <DialogContent>
+          <DialogTitle className="pr-12">
+            Export {format === "md" ? "Markdown" : "JSON"}
+          </DialogTitle>
+          <DialogDescription>
+            Download the current branch of “{action.chat.title}”. Other branches
+            remain in Workbench.
+          </DialogDescription>
+          <p className="break-words text-sm text-fg-2">{filename}</p>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button asChild>
+              <a
+                href={
+                  "/api/chats/" + action.chat.id + "/export?format=" + format
+                }
+                download={filename}
+                onClick={(event) => {
+                  if (preview) event.preventDefault();
+                  setTimeout(onClose, 0);
+                }}
+              >
+                Download
+              </a>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
   if (action.kind === "delete")
     return (
       <AlertDialog

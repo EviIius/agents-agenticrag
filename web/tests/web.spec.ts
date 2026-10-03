@@ -34,10 +34,14 @@ for (const width of [390, 1440])
         .getByRole("button", { name: /View source: Synthetic NBA Finals/ })
         .first();
       await expect(pill).toBeVisible();
+      expect((await pill.boundingBox())!.height).toBeLessThanOrEqual(20);
       await pill.click();
       await expect(
         page.getByText("Open page ↗", { exact: true }).first(),
       ).toBeVisible();
+      await expect(
+        page.getByRole("dialog", { name: "Citation sources" }),
+      ).toBeInViewport({ ratio: 1 });
       await page.screenshot({
         path: `../artifacts/phase-2/citation-card-${width}-${theme}-fake-web.png`,
       });
@@ -47,7 +51,12 @@ for (const width of [390, 1440])
           ["critical", "serious"].includes(v.impact ?? ""),
         ),
       ).toEqual([]);
-      await page.keyboard.press("Escape");
+      await page
+        .getByRole("button", { name: "Close citation", exact: true })
+        .click();
+      await expect(
+        page.getByRole("dialog", { name: "Citation sources" }),
+      ).toHaveCount(0);
       await page.getByRole("button", { name: /2 sources/ }).click();
       const dialog = page.getByRole("dialog").last();
       await expect(

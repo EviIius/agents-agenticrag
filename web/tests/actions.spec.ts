@@ -96,25 +96,76 @@ for (const width of [390, 1440]) {
     await page.getByRole("menuitem", { name: "Pin", exact: true }).click();
     await expect(page.locator('[role="menu"]')).toHaveCount(0);
     await expect.poll(async () => (await detail()).chat.pinned).toBe(true);
+    await expect(
+      row.locator("..").getByRole("img", { name: "Pinned chat" }),
+    ).toBeVisible();
+    await expect(page.getByText("Chat pinned", { exact: true })).toBeVisible();
+    const toast = page
+      .locator("[data-sonner-toast]")
+      .filter({ hasText: "Chat pinned" });
+    await expect(toast).toHaveAttribute("data-mounted", "true");
+    await toast.evaluate(async (element) => {
+      await Promise.all(
+        element
+          .getAnimations()
+          .map((animation) => animation.finished.catch(() => {})),
+      );
+    });
+    const toastClose = await toast.locator("[data-close-button]").boundingBox();
+    const toastBounds = await toast.boundingBox();
+    expect(toastClose!.width).toBeGreaterThanOrEqual(44);
+    expect(toastClose!.height).toBeGreaterThanOrEqual(44);
+    expect(toastClose!.x).toBeGreaterThanOrEqual(toastBounds!.x);
+    await page.screenshot({
+      path: `../artifacts/phase-2/review-pin-${width}-${browserName}.png`,
+    });
+    await toast.locator("[data-close-button]").click();
+    await expect(toast).not.toBeVisible();
     await actions.click();
     await page.getByRole("menuitem", { name: "Unpin", exact: true }).click();
     await expect(page.locator('[role="menu"]')).toHaveCount(0);
     await expect.poll(async () => (await detail()).chat.pinned).toBe(false);
     await actions.click();
-    const markdownReady = page.waitForEvent("download");
+    let exportsRequested = 0;
+    page.on("request", (request) => {
+      if (request.url().includes("/export?")) exportsRequested++;
+    });
     await page.getByRole("menuitem", { name: "Export Markdown" }).click();
+    await page.screenshot({
+      path: `../artifacts/phase-2/review-export-${width}-${browserName}.png`,
+    });
+    await page.getByRole("button", { name: "Cancel", exact: true }).click();
+    expect(exportsRequested).toBe(0);
+    await expect(
+      page.getByRole("dialog", { name: "Export Markdown" }),
+    ).toHaveCount(0);
+    if (width < 640)
+      await page.getByRole("button", { name: "Open sidebar" }).click();
+    await actions.click();
+    await page.getByRole("menuitem", { name: "Export Markdown" }).click();
+    const markdownReady = page.waitForEvent("download");
+    await page.getByRole("link", { name: "Download", exact: true }).click();
     const markdown = await markdownReady;
+    expect(markdown.suggestedFilename()).toBe(original + ".md");
     expect(await readFile((await markdown.path())!, "utf8")).toContain(
       original,
     );
-    await page.bringToFront();
-    await expect(page.locator('[role="menu"]')).toHaveCount(0);
+    await expect(
+      page.getByRole("dialog", { name: "Export Markdown" }),
+    ).toHaveCount(0);
+    if (width < 640)
+      await page.getByRole("button", { name: "Open sidebar" }).click();
     await actions.click();
-    const downloadReady = page.waitForEvent("download");
     await page.getByRole("menuitem", { name: "Export JSON" }).click();
+    const downloadReady = page.waitForEvent("download");
+    await page.getByRole("link", { name: "Download", exact: true }).click();
     const download = await downloadReady;
-    await page.bringToFront();
-    await expect(page.locator('[role="menu"]')).toHaveCount(0);
+    expect(download.suggestedFilename()).toBe(original + ".json");
+    await expect(page.getByRole("dialog", { name: "Export JSON" })).toHaveCount(
+      0,
+    );
+    if (width < 640)
+      await page.getByRole("button", { name: "Open sidebar" }).click();
     // Export uses the current branch; the edited sibling remains in the database.
     const exported = JSON.parse(
       await readFile((await download.path())!, "utf8"),

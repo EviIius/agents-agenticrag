@@ -1,6 +1,7 @@
 import base64
 import json
 import re
+from urllib.parse import quote
 
 from fastapi import APIRouter, Request
 from fastapi.responses import Response
@@ -169,10 +170,18 @@ async def export(identifier: str, request: Request, format: str = "md") -> Respo
         mime = "text/markdown"
     else:
         raise AppError("validation_error", "Export format must be md or json.", 422)
+    title = re.sub(r'[\x00-\x1f\x7f/\\:*?"<>|]', "-", data.chat.title).strip(" .")[:120]
+    title = title or "Untitled chat"
+    filename = f"{title}.{format}"
+    fallback = filename.encode("ascii", "replace").decode().replace("?", "-")
     return Response(
         text,
         media_type=mime,
-        headers={"Content-Disposition": f'attachment; filename="chat-{identifier}.{format}"'},
+        headers={
+            "Content-Disposition": (
+                f"attachment; filename=\"{fallback}\"; filename*=UTF-8''{quote(filename, safe='')}"
+            )
+        },
     )
 
 

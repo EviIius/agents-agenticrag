@@ -208,6 +208,8 @@ test("untrusted Markdown does not create HTML or load remote images", async ({
 });
 
 test("keyboard-only fixture walkthrough", async ({ page }, testInfo) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
   async function tabTo(label: string) {
     for (let attempt = 0; attempt < 40; attempt++) {
       if (
@@ -252,4 +254,5 @@ test("keyboard-only fixture walkthrough", async ({ page }, testInfo) => {
   await page.keyboard.press("Escape");
   await page.keyboard.press("Control+Shift+O");
   await expect(page.getByRole("heading", { name: /Good/ })).toBeVisible();
+  expect(errors).toEqual([]);
 });

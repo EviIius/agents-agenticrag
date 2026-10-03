@@ -35,6 +35,18 @@ use the existing HTTP stack with no additional agents or model calls. Respect
 provider usage limits and record live failures. Continue to Phase 3 only after
 Phase 2 validation, retaining the H4 report at each checkpoint.
 
+**User UI correction — 3 October 2026:** Review the reported iPhone issues and all
+Workbench screens. Selecting an unloaded model must load it and refresh its status.
+Keep close controls within safe/visible bounds, make pin confirmations readable,
+confirm chat exports with Cancel and title-based filenames, and capitalize reasoning
+labels. Context presets and server overrides must respect the current operational
+configuration (`/api/show` `num_ctx`, otherwise the existing Workbench default ceiling),
+not the architecture's larger training maximum. Expose `context_limit` separately
+from `context_max`; clamp previously saved oversized effective contexts without
+rewriting saved preferences. Use compact numbered inline citations with the domain,
+title, evidence and external link available in a dismissible card. Retain Phase 2
+UI evidence and physical-phone review before Phase 3.
+
 1. Save it in the repo as `docs/SPEC.md`.
 2. Paste the prompt in §0 into Codex.
 3. After each phase, review the report (checklist, screenshots, test output) before you reply "continue".
@@ -495,7 +507,8 @@ One internal interface. Each runtime gets a small adapter. The rest of the app n
 class ModelInfo:
     connection_id: str; model_id: str; display_name: str
     family: str | None; params: str | None; quant: str | None; size_bytes: int | None
-    context_max: int | None          # what the model supports
+    context_max: int | None          # architecture/training maximum reported by runtime
+    context_limit: int | None        # configured operational ceiling (user UI correction above)
     context_length: int | None       # what the app will use (prefs → loaded → default)
     vision: bool | None; tools: bool | None
     reasoning: ReasoningCaps | None  # {options: ["off","on"] | ["low","medium","high"], default}

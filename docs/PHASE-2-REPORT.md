@@ -5,7 +5,7 @@
 The numeric-list accuracy fix and authorized temperature comparison are implemented and evaluated.
 The final evaluation closeout is recorded below, after release coverage, section/row selection, citation binding and follow-up fixes. Original questions, case hashes and failing runs remain preserved; two benchmark requests now explicitly ask for the fields/source type their assertions require.
 Native answer sampling is retained: the controlled temperature-0.2 run performs worse.
-**Phase 2 remains open for mobile review:** the latest browser suite has two phone layout failures. Jake requested release/evaluation closeout first and will provide phone screenshots in a separate design task. No mobile layout work or Phase 3 implementation is part of this closeout.
+**Phase 2 remains open for physical iPhone verification:** Jake supplied ten screenshots and the reported UI/behavior issues are repaired. Final affected-screen checks pass 54/54 on Chromium/WebKit; actual GPT-OSS selection/loading and Tailscale health are verified. See [UI review report](PHASE-2-UI-REVIEW.md) for changes, preserved failed runs and screenshots. Phase 3 has not started.
 
 ## Done-when checklist
 
@@ -23,20 +23,20 @@ Native answer sampling is retained: the controlled temperature-0.2 run performs 
 | E-AC10: controlled injection | Passed latest full recorded run | `032410` receives the controlled attack and ignores it; live pages do not substitute for this test |
 | Comprehensive NBA losses | Passed latest full recorded run; final live pending | `032410`: all 23 qualifying entries, per-row references, no excluded teams or false 28-total. Earlier 32K checkpoint `001943` retained |
 | Sampling and chat actions | Passed covered paths | Isolated real API/native payload evidence and browser rename/pin/export/delete/persistence; unset answer parameters omitted |
-| Phone/desktop layout | **Open; iPhone work deferred** | Latest Chromium/WebKit suite: 106 pass, 2 fail, 2 skip. Both failures are 390 px Chromium keyboard/thread bounds in light/dark themes |
+| Phone/desktop layout | **Browser corrections pass; physical iPhone review open** | Final affected-screen suite 54/54; four widths, both themes, all settings sections, model load, exports, pins and citations. Historical failures remain attached; see UI review report |
 | Five approved models | Available; full accuracy not established for all five | Final formatter checked on Qwen 16K/32K. Intermediate selection smokes pass Gemma/GPT-OSS/16K Llama; these are not five final full suites |
 
 ## Changed files
 
 - **Server:** `search/planner.py` adds an optional literal-word condition to the existing single planner call; `selection.py` conservatively binds a numeric column and selects matching rows; `pipeline.py` gives verified evidence priority and binds its row references; `prompt.py` labels source citations in host metadata; `schemas.py` records the condition and trusted selection flag.
-- **Web:** generated `api-types.ts` and the `/design` source fixture reflect the added fields. No new iPhone layout changes in this work.
+- **Web:** generated API types and `/design` states, followed by the authorized 3 October mobile/desktop correction. The separate UI review report lists these changes.
 - **Tests:** `test_search.py`, `test_web_evidence.py`, `test_web_grading.py` cover immutable per-request schemas, ambiguous/unknown numeric data, row/cell preservation, source persistence, forged host annotations, citation binding and stricter list checks.
 - **Evals/docs:** `cases.yaml`, `grading.py`, `run_eval.py`, trial helpers, SPEC E4/E7/E8 and this report retain before/after answers, exact prompt/code hashes, failed trials, public fixtures and the isolated temperature comparison.
 - **Earlier Phase 2 changes retained:** table assembly/chunking, heading/plural/bibliography ranking, recent-page reuse, free search adapters, sampling/chat actions, phone safe areas/switches/picker filtering and terminal SSE persistence. See the historical test/evaluation artifacts for those changes.
 
 ## Deviations from SPEC.md
 
-User-approved scope: Ollama only; five stored picker preferences; free providers; continue Phase 3 after Phase 2 validation; isolate temperature tests; defer current iPhone work.
+User-approved scope: Ollama only; five stored picker preferences; free providers; continue Phase 3 after Phase 2 validation; isolate temperature tests; subsequent screenshot-driven iPhone/desktop corrections documented in the UI review report.
 
 The generic E4/E7 refinement uses a nullable condition inside the existing planner call. Its property is constrained to literal request words, and the host applies it only to supported unambiguous numeric columns. Matching table rows include host citation labels, while unfiltered prose from that selected-table source is omitted from the answer evidence to avoid population-total confusion. Full raw pages remain cached. At the numeric-list checkpoint, E8's V6 answer system prompt and answer sampling defaults were unchanged; the closeout adds generic supported-outcome/table-values and planner source-constraint instructions described below. Native answer sampling remains unchanged; source wrapper metadata now explicitly identifies `[N]`.
 
@@ -84,7 +84,7 @@ The host qualifier alone is insufficient for the live release requirement: full 
 
 ### Closeout decision and final evidence
 
-**Ready for the separate iPhone UI review. Evaluation closeout items 1 and 2 are sufficiently verified; whole Phase 2 and Phase 3 remain open for the UI gates.** Native answer sampling remains unchanged. This is a bounded acceptance decision, not a claim of perfect accuracy or five-model full-suite coverage.
+**Evaluation closeout items 1 and 2 are sufficiently verified. The subsequent screenshot-driven UI correction passes its final affected-screen suite and real Ollama load smoke; whole Phase 2 remains open for physical iPhone review before Phase 3.** Native answer sampling remains unchanged. This is a bounded acceptance decision, not a claim of perfect accuracy or five-model full-suite coverage.
 
 | Evidence | Result | Scope |
 |---|---|---|
@@ -152,7 +152,7 @@ Public page recordings are lossless gzip with SHA-256 manifests and decompressio
 - [Closeout `make check`](../artifacts/phase-2/closeout-check.txt): **182 Python tests**, **36 Vitest tests**, lint/format, strict types, generated API contract and **56 contrast pairs** pass. Search coverage 87.8%. The two new tests cover distinct section boundaries/context and cited official version/change coverage.
 - [Numeric-list checkpoint `make check`](../artifacts/phase-2/check-selection-final.txt): **180 Python tests**, **36 Vitest tests**, lint/format, strict types, generated API contract and **56 contrast pairs** pass. Search coverage 87.7%.
 - [Focused accuracy tests](../artifacts/phase-2/accuracy-selection-tests.txt): **101 passed** before the last additional grading assertion; final full check includes it.
-- [Latest full browser suite](../artifacts/phase-2/e2e-selection-production.txt): **106 passed, 2 failed, 2 skipped**. Both 390 px Chromium review-screen tests fail keyboard/thread bounds (light/dark). This is not a passing UI gate; Jake deferred its repair.
+- [Pre-UI-correction full browser suite](../artifacts/phase-2/e2e-selection-production.txt): **106 passed, 2 failed, 2 skipped**. Both 390 px Chromium review-screen tests fail keyboard/thread bounds (light/dark). This historical run is not a passing UI gate. Its failures are repaired and rechecked in the UI review report; the original artifact is preserved.
 - [Final build](../artifacts/phase-2/build-selection-final.txt): passes. Markdown lazy chunk remains 938.90 kB raw / 287.94 kB gzip; the Phase 3 bundle budget is still open.
 - [Real parameter/chat action evidence](../artifacts/phase-2/live-controls.json) remains available. Explicit answer parameters forward; omitted defaults are not sent.
 - [Final credential check](../artifacts/phase-2/closeout-credential-check.json): scans changed/new source and artifacts, including decompressed recordings, without logging the saved key.
@@ -170,4 +170,4 @@ Visually inspected against the actual preview; safe-area/keyboard dimensions are
 
 ## Open questions for Jake
 
-No key, paid search subscription or Docker approval is needed. Native temperature is retained after the authorized comparison. Release-source coverage and full live validation are documented above, including preserved failures and request/assertion alignment. Evaluation closeout is ready for the deferred iPhone keyboard/panel review, repair and physical confirmation in Jake’s separate task. The two known browser layout failures still prevent marking whole Phase 2 complete or beginning Phase 3. Date attribution and personal-history output limitations remain documented, without claiming perfect factual accuracy.
+No key, paid search subscription or Docker approval is needed. Native temperature is retained after the authorized comparison. Release-source coverage and full live validation are documented above, including preserved failures and request/assertion alignment. The subsequent UI corrections and actual runtime load verification are complete; the updated preview is ready for physical iPhone keyboard, settings, model switching, export and citation confirmation. That phone review remains required before marking whole Phase 2 complete or beginning Phase 3. Date attribution and personal-history output limitations remain documented, without claiming perfect factual accuracy.

@@ -444,3 +444,94 @@ async def test_export_all_and_confirmed_delete_keep_settings_and_cancel_runs(
     assert (await client.get("/api/settings")).json()["auto_title"] is False
     bootstrap = (await client.get("/api/bootstrap")).json()
     assert bootstrap["data_dir"] == str(app.state.config.data_dir)
+
+
+async def test_operational_context_ceiling_rejects_overrides_and_clamps_old_preferences(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+) -> None:
+    app, client, runtime = chat_app
+    connection = app.state.test_connection
+    model = next(
+        m for m in (await client.get("/api/models")).json() if m["model_id"] == "fake-chat"
+    )
+    assert model["context_limit"] == 16384
+    for endpoint in ("load", "prefs"):
+        response = await client.request(
+            "POST" if endpoint == "load" else "PUT",
+            "/api/models/" + endpoint,
+            json={"connection_id": connection, "model_id": "fake-chat", "context_length": 65536},
+        )
+        assert response.status_code == 422
+    await app.state.store.execute(
+        "INSERT OR REPLACE INTO model_prefs(connection_id,model_id,context_length) VALUES (?,?,?)",
+        (connection, "fake-chat", 65536),
+    )
+    model = next(
+        m
+        for m in (await client.get("/api/models?refresh=true")).json()
+        if m["model_id"] == "fake-chat"
+    )
+    assert model["context_length"] == 16384
+    stored = await app.state.store.one(
+        "SELECT context_length FROM model_prefs WHERE connection_id=? AND model_id=?",
+        (connection, "fake-chat"),
+    )
+    assert (
+        stored["context_length"] == 65536
+    )  # Clamp the effective value without rewriting saved data.
+    assert (
+        await client.post(
+            "/api/models/load", json={"connection_id": connection, "model_id": "fake-chat"}
+        )
+    ).status_code == 200
+    assert runtime.state.captures[-1]["options"] == {"num_ctx": 16384}
+
+
+@pytest.mark.parametrize(
+    "title", ["Perfect Thanksgiving Feast", "日本の歴史", '../Unsafe/Title\r\n"header"']
+)
+async def test_exports_use_safe_title_filenames(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+    title: str,
+) -> None:
+    from urllib.parse import unquote
+
+    _, client, _ = chat_app
+    chat = (await client.post("/api/chats", json={})).json()
+    await client.patch("/api/chats/" + chat["id"], json={"title": title})
+    for format in ("md", "json"):
+        response = await client.get("/api/chats/" + chat["id"] + "/export?format=" + format)
+        assert response.status_code == 200
+        header = response.headers["content-disposition"]
+        filename = unquote(header.split("filename*=UTF-8''")[1])
+        assert filename.endswith("." + format)
+        assert chat["id"] not in filename
+        assert not any(character in filename for character in '/\\\r\n"')
+        if title == "Perfect Thanksgiving Feast":
+            assert filename == "Perfect Thanksgiving Feast." + format
+        if title == "日本の歴史":
+            assert filename == "日本の歴史." + format
+
+
+@pytest.mark.parametrize("maximum", [None, 131072])
+async def test_configured_context_is_trusted_without_architecture_metadata(
+    maximum: int | None,
+) -> None:
+    def reply(request: httpx.Request) -> httpx.Response:
+        data: dict[str, Any]
+        if request.url.path == "/api/tags":
+            data = {"models": [{"name": "opaque-runtime-id"}]}
+        elif request.url.path == "/api/ps":
+            data = {"models": [{"name": "opaque-runtime-id", "context_length": 65536}]}
+        else:
+            data = {
+                "capabilities": ["completion"],
+                "parameters": "num_ctx 32768",
+                "model_info": {"general.architecture": "opaque", "opaque.context_length": maximum},
+            }
+        return httpx.Response(200, json=data)
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(reply)) as client:
+        model = (await Ollama("test", "http://runtime", client=client).list_models())[0]
+    assert model.context_max == maximum
+    assert model.context_limit == model.context_length == 32768

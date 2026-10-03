@@ -863,6 +863,8 @@ export interface components {
             size_bytes?: number | null;
             /** Context Max */
             context_max?: number | null;
+            /** Context Limit */
+            context_limit?: number | null;
             /** Context Length */
             context_length?: number | null;
             /** Vision */

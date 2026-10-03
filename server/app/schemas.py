@@ -84,6 +84,7 @@ class ModelInfo(BaseModel):
     quant: str | None = None
     size_bytes: int | None = None
     context_max: int | None = None
+    context_limit: int | None = None
     context_length: int | None = None
     vision: bool | None = None
     tools: bool | None = None

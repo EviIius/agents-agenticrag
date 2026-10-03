@@ -15,7 +15,10 @@ export default function App() {
         <TooltipProvider>
           <Outlet />
           <Toaster
-            position={phone ? "bottom-center" : "bottom-right"}
+            position={phone ? "top-center" : "bottom-right"}
+            closeButton
+            visibleToasts={1}
+            duration={4500}
             toastOptions={{ className: "font-sans" }}
           />
         </TooltipProvider>

@@ -1,5 +1,9 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Link } from "react-router";
+import { toast } from "sonner";
+import { ChatActionDialog } from "@/components/app/ChatActionDialog";
+import { ChatList } from "@/components/app/ChatList";
+import { LiveChatSettings } from "@/components/settings/LiveChatSettings";
 import { Button } from "@/components/ui/button";
 import {
   AssistantMessage,
@@ -13,7 +17,7 @@ import { ModelPicker, type PickerState } from "@/components/app/ModelPicker";
 import { ChatSettingsPanel } from "@/components/settings/ChatSettingsPanel";
 import { SearchActivity } from "@/components/chat/SearchActivity";
 import { SourcesSheet } from "@/components/chat/SourcesSheet";
-import type { Source, Message } from "@/lib/api";
+import type { Source, Message, Chat, Model } from "@/lib/api";
 import { errorCopy } from "@/lib/errors";
 import { useUI } from "@/stores/ui";
 import { DataPane } from "@/components/settings/LiveSettings";
@@ -255,6 +259,7 @@ export function DesignPage() {
         </h2>
         <DataPane preview />
       </section>
+      <ReviewStates />
       <section aria-labelledby="models" className="mb-8">
         <h2 id="models" className="mb-4 text-lg font-medium">
           Model picker
@@ -397,5 +402,102 @@ export function DesignPage() {
         </p>
       </section>
     </div>
+  );
+}
+
+const reviewChat: Chat = {
+  id: "design-export",
+  title_source: "user",
+  title: "Perfect Thanksgiving Feast",
+  created_at: "2026-10-02",
+  updated_at: "2026-10-02",
+  pinned: true,
+  params: {},
+  web_enabled: false,
+};
+const reviewModel: Model = {
+  connection_id: "design",
+  model_id: "fixture-16k",
+  display_name: "Fixture model",
+  context_limit: 16384,
+  context_max: 131072,
+  context_length: 16384,
+  loaded: false,
+  vision: false,
+  tools: false,
+  embedding: false,
+  hidden: false,
+  chat_capable: true,
+  params_defaults: {},
+  reasoning: { options: ["off", "on"] },
+};
+function ReviewStates() {
+  const [kind, setKind] = useState<"export-md" | "export-json" | null>(null);
+  return (
+    <section
+      className="design-card mb-8"
+      aria-label="Reviewed actions and constraints"
+    >
+      <h2 className="mb-4 text-lg font-medium">
+        Actions, notifications and configured limits
+      </h2>
+      <ChatList
+        chats={[reviewChat]}
+        search=""
+        menu={() => null}
+        onOpen={() => {}}
+        hasNext={false}
+        onNext={() => {}}
+      />
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button variant="outline" onClick={() => setKind("export-md")}>
+          Preview Markdown export
+        </Button>
+        <Button variant="outline" onClick={() => setKind("export-json")}>
+          Preview JSON export
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() =>
+            toast.success("Chat pinned", { description: reviewChat.title })
+          }
+        >
+          Pinned notification
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() =>
+            toast.loading("Loading fixture model…", { duration: 4500 })
+          }
+        >
+          Loading notification
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() =>
+            toast.error("Couldn’t load fixture model", {
+              description: "Synthetic runtime connection error.",
+            })
+          }
+        >
+          Error notification
+        </Button>
+      </div>
+      <ChatActionDialog
+        preview
+        action={kind ? { chat: reviewChat, kind } : null}
+        onClose={() => setKind(null)}
+        onApply={() => setKind(null)}
+      />
+      <div className="mt-4 max-w-lg">
+        <LiveChatSettings
+          drawer
+          model={reviewModel}
+          onSave={() => toast("Preview settings saved")}
+          onDefaults={() => toast("Preview defaults saved")}
+          onContext={() => {}}
+        />
+      </div>
+    </section>
   );
 }

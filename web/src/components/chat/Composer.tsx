@@ -228,7 +228,7 @@ export function Composer({
                       onThinkChange?.(level === "Model default" ? null : level);
                     }}
                   >
-                    {level}
+                    {level[0].toUpperCase() + level.slice(1)}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
