@@ -220,6 +220,36 @@ for (const width of [390, 1440])
         path: `${evidence}/states-${width}-${theme}-fake.png`,
       });
       await preview
+        .getByRole("button", {
+          name: "Recording actions for Synthetic recording.wav",
+        })
+        .first()
+        .click();
+      const menu = page.getByRole("menu");
+      await expect(menu.getByRole("separator")).toHaveCount(3);
+      await expect(
+        menu.getByRole("menuitem", { name: "Remove", exact: true }),
+      ).toHaveAttribute("data-variant", "destructive");
+      await expect(menu).toBeInViewport({ ratio: 0.99 });
+      await page.screenshot({
+        animations: "disabled",
+        path: `${evidence}/recording-menu-${width}-${theme}-fake.png`,
+      });
+      const menuAxe = await new AxeBuilder({ page }).analyze();
+      expect(
+        menuAxe.violations.filter((violation) =>
+          ["serious", "critical"].includes(violation.impact ?? ""),
+        ),
+      ).toEqual([]);
+      await page.keyboard.press("Escape");
+      await expect(
+        preview
+          .getByRole("button", {
+            name: "Recording actions for Synthetic recording.wav",
+          })
+          .first(),
+      ).toBeFocused();
+      await preview
         .getByRole("button", { name: "Preview transcript panel" })
         .click();
       await expect(

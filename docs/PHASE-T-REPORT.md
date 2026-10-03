@@ -5,7 +5,7 @@
 T1 implements upload → local transcription → transcript review/download → local chat.
 Recordings can be added from the picker, drop or paste; unsent recordings return after reload.
 The existing Ollama models, parameter controls, port 8787 and Tailscale route are preserved.
-The real engine and synthetic large-file checks passed. T1 awaits Jake's two real-recording checks below; T2 and Phase 3 have not started.
+The real engine and synthetic large-file checks passed. Jake's desktop recording completed successfully, and he accepted the desktop layout. T1 awaits the iPhone check and remaining performance measurements below; T2 and Phase 3 have not started.
 
 ## Done-when checklist
 
@@ -22,7 +22,7 @@ The real engine and synthetic large-file checks passed. T1 awaits Jake's two rea
 | T-AC9: unreadable file and retry | Passed | Fake engine error detail is preserved and shown with Retry/Remove; browser T-4 and engine contract integration test. |
 | T-AC10: recording web guard, including forced search | Passed | Integration test replaces the web hook with a failing sentinel: normal chat, follow-up and forced regenerate never call it. Turning the setting off calls the hook. Browser T-5 shows the disabled/off toggle and the separate notice, with no Search anyway action. |
 | T-AC11: transcript exceeds model budget | Passed | `test_overflow_silence_glossary_local_only` refuses before generation; browser T-6 shows the warning and clears it after switching from the fake 16K model to the fake 32K model. |
-| T-AC12: Jake's desktop + iPhone recordings with Qwen 32K loaded | **Pending Jake** | Please provide numbers only: file size, upload time, transcription time and Mac memory pressure for the 21-minute desktop recording and an iPhone upload over Tailscale. No filenames or text belong in this report. |
+| T-AC12: Jake's desktop + iPhone recordings with Qwen 32K loaded | **Desktop exercised; remaining measurements/iPhone pending** | Jake reports the desktop upload was fast and the layout is fine. A read-only query of numeric metadata confirms **717,445,708 bytes**, **1,245.57 s** duration, **30.0 s** transcription, **41.5×** real time, status ready. His screenshot shows the configured 32K variant. Exact upload time and Mac memory pressure were not measured; the iPhone check follows. Numbers only are retained in `desktop-recording-metrics.json`. |
 | T-AC13: private-content audit | Passed for this checkpoint | Only synthetic fake-engine/`say` audio was exercised. Audio and downloaded JSON remain outside the repo; real engine JSON/glossary content is not in artifacts. The preview log is outside the repo and has no synthetic audio filenames or transcript phrases. `privacy-audit.json` records the audit scope. |
 | T-AC14: chat deletion cascades | Passed | `test_send_context_guard_downloads_delete` verifies the audio file and transcript row disappear and sent attachment deletion returns 409. Chat deletion cancels jobs first. |
 | T-AC15: cleanup progress, guard, versions and discard | T2, not started | Deliberately outside T1 checkpoint. |
@@ -78,8 +78,44 @@ All screenshots are fake-engine or `say` fixtures; no real recording appears.
 - `artifacts/phase-t/real-say-text-1440.png`
 - `artifacts/phase-t/real-say-timestamps-1440.png`
 
+## Desktop review — 3 October 2026
+
+Jake accepted the desktop flow after uploading a 717.4 MB recording. Its saved numeric
+engine metadata records 30 seconds processing for 20:45 of audio. No real filename,
+recording, transcript, or user-provided screenshot is copied into the repo.
+
+| Area | Finding | Refinement / decision |
+|---|---|---|
+| Processing controls | Cancel and Remove both used X, despite having different effects. | Use a stop square for Cancel and a trash icon for Remove. Keep descriptive tooltips and accessible labels. |
+| Completed recording menu | Downloads, reprocessing and removal formed one continuous list. | Add separators between review, download, reprocessing and removal; mark Remove with the existing destructive token. |
+| Menu accessibility | The new open-menu audit flagged `aria-hidden-focus`: the default modal menu hid the page's otherwise focusable controls. | Make this contextual recording menu nonmodal. Escape dismisses it and returns focus to its trigger; the accessibility audit passes. |
+| Composer and sent recording | Duration, word/token count and model label are visible; transcript opens from the chip. | Retain the layout. |
+| Transcript panel | Close control and Copy/Download remain outside the scrolling text; text and timestamps are separate views. | Retain the layout. |
+| Downloads | The user's text download completed and retained the recording stem. | Retain the native browser download flow. |
+| Mobile | Physical-phone review has not happened yet. | Ready for Jake's next review after these refinements are verified and the preview is updated. |
+
+Changed files for this review: `web/src/components/chat/AudioChip.tsx`,
+`web/tests/transcription.spec.ts`, this report, and numeric/synthetic evidence under
+`artifacts/phase-t/`. No backend, prompt, runtime configuration or dependency changes.
+
+Review verification: `make check` passed (199 Python tests, 36 frontend tests,
+56 contrast pairs); `make build` passed. The full `make e2e` run had **154 passed,
+two expected skips, eight failures**, all in the newly added open-menu accessibility
+check (`desktop-e2e-initial.txt`). After the nonmodal fix, the complete affected
+transcription suite passed **16/16** on Chromium and WebKit, including all eight
+previous failures (`desktop-e2e-corrected.txt`). There are no unresolved failures;
+the unaffected 154 checks were not repeated. `desktop-check.txt` and
+`desktop-build.txt` were regenerated after the fix.
+Menu screenshots: `recording-menu-{390,1440}-{light,dark}-fake.png`.
+`desktop-privacy-audit.json` found no real filenames or added audio media in the
+changed/new files. `desktop-recording-metrics.json` contains numeric metadata only.
+`desktop-preview-status.json` confirms both localhost and the existing Tailscale
+URL serve the current build (HTTP 200), with the real transcription engine ready.
+The preview was restarted in the background with the same environment; launchd
+and Tailscale configuration remain unchanged.
+
 ## Open questions for Jake
 
-T-AC12 is the remaining human acceptance check. With **Qwen 3 30B · 32K** loaded, upload the desktop recording and a recording from Files on your iPhone at the existing Tailscale URL. For each, report **file size, upload time, transcription time, and Mac memory pressure** only. Please keep the filename and transcript out of the response.
+T-AC12 is the remaining human acceptance check. The desktop recording succeeded with the configured 32K variant. Next, check a recording from Files on your iPhone at the existing Tailscale URL. Report **file size, upload time, transcription time, and Mac memory pressure** only; desktop upload time and memory pressure remain unmeasured. Please keep the filename and transcript out of the response.
 
 The transcription spec explicitly requires a review stop after T1. Approve this checkpoint before T2 (manual model cleanup and glossary editing). Phase 3 has not started.

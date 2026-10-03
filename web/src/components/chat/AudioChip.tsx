@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { AudioLines, Ellipsis, X } from "lucide-react";
+import { AudioLines, Ellipsis, Square, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { api, type Attachment, type Model, type Transcript } from "@/lib/api";
 import { attachTranscription, detachTranscription } from "@/lib/sse";
@@ -11,6 +11,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -158,14 +159,14 @@ export function AudioChip({
             label="Cancel transcription"
             onClick={cancel}
           >
-            <X />
+            <Square />
           </IconButton>
         ) : !ready ? (
           <Button type="button" variant="outline" onClick={() => void retry()}>
             Retry
           </Button>
         ) : (
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <IconButton
                 type="button"
@@ -178,6 +179,7 @@ export function AudioChip({
               <DropdownMenuItem onSelect={() => setOpen(true)}>
                 Open transcript
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
               {["txt", "srt", "json"].map((format) => (
                 <DropdownMenuItem asChild key={format}>
                   <a
@@ -202,6 +204,7 @@ export function AudioChip({
                   Download audio
                 </a>
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => void retry("mix")}>
                 Transcribe again
               </DropdownMenuItem>
@@ -209,7 +212,12 @@ export function AudioChip({
                 Transcribe again, one speaker per channel
               </DropdownMenuItem>
               {onRemove && (
-                <DropdownMenuItem onSelect={onRemove}>Remove</DropdownMenuItem>
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem variant="destructive" onSelect={onRemove}>
+                    Remove
+                  </DropdownMenuItem>
+                </>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -232,7 +240,7 @@ export function AudioChip({
             type="button"
             onClick={onRemove}
           >
-            <X />
+            <Trash2 />
           </IconButton>
         )}
       </div>
