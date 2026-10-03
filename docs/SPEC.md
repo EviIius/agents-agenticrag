@@ -61,6 +61,12 @@ only by the user. Web search does not run in a chat that contains a recording un
 turns that protection off. Real recordings and transcript text are never committed, logged or
 used as fixtures. Phase T is independent of Phase 3 and does not start it.
 
+**User mobile review — 3 October 2026:** Keep recording downloads cancellable
+inside Workbench before handing them to the phone. Show a format chooser and the
+filename, use file sharing when the browser supports it, and keep Workbench open
+when a separate browser download is needed. Review the iPhone workflows with
+synthetic evidence only. This refines T1; it does not start T2 or Phase 3.
+
 1. Save it in the repo as `docs/SPEC.md`.
 2. Paste the prompt in §0 into Codex.
 3. After each phase, review the report (checklist, screenshots, test output) before you reply "continue".

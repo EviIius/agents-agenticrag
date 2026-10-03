@@ -74,6 +74,8 @@ export function ChatActionDialog({
                   "/api/chats/" + action.chat.id + "/export?format=" + format
                 }
                 download={filename}
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={(event) => {
                   if (preview) event.preventDefault();
                   setTimeout(onClose, 0);

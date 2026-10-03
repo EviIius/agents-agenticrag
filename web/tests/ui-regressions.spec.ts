@@ -122,6 +122,7 @@ for (const width of [320, 390, 768, 1440]) {
         "Connections",
         "Models",
         "Search",
+        "Transcription",
         "Appearance",
         "Data",
         "Shortcuts",

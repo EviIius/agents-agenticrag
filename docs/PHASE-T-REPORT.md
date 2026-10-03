@@ -5,7 +5,7 @@
 T1 implements upload → local transcription → transcript review/download → local chat.
 Recordings can be added from the picker, drop or paste; unsent recordings return after reload.
 The existing Ollama models, parameter controls, port 8787 and Tailscale route are preserved.
-The real engine and synthetic large-file checks passed. Jake's desktop recording completed successfully, and he accepted the desktop layout. T1 awaits the iPhone check and remaining performance measurements below; T2 and Phase 3 have not started.
+The real engine and synthetic large-file checks passed. Jake exercised both desktop and iPhone uploads and accepted their general layout. His iPhone feedback prompted a cancellable format/save dialog and a comprehensive mobile review; the revised native save flow awaits a phone check. Upload time and memory pressure remain unmeasured. T2 and Phase 3 have not started.
 
 ## Done-when checklist
 
@@ -22,7 +22,7 @@ The real engine and synthetic large-file checks passed. Jake's desktop recording
 | T-AC9: unreadable file and retry | Passed | Fake engine error detail is preserved and shown with Retry/Remove; browser T-4 and engine contract integration test. |
 | T-AC10: recording web guard, including forced search | Passed | Integration test replaces the web hook with a failing sentinel: normal chat, follow-up and forced regenerate never call it. Turning the setting off calls the hook. Browser T-5 shows the disabled/off toggle and the separate notice, with no Search anyway action. |
 | T-AC11: transcript exceeds model budget | Passed | `test_overflow_silence_glossary_local_only` refuses before generation; browser T-6 shows the warning and clears it after switching from the fake 16K model to the fake 32K model. |
-| T-AC12: Jake's desktop + iPhone recordings with Qwen 32K loaded | **Desktop exercised; remaining measurements/iPhone pending** | Jake reports the desktop upload was fast and the layout is fine. A read-only query of numeric metadata confirms **717,445,708 bytes**, **1,245.57 s** duration, **30.0 s** transcription, **41.5×** real time, status ready. His screenshot shows the configured 32K variant. Exact upload time and Mac memory pressure were not measured; the iPhone check follows. Numbers only are retained in `desktop-recording-metrics.json`. |
+| T-AC12: Jake's desktop + iPhone recordings with Qwen 32K loaded | **Both exercised; remaining measurements/save review pending** | Desktop: **717,445,708 bytes**, **1,245.57 s** audio, **30.0 s** transcription, **41.5×** real time. iPhone: **2,945,884 bytes**, **120.35 s** audio, **2.9 s** transcription, **42×** real time. Both ready; screenshots show the configured 32K variant. Exact upload time and Mac memory pressure were not measured. Numbers only in `desktop-recording-metrics.json` / `mobile-recording-metrics.json`; revised native saving still needs the phone check. |
 | T-AC13: private-content audit | Passed for this checkpoint | Only synthetic fake-engine/`say` audio was exercised. Audio and downloaded JSON remain outside the repo; real engine JSON/glossary content is not in artifacts. The preview log is outside the repo and has no synthetic audio filenames or transcript phrases. `privacy-audit.json` records the audit scope. |
 | T-AC14: chat deletion cascades | Passed | `test_send_context_guard_downloads_delete` verifies the audio file and transcript row disappear and sent attachment deletion returns 409. Chat deletion cancels jobs first. |
 | T-AC15: cleanup progress, guard, versions and discard | T2, not started | Deliberately outside T1 checkpoint. |
@@ -114,8 +114,27 @@ URL serve the current build (HTTP 200), with the real transcription engine ready
 The preview was restarted in the background with the same environment; launchd
 and Tailscale configuration remain unchanged.
 
+## iPhone review — 3 October 2026
+
+Recording downloads now use a cancellable format/filename dialog, with native file
+sharing when supported and separate fallback downloads that preserve Workbench.
+Transcript Close/Copy/Download remain reachable after returning from the nested
+chooser on a shortened viewport. Recording menus wrap within the phone width;
+chat/archive export links also retain the Workbench tab.
+
+The comprehensive option review and pending physical-phone check are in
+`docs/PHASE-T-MOBILE-REVIEW.md`. `make check` passed (199 Python, 36 frontend,
+56 contrast pairs), and build passed. The complete E2E run had 178 passed, two
+expected skips and two failures caused by pending synthetic recordings left by
+new tests. Test cleanup corrected that isolation issue; all 34 affected download
+and review checks then passed in Chromium/WebKit. No unresolved failures remain.
+All seven new design states have 28 synthetic screenshots/axe scans with no
+serious or critical violations. Privacy evidence found zero real filename matches
+or added audio media. Both localhost and Tailscale serve the current build, with
+the real engine ready; the same background preview environment is restored.
+
 ## Open questions for Jake
 
-T-AC12 is the remaining human acceptance check. The desktop recording succeeded with the configured 32K variant. Next, check a recording from Files on your iPhone at the existing Tailscale URL. Report **file size, upload time, transcription time, and Mac memory pressure** only; desktop upload time and memory pressure remain unmeasured. Please keep the filename and transcript out of the response.
+Both device uploads succeeded. The follow-up mobile review is in `docs/PHASE-T-MOBILE-REVIEW.md`, with synthetic screenshots and test evidence. Next, check the revised Save or share flow on the physical phone: cancel its native sheet, choose another format, reopen and use Save to Files. If the browser cannot share that format, download separately and return to the retained Workbench tab. Actual upload time and memory pressure remain unmeasured; share numbers only if supplying those values.
 
 The transcription spec explicitly requires a review stop after T1. Approve this checkpoint before T2 (manual model cleanup and glossary editing). Phase 3 has not started.

@@ -14,11 +14,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  TranscriptSheet,
-  duration,
-  transcriptDownload,
-} from "./TranscriptSheet";
+import { TranscriptSheet, duration } from "./TranscriptSheet";
+import { RecordingDownloadDialog } from "./RecordingDownloadDialog";
+import type {
+  RecordingDownload,
+  RecordingFormat,
+} from "@/lib/recording-download";
 
 export type AudioUpload = {
   id: string;
@@ -76,6 +77,7 @@ export function AudioChip({
   const item = fixture ? attachment : (live ?? attachment);
   const meta = item.transcript;
   const query = useQueryClient();
+  const [download, setDownload] = useState<RecordingDownload | null>(null);
   const [open, setOpen] = useState(false),
     [clock, setClock] = useState(Date.now());
   useEffect(() => {
@@ -175,40 +177,38 @@ export function AudioChip({
                 <Ellipsis />
               </IconButton>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent
+              align="end"
+              className="max-w-[calc(100vw-2rem)]"
+            >
               <DropdownMenuItem onSelect={() => setOpen(true)}>
                 Open transcript
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              {["txt", "srt", "json"].map((format) => (
-                <DropdownMenuItem asChild key={format}>
-                  <a
-                    download
-                    href={
-                      fixture ? undefined : transcriptDownload(item.id, format)
-                    }
-                  >
-                    {format === "txt"
-                      ? "Download text"
-                      : format === "srt"
-                        ? "Download subtitles (.srt)"
-                        : "Download details (.json)"}
-                  </a>
+              {["txt", "srt", "json", "audio"].map((format) => (
+                <DropdownMenuItem
+                  key={format}
+                  onSelect={() =>
+                    setDownload({ format: format as RecordingFormat })
+                  }
+                >
+                  {format === "txt"
+                    ? "Download text"
+                    : format === "srt"
+                      ? "Download subtitles (.srt)"
+                      : format === "json"
+                        ? "Download details (.json)"
+                        : "Download audio"}
                 </DropdownMenuItem>
               ))}
-              <DropdownMenuItem asChild>
-                <a
-                  download
-                  href={fixture ? undefined : `/api/attachments/${item.id}`}
-                >
-                  Download audio
-                </a>
-              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => void retry("mix")}>
                 Transcribe again
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => void retry("split")}>
+              <DropdownMenuItem
+                className="whitespace-normal"
+                onSelect={() => void retry("split")}
+              >
                 Transcribe again, one speaker per channel
               </DropdownMenuItem>
               {onRemove && (
@@ -244,6 +244,15 @@ export function AudioChip({
           </IconButton>
         )}
       </div>
+      {download && (
+        <RecordingDownloadDialog
+          attachment={item}
+          initial={download}
+          includeAudio
+          preview={fixture ? "ready" : undefined}
+          onClose={() => setDownload(null)}
+        />
+      )}
       <TranscriptSheet
         attachment={item}
         open={open}

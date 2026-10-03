@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { AudioChip, UploadChip } from "@/components/chat/AudioChip";
 import { TranscriptSheet } from "@/components/chat/TranscriptSheet";
+import {
+  RecordingDownloadDialog,
+  type DownloadPreview,
+} from "@/components/chat/RecordingDownloadDialog";
 import { Composer } from "@/components/chat/Composer";
 import { SearchActivity } from "@/components/chat/SearchActivity";
 import { TranscriptionSettings } from "@/components/settings/TranscriptionSettings";
@@ -80,6 +84,7 @@ const message: Message = {
 };
 export function TranscriptionPreview() {
   const [open, setOpen] = useState(false);
+  const [download, setDownload] = useState<DownloadPreview | null>(null);
   const states: Attachment[] = [
     {
       ...fakeRecording,
@@ -210,6 +215,39 @@ export function TranscriptionPreview() {
       <Button variant="outline" onClick={() => setOpen(true)}>
         Preview transcript panel
       </Button>
+      <div
+        className="my-4 flex flex-wrap gap-2"
+        aria-label="Recording download previews"
+      >
+        {(
+          [
+            "ready",
+            "preparing",
+            "failed",
+            "sharing",
+            "cancelled",
+            "share-failed",
+            "returned",
+          ] as const
+        ).map((state) => (
+          <Button
+            key={state}
+            variant="outline"
+            onClick={() => setDownload(state)}
+          >
+            Preview download {state}
+          </Button>
+        ))}
+      </div>
+      {download && (
+        <RecordingDownloadDialog
+          attachment={fakeRecording}
+          initial={{ format: "txt" }}
+          includeAudio
+          preview={download}
+          onClose={() => setDownload(null)}
+        />
+      )}
       <TranscriptSheet
         attachment={fakeRecording}
         fixture={fakeTranscript}

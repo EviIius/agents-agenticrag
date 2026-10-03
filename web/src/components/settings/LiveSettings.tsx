@@ -801,6 +801,8 @@ export function DataPane({ preview = false }: { preview?: boolean }) {
       <Button asChild variant="outline">
         <a
           href={preview ? "#data-preview" : "/api/chats/export"}
+          target="_blank"
+          rel="noopener noreferrer"
           onClick={preview ? (event) => event.preventDefault() : undefined}
         >
           Export all chats

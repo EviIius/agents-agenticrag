@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { X, ChevronDown } from "lucide-react";
+import { X, Download } from "lucide-react";
+import { RecordingDownloadDialog } from "./RecordingDownloadDialog";
+import type { RecordingDownload } from "@/lib/recording-download";
 import { api, type Attachment, type Transcript } from "@/lib/api";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useUI } from "@/stores/ui";
@@ -20,23 +22,9 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from "@/components/ui/drawer";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
 export function duration(seconds: number) {
   const s = Math.max(0, Math.floor(seconds));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-}
-export function transcriptDownload(
-  id: string,
-  format: string,
-  variant = "best",
-) {
-  return `/api/attachments/${id}/transcript/download?format=${format}&variant=${variant}`;
 }
 export function TranscriptSheet({
   attachment,
@@ -50,6 +38,7 @@ export function TranscriptSheet({
   fixture?: Transcript;
 }) {
   const phone = useMediaQuery("(max-width:639px)");
+  const [download, setDownload] = useState<RecordingDownload | null>(null);
   const [view, setView] = useState("Text"),
     [version, setVersion] = useState("original");
   const fetched = useQuery({
@@ -71,7 +60,7 @@ export function TranscriptSheet({
   const Title = title,
     Description = description;
   const header = (
-    <div className="relative shrink-0 border-b border-line p-5 pr-16">
+    <div className="relative shrink-0 border-b border-line p-5 pr-16 text-left">
       <Title className="break-words text-base">{attachment.filename}</Title>
       <Description>
         {duration(meta?.duration_seconds ?? 0)} ·{" "}
@@ -82,7 +71,10 @@ export function TranscriptSheet({
       <IconButton
         label="Close transcript"
         className="absolute right-3 top-3"
-        onClick={() => onOpenChange(false)}
+        onClick={() => {
+          setDownload(null);
+          onOpenChange(false);
+        }}
       >
         <X />
       </IconButton>
@@ -190,50 +182,32 @@ export function TranscriptSheet({
         >
           Copy
         </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" disabled={!data}>
-              Download <ChevronDown className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            {["txt", "srt", "json"].map((format) => (
-              <DropdownMenuItem key={format} asChild>
-                <a
-                  download
-                  href={
-                    fixture
-                      ? undefined
-                      : transcriptDownload(
-                          attachment.id,
-                          format,
-                          format === "srt" && version === "best"
-                            ? "original"
-                            : version,
-                        )
-                  }
-                >
-                  Download{" "}
-                  {format === "txt"
-                    ? "text"
-                    : format === "srt"
-                      ? "subtitles (.srt)"
-                      : "details (.json)"}
-                </a>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button
+          variant="outline"
+          disabled={!data}
+          onClick={() => setDownload({ format: "txt", variant: version })}
+        >
+          <Download className="size-4" /> Download
+        </Button>
       </footer>
+      {download && (
+        <RecordingDownloadDialog
+          attachment={attachment}
+          initial={download}
+          preview={fixture ? "ready" : undefined}
+          onClose={() => setDownload(null)}
+        />
+      )}
     </>
   );
   const setOpen = (value: boolean) => {
     if (value && phone) useUI.getState().set({ sidebar: false, panel: false });
+    if (!value) setDownload(null);
     onOpenChange(value);
   };
   return phone ? (
     <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerContent className="h-[85dvh] overflow-hidden">
+      <DrawerContent className="h-[85dvh] overflow-clip">
         <DrawerHeader className="p-0">{header}</DrawerHeader>
         {body}
       </DrawerContent>
@@ -241,7 +215,7 @@ export function TranscriptSheet({
   ) : (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent
-        className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-xl"
+        className="flex w-full flex-col gap-0 overflow-clip p-0 sm:max-w-xl"
         showCloseButton={false}
       >
         {header}
