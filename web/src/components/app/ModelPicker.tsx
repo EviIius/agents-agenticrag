@@ -129,6 +129,10 @@ export function ModelPicker({
                       <CommandItem
                         key={model.connection_id + model.model_id}
                         value={model.display_name + " " + model.connection_id}
+                        data-active-model={
+                          current?.model_id === model.model_id &&
+                          current?.connection_id === model.connection_id
+                        }
                         disabled={!!loadingModel}
                         onSelect={() => {
                           onChoose?.(model);
@@ -212,7 +216,11 @@ export function ModelPicker({
                         )}
                         {current?.model_id === model.model_id &&
                           current?.connection_id === model.connection_id && (
-                            <Check className="size-4 shrink-0" />
+                            <Check
+                              className="model-selected-mark size-4 shrink-0 text-brand"
+                              role="img"
+                              aria-label="Selected for chat"
+                            />
                           )}
                       </CommandItem>
                     ))}
@@ -299,6 +307,11 @@ export function ModelPicker({
         {models
           ? `${models.length} models · capabilities reported by Ollama`
           : "Fixture models only · connections arrive in Phase 1"}
+        {models && (
+          <span className="mt-1 block">
+            Load selects the model for this chat.
+          </span>
+        )}
       </p>
     </Command>
   );

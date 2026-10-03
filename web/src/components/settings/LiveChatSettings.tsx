@@ -75,6 +75,9 @@ export function LiveChatSettings({
           )}
         </header>
       )}
+      <p className="mb-3 text-xs text-fg-2" aria-label="Settings model">
+        {model?.display_name ?? "Choose a model"}
+      </p>
       {!defaultsOnly && (
         <>
           <label className="mb-3 flex min-h-11 items-center gap-2 text-sm">
@@ -193,6 +196,7 @@ export function LiveChatSettings({
               key={n}
               variant="outline"
               size="sm"
+              aria-pressed={context === n}
               onClick={() => setContext(n)}
             >
               {n / 1024}K
@@ -216,6 +220,7 @@ export function LiveChatSettings({
           disabled={!model || !validContext}
           onClick={() => {
             setParams({});
+            setContext(model?.context_length ?? 8192);
             onSave(useDefault ? null : prompt, {});
           }}
         >

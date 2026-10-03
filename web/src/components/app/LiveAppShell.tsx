@@ -665,7 +665,9 @@ export function LiveAppShell() {
                 void changeModel(model);
               }}
               loadingModel={loadingModel}
-              onModelAction={(model) => operateModel(model, !!model.loaded)}
+              onModelAction={(model) =>
+                model.loaded ? operateModel(model, true) : changeModel(model)
+              }
             />
           </div>
           <span className="hidden max-w-64 truncate text-xs text-fg-3 md:block">
@@ -796,7 +798,7 @@ export function LiveAppShell() {
       {!wide &&
         (phone ? (
           <Drawer open={ui.panel} onOpenChange={(panel) => ui.set({ panel })}>
-            <DrawerContent className="overflow-hidden">
+            <DrawerContent className="overflow-clip">
               <DrawerHeader className="relative shrink-0 px-14">
                 <IconButton
                   label="Close chat settings"
@@ -834,6 +836,9 @@ export function LiveAppShell() {
             pane={pane}
             bootstrap={bootstrap.data}
             models={models.data ?? []}
+            onModelAction={(model) =>
+              model.loaded ? operateModel(model, true) : changeModel(model)
+            }
           />
         )}
       />

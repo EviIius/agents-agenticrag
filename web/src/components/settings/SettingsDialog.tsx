@@ -18,6 +18,18 @@ import {
 import { useUI } from "@/stores/ui";
 import type { ThemePreference } from "@/lib/theme";
 import { toast } from "sonner";
+import { useCallback, useEffect, useRef } from "react";
+function centerActiveTab(nav: HTMLElement) {
+  const selected = nav.querySelector<HTMLElement>('[aria-current="page"]');
+  if (selected && nav.scrollWidth > nav.clientWidth)
+    nav.scrollTo({
+      left:
+        selected.offsetLeft -
+        nav.offsetLeft -
+        (nav.clientWidth - selected.offsetWidth) / 2,
+      behavior: "instant",
+    });
+}
 const basePanes = [
   "Connections",
   "Models",
@@ -38,6 +50,15 @@ export function SettingsDialog({
     : [...basePanes];
   const ui = useUI();
   const pane = ui.settingsPane;
+  const navigation = useRef<HTMLElement>(null);
+  const bindNavigation = useCallback((element: HTMLElement | null) => {
+    navigation.current = element;
+    if (element) centerActiveTab(element);
+  }, []);
+  useEffect(() => {
+    if (!ui.settings || !navigation.current) return;
+    centerActiveTab(navigation.current);
+  }, [pane, ui.settings]);
   const setPane = (settingsPane: string) => ui.set({ settingsPane });
   return (
     <Dialog
@@ -63,8 +84,9 @@ export function SettingsDialog({
         </DialogDescription>
         <div className="mt-4 flex min-h-0 flex-1 flex-col gap-6 sm:flex-row">
           <nav
+            ref={bindNavigation}
             aria-label="Settings sections"
-            className="flex shrink-0 gap-1 overflow-x-auto py-1 sm:w-40 sm:flex-col"
+            className="flex shrink-0 gap-1 overflow-x-auto px-2 py-1 sm:w-40 sm:flex-col sm:px-0"
           >
             {panes.map((name) => (
               <Button
@@ -79,8 +101,9 @@ export function SettingsDialog({
             ))}
           </nav>
           <section
+            key={pane}
             aria-label={pane}
-            className="min-h-0 min-w-0 flex-1 space-y-5 overflow-y-auto pb-6"
+            className="settings-pane min-h-0 min-w-0 flex-1 space-y-5 overflow-y-auto pb-6"
           >
             <h2 className="text-lg font-medium">{pane}</h2>
             {pane !== "Appearance" && renderPane ? (

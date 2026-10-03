@@ -5,7 +5,7 @@
 The numeric-list accuracy fix and authorized temperature comparison are implemented and evaluated.
 The final evaluation closeout is recorded below, after release coverage, section/row selection, citation binding and follow-up fixes. Original questions, case hashes and failing runs remain preserved; two benchmark requests now explicitly ask for the fields/source type their assertions require.
 Native answer sampling is retained: the controlled temperature-0.2 run performs worse.
-**Phase 2 remains open for physical iPhone verification:** Jake supplied ten screenshots and the reported UI/behavior issues are repaired. Final affected-screen checks pass 54/54 on Chromium/WebKit; actual GPT-OSS selection/loading and Tailscale health are verified. See [UI review report](PHASE-2-UI-REVIEW.md) for changes, preserved failed runs and screenshots. Phase 3 has not started.
+**Phase 2 remains open for physical iPhone verification:** Jake supplied additional screenshots; Load now selects the active model in the picker and Models settings, and Qwen 32K exposes the correct context controls. The latest affected scope passes 54 checks on Chromium/WebKit, with additional drawer checks recorded in the UI review. Actual GPT-OSS and Qwen 32K button-driven loading and context metadata are verified. Brief token-based animations respect reduced motion, and the UI review includes every current option and prioritized improvements. See [UI review report](PHASE-2-UI-REVIEW.md) for changes, preserved failed runs and screenshots. Phase 3 has not started.
 
 ## Done-when checklist
 

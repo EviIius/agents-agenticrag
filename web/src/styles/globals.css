@@ -598,3 +598,52 @@ html
 [data-sonner-toast][data-visible="true"] {
   pointer-events: auto;
 }
+
+/* Functional motion uses the existing 120/200ms tokens, never layout animation. */
+@keyframes workbench-reveal {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+.settings-pane,
+.model-selected-mark {
+  animation: workbench-reveal var(--dur-med) var(--ease) both;
+}
+[data-slot="button"] {
+  transition-duration: var(--dur-fast);
+  transition-timing-function: var(--ease);
+  transition-property:
+    color, background-color, border-color, box-shadow, opacity, transform;
+}
+[data-slot="button"]:active:not(:disabled) {
+  transform: scale(0.98);
+}
+[data-slot="command-item"][data-active-model="true"] {
+  background: var(--brand-soft);
+}
+[data-slot="dialog-content"],
+[data-slot="dialog-overlay"],
+[data-slot="sheet-content"],
+[data-slot="sheet-overlay"],
+html [data-slot="drawer-content"],
+html [data-slot="drawer-overlay"],
+[data-slot="popover-content"],
+[data-slot="dropdown-menu-content"],
+[data-slot="select-content"] {
+  animation-duration: var(--dur-med);
+  transition-duration: var(--dur-med);
+  transition-timing-function: var(--ease);
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="button"]:active:not(:disabled) {
+    transform: none;
+  }
+}
+[data-reduce-motion="always"] [data-slot="button"]:active:not(:disabled) {
+  transform: none;
+}

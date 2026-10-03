@@ -433,6 +433,26 @@ const reviewModel: Model = {
 };
 function ReviewStates() {
   const [kind, setKind] = useState<"export-md" | "export-json" | null>(null);
+  const [reviewModels, setReviewModels] = useState<Model[]>([
+    reviewModel,
+    {
+      ...reviewModel,
+      model_id: "fixture-32k",
+      display_name: "Fixture model · 32K",
+      context_limit: 32768,
+      context_length: 32768,
+    },
+  ]);
+  const [chosen, setChosen] = useState(reviewModel.model_id);
+  const selected = reviewModels.find((model) => model.model_id === chosen)!;
+  const selectFixture = (model: Model) => {
+    setChosen(model.model_id);
+    setReviewModels((previous) =>
+      previous.map((item) =>
+        item.model_id === model.model_id ? { ...item, loaded: true } : item,
+      ),
+    );
+  };
   return (
     <section
       className="design-card mb-8"
@@ -490,9 +510,26 @@ function ReviewStates() {
         onApply={() => setKind(null)}
       />
       <div className="mt-4 max-w-lg">
+        <ModelPicker
+          models={reviewModels}
+          current={selected}
+          onChoose={selectFixture}
+          onModelAction={async (model) => {
+            if (model.loaded)
+              setReviewModels((previous) =>
+                previous.map((item) =>
+                  item.model_id === model.model_id
+                    ? { ...item, loaded: false }
+                    : item,
+                ),
+              );
+            else selectFixture(model);
+          }}
+        />
         <LiveChatSettings
+          key={selected.model_id}
           drawer
-          model={reviewModel}
+          model={selected}
           onSave={() => toast("Preview settings saved")}
           onDefaults={() => toast("Preview defaults saved")}
           onContext={() => {}}

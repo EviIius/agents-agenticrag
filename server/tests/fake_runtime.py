@@ -44,12 +44,13 @@ def create_fake_runtime() -> FastAPI:
         body = await request.json()
         app.state.captures.append(body)
         model = body.get("model", "fake-chat")
+        context = 32768 if model == "fake-vision" else 16384
         return {
             "capabilities": ["completion"]
             + (["thinking"] if model == "fake-reasoning" else [])
             + (["vision"] if model == "fake-vision" else []),
-            "model_info": {"general.architecture": "fake", "fake.context_length": 16384},
-            "parameters": "num_ctx 16384",
+            "model_info": {"general.architecture": "fake", "fake.context_length": context},
+            "parameters": f"num_ctx {context}",
         }
 
     @app.get("/api/ps")

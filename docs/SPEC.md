@@ -47,6 +47,12 @@ rewriting saved preferences. Use compact numbered inline citations with the doma
 title, evidence and external link available in a dismissible card. Retain Phase 2
 UI evidence and physical-phone review before Phase 3.
 
+**User follow-up — 3 October 2026:** Load must select the model for the active chat,
+in both the picker and Models settings, so the header, composer and context controls
+follow it. Eject only unloads. Verify the configured 32K variant offers and sends 32K
+context, add brief functional motion using G2 tokens with reduced-motion support,
+and retain an option-by-option improvement review. Do not start Phase 3 yet.
+
 1. Save it in the repo as `docs/SPEC.md`.
 2. Paste the prompt in §0 into Codex.
 3. After each phase, review the report (checklist, screenshots, test output) before you reply "continue".

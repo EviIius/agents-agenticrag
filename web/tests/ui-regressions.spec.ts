@@ -115,6 +115,9 @@ for (const width of [320, 390, 768, 1440]) {
         exact: true,
       });
       const close = settings.getByRole("button", { name: "Close settings" });
+      await expect(
+        settings.locator('nav [aria-current="page"]'),
+      ).toBeInViewport({ ratio: 1 });
       for (const pane of [
         "Connections",
         "Models",
@@ -142,6 +145,17 @@ for (const width of [320, 390, 768, 1440]) {
         expect(bounds!.y).toBeGreaterThanOrEqual(width < 640 ? 47 : 0);
         expect(bounds!.y + bounds!.height).toBeLessThan(844);
         const section = settings.locator(`section[aria-label="${pane}"]`);
+        await expect(
+          settings.getByRole("button", { name: pane, exact: true }),
+        ).toBeInViewport({ ratio: 1 });
+        expect(await section.evaluate((element) => element.scrollTop)).toBe(0);
+        await section.evaluate(async (element) => {
+          await Promise.all(
+            element
+              .getAnimations()
+              .map((animation) => animation.finished.catch(() => {})),
+          );
+        });
         expect(
           await section.evaluate((el) => el.scrollWidth <= el.clientWidth),
         ).toBeTruthy();
@@ -149,6 +163,9 @@ for (const width of [320, 390, 768, 1440]) {
           await page.screenshot({
             path: `../artifacts/phase-2/review-settings-${pane.toLowerCase()}-${width}-${theme}.png`,
           });
+        await section.evaluate((element) => {
+          element.scrollTop = element.scrollHeight;
+        });
       }
       const audit = await new AxeBuilder({ page }).analyze();
       expect(

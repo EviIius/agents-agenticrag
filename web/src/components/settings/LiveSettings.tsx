@@ -38,10 +38,12 @@ export function LiveSettingsPane({
   pane,
   bootstrap,
   models,
+  onModelAction,
 }: {
   pane: string;
   bootstrap?: Bootstrap;
   models: Model[];
+  onModelAction?: (model: Model) => Promise<void>;
 }) {
   const query = useQueryClient();
   const loadingStarted = useRef(0);
@@ -75,10 +77,10 @@ export function LiveSettingsPane({
     try {
       await api(endpoint, body, method);
       await query.invalidateQueries();
-      toast("Saved");
+      toast.success("Saved");
       return true;
     } catch (e) {
-      toast(String(e));
+      toast.error(String(e));
       return false;
     }
   };
@@ -375,7 +377,8 @@ export function LiveSettingsPane({
             <p className="my-3 text-xs text-fg-3 break-all">
               {m.params} · {m.quant} ·{" "}
               {m.size_bytes ? (m.size_bytes / 1e9).toFixed(1) + " GB" : ""} ·{" "}
-              {m.context_length} / {m.context_max} tokens ·{" "}
+              {(m.context_length ?? 0) / 1024}K context · configured limit{" "}
+              {(m.context_limit ?? m.context_max ?? 0) / 1024}K ·{" "}
               {m.loaded ? "Loaded" : "Not loaded"}
               {m.vision ? " · Vision" : ""}
               {m.reasoning ? " · Reasoning" : ""}
@@ -389,10 +392,19 @@ export function LiveSettingsPane({
                 onClick={() => {
                   loadingStarted.current = Date.now();
                   setLoading(m.connection_id + ":" + m.model_id);
-                  void update(m.loaded ? "/models/unload" : "/models/load", {
-                    connection_id: m.connection_id,
-                    model_id: m.model_id,
-                  }).finally(() => setLoading(null));
+                  void (
+                    onModelAction
+                      ? onModelAction(m)
+                      : update(m.loaded ? "/models/unload" : "/models/load", {
+                          connection_id: m.connection_id,
+                          model_id: m.model_id,
+                        })
+                  ).finally(() => {
+                    void query.invalidateQueries({
+                      queryKey: ["models", "all"],
+                    });
+                    setLoading(null);
+                  });
                 }}
               >
                 {loading === m.connection_id + ":" + m.model_id
@@ -540,6 +552,7 @@ export function LiveSettingsPane({
                 </Button>
                 <Button
                   variant="ghost"
+                  aria-label={`Move ${provider} earlier in the search order`}
                   disabled={i === 0}
                   onClick={() => {
                     const order = [
@@ -735,9 +748,11 @@ export function LiveSettingsPane({
   if (pane === "Shortcuts")
     return (
       <dl className="space-y-3 text-sm">
+        <div>Enter · Send on desktop</div>
         <div>⌘/Ctrl Enter · Send</div>
         <div>Shift Enter · New line</div>
-        <div>Esc · Stop generating</div>
+        <div>↑ in an empty composer · Edit last message</div>
+        <div>Esc in the composer · Stop generating</div>
         <div>⌘/Ctrl K · Search chats</div>
         <div>⌘/Ctrl , · Settings</div>
         <div>⌘/Ctrl Shift O · New chat</div>
