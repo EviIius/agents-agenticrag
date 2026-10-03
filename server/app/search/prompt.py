@@ -1,3 +1,4 @@
+import json
 import re
 from datetime import date
 from html import escape
@@ -15,7 +16,10 @@ PROMPT = (
     "supported assertion, in whatever answer format the user requests. Use "
     "only the source numbers provided. An answer with web facts and no "
     "inline citations is incomplete. Do not add a separate bibliography.\n- "
-    "Preserve the requested population, time span and relationships. For a "
+    "For an outcome, identify the related participants and the final values "
+    "that establish it. In requested tables, include those values with their "
+    "roles and units when the evidence supports them.\n- Preserve the requested "
+    "population, time span and relationships. For a "
     "list, first identify which entries satisfy all requested conditions. "
     "Include every supported matching entry; omit non-matching entries even"
     " if a source lists them. Do not copy a source's entire list when the "
@@ -30,9 +34,14 @@ PROMPT = (
 )
 
 
-def build(request: ChatRequest, sources: list[Source]) -> None:
+def build(request: ChatRequest, sources: list[Source], queries: list[str] | None = None) -> None:
     request.messages[0].content += "\n\n" + PROMPT
     blocks = [f'<search_results retrieved="{date.today().isoformat()}">']
+    if queries:
+        blocks.append(
+            "Search queries used to resolve this request (retrieval context, "
+            "not additional user requirements): " + escape(json.dumps(queries, ensure_ascii=False))
+        )
     for s in sources:
         attrs = (
             f'id="{s.n}" title="{escape(s.title, quote=True)}" '
@@ -40,7 +49,10 @@ def build(request: ChatRequest, sources: list[Source]) -> None:
         )
         if s.published_at:
             attrs += f' published="{escape(s.published_at, quote=True)}"'
-        text = "\n\n".join(p.text for p in s.passages)
+        text = "\n\n".join(
+            ("Section: " + escape(p.heading) + "\n" if p.heading else "") + p.text
+            for p in s.passages
+        )
         text = re.sub(r"</(?:source|search_results)\s*>", "", text, flags=re.I)
         blocks.append(f"<source {attrs}>\nCitation label: [{s.n}]\n\n{text}\n</source>")
     blocks.append("</search_results>")

@@ -85,8 +85,13 @@ class Pipeline:
         info.queries = plan.queries
         await run.emit("search.queries", {"queries": plan.queries})
         clock = monotonic()
+        # Publisher indexes can be continuously updated without a publication
+        # date. Date filters hid those pages in the live source-coverage check.
+        # Keep the plan/cache freshness, but discover explicitly requested
+        # official/primary pages without a search-engine publication-date filter.
+        search_freshness = "any" if planner.requested_source_types(latest) else plan.freshness
         batches, errors = await Providers(self.store, values, self.fixtures).search(
-            plan.queries, plan.freshness
+            plan.queries, search_freshness
         )
         info.timings["search"] = (monotonic() - clock) * 1000
         info.providers = list(dict.fromkeys(r.provider for batch in batches for r in batch))
@@ -224,9 +229,7 @@ class Pipeline:
             )
             return
         selected_sources = {p.source_url for p in passages if p.selection_applied}
-        passages = [
-            p for p in passages if p.source_url not in selected_sources or p.selection_applied
-        ]
+        passages = [p for p in passages if not selected_sources or p.selection_applied]
         vectors = None
         embedding = values.get("web.embedding")
         if embedding:
@@ -264,10 +267,15 @@ class Pipeline:
             r = next(r for r in candidates if r.url == url)
             page = pages.get(url)
             group = [
-                bind_references(p, n).model_copy(
-                    update={
-                        "text": re.sub(r"</(?:source|search_results)\s*>", "", p.text, flags=re.I)
-                    }
+                bind_references(
+                    p.model_copy(
+                        update={
+                            "text": re.sub(
+                                r"</(?:source|search_results)\s*>", "", p.text, flags=re.I
+                            )
+                        }
+                    ),
+                    n,
                 )
                 for p in group
             ]
@@ -307,7 +315,7 @@ class Pipeline:
         if not sources:
             await self.fail(run, "pages_unreadable", "No passages fit the context budget")
             return
-        prompt.build(request, sources)
+        prompt.build(request, sources, plan.queries)
         # Source metadata/tags count too. Make room by dropping oldest request history.
         maximum = (request.context_length or 8192) - context.reserve - 256
 
@@ -338,7 +346,7 @@ class Pipeline:
             request.messages[0].content = request.messages[0].content.removesuffix(
                 "\n\n" + prompt.PROMPT
             )
-            prompt.build(request, sources)
+            prompt.build(request, sources, plan.queries)
         if used() > maximum:
             # Do not overflow the runtime. Fall back honestly to normal generation.
             request.messages[-1].content = request.messages[-1].content.split(

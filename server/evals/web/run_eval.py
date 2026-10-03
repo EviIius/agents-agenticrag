@@ -16,7 +16,7 @@ from typing import Any
 
 import aiosqlite
 import httpx
-from grading import cited_list_items, required_facts
+from grading import citation_coverage, cited_list_items, required_facts
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -99,6 +99,8 @@ def percentile(values: list[float], p: float) -> float:
 async def evaluate(args: argparse.Namespace) -> None:
     answer_builder_hash = hashlib.sha256((ROOT / "app/search/prompt.py").read_bytes()).hexdigest()
     selector_hash = hashlib.sha256((ROOT / "app/search/selection.py").read_bytes()).hexdigest()
+    chunker_hash = hashlib.sha256((ROOT / "app/search/chunk.py").read_bytes()).hexdigest()
+    ranker_hash = hashlib.sha256((ROOT / "app/search/rank.py").read_bytes()).hexdigest()
     pipeline_hash = hashlib.sha256((ROOT / "app/search/pipeline.py").read_bytes()).hexdigest()
     original_rank = search_pipeline.rank
     selection_question = ""
@@ -114,9 +116,11 @@ async def evaluate(args: argparse.Namespace) -> None:
     if args.question_first:
         original_build = answer_prompt.build
 
-        def question_first_build(request: Any, sources: Any) -> None:
+        def question_first_build(
+            request: Any, sources: Any, queries: list[str] | None = None
+        ) -> None:
             question = request.messages[-1].content
-            original_build(request, sources)
+            original_build(request, sources, queries)
             request.messages[-1].content = question + "\n\n" + request.messages[-1].content
 
         answer_prompt.build = question_first_build
@@ -450,8 +454,10 @@ async def evaluate(args: argparse.Namespace) -> None:
                 list_citations = (
                     cited_list_items(answer) if expect.get("cite_each_list_item") else None
                 )
+                coverage_matches = citation_coverage(answer, turns[-1]["sources"], expect)
                 passed = (
-                    facts
+                    coverage_matches
+                    and facts
                     and all(case_decisions)
                     and not bad
                     and cites >= expect.get("min_citations", 1 if turns[-1]["sources"] else 0)
@@ -500,6 +506,7 @@ async def evaluate(args: argparse.Namespace) -> None:
                         "forbidden": bad,
                         "citations": cites,
                         "cited_list_items": list_citations,
+                        "citation_coverage_matches": coverage_matches,
                         "turns": turns,
                     }
                 )
@@ -608,6 +615,8 @@ async def evaluate(args: argparse.Namespace) -> None:
                 "planner_prompt": planner.PROMPT,
                 "planner_wire_schema": planner_wire_schema,
                 "selection_sha256": selector_hash,
+                "chunker_sha256": chunker_hash,
+                "ranker_sha256": ranker_hash,
                 "answer_builder_sha256": answer_builder_hash,
                 "pipeline_sha256": pipeline_hash,
                 "answer_trial": args.answer_trial,

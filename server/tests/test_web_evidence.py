@@ -205,3 +205,35 @@ def test_explicit_threshold_preserves_all_matching_rows_and_never_invents_unknow
     assert "| Missing | - |" not in body
     assert all(len(p.text) <= 3000 for p in selected)
     assert [p.ord for p in selected] == list(range(len(selected)))
+
+
+def test_defined_abbreviations_and_long_notes_keep_all_selected_rows() -> None:
+    question = "List entries with losses."
+    header = "| Entry | W | L | Notes |"
+    rows = [f"| Entry {i} | 2 | {i} | " + "Context word " * 40 + " |" for i in range(24)]
+    text = (
+        "## Series\n\nThe statistics below refer to series wins and losses.\n\n"
+        + header
+        + "\n"
+        + "\n".join(rows)
+    )
+    text += "\n\n## Individual records\n\n" + header + "\n| Separate | 2 | 1 | Another measure |"
+    condition: dict[str, object] = {
+        "request_span": question,
+        "property_word": "losses",
+        "operator": "occurred",
+        "value": None,
+    }
+    selected = literal_condition_rows("https://example.org", text, condition, question)
+    verified = [p for p in selected if p.selection_applied]
+    body = "\n".join(p.text for p in verified)
+    assert "23 supported rows" in body
+    assert all(f"| Entry {i} | 2 | L (losses): {i} |" in body for i in range(1, 24))
+    assert "| Entry 0 |" not in body and "| Separate |" not in body
+    assert "Host projection omits long prose columns: Notes" in body
+    assert len(verified) <= 3 and all(len(p.text) <= 3000 for p in selected)
+    # A bare W/L table without its definition is not interpreted by guessing.
+    bare = header + "\n| Unknown | 2 | 1 | Details |"
+    assert literal_condition_rows("https://example.org", bare, condition, question) == chunk(
+        "https://example.org", bare
+    )

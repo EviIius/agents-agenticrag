@@ -137,6 +137,29 @@ def heuristic(latest: str, history: list[ProviderMessage]) -> str:
     return latest[:200].strip()
 
 
+def requested_source_types(latest: str) -> list[str]:
+    """Only literal positive source directives qualify; incidental words do not."""
+    types: list[str] = []
+    for match in re.finditer(
+        r"\b(?:use|using|from|consult|check)\s+(?:the\s+)?(official|primary)\b", latest, re.I
+    ):
+        prefix = latest[max(0, match.start() - 30) : match.start()]
+        if re.search(r"\b(?:not|never|avoid|without|don't)\s*$", prefix, re.I):
+            continue
+        qualifier = match[1].casefold()
+        if qualifier not in types:
+            types.append(qualifier)
+    return types
+
+
+def preserve_source_type(query: str, latest: str) -> str:
+    """Retain an explicitly requested source type without inventing a publisher."""
+    for qualifier in requested_source_types(latest):
+        if not re.search(rf"\b{qualifier}\b", query, re.I):
+            query = query[: 119 - len(qualifier)].rstrip() + " " + qualifier
+    return query
+
+
 async def plan(
     adapter: Adapter,
     model: str,
@@ -204,6 +227,8 @@ async def plan(
             q = q.strip()
             if len(q) > 120 or (q and len(q) < 2):
                 raise ValueError("Invalid query length")
+            if q:
+                q = preserve_source_type(q, latest)
             if q and q.casefold() not in seen:
                 queries.append(q)
                 seen.add(q.casefold())
@@ -214,4 +239,8 @@ async def plan(
             raise ValueError("No queries")
         return result, False
     except Exception:
-        return Plan(search=True, queries=[heuristic(latest, history)], freshness="any"), True
+        return Plan(
+            search=True,
+            queries=[preserve_source_type(heuristic(latest, history), latest)],
+            freshness="any",
+        ), True

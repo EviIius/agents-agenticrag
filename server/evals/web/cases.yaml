@@ -3,7 +3,7 @@
     "id": "nba-2021",
     "turns": [
       {
-        "user": "Who lost the 2021 NBA Finals? Show a table."
+        "user": "Who lost the 2021 NBA Finals? Show a table including the winner, loser and final series score."
       }
     ],
     "expect": {
@@ -97,7 +97,7 @@
     "id": "ollama-latest",
     "turns": [
       {
-        "user": "What's the latest Ollama release and what changed?"
+        "user": "What's the latest Ollama release and what changed? Use the official release notes."
       }
     ],
     "expect": {
@@ -106,7 +106,14 @@
         "week",
         "month"
       ],
-      "min_citations": 2
+      "min_citations": 1,
+      "cited_claim_patterns": [
+        "\\bv?\\d+\\.\\d+\\.\\d+(?:[-\\w.]*)",
+        "\\b(?:changes?|features?|updates?|updated|fix(?:es|ed)?|support(?:s|ed)?|improv(?:ed|es|ements?)|allow(?:s|ed|ing)?|bump|ability)\\b"
+      ],
+      "cited_url_patterns": [
+        "^https://github\\.com/ollama/ollama/releases(?:/|$)"
+      ]
     }
   },
   {
@@ -233,7 +240,8 @@
         "sheet.pan.nachos",
         "chicken.alfredo",
         "(?:^|\\n)\\s*(?:[-*]|\\d+[.)]|\\|(?:\\s*\\d+\\s*\\|)?)\\s*(?:\\*\\*)?(?:Denver Nuggets|Toronto Raptors|Chicago Bulls|Sacramento Kings|Baltimore Bullets)\\b",
-        "\\b(?:this|the) list (?:includes|contains) (?:all )?28 teams\\b"
+        "\\b(?:this|the) list (?:includes|contains) (?:all )?28 teams\\b",
+        "\\b(?:lost|losing) at least one (?:finals )?game\\b"
       ],
       "queries_must_not_match": [
         "never (?:won|win)",

@@ -84,6 +84,13 @@ def rank(
         if fused[key] > 0:
             fused[key] += 1 / (60 + source_order.index(passages[int(key)].source_url) + 1)
         passage = passages[int(key)]
+        if fused[key] > 0:
+            # A page's lead and compact data remain useful even when a later
+            # background paragraph repeats the query more often.
+            if not set(tokenize(query)) & {"reference", "citation", "bibliography"}:
+                fused[key] += 3 / (60 + passage.ord + 1)
+            if "|" in passage.text and len(passage.text) <= 900:
+                fused[key] *= 1.5
         bibliography = passage.heading.strip().casefold() in {
             "references",
             "bibliography",

@@ -102,6 +102,26 @@ def literal_condition_rows(
             return source_chunk(url, text)
     if re.search(r"[%$€£/]|\b(?:hundred|thousand|million|billion|trillion)\b", span, re.I):
         return source_chunk(url, text)
+    # Expand W/L only with a local explicit wins-and-losses definition. Never
+    # guess from an arbitrary single-letter header; unrelated tables stay intact.
+    loss_headers: dict[tuple[str, tuple[str, ...]], str] = {}
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        if not line.startswith("|") or (i and lines[i - 1].startswith("|")):
+            continue
+        defined_headers = tuple(c.strip() for c in re.split(r"(?<!\\)\|", line)[1:-1])
+        prefix = "\n".join(lines[max(0, i - 12) : i])
+        titles = re.findall(r"(?m)^#{1,4}\s+([^\n]+)", prefix)
+        title = titles[-1] if titles else ""
+        prefix = re.split(r"(?m)^#{1,4}\s+", prefix)[-1]
+        if defined_headers.count("W") == defined_headers.count("L") == 1 and re.search(
+            r"\bwins? and losses\b", prefix, re.I
+        ):
+            definition_match = re.search(
+                r"[^\n.!?]*\bwins? and losses\b[^\n.!?]*[.!?]?", prefix, re.I
+            )
+            if definition_match:
+                loss_headers[(title, defined_headers)] = definition_match[0].strip()
     output: list[Passage] = []
     for passage in source_chunk(url, text):
         rows = [line for line in passage.text.splitlines() if line.startswith("|")]
@@ -109,13 +129,25 @@ def literal_condition_rows(
             output.append(passage.model_copy(update={"ord": len(output)}))
             continue
         headers = [c.strip() for c in re.split(r"(?<!\\)\|", rows[0])[1:-1]]
-        matches = [header for header in headers if required <= tokens(header)]
+        definition = loss_headers.get((passage.heading.split(" / ")[-1], tuple(headers)), "")
+        abbreviation = required == {"loss"} and bool(definition)
+        matches = [
+            header
+            for header in headers
+            if required <= tokens(header) or (abbreviation and header == "L")
+        ]
         if len(matches) != 1:
             output.append(passage.model_copy(update={"ord": len(output)}))
             continue
         index = headers.index(matches[0])
         # Extra column words must not silently introduce a different measure or unit.
-        if tokens(matches[0]) - tokens(span) - {"count", "total", "number", "of", "times"}:
+        if not abbreviation and tokens(matches[0]) - tokens(span) - {
+            "count",
+            "total",
+            "number",
+            "of",
+            "times",
+        }:
             output.append(passage.model_copy(update={"ord": len(output)}))
             continue
         if re.search(r"[%$€£/]", matches[0]):
@@ -140,23 +172,76 @@ def literal_condition_rows(
             continue
         selected = _numeric_table_text(
             passage.text,
-            {"column": matches[0], "operator": str(operation), "value": str(threshold)},
+            {
+                "column": matches[0],
+                "label": "L (losses)" if abbreviation else matches[0],
+                "definition": definition if abbreviation else "",
+                "operator": str(operation),
+                "value": str(threshold),
+            },
         )
-        for part in (
-            chunk(url, selected)
-            if len(selected) > 3000
-            else [passage.model_copy(update={"text": selected})]
-        ):
-            output.append(
-                part.model_copy(
-                    update={
-                        "heading": passage.heading,
-                        "ord": len(output),
-                        "selection_applied": selected != passage.text,
-                    }
-                )
+        output.append(
+            passage.model_copy(
+                update={"text": selected, "selection_applied": selected != passage.text}
             )
-    return output
+        )
+    return _pack_selected(url, output)
+
+
+def _pack_selected(url: str, passages: list[Passage]) -> list[Passage]:
+    """Reassemble selected rows after filtering; omit explicitly identified long prose."""
+    groups: dict[tuple[str, str], list[Passage]] = {}
+    untouched = [p for p in passages if not p.selection_applied]
+    for p in passages:
+        if p.selection_applied:
+            rows = [line for line in p.text.splitlines() if line.startswith("|")]
+            groups.setdefault((p.heading, rows[0]), []).append(p)
+    for (heading, header), parts in groups.items():
+        rows = [line for p in parts for line in p.text.splitlines() if line.startswith("|")]
+        data = [
+            line
+            for line in rows
+            if line != header and not re.fullmatch(r"\|(?:\s*:?-+:?\s*\|)+\s*", line)
+        ]
+        cells = [[c.strip() for c in re.split(r"(?<!\\)\|", row)[1:-1]] for row in data]
+        headers = [c.strip() for c in re.split(r"(?<!\\)\|", header)[1:-1]]
+        identity = next(
+            (
+                i
+                for i in range(len(headers) - 1)
+                if any(not re.fullmatch(r"[\d.,+-]+", r[i]) for r in cells)
+            ),
+            0,
+        )
+        omitted = {
+            i
+            for i in range(len(headers) - 1)
+            if i != identity and sum(len(r[i]) > 140 and len(r[i].split()) > 20 for r in cells) >= 2
+        }
+
+        def row(values: list[str], excluded: set[int] = omitted) -> str:
+            return "| " + " | ".join(v for i, v in enumerate(values) if i not in excluded) + " |"
+
+        note = parts[0].text.splitlines()[0]
+        note = re.sub(r"\d+ supported rows", f"{len(data)} supported rows", note)
+        if omitted:
+            note += (
+                " Host projection omits long prose columns: "
+                + ", ".join(headers[i] for i in sorted(omitted))
+                + ". Original page remains cached."
+            )
+        assembled = (
+            note
+            + "\n\n"
+            + row(headers)
+            + "\n"
+            + row(["---"] * len(headers))
+            + "\n"
+            + "\n".join(row(r) for r in cells)
+        )
+        for p in chunk(url, assembled):
+            untouched.append(p.model_copy(update={"heading": heading, "selection_applied": True}))
+    return [p.model_copy(update={"ord": i}) for i, p in enumerate(untouched)]
 
 
 def _numeric_table_text(text: str, predicate: dict[str, str]) -> str:
@@ -202,7 +287,7 @@ def _numeric_table_text(text: str, predicate: dict[str, str]) -> str:
                 continue
             if compare(Decimal(cell.replace(",", "")), value):
                 labelled = list(cells[index])
-                labelled[column] = predicate["column"] + ": " + cell
+                labelled[column] = predicate.get("label", predicate["column"]) + ": " + cell
                 labelled.append("[pending]")
                 matched.append("| " + " | ".join(labelled) + " |")
         # The selected table is a subset. Its original attached prose may state
@@ -211,9 +296,15 @@ def _numeric_table_text(text: str, predicate: dict[str, str]) -> str:
         output = []
         applied = True
         output.append(
-            f"Host selection: {len(matched)} supported rows match {predicate['column']} "
+            f"Host selection: {len(matched)} supported rows match "
+            f"{predicate.get('label', predicate['column'])} "
             f"{predicate['operator']} {value}. Missing values were not treated as zero. "
             "Host reference is the citation label for each selected row."
+            + (
+                " Source definition: " + predicate["definition"]
+                if predicate.get("definition")
+                else ""
+            )
         )
         output.append("")
         output.append(rows[0].rstrip() + " Host reference |")

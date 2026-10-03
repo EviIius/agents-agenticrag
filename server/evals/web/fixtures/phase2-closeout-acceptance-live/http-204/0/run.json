@@ -1,0 +1,359 @@
+{
+  "question": "What does HTTP status 204 mean and can its response have a body?",
+  "numeric_selection_trial": null,
+  "planner_property_words": [
+    "What",
+    "does",
+    "HTTP",
+    "status",
+    "mean",
+    "and",
+    "can",
+    "its",
+    "response",
+    "have",
+    "a",
+    "body"
+  ],
+  "raw_answer": "HTTP status 204, known as \"No Content,\" indicates that the server has successfully processed the request and there is no additional content to send in the response body [1]. It is a successful response (part of the 2xx family) meaning the operation completed as expected, but no data or payload needs to be returned to the client [3]. This status is commonly used for successful `DELETE` requests, as well as for `PUT` or `PATCH` operations where the client does not need the updated data echoed back [1][2][4].\n\nA response with HTTP status 204 must not have a message body [5]. The specification explicitly states that the server intentionally returns no content, and including a body would violate the HTTP standard [2][3]. The response may include headers, such as `ETag` for caching purposes, but the message body must be empty [4][6]. Using a 200 OK status with an empty body is incorrect and misrepresents the intent of the 204 status [2].",
+  "message": {
+    "id": "71915c758d654ae5b78842c30bc8b2d7",
+    "chat_id": "6c42e1f77b9d4e26998fca66ac7f759d",
+    "parent_id": "622097c5482b4d3ba56f1c41a5d56d99",
+    "role": "assistant",
+    "content": "HTTP status 204, known as \"No Content,\" indicates that the server has successfully processed the request and there is no additional content to send in the response body [1]. It is a successful response (part of the 2xx family) meaning the operation completed as expected, but no data or payload needs to be returned to the client [3]. This status is commonly used for successful `DELETE` requests, as well as for `PUT` or `PATCH` operations where the client does not need the updated data echoed back [1][2][4].\n\nA response with HTTP status 204 must not have a message body [5]. The specification explicitly states that the server intentionally returns no content, and including a body would violate the HTTP standard [2][3]. The response may include headers, such as `ETag` for caching purposes, but the message body must be empty [4][6]. Using a 200 OK status with an empty body is incorrect and misrepresents the intent of the 204 status [2].",
+    "reasoning": null,
+    "status": "complete",
+    "error": null,
+    "model": {
+      "connection_id": "0358184783e8447bbe0ab4e590a7450b",
+      "model_id": "qwen3:30b-a3b-instruct-2507-q4_K_M",
+      "display_name": "qwen3:30b-a3b-instruct-2507-q4_K_M"
+    },
+    "attachments": [],
+    "stats": {
+      "reasoning_ms": null,
+      "ttft_ms": 6477.15987500851,
+      "total_ms": 9453.745333012193,
+      "prompt_tokens": 3915,
+      "completion_tokens": 218,
+      "tokens_per_sec": 73.20145207504291,
+      "tokens_estimated": false,
+      "load_ms": 6.091125,
+      "finish_reason": "stop",
+      "context_length": 16384,
+      "dropped_message_count": 0,
+      "params": {}
+    },
+    "web": {
+      "status": "used",
+      "freshness": "any",
+      "notice": null,
+      "queries": [
+        "HTTP status 204 meaning",
+        "can HTTP 204 response have a body"
+      ],
+      "timings": {
+        "plan": 772.8717920253985,
+        "search": 510.46275001135655,
+        "fetch": 1549.5147909969091,
+        "rank": 5.01037499634549
+      },
+      "source_count": 6,
+      "plan_fallback": false,
+      "providers": [
+        "SearXNG"
+      ],
+      "ranking": "keyword",
+      "selection_condition": null
+    },
+    "created_at": "2026-10-03T01:44:03.951229+00:00"
+  },
+  "sources": [
+    {
+      "n": 1,
+      "url": "https://restfulapi.net/http-status-204-no-content",
+      "title": "HTTP Status 204 (No Content)",
+      "site_name": "REST API Tutorial",
+      "domain": "restfulapi.net",
+      "published_at": "2018-04-07",
+      "fetched_at": "2026-10-03T01:44:05.237235+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://restfulapi.net/http-status-204-no-content",
+          "heading": "",
+          "ord": 0,
+          "text": "*HTTP 204 (No Content)* reports that the request worked, and the server has nothing to send back. The response has headers but no body at all. The rule is defined in RFC 9110 section 15.3.5, the official HTTP specification.\n\nHTTP 204 is the usual answer to a *DELETE*, and to a *PUT* or *PATCH* when the client does not need the changed data back. Use HTTP 200 instead when you want to send data with the success.\n\nWhen HTTP 204 arrives, the client should treat it as success and must not try to read a body, because there is none. Trying to parse an empty body as JSON is the most common HTTP 204 bug.",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://restfulapi.net/http-status-204-no-content",
+          "heading": "2. When Not to Send HTTP 204",
+          "ord": 2,
+          "text": "HTTP 204 is only right when the action is finished and there truly is nothing to return. The table lists the neighbors:\n\n| Situation | Correct status | Why |\n|---|---|---|\n| The client needs the changed or deleted data | *HTTP 200 OK* with a body | There is something to send. |\n| Something new was created | *HTTP 201 Created* | The client needs the *Location* of the new resource. |\n| The deletion or change will happen later | *HTTP 202 Accepted* | It is not done yet (section 9.3.5). |\n| The client should clear its form or view | *HTTP 205 Reset Content* (section 15.3.6) | HTTP 204 means “keep the current view”. |\n| The resource to delete does not exist | *HTTP 404 Not Found* , or HTTP 204 if your API documents that | Pick one rule and write it down. |",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://restfulapi.net/http-status-204-no-content",
+          "heading": "4. Handling HTTP 204 in a Client",
+          "ord": 5,
+          "text": "HTTP 204 is a success, so there is nothing to retry. The important part is to not read a body. The figure shows the bug and the fix in JavaScript.\n\n1. Check the status before parsing. On HTTP 204, return an empty result instead of calling *response.json()* .\n2. Keep the current screen. RFC 9110 says HTTP 204 means the client does not need to change its view (section 15.3.5). Show a short success message.\n3. Store new header values, such as a new *ETag* , for the next request.\n\n```\nasync function request(url, options) {\n  const response = await fetch(url, options);\n  if (!response.ok) throw new Error('Request failed: ' + response.status);\n  if (response.status === 204) return null;\n  return response.json();\n}\n```\nIn Java with Spring’s *WebClient*, use *toBodilessEntity()* when you expect HTTP 204, so the client does not try to read a body:",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 2,
+      "url": "https://siteerror.com/blog/understanding-204-no-content",
+      "title": "Understanding HTTP 204 No Content: Why It's Not 200 With an Empty Body | SiteError.com Blog",
+      "site_name": "SiteError.com",
+      "domain": "siteerror.com",
+      "published_at": "2026-07-27",
+      "fetched_at": "2026-10-03T01:44:06.440869+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://siteerror.com/blog/understanding-204-no-content",
+          "heading": "Understanding HTTP 204 No Content: Why It's Not 200 With an Empty Body",
+          "ord": 0,
+          "text": "**204 No Content** is the status code for \"it worked, and there's nothing more to say.\" That sounds like a shrug, but it's a deliberate one: 204 doesn't mean the server forgot to send a body, or that something went slightly wrong along the way — it means the server is *telling* the client, on purpose, that no body is coming. The most common mistake with 204 is skipping it entirely and returning 200 with an empty JSON object instead, which throws away that signal. This post covers what 204 actually promises, why it's the right choice for `DELETE` and body-less `PUT`, how it compares to its 2xx siblings, and how to return it correctly without accidentally violating the spec.",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://siteerror.com/blog/understanding-204-no-content",
+          "heading": "What Is a 204?",
+          "ord": 1,
+          "text": "A 204 means the request succeeded and the server has nothing further to send in the response body — not \"nothing to send this time,\" but \"nothing to send, ever, for this response.\"\n\nThe 204 (No Content) status code indicates that the server has successfully fulfilled the request and that there is no additional content to send in the response payload body. — RFC 9110, Section 15.3.5\n\nIn plain English: the operation succeeded, but there's intentionally nothing to send back. It's most at home on `DELETE` requests (the thing is gone — what would the body even contain?) and on `PUT`/`PATCH` requests where the client already knows the resulting state and doesn't need it echoed back. A 204 response should not include a message body at all.",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://siteerror.com/blog/understanding-204-no-content",
+          "heading": "204 vs 200 vs 201 vs 202 vs 205",
+          "ord": 4,
+          "text": "Five success codes cover different shapes of \"it worked\":\n\n| Code | Meaning | Use when |\n|---|---|---|\n| 200 OK | Generic success, with body | Reads, updates, and any success where you're returning a representation |\n| 201 Created | New resource exists | A `POST` or`PUT` brought a resource into existence — pair with`Location` |\n| 202 Accepted | Queued, not done | The request is valid and accepted, but processing finishes later |\n| 204 No Content | Success, nothing to say | Deletes, or updates where the client needs no body back |\n| 205 Reset Content | Success, reset the view | Like 204, but tells the client to reset the form/view that sent the request |",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 3,
+      "url": "https://blog.postman.com/http-204-no-content",
+      "title": "HTTP 204 No Content: Meaning, Use Cases, and Best Practices",
+      "site_name": "Postman Blog",
+      "domain": "blog.postman.com",
+      "published_at": "2025-11-15",
+      "fetched_at": "2026-10-03T01:44:05.237221+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://blog.postman.com/http-204-no-content",
+          "heading": "HTTP 204 No Content: Meaning, Use Cases, and Best Practices / What is HTTP 204 No Content?",
+          "ord": 0,
+          "text": "The 204 No Content is an HTTP status code that indicates a request succeeded, but the server intentionally returns no message body. The server has successfully processed the requested resource and isn’t returning any content because there’s nothing meaningful to send back.\n\nThink of it like a CI run that ends with “Build succeeded.” The job’s done, everything passed, and there’s nothing more to report.\n\nUnlike redirect codes (301, 302) that send the client to a new URL, 204 is a terminal response that requires no further action. The HTTP response completes immediately without any HTML content or data payload.\n\n**A 204 tells the client:**\n\n- Your request was successful.\n- The operation completed as expected.\n- There’s no content to display or process.",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://blog.postman.com/http-204-no-content",
+          "heading": "204 vs other success codes",
+          "ord": 5,
+          "text": "Understanding when to use 204 instead of other 2xx codes is key to good API design.\n\n| Status code | Response body | Use case |\n|---|---|---|\n| 200 OK | Yes | Successful request with data to return |\n| 201 Created | Usually | New resource created |\n| 202 Accepted | Usually | Request accepted for async processing |\n| 204 No Content | No | Successful request with nothing to return |",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://blog.postman.com/http-204-no-content",
+          "heading": "FAQs",
+          "ord": 28,
+          "text": "| Question | Answer |\n|---|---|\n| What does 204 mean? | Request succeeded with no content to return |\n| When should I use 204? | For successful DELETE, PUT, or PATCH requests where no data needs to be returned |\n| Can 204 have a response body? | No, it must be empty |\n| Is 204 an error? | No, it’s a success code (2xx family) |\n| Should I use 204 or 200? | Use 204 when there’s nothing to return, 200 when returning data adds value |",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 4,
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/204",
+      "title": "204 No Content",
+      "site_name": "developer.mozilla.org",
+      "domain": "developer.mozilla.org",
+      "published_at": "2026-06-22",
+      "fetched_at": "2026-10-03T01:44:05.237193+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/204",
+          "heading": "204 No Content",
+          "ord": 0,
+          "text": "The HTTP **`204 No Content`** successful response status code indicates that a request has succeeded, but the client doesn't need to navigate away from its current page.\nA `204` response is cacheable by default, and an `ETag` header is included in such cases.\n\nA `204 No Content` in response to these request methods has the following meaning and results:\n\n- `DELETE` : The action was successful, and no further information needs to be supplied.\n- `PUT` : The action was successful, and the`ETag` value contains the entity tag for the new representation of that target resource.\n\nA `204` response can be used when implementing \"save and continue editing\" functionality for applications like wiki sites.\nIn this case, a `PUT` request could be used to save the page contents, and a `204 No Content` response indicates to the browser that the editor should not be replaced by other content.",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/204",
+          "heading": "Examples / Receiving a response after deleting an image",
+          "ord": 3,
+          "text": "In this example, the client sends a request to delete an image using the `DELETE` method.\nThe request includes an `Authorization` header with a token to authenticate the request:\n\n```\nDELETE /image/123 HTTP/1.1\nHost: example.com\nAuthorization: Bearer 1234abcd\n```\nAfter successfully deleting the image, the server responds with a `204` response with no body, indicating no further information needs to be sent to the client.\n\n```\nHTTP/1.1 204 No Content\nDate: Wed, 26 Jun 2024 12:00:00 GMT\nServer: Apache/2.4.1 (Unix)\n```",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/204",
+          "heading": "Specifications",
+          "ord": 5,
+          "text": "| Specification |\n|---|\n| HTTP Semantics # status.204 |",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 5,
+      "url": "https://codingtechroom.com/question/keep-response-body-204-no-content",
+      "title": "How to Maintain Response Body on a 204 No Content HTTP Response? - CodingTechRoom",
+      "site_name": "CodingTechRoom",
+      "domain": "codingtechroom.com",
+      "published_at": "2026-01-01",
+      "fetched_at": "2026-10-03T01:44:05.237264+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://codingtechroom.com/question/keep-response-body-204-no-content",
+          "heading": "Question",
+          "ord": 0,
+          "text": "What techniques can be used to retain or manage Response Body data when sending a 204 No Content HTTP response?\n\n`None needed for a 204 response.`\n                        ## Answer\n\nIn HTTP, a 204 No Content response indicates that the server successfully processed the request, and there is no content to send back to the client. Traditionally, this response type does not include a message body, hence 'No Content.' However, if you need to convey information despite the 204 status, there are several strategies you can use to implement this without breaking the HTTP protocol rules.\n\nFor broader software-development habits, The Pragmatic Programmer, 20th Anniversary Edition is a useful companion.\n\n`None required, as the 204 response forbids a body.`\n                        #### Causes",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://codingtechroom.com/question/keep-response-body-204-no-content",
+          "heading": "Question",
+          "ord": 1,
+          "text": "- The HTTP 204 status code explicitly indicates that there is no content to return.\n- HTTP specifications dictate that a 204 response must not include a message body.",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://codingtechroom.com/question/keep-response-body-204-no-content",
+          "heading": "Solutions",
+          "ord": 2,
+          "text": "- Use a different status code (e.g., 200 OK) that supports sending content if you need to include a body.\n- Utilize HTTP headers to provide needed information instead of a message body.\n- In some scenarios, consider client-side caching techniques where further requests can retrieve data separately.\n\nFor a useful code-quality reference, Clean Code is a useful companion.",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 6,
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status",
+      "title": "HTTP response status codes",
+      "site_name": "developer.mozilla.org",
+      "domain": "developer.mozilla.org",
+      "published_at": "2026-09-17",
+      "fetched_at": "2026-10-03T01:44:06.440849+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status",
+          "heading": "HTTP response status codes",
+          "ord": 0,
+          "text": "HTTP response status codes indicate whether a specific HTTP request has been successfully completed. Responses are grouped in five classes:\n\n1. Informational responses (`100` –`199` )\n2. Successful responses (`200` –`299` )\n3. Redirection messages (`300` –`399` )\n4. Client error responses (`400` –`499` )\n5. Server error responses (`500` –`599` )\n\nThe status codes listed below are defined by RFC 9110.\n\n**Note:**\nIf you receive a response that is not listed here, it is a non-standard response, possibly custom to the server's software.",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status",
+          "heading": "Successful responses",
+          "ord": 2,
+          "text": "- `200 OK`\n- \nThe request succeeded. The result and meaning of \"success\" depends on the HTTP method: \n  - `GET` : The resource has been fetched and transmitted in the message body.\n  - `HEAD` : Representation headers are included in the response without any message body.\n  - `PUT` or`POST` : The resource describing the result of the action is transmitted in the message body.\n  - `TRACE` : The message body contains the request as received by the server.\n- `201 Created`\n- \nThe request succeeded, and a new resource was created as a result. This is typically the response sent after `POST` requests, or some`PUT` requests.\n- `202 Accepted`\n- \nThe request has been received but not yet acted upon. It is noncommittal, since there is no way in HTTP to later send an asynchronous response indicating the outcome of the request. It is intended for cases where another process or server handles the request, or for batch processing.\n- \nThis response code means the returned metadata is not exactly the same as is available from the origin server, but is collected from a local or a third-party copy. This is mostly used for mirrors or backups of another resource. Except for that specific case, the `200 OK` response is preferred to this status.\n- `204 No Content`\n- \nThere is no content to send for this request, but the headers are useful. The user agent may update its cached headers for this resource with the new ones.\n- `205 Reset Content`\n- \nTells the user agent to reset the document which sent this request.\n- `206 Partial Content`\n-",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status",
+          "heading": "Client error responses",
+          "ord": 6,
+          "text": "- `400 Bad Request`\n- \nThe server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax, invalid request message framing, or deceptive request routing).\n- \nAlthough the HTTP standard specifies \"unauthorized\", semantically this response means \"unauthenticated\". That is, the client must authenticate itself to get the requested response.\n- `402 Payment Required`\n- \nThe initial purpose of this code was for digital payment systems, however this status code is rarely used and no standard convention exists.\n- `403 Forbidden`\n- \nThe client does not have access rights to the content; that is, it is unauthorized, so the server is refusing to give the requested resource. Unlike `401 Unauthorized` , the client's identity is known to the server.\n- `404 Not Found`\n- \nThe server cannot find the requested resource. In the browser, this means the URL is not recognized. In an API, this can also mean that the endpoint is valid but the resource itself does not exist. Servers may also send this response instead of `403 Forbidden` to hide the existence of a resource from an unauthorized client.\nThis response code is probably the most well known due to its frequent occurrence on the web.\n- `405 Method Not Allowed`\n- \nThe request method is known by the server but is not supported by the target resource. For example, an API may not allow `DELETE` on a resource, or the`TRACE` method entirely.\n- `406 Not Acceptable`\n-",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    }
+  ],
+  "reads": [
+    {
+      "url": "https://blog.postman.com/http-204-no-content",
+      "title": "HTTP 204 No Content: Meaning, Use Cases, and Best Practices",
+      "site_name": "Postman Blog",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://codingtechroom.com/question/keep-response-body-204-no-content",
+      "title": "How to Maintain Response Body on a 204 No Content HTTP Response? - CodingTechRoom",
+      "site_name": "CodingTechRoom",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status",
+      "title": "HTTP response status codes",
+      "site_name": "developer.mozilla.org",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/204",
+      "title": "204 No Content",
+      "site_name": "developer.mozilla.org",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://restfulapi.net/http-status-204-no-content",
+      "title": "HTTP Status 204 (No Content)",
+      "site_name": "REST API Tutorial",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://siteerror.com/blog/understanding-204-no-content",
+      "title": "Understanding HTTP 204 No Content: Why It's Not 200 With an Empty Body | SiteError.com Blog",
+      "site_name": "SiteError.com",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://stackoverflow.com/questions/56042139/is-it-possible-for-a-server-to-return-a-body-with-a-code-of-204",
+      "title": "http - Is it possible for a server to return a body with a ...",
+      "site_name": "stackoverflow.com",
+      "status": "failed",
+      "reason": "HTTP 403"
+    },
+    {
+      "url": "https://stackoverflow.com/questions/9175733/is-it-valid-to-return-a-body-along-with-an-http-204-status",
+      "title": "odata - Is it valid to return a body along with an Http 204 ...",
+      "site_name": "stackoverflow.com",
+      "status": "failed",
+      "reason": "HTTP 403"
+    }
+  ],
+  "elapsed_ms": 9468.056250014342,
+  "web": {
+    "status": "used",
+    "freshness": "any",
+    "notice": null,
+    "queries": [
+      "HTTP status 204 meaning",
+      "can HTTP 204 response have a body"
+    ],
+    "timings": {
+      "plan": 772.8717920253985,
+      "search": 510.46275001135655,
+      "fetch": 1549.5147909969091,
+      "rank": 5.01037499634549
+    },
+    "source_count": 6,
+    "plan_fallback": false,
+    "providers": [
+      "SearXNG"
+    ],
+    "ranking": "keyword",
+    "selection_condition": null
+  }
+}

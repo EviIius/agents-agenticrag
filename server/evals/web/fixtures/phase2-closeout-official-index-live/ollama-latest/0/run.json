@@ -1,0 +1,345 @@
+{
+  "question": "What's the latest Ollama release and what changed? Use the official release notes.",
+  "numeric_selection_trial": null,
+  "planner_property_words": [
+    "What",
+    "s",
+    "the",
+    "latest",
+    "Ollama",
+    "release",
+    "and",
+    "what",
+    "changed",
+    "Use",
+    "official",
+    "notes"
+  ],
+  "raw_answer": "The latest Ollama release is v0.35.1, published on October 2, 2026 [1].\n\nThe following changes were made in this release:\n- Ollama adds support for Cloudflare's Clef and Clef Flash decision models through the `/v1/systemone` endpoint [1][2][4].\n- Clef (27B) and Clef Flash (9B) are multimodal, allowing requests to include images alongside text state, which are scored jointly [1][2][4].\n- Models using web search can now perform up to ten searches per response, an increase from the previous limit of three [1][2][4].\n- Modelfiles now support CAPABILITY declarations, enabling model creators to explicitly declare what a model can do [1][2][4].\n- CAPABILITY declarations are preserved when creating models from GGUF or safetensors, through model inheritance, and on Modelfile export [1][2][4].\n- The `ollama show` command and the model list now report only \"decision\" as the capability for decision models, so clients no longer offer them for general chat, tools, or thinking [1][2][4].\n- The llama.cpp and MLX engines have been updated [1][2][4].",
+  "message": {
+    "id": "7ad400f87c9d40618839948dc2bd2960",
+    "chat_id": "2274c667eb5c409ca9b4c82958069b5b",
+    "parent_id": "4db3cd1d946f413c9f9dbaccc6cc6db1",
+    "role": "assistant",
+    "content": "The latest Ollama release is v0.35.1, published on October 2, 2026 [1].\n\nThe following changes were made in this release:\n- Ollama adds support for Cloudflare's Clef and Clef Flash decision models through the `/v1/systemone` endpoint [1][2][4].\n- Clef (27B) and Clef Flash (9B) are multimodal, allowing requests to include images alongside text state, which are scored jointly [1][2][4].\n- Models using web search can now perform up to ten searches per response, an increase from the previous limit of three [1][2][4].\n- Modelfiles now support CAPABILITY declarations, enabling model creators to explicitly declare what a model can do [1][2][4].\n- CAPABILITY declarations are preserved when creating models from GGUF or safetensors, through model inheritance, and on Modelfile export [1][2][4].\n- The `ollama show` command and the model list now report only \"decision\" as the capability for decision models, so clients no longer offer them for general chat, tools, or thinking [1][2][4].\n- The llama.cpp and MLX engines have been updated [1][2][4].",
+    "reasoning": null,
+    "status": "complete",
+    "error": null,
+    "model": {
+      "connection_id": "b7b1a8e685ea48a2895edf97282c4d0a",
+      "model_id": "qwen3:30b-a3b-instruct-2507-q4_K_M",
+      "display_name": "qwen3:30b-a3b-instruct-2507-q4_K_M"
+    },
+    "attachments": [],
+    "stats": {
+      "reasoning_ms": null,
+      "ttft_ms": 6162.286000006134,
+      "total_ms": 9703.216124995379,
+      "prompt_tokens": 3266,
+      "completion_tokens": 269,
+      "tokens_per_sec": 75.98406424918706,
+      "tokens_estimated": false,
+      "load_ms": 4.238084,
+      "finish_reason": "stop",
+      "context_length": 16384,
+      "dropped_message_count": 0,
+      "params": {}
+    },
+    "web": {
+      "status": "used",
+      "freshness": "week",
+      "notice": null,
+      "queries": [
+        "Ollama latest release notes official",
+        "Ollama release notes 2026 October official"
+      ],
+      "timings": {
+        "plan": 1081.132624996826,
+        "search": 1008.6652089958079,
+        "fetch": 1295.1240420225076,
+        "rank": 3.633749991422519
+      },
+      "source_count": 6,
+      "plan_fallback": false,
+      "providers": [
+        "SearXNG"
+      ],
+      "ranking": "keyword",
+      "selection_condition": null
+    },
+    "created_at": "2026-10-03T03:28:12.553406+00:00"
+  },
+  "sources": [
+    {
+      "n": 1,
+      "url": "https://releasebot.io/updates/ollama",
+      "title": "Ollama Release Notes",
+      "site_name": "Releasebot",
+      "domain": "releasebot.io",
+      "published_at": "2026-10-02",
+      "fetched_at": "2026-10-03T03:28:14.646636+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://releasebot.io/updates/ollama",
+          "heading": "Ollama Release Notes",
+          "ord": 0,
+          "text": "128 release notes curated from 1 source by the Releasebot Team. Last updated: Oct 2, 2026",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://releasebot.io/updates/ollama",
+          "heading": "Ollama Release Notes",
+          "ord": 1,
+          "text": "- Oct 2, 2026\n  - Date parsed from source:Oct 2, 2026\n  - First seen by Releasebot:Oct 2, 2026\n ## v0.35.1Ollama adds support for Cloudflare's Clef and Clef Flash decision models through /v1/systemone, expands web search to ten searches per response, and introduces CAPABILITY declarations in Modelfiles. It also improves decision model handling and updates llama.cpp and MLX. ### Clef decision modelsOllama now supports Clef and Clef Flash, Cloudflare's new open-source decision models, through /v1/systemone. Clef (27B) and Clef Flash (9B) are multimodal: requests can now include images alongside the text state, shared by all questions and scored jointly with it. ```\ncurl http://localhost:11434/v1/systemone -d '{\n\"model\": \"clef-flash\",\n\"state\": \"The user took this screenshot.\",\n\"images\": [\"<base64-encoded image>\"],\n\"questions\": {\n\"has_ollama\": {\"type\": \"noul\", \"instructions\": \"Does this image contain Ollama?\"}\n}\n}'\n```\n```\n{\n\"model\": \"clef-flash\",\n\"answers\": {\n\"has_ollama\": {\n\"type\": \"noul\",\n\"noul\": 0.958\n}\n},\n\"usage\": {\n\"input_tokens\": 548,\n\"output_tokens\": 0\n}\n}\n```\n### What's ChangedModels using web search can now perform up to ten searches per response, up from three Modelfiles now support CAPABILITY declarations, so model creators can explicitly declare what a model can do.",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://releasebot.io/updates/ollama",
+          "heading": "Ollama Release Notes",
+          "ord": 2,
+          "text": "Declarations are preserved when creating from GGUF or safetensors, through model inheritance, and on Modelfile export ollama show and the model list now report only decision as the capability for decision models, so clients no longer offer them for general chat, tools, or thinking Updated llama.cpp and the MLX engine Full Changelog: v0.35.0...v0.35.1 Original source\n- Oct 1, 2026\n  - Date parsed from source:Oct 1, 2026\n  - First seen by Releasebot:Oct 2, 2026\n- All of your release notes in one feed Join Releasebot and get updates from Ollama and hundreds of other software products.\n- Sep 29, 2026\n  - Date parsed from source:Sep 29, 2026\n  - First seen by Releasebot:Oct 2, 2026\n ## v0.35.1-rc0: create: support explicit model capabilities (#18708)Ollama adds CAPABILITY declarations to Modelfiles and create requests, with preserved exports and new System One scheduling rules. Add CAPABILITY declarations to Modelfiles and an additive capabilities field to create requests. Preserve declarations across GGUF and safetensors creation, inheritance, and Modelfile export. Require decision capability before scheduling System One requests instead of matching Qwen architecture/renderer metadata. Retain main's GGUF-only scoring restriction until the separate MLX runtime work lands. Extracted from the capability foundation in 36d46a0 on system_one_mlx; MLX scoring and manifest-list changes are intentionally separate. Original source\n- Sep 29, 2026\n  - Date parsed from source:Sep 29, 2026\n  - First seen by Releasebot:Sep 30, 2026",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 2,
+      "url": "https://github.com/ollama/ollama/releases",
+      "title": "Releases · ollama/ollama",
+      "site_name": "GitHub",
+      "domain": "github.com",
+      "published_at": "2026-09-29",
+      "fetched_at": "2026-10-03T03:28:14.646617+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://github.com/ollama/ollama/releases",
+          "heading": "Releases: ollama/ollama / Release list / v0.35.1 / Clef decision models",
+          "ord": 0,
+          "text": "Ollama now supports Clef and Clef Flash, Cloudflare's new open-source decision models, through `/v1/systemone`.\n\nClef (27B) and Clef Flash (9B) are multimodal: requests can now include images alongside the text state, shared by all questions and scored jointly with it.\n\n```\ncurl http://localhost:11434/v1/systemone -d '{\n  \"model\": \"clef-flash\",\n  \"state\": \"The user took this screenshot.\",\n  \"images\": [\"<base64-encoded image>\"],\n  \"questions\": {\n    \"has_ollama\": {\"type\": \"noul\", \"instructions\": \"Does this image contain Ollama?\"}\n  }\n}'\n```\n```\n{\n  \"model\": \"clef-flash\",\n  \"answers\": {\n    \"has_ollama\": {\n      \"type\": \"noul\",\n      \"noul\": 0.958\n    }\n  },\n  \"usage\": {\n    \"input_tokens\": 548,\n    \"output_tokens\": 0\n  }\n}\n```",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://github.com/ollama/ollama/releases",
+          "heading": "What's Changed",
+          "ord": 1,
+          "text": "- Models using web search can now perform up to ten searches per response, up from three\n- Modelfiles now support `CAPABILITY` declarations, so model creators can explicitly declare what a model can do. Declarations are preserved when creating from GGUF or safetensors, through model inheritance, and on Modelfile export\n- `ollama show` and the model list now report only`decision` as the capability for decision models, so clients no longer offer them for general chat, tools, or thinking\n- Updated llama.cpp and the MLX engine\n\n**Full Changelog**: `v0.35.0...v0.35.1`",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://github.com/ollama/ollama/releases",
+          "heading": "v0.40.0 / What's Changed",
+          "ord": 5,
+          "text": "**Models run on MLX on Apple Silicon by default**\n\nIn this release, on Apple Silicon devices, model architectures supported by the MLX runtime will automatically run on MLX.\n\n```\nollama pull qwen3.8\nollama run qwen3.8\n```\nDuring the pre-release we will be testing and enabling additional models.\n\n**Full Changelog**: `v0.34.4...v0.40.0-rc0`",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 3,
+      "url": "https://ollama.com/blog",
+      "title": "Blog · Ollama",
+      "site_name": "Ollama",
+      "domain": "ollama.com",
+      "published_at": "2026-09-29",
+      "fetched_at": "2026-10-03T03:28:14.646656+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://ollama.com/blog",
+          "heading": "",
+          "ord": 0,
+          "text": "Ollama now supports decision models, based on TypeSafe's Jev API for fast, typed decisions. Decision models can now be run at no cost with low latency. Based on text, decision models answer yes-or-no questions, choices and scores about it, with a probability for every option.\n\nOllama's Pro, Max, and Team plans now use industry-standard per-token pricing with usage included on every plan.\n\nClaude Desktop can now be configured to work with Ollama as a third-party gateway provider, making it possible to use open models in Claude.\n\nNVIDIA Nemotron 3.5 Lightning is now available on Ollama. It's a 30 billion parameter (3B active) open model built for agents that stay running, gathering context, calling tools, and working through multi-step tasks on your own hardware.",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://ollama.com/blog",
+          "heading": "",
+          "ord": 1,
+          "text": "Meta's Muse Glimmer, the first open model released by Meta Superintelligence Labs, is now available. Muse Glimmer is a 30B multimodal model released under the Apache 2.0 license, designed for local coding agents, and accelerated by Ollama's MLX engine with new native DFlash and image input support.\n\nServing 8.9 million developers, Ollama has raised $88M from Benchmark, Theory Ventures, 8VC, Y Combinator, and many incredible angel investors.\n\nGemma 4 is now significantly faster in Ollama 0.31 on Apple Silicon via multi-token prediction (MTP), powered by MLX. Performance is now up to 90% faster when used with coding agents, as measured using the Aider polyglot benchmark.\n\nOllama's MLX engine has been updated to deliver its highest performance on Apple Silicon yet. Models output higher quality responses, respond faster, and use less memory.",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://ollama.com/blog",
+          "heading": "",
+          "ord": 4,
+          "text": "Ollama is partnering with OpenAI and ROOST (Robust Open Online Safety Tools) to bring the latest gpt-oss-safeguard reasoning models to users for safety classification tasks. gpt-oss-safeguard models are available in two sizes: 20B and 120B, and are permissively licensed under the Apache 2.0 license.\n\nMiniMax M2 is now available on Ollama's cloud. It's a model built for coding and agentic workflows.\n\nWe ran performance tests on release day firmware and an updated Ollama version to see how Ollama performs.\n\nGLM-4.6 and Qwen3-coder-480B are available on Ollama’s cloud service with easy integrations to the tools you are familiar with. Qwen3-Coder-30B has been updated for faster, more reliable tool calling in Ollama’s new engine.\n\nOllama now supports Alibaba's Qwen3-VL.",
+          "selection_applied": false
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 4,
+      "url": "https://updatify.io/releases/ollama",
+      "title": "Ollama release notes",
+      "site_name": "Updatifyio",
+      "domain": "updatify.io",
+      "published_at": "2026-04-23",
+      "fetched_at": "2026-10-03T03:28:14.646645+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://updatify.io/releases/ollama",
+          "heading": "",
+          "ord": 0,
+          "text": "Update Sep 29, 2026 tracked by Updatify",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://updatify.io/releases/ollama",
+          "heading": "v0.35.1 / Clef decision models",
+          "ord": 1,
+          "text": "Ollama now supports Clef and Clef Flash, Cloudflare’s new open-source decision models, through `/v1/systemone`.\n\nClef (27B) and Clef Flash (9B) are multimodal: requests can now include images alongside the text state, shared by all questions and scored jointly with it.\n\n```\ncurl http://localhost:11434/v1/systemone -d '{\n  \"model\": \"clef-flash\",\n  \"state\": \"The user took this screenshot.\",\n  \"images\": [\"<base64-encoded image>\"],\n  \"questions\": {\n    \"has_ollama\": {\"type\": \"noul\", \"instructions\": \"Does this image contain Ollama?\"}\n  }\n}'\n```\n```\n{\n  \"model\": \"clef-flash\",\n  \"answers\": {\n    \"has_ollama\": {\n      \"type\": \"noul\",\n      \"noul\": 0.958\n    }\n  },\n  \"usage\": {\n    \"input_tokens\": 548,\n    \"output_tokens\": 0\n  }\n}\n```",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://updatify.io/releases/ollama",
+          "heading": "What’s Changed",
+          "ord": 2,
+          "text": "- Models using web search can now perform up to ten searches per response, up from three\n- \nModelfiles now support `CAPABILITY` declarations, so model creators can explicitly declare what a model can do. Declarations are preserved when creating from GGUF or safetensors, through model inheritance, and on Modelfile export\n- \n`ollama show` and the model list now report only`decision` as the capability for decision models, so clients no longer offer them for general chat, tools, or thinking\n- Updated llama.cpp and the MLX engine\n\n**Full Changelog**: https://github.com/ollama/ollama/compare/v0.35.0…v0.35.1",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 5,
+      "url": "https://releases.sh/ollama",
+      "title": "Ollama Release Notes & Changelog · October 2026 — Releases Index",
+      "site_name": "releases.sh",
+      "domain": "releases.sh",
+      "published_at": "2026-09-29",
+      "fetched_at": "2026-10-03T03:28:14.646651+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://releases.sh/ollama",
+          "heading": "Ollama",
+          "ord": 0,
+          "text": "$\n\n`npx @buildinternet/releases get ollama`",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://releases.sh/ollama",
+          "heading": "v0.40.0",
+          "ord": 1,
+          "text": "pre\nv0.40.0-rc0",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://releases.sh/ollama",
+          "heading": "What's Changed",
+          "ord": 2,
+          "text": "**Models run on MLX on Apple Silicon by default**\n\nIn this release, model architectures supported by the MLX runner will run by default on Apple Silicon devices.\n\n```\nollama pull qwen3.8\nollama run qwen3.8\n```\nDuring the RC we will be testing and…",
+          "selection_applied": false
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 6,
+      "url": "https://github.com/loong64/ollama/releases",
+      "title": "Releases · loong64/ollama",
+      "site_name": "GitHub",
+      "domain": "github.com",
+      "published_at": "2026-10-01",
+      "fetched_at": "2026-10-03T03:28:14.646661+00:00",
+      "kind": "page",
+      "passages": [
+        {
+          "source_url": "https://github.com/loong64/ollama/releases",
+          "heading": "Releases: loong64/ollama",
+          "ord": 0,
+          "text": "Releases · loong64/ollama",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://github.com/loong64/ollama/releases",
+          "heading": "Release list / v0.35.0",
+          "ord": 1,
+          "text": "**Full Changelog**: `v0.30.10...v0.35.0`",
+          "selection_applied": false
+        },
+        {
+          "source_url": "https://github.com/loong64/ollama/releases",
+          "heading": "v0.34.4",
+          "ord": 2,
+          "text": "**Full Changelog**: `v0.30.10...v0.34.4`",
+          "selection_applied": false
+        }
+      ],
+      "cited": false
+    }
+  ],
+  "reads": [
+    {
+      "url": "https://github.com/loong64/ollama/releases",
+      "title": "Releases · loong64/ollama",
+      "site_name": "GitHub",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://github.com/ollama/ollama/releases",
+      "title": "Releases · ollama/ollama",
+      "site_name": "GitHub",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://ollama.com/blog",
+      "title": "Blog · Ollama",
+      "site_name": "Ollama",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://releasebot.io/updates/ollama",
+      "title": "Ollama Release Notes",
+      "site_name": "Releasebot",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://releases.sh/ollama",
+      "title": "Ollama Release Notes & Changelog · October 2026 — Releases Index",
+      "site_name": "releases.sh",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://updatify.io/releases/ollama",
+      "title": "Ollama release notes",
+      "site_name": "Updatifyio",
+      "status": "used",
+      "reason": null
+    }
+  ],
+  "elapsed_ms": 9710.396957991179,
+  "web": {
+    "status": "used",
+    "freshness": "week",
+    "notice": null,
+    "queries": [
+      "Ollama latest release notes official",
+      "Ollama release notes 2026 October official"
+    ],
+    "timings": {
+      "plan": 1081.132624996826,
+      "search": 1008.6652089958079,
+      "fetch": 1295.1240420225076,
+      "rank": 3.633749991422519
+    },
+    "source_count": 6,
+    "plan_fallback": false,
+    "providers": [
+      "SearXNG"
+    ],
+    "ranking": "keyword",
+    "selection_condition": null
+  }
+}

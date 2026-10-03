@@ -11,7 +11,7 @@ from fastapi import FastAPI
 
 from app.providers.base import ChatRequest, ProviderMessage
 from app.providers.ollama import Ollama
-from app.schemas import Passage, SearchResult
+from app.schemas import Passage, SearchResult, Source
 from app.search import cache, citations, planner, prompt
 from app.search.chunk import chunk
 from app.search.extract import _Text, extract
@@ -436,6 +436,9 @@ async def test_pipeline_persists_exact_selected_table_without_modifying_read_pag
         and "| Unknown | - |" not in body
     )
     assert all(p["selection_applied"] for p in source["passages"])
+    assert "[pending]" not in body and "| Café | Sales: 2 | [1] |" in body
+    assert len(detail["sources"][run.message.id]) == 1
+    assert "product sales" in runtime.state.captures[-1]["messages"][-1]["content"]
     assert body in runtime.state.captures[-1]["messages"][-1]["content"]
     assert "Host selection:" in body and page.text == original
     assert detail["messages"][-1]["web"]["selection_condition"]["property_word"] == "sold"
@@ -1132,3 +1135,126 @@ async def test_fetch_priority_survives_slow_top_result(
         f"https://source{i}.org/" for i in range(1, 5)
     }
     assert set(requested) == {f"https://source{i}.org/" for i in range(5)}
+
+
+def test_repeated_section_labels_do_not_merge_distinct_entries() -> None:
+    text = (
+        "# Project archive\n\n## Item A\n\n## Changes\n\nAdded alpha.\n\n"
+        "## Item B\n\n## Changes\n\nFixed beta.\n\n"
+        "## Details\n\nA description.\n\n## Changes\n\nUpdated gamma."
+    )
+    passages = chunk("https://example.org/archive", text)
+    assert len(passages) == 4
+    assert passages[0].heading == "Project archive / Item A / Changes"
+    assert passages[1].heading == "Item B / Changes"
+    assert passages[3].heading == "Changes"
+    assert all(not ("alpha" in p.text and "beta" in p.text) for p in passages)
+    # Identical labels separated by headings remain independent blocks.
+    repeated = chunk("https://example.org", "## Changes\n\nAlpha.\n\n## Changes\n\nBeta.")
+    assert [p.text for p in repeated] == ["Alpha.", "Beta."]
+    request = ChatRequest(
+        "fake", [ProviderMessage("system", "system"), ProviderMessage("user", "changes?")]
+    )
+    source = Source(
+        n=1,
+        url="https://example.org/archive",
+        title="Archive",
+        site_name="Example",
+        domain="example.org",
+        fetched_at="2026-10-03T00:00:00Z",
+        passages=passages,
+    )
+    prompt.build(request, [source])
+    assert (
+        "Section: Project archive / Item A / Changes\nAdded alpha." in request.messages[-1].content
+    )
+    assert "Section: Item B / Changes\nFixed beta." in request.messages[-1].content
+    assert source.passages[0].text == "Added alpha."
+
+
+def test_edit_links_do_not_hide_headings_and_fenced_headings_remain_code() -> None:
+    passages = chunk(
+        "https://example.org",
+        "## Records\n\n[edit]\n### Totals\n\n[edit]\n\n| Entry | Count |\n| A | 2 |\n\n"
+        "```text\n# Literal code heading\n```",
+    )
+    assert passages[0].heading == "Records / Totals"
+    assert "| A | 2 |" in passages[0].text
+    assert "[edit]" not in "\n".join(p.text for p in passages)
+    assert "# Literal code heading" in "\n".join(p.text for p in passages)
+    assert all("Literal code heading" not in p.heading for p in passages)
+
+
+def test_source_type_preservation_is_literal_bounded_and_respects_negation() -> None:
+    assert (
+        planner.preserve_source_type("Project changes", "Use the official notes.")
+        == "Project changes official"
+    )
+    assert (
+        planner.preserve_source_type("Project official notes", "Use official notes.")
+        == "Project official notes"
+    )
+    assert (
+        planner.preserve_source_type("Project changes", "Consult primary sources.")
+        == "Project changes primary"
+    )
+    for request in (
+        "What is the official currency?",
+        "Do not use official notes.",
+        "Never use official notes.",
+        "Avoid using primary sources.",
+        "Without using official sources, explain.",
+    ):
+        assert planner.preserve_source_type("Project changes", request) == "Project changes"
+    assert len(planner.preserve_source_type("x" * 120, "Use official sources.")) <= 120
+
+
+@pytest.mark.parametrize(
+    ("question", "query", "engine_freshness"),
+    [
+        ("What changed? Use official notes.", "Project changes official", "any"),
+        ("What changed?", "Project changes", "week"),
+    ],
+)
+async def test_official_index_discovery_keeps_page_freshness(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+    monkeypatch: pytest.MonkeyPatch,
+    question: str,
+    query: str,
+    engine_freshness: str,
+) -> None:
+    from app.search.extract import Page
+
+    app, client, _ = chat_app
+    searches: list[tuple[str, str]] = []
+    reads: list[str] = []
+
+    async def complete(self: Ollama, req: ChatRequest) -> dict[str, Any]:
+        return {"task": "lookup", "queries": ["Project changes"], "freshness": "week"}
+
+    async def search(self: Providers, provider: str, q: str, f: str) -> list[SearchResult]:
+        searches.append((q, f))
+        return [SearchResult(url="https://example.org/notes", title="Notes", provider="SearXNG")]
+
+    async def read(*args: Any, **kwargs: Any) -> Page:
+        reads.append(args[-1])
+        return Page(
+            args[1], "Notes", "Example", None, "# Notes\n\nProject changes include a new feature."
+        )
+
+    monkeypatch.setattr(Ollama, "complete_json", complete)
+    monkeypatch.setattr(Providers, "request", search)
+    monkeypatch.setattr(cache, "read", read)
+    conn = (await client.get("/api/connections")).json()[0]["id"]
+    chat = (
+        await client.post(
+            "/api/chats", json={"connection_id": conn, "model_id": "fake-chat", "web_enabled": True}
+        )
+    ).json()
+    response = (
+        await client.post(f"/api/chats/{chat['id']}/messages", json={"content": question})
+    ).json()
+    run = await finish(app, response)
+    assert run.message.status == "complete" and run.message.web.status == "used"
+    assert searches == [(query, engine_freshness)]
+    assert reads == ["week"] and run.message.web.freshness == "week"
