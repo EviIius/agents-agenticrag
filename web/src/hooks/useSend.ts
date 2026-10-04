@@ -24,9 +24,12 @@ import {
 } from "@/lib/api";
 import { errorCopy } from "@/lib/errors";
 import { attachRun } from "@/lib/sse";
+import { useFreshRows } from "@/stores/fresh";
 export function useSendState(chatId?: string) {
   const [busy, setBusy] = useState(false),
-    [pending, setPending] = useState("");
+    [pending, setPending] = useState<Message | null>(null);
+  const currentChat = useRef(chatId);
+  currentChat.current = chatId;
   const [sendError, setSendError] = useState("");
   const stopRequested = useRef(false);
   const restoreComposerFocus = useRef(false);
@@ -39,9 +42,11 @@ export function useSendState(chatId?: string) {
     }
   }, [chatId]);
   useEffect(() => {
-    setPending("");
+    setPending(null);
+    setSendError("");
   }, [chatId]);
   return {
+    currentChat,
     busy,
     setBusy,
     pending,
@@ -75,6 +80,7 @@ export function useSend({
   setSendError,
   stopRequested,
   restoreComposerFocus,
+  currentChat,
 }: {
   query: QueryClient;
   navigate: NavigateFunction;
@@ -94,12 +100,30 @@ export function useSend({
   refresh: () => void;
 } & ReturnType<typeof useSendState>) {
   const onSend = async (text: string, parent?: string | null) => {
-    if (!current || running || modelOperation.current || waitingForTranscript)
+    if (
+      !current ||
+      busy ||
+      running ||
+      modelOperation.current ||
+      waitingForTranscript
+    )
       return false;
     setSendError("");
     stopRequested.current = false;
     setBusy(true);
-    setPending(text);
+    const optimisticId = "pending-" + crypto.randomUUID();
+    if (chatId && parent === undefined) {
+      useFreshRows.getState().add(optimisticId);
+      setPending({
+        id: optimisticId,
+        chat_id: chatId,
+        role: "user",
+        content: text,
+        status: "complete",
+        attachments: effectiveFiles,
+        created_at: new Date().toISOString(),
+      });
+    }
     try {
       let id = chatId;
       let chat = detail.data?.chat;
@@ -124,14 +148,53 @@ export function useSend({
         attachment_ids: effectiveFiles.map((f) => f.id),
         web: chat?.web_enabled ?? web,
       });
-      if (!chatId) {
+      // Commit the confirmed rows atomically before removing the optimistic row.
+      const rows = [response.user_message, response.assistant_message].filter(
+        (row): row is Message => Boolean(row),
+      );
+      if (response.user_message && (!chatId || parent !== undefined))
+        useFreshRows.getState().add(response.user_message.id);
+      useFreshRows.getState().add(response.assistant_message.id);
+      // Existing chats need an atomic optimistic replacement. New chats retain
+      // their original authoritative-fetch timing and composer handoff.
+      if (chatId)
+        query.setQueryData<Detail>(["chat", id], (previous) => {
+          const confirmed =
+            previous ?? (chat ? { chat, messages: [] } : undefined);
+          if (!confirmed) return confirmed;
+          return {
+            ...confirmed,
+            chat: {
+              ...confirmed.chat,
+              current_leaf_id: response.assistant_message.id,
+            },
+            messages: [
+              ...confirmed.messages.filter(
+                (message) => !rows.some((row) => row.id === message.id),
+              ),
+              ...rows,
+            ],
+          };
+        });
+      if (!chatId && currentChat.current === chatId) {
         restoreComposerFocus.current =
           document.activeElement?.matches(".composer textarea") ?? false;
-        navigate("/c/" + id);
+        // Mount the new-chat composer/query before a fast SSE run can finish.
+        // A deferred route left the old composer accepting a draft that was
+        // then discarded by its handoff, and could detach the run too early.
+        navigate("/c/" + id, { flushSync: true });
       }
-      setFiles([]);
+      if (
+        currentChat.current === chatId ||
+        (!chatId && currentChat.current === id)
+      )
+        setFiles((files) =>
+          files.filter(
+            (file) => !effectiveFiles.some((sent) => sent.id === file.id),
+          ),
+        );
       void query.invalidateQueries({ queryKey: ["pending-recordings"] });
-      setPending("");
+      setPending(null);
       attachRun(response.run_id, id, response.assistant_message, query);
       if (stopRequested.current) {
         await api(`/runs/${response.run_id}/cancel`, {});
@@ -150,19 +213,21 @@ export function useSend({
         );
       return true;
     } catch (e) {
-      setSendError(
-        errorCopy(
-          e instanceof ApiError ? e.code : "provider_error",
-          e instanceof Error ? e.message : String(e),
-          current,
-          bootstrap.data?.connections.find(
-            (c) => c.id === current.connection_id,
+      if (currentChat.current === chatId)
+        setSendError(
+          errorCopy(
+            e instanceof ApiError ? e.code : "provider_error",
+            e instanceof Error ? e.message : String(e),
+            current,
+            bootstrap.data?.connections.find(
+              (c) => c.id === current.connection_id,
+            ),
           ),
-        ),
-      );
-      setPending("");
+        );
+      setPending(null);
       return false;
     } finally {
+      useFreshRows.getState().clear(optimisticId);
       setBusy(false);
     }
   };
@@ -180,6 +245,7 @@ export function useSend({
             : {}),
         },
       );
+      useFreshRows.getState().add(response.assistant_message.id);
       attachRun(
         response.run_id,
         message.chat_id,

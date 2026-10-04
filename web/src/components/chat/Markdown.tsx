@@ -1,9 +1,12 @@
+import { Check, Copy } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { Streamdown } from "streamdown";
 import { createCodePlugin } from "@streamdown/code";
 import { math } from "@streamdown/math";
 import "katex/dist/katex.min.css";
+import "streamdown/styles.css";
+import { useCopyFeedback } from "@/hooks/useCopyFeedback";
 import type { Source } from "@/lib/api";
 import { renderCitations } from "@/lib/citations";
 import { CitationPill } from "./CitationPill";
@@ -19,6 +22,7 @@ export default function Markdown({
   streaming?: boolean;
   sources?: Source[];
 }) {
+  const feedback = useCopyFeedback();
   const reduceMotion = useReducedMotion();
   const container = useRef<HTMLDivElement>(null);
   const rendered = sources ? renderCitations(text, sources.length) : text;
@@ -28,7 +32,7 @@ export default function Markdown({
     const makeScrollableFocusable = () => {
       root
         .querySelectorAll<HTMLElement>(
-          '[data-streamdown="code-block-body"], [data-streamdown="table-wrapper"]',
+          '[data-streamdown="code-block-body"], [data-streamdown="table-wrapper"], [data-streamdown="table-wrapper"] > div:has(> table)',
         )
         .forEach((element) => {
           element.tabIndex = 0;
@@ -47,7 +51,15 @@ export default function Markdown({
     return () => observer.disconnect();
   }, []);
   return (
-    <div ref={container} className="min-w-0">
+    <div
+      ref={container}
+      data-streaming={streaming || undefined}
+      data-code-copied={feedback.copied || undefined}
+      className="min-w-0"
+    >
+      <span role="status" aria-live="polite" className="sr-only">
+        {feedback.failed ? "Couldn't copy. Try again." : ""}
+      </span>
       <Streamdown
         className="prose-answer"
         skipHtml
@@ -56,9 +68,34 @@ export default function Markdown({
         shikiTheme={["github-light-default", "github-dark-default"]}
         parseIncompleteMarkdown={streaming}
         isAnimating={streaming}
-        animated={reduceMotion ? false : undefined}
+        animated={
+          streaming && !reduceMotion
+            ? {
+                animation: "fadeIn",
+                duration: 200,
+                easing: "ease-out",
+                sep: "word",
+              }
+            : false
+        }
+        caret={streaming ? "block" : undefined}
+        icons={{
+          CheckIcon: () =>
+            feedback.copied ? (
+              <Check
+                data-slot="copy-check"
+                aria-hidden="true"
+                className="size-3.5"
+              />
+            ) : (
+              <Copy aria-hidden="true" className="size-3.5" />
+            ),
+        }}
         codeBlockMaxHeight={480}
-        controls={{ code: { copy: true, download: false }, table: false }}
+        controls={{
+          code: { copy: { onCopy: feedback.confirm }, download: false },
+          table: false,
+        }}
         components={{
           a: ({ href, children, node }) => {
             if (href?.startsWith("#cite-") && sources) {

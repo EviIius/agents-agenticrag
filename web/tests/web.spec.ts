@@ -61,7 +61,9 @@ for (const width of [390, 1440])
       await expect(
         page.getByRole("dialog", { name: "Citation sources" }),
       ).toHaveCount(0);
-      await page.getByRole("button", { name: /2 sources/ }).click();
+      await page
+        .getByRole("button", { name: "2 sources", exact: true })
+        .click();
       const dialog = page.getByRole("dialog").last();
       await expect(
         dialog.getByText("via DuckDuckGo", { exact: true }),
@@ -157,8 +159,12 @@ test("search activity appears within 300ms and collapses after completion", asyn
   );
   expect(elapsed).toBeLessThanOrEqual(300);
   const activity = page.getByTestId("search-activity");
-  await expect(activity.locator("summary")).toContainText("Searched the web");
-  await expect(activity.locator("details")).not.toHaveAttribute("open");
+  await expect(
+    activity.locator('[data-slot="collapsible-trigger"]'),
+  ).toContainText("Searched the web");
+  await expect(
+    activity.locator('[data-slot="collapsible-trigger"]'),
+  ).toHaveAttribute("data-state", "closed");
   await expect(activity.locator('[data-domain="example.org"]')).toBeVisible();
   await mkdir("../artifacts/phase-2", { recursive: true });
   await import("node:fs/promises").then(({ writeFile }) =>

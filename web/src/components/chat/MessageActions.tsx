@@ -7,7 +7,8 @@ import {
   Info,
   ChevronDown,
 } from "lucide-react";
-import { toast } from "sonner";
+import { useCopyFeedback } from "@/hooks/useCopyFeedback";
+import { CopyFeedback } from "./CopyFeedback";
 import { IconButton } from "@/components/app/IconButton";
 import {
   Popover,
@@ -40,6 +41,7 @@ export function MessageActions({
   onRegenerate: () => void;
   onBranch: (id: string) => void;
 }) {
+  const feedback = useCopyFeedback();
   const branches = siblings(messages, message),
     index = branches.findIndex((m) => m.id === message.id);
   return (
@@ -47,16 +49,15 @@ export function MessageActions({
       <IconButton
         label="Copy message"
         onClick={() =>
-          void navigator.clipboard
-            .writeText(
-              message.role === "assistant"
-                ? message.content.replace(/\[\d+\]/g, "")
-                : message.content,
-            )
-            .then(() => toast("Copied"))
+          void feedback.copy(
+            message.role === "assistant"
+              ? message.content.replace(/\[\d+\]/g, "")
+              : message.content,
+          )
         }
       >
-        <Copy />
+        {!feedback.copied && <Copy />}
+        <CopyFeedback {...feedback} />
       </IconButton>
       {message.role === "user" ? (
         <IconButton label="Edit message" onClick={onEdit}>

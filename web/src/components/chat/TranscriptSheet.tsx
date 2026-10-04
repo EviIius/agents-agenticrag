@@ -1,7 +1,8 @@
 import { useOverlaySession } from "@/hooks/useOverlaySession";
+import { useCopyFeedback } from "@/hooks/useCopyFeedback";
+import { CopyFeedback } from "./CopyFeedback";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { X, Download } from "lucide-react";
 import { RecordingDownloadDialog } from "./RecordingDownloadDialog";
 import type { RecordingDownload } from "@/lib/recording-download";
@@ -38,6 +39,7 @@ export function TranscriptSheet({
   onOpenChange: (value: boolean) => void;
   fixture?: Transcript;
 }) {
+  const feedback = useCopyFeedback();
   const phone = useMediaQuery("(max-width:639px)");
   const [download, setDownload] = useState<RecordingDownload | null>(null);
   const downloadSession = useOverlaySession(download);
@@ -175,14 +177,10 @@ export function TranscriptSheet({
         <Button
           variant="outline"
           disabled={!data}
-          onClick={() => {
-            void navigator.clipboard.writeText(text ?? "").then(
-              () => toast.success("Transcript copied"),
-              () => toast.error("Couldn't copy transcript"),
-            );
-          }}
+          aria-label="Copy"
+          onClick={() => void feedback.copy(text ?? "")}
         >
-          Copy
+          <CopyFeedback {...feedback} /> Copy
         </Button>
         <Button
           variant="outline"

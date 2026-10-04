@@ -1,3 +1,8 @@
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
 import { useState } from "react";
 import { Globe, ChevronDown, X } from "lucide-react";
 import { IconButton } from "@/components/app/IconButton";
@@ -77,19 +82,22 @@ export function SourcesSheet({
               </p>
             </div>
           </div>
-          <details className="mt-2">
-            <summary className="min-h-11 cursor-pointer py-3 text-xs font-medium">
+          <Collapsible className="mt-2">
+            <CollapsibleTrigger className="flex min-h-11 w-full items-center gap-2 cursor-pointer py-3 text-xs font-medium">
               What the model saw
-            </summary>
-            {s.passages.map((p) => (
-              <div key={p.ord} className="border-t border-line py-3">
-                <h4 className="text-xs font-medium">{p.heading}</h4>
-                <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-xs leading-5 text-fg-2">
-                  {p.text}
-                </pre>
-              </div>
-            ))}
-          </details>
+              <ChevronDown className="ml-auto size-3" />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              {s.passages.map((p) => (
+                <div key={p.ord} className="border-t border-line py-3">
+                  <h4 className="text-xs font-medium">{p.heading}</h4>
+                  <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-xs leading-5 text-fg-2">
+                    {p.text}
+                  </pre>
+                </div>
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
         </section>
       ))}
       {reads

@@ -1,15 +1,28 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { useUI } from "@/stores/ui";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { resolvedTheme } from "@/lib/theme";
 export function ThemeProvider({ children }: { children: ReactNode }) {
+  const reduced = useReducedMotion();
+  const applied = useRef(false);
   const { theme, answerFont, textSize, reduceMotion } = useUI();
   useEffect(() => {
     const media = matchMedia("(prefers-color-scheme: dark)");
     const apply = () => {
-      document.documentElement.dataset.theme = resolvedTheme(
-        theme,
-        media.matches,
-      );
+      const resolved = resolvedTheme(theme, media.matches);
+      const update = () => {
+        document.documentElement.dataset.theme = resolved;
+      };
+      if (
+        applied.current &&
+        document.documentElement.dataset.theme !== resolved &&
+        !reduced &&
+        document.startViewTransition
+      ) {
+        const transition = document.startViewTransition(update);
+        void transition.finished.catch(() => {});
+      } else update();
+      applied.current = true;
     };
     apply();
     try {
@@ -19,7 +32,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
     media.addEventListener("change", apply);
     return () => media.removeEventListener("change", apply);
-  }, [theme]);
+  }, [theme, reduced]);
   useEffect(() => {
     Object.assign(document.documentElement.dataset, {
       answerFont,

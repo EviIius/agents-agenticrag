@@ -60,7 +60,12 @@ export function LiveAppShell() {
     [draftParams, setDraftParams] = useState<Params>({}),
     [search, setSearch] = useState(""),
     [debounced, setDebounced] = useState(""),
-    [above, setAbove] = useState(false);
+    [above, setAbove] = useState(false),
+    [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    setScrolled(false);
+    setAbove(false);
+  }, [chatId]);
   const { modelOperation, loadingModel, operateModel, changeModel } =
     useModelOps({ query, chatId, setSelected });
   const [draftPrompt, setDraftPrompt] = useState<string | null>(null);
@@ -283,6 +288,8 @@ export function LiveAppShell() {
       ));
   const composer = (
     <Composer
+      key={chatId ?? "new"}
+      optimistic={Boolean(chatId)}
       suggestions={!chatId}
       audioExtensions={audioExtensions}
       model={current}
@@ -401,6 +408,9 @@ export function LiveAppShell() {
       chatId={chatId}
       menu={menu}
       ui={ui}
+      activeChats={Object.values(runs)
+        .filter((run) => run.stage !== "done")
+        .map((run) => run.chatId)}
     />
   );
   let visible = visiblePath(
@@ -461,7 +471,7 @@ export function LiveAppShell() {
             Drop images, text files or recordings
           </div>
         )}
-        <header className="topbar">
+        <header data-scrolled={scrolled || undefined} className="topbar">
           <div className="flex min-w-0 flex-1 items-center">
             {(!desktop || ui.collapsed) && (
               <IconButton
@@ -525,6 +535,9 @@ export function LiveAppShell() {
         ) : (
           <>
             <LiveThread
+              pending={pending?.chat_id === chatId ? pending : null}
+              position={runEntry?.[1].position}
+              onScrollChange={setScrolled}
               selectedModel={current}
               messages={visible}
               all={all}
@@ -565,22 +578,28 @@ export function LiveAppShell() {
               }}
               reads={detail.data?.reads}
             />
-            {pending && <p className="mx-6 text-sm text-fg-2">{pending}</p>}
             <div className="composer-row relative" data-testid="composer-row">
-              {above && (
-                <Button
-                  aria-label="Scroll to bottom"
-                  className="absolute -top-12 right-6 size-11 rounded-full border border-line bg-surface text-fg"
-                  onClick={() =>
-                    scroll.current?.scrollTo({
-                      top: scroll.current.scrollHeight,
-                      behavior: "smooth",
-                    })
-                  }
-                >
-                  <ArrowDown />
-                </Button>
-              )}
+              <Button
+                data-slot="scroll-bottom"
+                data-state={above ? "visible" : "hidden"}
+                inert={!above}
+                tabIndex={above ? 0 : -1}
+                aria-hidden={!above}
+                aria-label="Scroll to bottom"
+                className="absolute -top-12 right-6 size-11 rounded-full border border-line bg-surface text-fg"
+                onClick={() =>
+                  scroll.current?.scrollTo({
+                    top: scroll.current.scrollHeight,
+                    behavior:
+                      matchMedia("(prefers-reduced-motion: reduce)").matches ||
+                      ui.reduceMotion === "always"
+                        ? "instant"
+                        : "smooth",
+                  })
+                }
+              >
+                <ArrowDown />
+              </Button>
               {composer}
             </div>
           </>

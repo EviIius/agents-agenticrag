@@ -4,6 +4,7 @@ import { useUI } from "@/stores/ui";
 import { Input } from "@/components/ui/input";
 import { ChatList } from "./ChatList";
 export function HistoryList({
+  activeChats,
   search,
   setSearch,
   history,
@@ -12,6 +13,7 @@ export function HistoryList({
   menu,
   ui,
 }: {
+  activeChats?: string[];
   search: string;
   setSearch: Dispatch<SetStateAction<string>>;
   history: {
@@ -38,6 +40,7 @@ export function HistoryList({
         <p className="p-3 text-sm text-fg-3">Loading chats…</p>
       ) : historyItems.length ? (
         <ChatList
+          activeChats={activeChats}
           chats={historyItems}
           selected={chatId}
           search={search}

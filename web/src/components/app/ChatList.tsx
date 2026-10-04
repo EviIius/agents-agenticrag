@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Pin } from "lucide-react";
 import { Link } from "react-router";
 import type { Chat } from "@/lib/api";
@@ -19,6 +19,7 @@ function group(chat: Chat) {
   return date.toLocaleDateString(undefined, { month: "long", year: "numeric" });
 }
 export function ChatList({
+  activeChats = [],
   chats,
   selected,
   search,
@@ -27,6 +28,7 @@ export function ChatList({
   hasNext,
   onNext,
 }: {
+  activeChats?: string[];
   chats: Chat[];
   selected?: string;
   search: string;
@@ -59,7 +61,9 @@ export function ChatList({
               </p>
             )}
             <div
-              className={`flex min-h-11 items-center rounded-md ${selected === chat.id ? "border-l-2 border-brand bg-surface-3" : "hover:bg-surface-2"}`}
+              data-slot="history-row"
+              data-current={selected === chat.id || undefined}
+              className={`relative flex min-h-11 items-center rounded-md ${selected === chat.id ? "border-l-2 border-brand bg-surface-3" : "hover:bg-surface-2"}`}
             >
               <Link
                 to={"/c/" + chat.id}
@@ -67,8 +71,16 @@ export function ChatList({
                 onClick={onOpen}
                 className="min-w-0 flex-1 truncate px-3 py-2 text-sm"
               >
-                {chat.title}
+                <ChatTitle title={chat.title} />
               </Link>
+              {activeChats.includes(chat.id) && (
+                <span
+                  data-slot="run-dot"
+                  role="img"
+                  aria-label="Generating response"
+                  className="size-1.5 shrink-0 rounded-full bg-brand"
+                />
+              )}
               {chat.pinned && (
                 <Pin
                   className="size-4 shrink-0 text-brand"
@@ -84,5 +96,20 @@ export function ChatList({
       <div ref={sentinel} className="h-1" />
       {hasNext && <p className="p-3 text-xs text-fg-3">Loading more chats…</p>}
     </>
+  );
+}
+
+function ChatTitle({ title }: { title: string }) {
+  const [snapshot, setSnapshot] = useState({ title, fresh: false });
+  if (snapshot.title !== title) setSnapshot({ title, fresh: true });
+  useEffect(() => {
+    if (!snapshot.fresh) return;
+    const timer = setTimeout(() => setSnapshot({ title, fresh: false }), 200);
+    return () => clearTimeout(timer);
+  }, [title, snapshot.fresh]);
+  return (
+    <span data-slot="chat-title" data-fresh={snapshot.fresh || undefined}>
+      {title}
+    </span>
   );
 }

@@ -38,12 +38,25 @@ export function UploadChip({
 }) {
   return (
     <div
+      data-slot="attachment-chip"
       role="status"
       className="mb-2 flex max-w-full items-center gap-2 rounded-lg border border-line bg-surface-2 p-2 text-xs"
     >
       <AudioLines className="size-4 shrink-0" />
       <div className="min-w-0 flex-1">
         <p className="truncate">{upload.filename}</p>
+        <div
+          data-slot="upload-progress"
+          role="progressbar"
+          aria-label="Upload progress"
+          aria-valuenow={upload.percent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <span
+            style={{ width: `${Math.min(100, Math.max(0, upload.percent))}%` }}
+          />
+        </div>
         <p className="text-fg-2">
           {upload.failed
             ? "Upload didn't finish"
@@ -144,6 +157,8 @@ export function AudioChip({
   return (
     <>
       <div
+        data-slot="audio-chip"
+        data-live={meta?.status === "transcribing" || undefined}
         data-testid="audio-chip"
         className={`mb-2 flex max-w-full items-center gap-2 rounded-lg border p-2 ${tooLarge && ready ? "border-warning text-warning" : "border-line bg-surface-2"}`}
       >
@@ -158,7 +173,12 @@ export function AudioChip({
           onClick={() => setOpen(true)}
         >
           <span className="block truncate font-medium">{item.filename}</span>
-          <span className="block break-words text-fg-2" role="status">
+          <span
+            data-slot="activity-label"
+            data-live={meta?.status === "transcribing" || undefined}
+            className="block break-words text-fg-2"
+            role="status"
+          >
             {label}
           </span>
           {item.audio_available === false && (

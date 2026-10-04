@@ -1,5 +1,5 @@
 import { AudioChip, UploadChip, type AudioUpload } from "./AudioChip";
-import { useRef, useState, useLayoutEffect } from "react";
+import { useRef, useState, useLayoutEffect, useEffect } from "react";
 import { ArrowUp, Plus, Brain, X, Square, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/app/IconButton";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/tooltip";
 export function Composer({
   starter = "",
+  optimistic = false,
   running = false,
   autoFocus = false,
   onSend,
@@ -38,6 +39,7 @@ export function Composer({
   onCancelUpload,
   webBlocked = false,
 }: {
+  optimistic?: boolean;
   transcriptionReady?: boolean;
   audioExtensions?: string[];
   uploads?: AudioUpload[];
@@ -62,6 +64,18 @@ export function Composer({
   onThinkChange?: (value: string | null) => void;
 }) {
   const [value, setValue] = useState(starter);
+  const revision = useRef(0),
+    mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  const updateDraft = (text: string) => {
+    revision.current++;
+    setValue(text);
+  };
   const fileInput = useRef<HTMLInputElement>(null);
   const textarea = useRef<HTMLTextAreaElement>(null);
   useLayoutEffect(() => {
@@ -81,13 +95,19 @@ export function Composer({
   const send = async () => {
     if (!running && !disabled && !waiting && value.trim()) {
       const submitted = value;
+      const version = revision.current;
+      if (optimistic) setValue("");
       const accepted = await onSend?.(submitted);
-      if (accepted !== false) setValue((v) => (v === submitted ? "" : v));
+      if (!mounted.current || revision.current !== version) return;
+      if (accepted === false && optimistic) setValue(submitted);
+      else if (accepted !== false)
+        setValue((draft) => (draft === submitted ? "" : draft));
     }
   };
   return (
     <>
       <form
+        data-slot="composer"
         className="composer"
         aria-label="Message"
         onSubmit={(event) => {
@@ -128,6 +148,7 @@ export function Composer({
           ) : (
             <div
               key={file.id}
+              data-slot="attachment-chip"
               className="mb-2 inline-flex max-w-full items-center rounded-md border border-line px-2 text-xs"
             >
               <span className="truncate">{file.filename}</span>
@@ -153,7 +174,7 @@ export function Composer({
                 : "Message…"
           }
           value={value}
-          onChange={(event) => setValue(event.target.value)}
+          onChange={(event) => updateDraft(event.target.value)}
           onPaste={(event) => {
             const files = Array.from(event.clipboardData.files);
             if (files.length) {
@@ -309,6 +330,7 @@ export function Composer({
                       fill="none"
                       stroke="var(--text-3)"
                       strokeWidth="2"
+                      data-slot="context-ring"
                       strokeDasharray={
                         context
                           ? `${Math.min(1, (context.used_tokens + value.length * 0.3) / context.context_length) * 51} 51`
@@ -341,7 +363,9 @@ export function Composer({
                     onClick={running ? onStop : undefined}
                     className={`size-11 rounded-full disabled:bg-surface-3 disabled:text-fg-2 disabled:opacity-100 ${running ? "bg-surface-3 text-fg" : "bg-brand text-on-brand"}`}
                   >
-                    {running ? <Square /> : <ArrowUp />}
+                    <span key={running ? "stop" : "send"} data-slot="send-icon">
+                      {running ? <Square /> : <ArrowUp />}
+                    </span>
                   </Button>
                 </span>
               </TooltipTrigger>
@@ -357,7 +381,10 @@ export function Composer({
         </div>
       </form>
       {(suggestions || recordingReady) && (!recordingReady || !value) && (
-        <div className="mt-4 flex flex-wrap justify-center gap-2">
+        <div
+          data-slot="suggestion-chips"
+          className="mt-4 flex flex-wrap justify-center gap-2"
+        >
           {(recordingReady
             ? ["Summarize", "Action items", "Decisions"]
             : [
@@ -372,7 +399,7 @@ export function Composer({
               variant="outline"
               className="min-h-11 rounded-full bg-surface text-sm"
               onClick={() => {
-                setValue(
+                updateDraft(
                   recordingReady
                     ? ({
                         Summarize: "Summarize this recording.",

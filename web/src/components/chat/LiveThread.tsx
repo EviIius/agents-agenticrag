@@ -1,3 +1,6 @@
+import { WaitingDots } from "./WaitingDots";
+import { useFreshRows } from "@/stores/fresh";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { AudioChip } from "./AudioChip";
 import {
   lazy,
@@ -56,9 +59,11 @@ function Thinking({
     >
       <CollapsibleTrigger className="flex min-h-11 w-full items-center gap-2 px-3 text-sm text-fg-2">
         <Brain className="size-4" />
-        {live
-          ? `Thinking… ${elapsed}s`
-          : `Thought for ${Math.round((duration ?? elapsed * 1000) / 1000)}s`}
+        <span data-slot="activity-label" data-live={live || undefined}>
+          {live
+            ? `Thinking… ${elapsed}s`
+            : `Thought for ${Math.round((duration ?? elapsed * 1000) / 1000)}s`}
+        </span>
         <ChevronDown className="ml-auto size-4" />
       </CollapsibleTrigger>
       <CollapsibleContent className="max-h-72 overflow-y-auto whitespace-pre-wrap px-4 pb-4 text-sm leading-6 text-fg-2">
@@ -68,6 +73,9 @@ function Thinking({
   );
 }
 type LiveThreadProps = {
+  pending?: Message | null;
+  position?: number;
+  onScrollChange?: (scrolled: boolean) => void;
   onRegenerateWith?: (message: Message, model: Model) => void;
   models?: Model[];
   selectedModel?: Model;
@@ -112,6 +120,9 @@ export function LiveThread({
   onChatSettings,
   onNew,
   onRegenerateWith,
+  pending,
+  position,
+  onScrollChange,
 }: LiveThreadProps) {
   const [editing, setEditing] = useState<string | null>(null),
     [draft, setDraft] = useState("");
@@ -198,7 +209,7 @@ export function LiveThread({
   useEffect(() => {
     if (stick.current && scrollRef.current)
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [messages, steps, scrollRef]);
+  }, [messages, steps, pending, scrollRef]);
   return (
     <>
       <p className="sr-only" role="status">
@@ -216,6 +227,7 @@ export function LiveThread({
           if (e) {
             stick.current = e.scrollHeight - e.clientHeight - e.scrollTop < 80;
             onAboveBottomChange(!stick.current);
+            onScrollChange?.(e.scrollTop > 0);
           }
         }}
       >
@@ -225,6 +237,7 @@ export function LiveThread({
               key={message.id}
               message={message}
               all={all}
+              position={message.status === "streaming" ? position : undefined}
               stage={message.status === "streaming" ? stage : undefined}
               steps={message.status === "streaming" ? steps : undefined}
               sources={sources?.[message.id]}
@@ -240,9 +253,53 @@ export function LiveThread({
               setDraft={setDraft}
             />
           ))}
+          {pending && <OptimisticRow message={pending} />}
         </div>
       </div>
     </>
+  );
+}
+
+function useFreshRow(id: string) {
+  const fresh = useFreshRows((state) => Boolean(state.ids[id]));
+  const reduced = useReducedMotion();
+  useEffect(() => {
+    if (!fresh) return;
+    if (reduced) {
+      useFreshRows.getState().clear(id);
+      return;
+    }
+    const timeout = setTimeout(() => useFreshRows.getState().clear(id), 400);
+    return () => clearTimeout(timeout);
+  }, [fresh, reduced, id]);
+  return fresh;
+}
+function OptimisticRow({ message }: { message: Message }) {
+  const fresh = useFreshRow(message.id);
+  return (
+    <div data-testid="optimistic-send">
+      <article
+        aria-label="user message"
+        data-message-id={message.id}
+        data-fresh={fresh || undefined}
+        onAnimationEnd={(event) => {
+          if (event.target === event.currentTarget)
+            useFreshRows.getState().clear(message.id);
+        }}
+        className="min-w-0 py-4"
+      >
+        <h2 className="sr-only">You said</h2>
+        <div className="ml-auto w-fit max-w-full rounded-2xl border border-line bg-surface-2 px-4 py-3">
+          <p className="whitespace-pre-wrap break-words">{message.content}</p>
+          {message.attachments?.map((attachment) => (
+            <p key={attachment.id} className="text-xs text-fg-2">
+              {attachment.filename}
+            </p>
+          ))}
+        </div>
+      </article>
+      <WaitingDots />
+    </div>
   );
 }
 
@@ -260,6 +317,7 @@ type MessageRowProps = Omit<
 };
 export const MessageRow = memo(function MessageRow({
   message,
+  position,
   all,
   stage,
   steps,
@@ -281,10 +339,16 @@ export const MessageRow = memo(function MessageRow({
   setEditing,
   setDraft,
 }: MessageRowProps) {
+  const fresh = useFreshRow(message.id);
   const content = (
     <article
       aria-label={`${message.role} message`}
       className="min-w-0 py-4"
+      data-fresh={fresh || undefined}
+      onAnimationEnd={(event) => {
+        if (event.target === event.currentTarget)
+          useFreshRows.getState().clear(message.id);
+      }}
       data-message-id={message.id}
       style={
         message.status !== "streaming"
@@ -359,21 +423,20 @@ export const MessageRow = memo(function MessageRow({
           {message.status === "streaming" &&
             stage !== "search" &&
             !message.content &&
-            !message.reasoning && (
+            !message.reasoning &&
+            (stage === "queued" || stage === "loading-model" ? (
               <p
                 className="flex min-h-12 items-center gap-2 text-sm text-fg-2"
                 role="status"
               >
                 <LoaderCircle data-activity="spin" className="size-4" />
                 {stage === "queued"
-                  ? "Waiting in line…"
-                  : stage === "loading-model"
-                    ? "Loading model…"
-                    : stage === "search"
-                      ? "Searching the web…"
-                      : "Waiting for first token…"}
+                  ? `Waiting for ${message.model?.display_name ?? "model"}…${position ? ` (#${position} in line)` : ""}`
+                  : "Loading model…"}
               </p>
-            )}
+            ) : (
+              <WaitingDots />
+            ))}
           <SearchActivity
             message={message}
             sources={sources ?? []}

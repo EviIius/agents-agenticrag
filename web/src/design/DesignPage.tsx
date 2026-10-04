@@ -1,3 +1,4 @@
+import { ConversationMotionPreview } from "./ConversationMotionPreview";
 import { MotionPreview } from "./MotionPreview";
 import { PolishPreview } from "./PolishPreview";
 import { TranscriptionPreview } from "./TranscriptionPreview";
@@ -263,6 +264,7 @@ export function DesignPage() {
         <DataPane preview />
       </section>
       <MotionPreview />
+      <ConversationMotionPreview />
       <PolishPreview />
       <TranscriptionPreview />
       <ReviewStates />

@@ -1,4 +1,10 @@
-import { Globe } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
+import { Globe, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Message, Source } from "@/lib/api";
 import { Favicon } from "./CitationPill";
@@ -13,8 +19,14 @@ export function SearchActivity({
   steps?: { label: string; detail: string; status: string }[];
   onRetry: () => void;
 }) {
-  const info = message.web,
-    live = message.status === "streaming";
+  const info = message.web;
+  const live =
+    message.status === "streaming" &&
+    !(steps ?? []).some((step) =>
+      ["done", "failed", "skipped"].includes(step.label),
+    );
+  const [open, setOpen] = useState(live);
+  useEffect(() => setOpen(live), [live]);
   const domains = Array.from(
     new Set([
       ...sources.map((source) => source.domain),
@@ -64,36 +76,52 @@ export function SearchActivity({
           </Button>
         </div>
       )}
-      <details
-        key={live ? "live" : "finished"}
-        open={live}
+      <Collapsible
+        open={open}
+        onOpenChange={setOpen}
         className="rounded-lg border border-line p-3"
       >
-        <summary className="flex min-h-11 cursor-pointer flex-wrap items-center gap-2">
+        <CollapsibleTrigger className="flex min-h-11 w-full cursor-pointer flex-wrap items-center gap-2 text-left">
           <Globe className="size-4" />
-          {live
-            ? "Searching the web…"
-            : `Searched the web · ${sources.length} sources · ${(Object.values(info?.timings ?? {}).reduce((a, b) => a + b, 0) / 1000).toFixed(1)}s`}
+          <span data-slot="activity-label" data-live={live || undefined}>
+            {live
+              ? "Searching the web…"
+              : `Searched the web · ${sources.length} sources · ${(Object.values(info?.timings ?? {}).reduce((a, b) => a + b, 0) / 1000).toFixed(1)}s`}
+          </span>
           <span className="flex gap-1">
-            {domains.map((domain) => (
-              <Favicon key={domain} domain={domain} />
+            {domains.map((domain, index) => (
+              <span
+                key={domain}
+                data-slot="activity-favicon"
+                data-stagger={index}
+              >
+                <Favicon domain={domain} />
+              </span>
             ))}
           </span>
-        </summary>
-        <ul className="space-y-2 border-t border-line pt-3">
-          {(steps ?? []).map((s, i) => (
-            <li key={i} className="break-words">
-              {s.label} · {s.detail}
-            </li>
-          ))}
-          {!steps?.length &&
-            info?.queries?.map((q) => (
-              <li key={q} className="break-words">
-                {q}
+          <ChevronDown className="ml-auto size-3" />
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <ul className="space-y-2 border-t border-line pt-3">
+            {(steps ?? []).map((s, i) => (
+              <li
+                key={i}
+                data-slot="search-step"
+                data-live={live || undefined}
+                className="break-words"
+              >
+                {s.label} · {s.detail}
               </li>
             ))}
-        </ul>
-      </details>
+            {!steps?.length &&
+              info?.queries?.map((q) => (
+                <li key={q} className="break-words">
+                  {q}
+                </li>
+              ))}
+          </ul>
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 }

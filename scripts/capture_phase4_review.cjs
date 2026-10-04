@@ -79,7 +79,7 @@ const output = process.argv[2];
   await palette.getByRole('option',{name:/Synthetic review conversation/}).waitFor({state:'attached'});
   await shot('command-palette');
   await page.keyboard.press('Escape');
-  await page.getByRole('button',{name:/1 sources?/}).click();
+  await page.getByRole('button',{name:'1 sources',exact:true}).click();
   await page.getByRole('dialog',{name:/Sources/}).waitFor();
   await shot('sources');
   await page.keyboard.press('Escape');

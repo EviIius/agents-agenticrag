@@ -292,6 +292,262 @@ html [data-slot="drawer-overlay"][data-vaul-overlay][data-state] {
   }
 }
 
+/* Conversation motion: presentation flags are cleared after each entrance. */
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--shift-md));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+article[data-fresh="true"],
+.empty-chat[data-empty-fresh="true"] .greeting,
+.empty-chat[data-empty-fresh="true"] .composer,
+.empty-chat[data-empty-fresh="true"] [data-slot="suggestion-chips"] {
+  animation: row-in var(--dur-med) var(--ease-out) both;
+}
+.empty-chat[data-empty-fresh="true"] .composer {
+  animation-delay: 60ms;
+}
+.empty-chat[data-empty-fresh="true"] [data-slot="suggestion-chips"] {
+  animation-delay: 120ms;
+}
+@keyframes waiting-wave {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+[data-slot="waiting-dots"] > [aria-hidden] {
+  animation: waiting-wave 1.2s var(--ease) infinite;
+}
+[data-slot="waiting-dots"] > [aria-hidden]:nth-of-type(2) {
+  animation-delay: 160ms;
+}
+[data-slot="waiting-dots"] > [aria-hidden]:nth-of-type(3) {
+  animation-delay: 320ms;
+}
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+[data-streaming="true"]
+  .prose-answer
+  > :last-child:not([data-sd-caret-hidden])::after {
+  color: var(--text-3);
+  animation: caret-blink 1s steps(1) infinite;
+}
+@keyframes collapse-in {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+  }
+}
+@keyframes collapse-out {
+  from {
+    height: var(--radix-collapsible-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+[data-slot="collapsible-content"] {
+  overflow: hidden;
+}
+[data-slot="collapsible-content"][data-state="open"] {
+  animation: collapse-in var(--dur-med) var(--ease-out);
+}
+[data-slot="collapsible-content"][data-state="closed"] {
+  animation: collapse-out var(--dur-fast) var(--ease-in);
+}
+[data-slot="collapsible-trigger"] > svg:last-child {
+  transition: transform var(--dur-fast) var(--ease);
+}
+[data-slot="collapsible-trigger"][data-state="open"] > svg:last-child {
+  transform: rotate(180deg);
+}
+/* A low contrast veil moves across a live label; foreground text stays readable. */
+@keyframes activity-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+[data-slot="activity-label"][data-live="true"] {
+  position: relative;
+  overflow: hidden;
+}
+[data-slot="activity-label"][data-live="true"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--surface-2),
+    transparent
+  );
+  opacity: 0.2;
+  animation: activity-shimmer 1.6s linear infinite;
+}
+[data-slot="search-step"][data-live="true"] {
+  animation: workbench-reveal var(--dur-fast) var(--ease-out);
+}
+@keyframes small-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+[data-slot="activity-favicon"],
+[data-slot="copy-check"],
+[data-slot="send-icon"] {
+  display: inline-flex;
+  animation: small-pop var(--dur-fast) var(--ease-pop);
+}
+[data-slot="activity-favicon"][data-stagger="1"] {
+  animation-delay: 40ms;
+}
+[data-slot="activity-favicon"][data-stagger="2"] {
+  animation-delay: 80ms;
+}
+[data-slot="activity-favicon"][data-stagger="3"] {
+  animation-delay: 120ms;
+}
+[data-code-copied="true"] [data-streamdown="code-block-copy-button"] svg {
+  animation: small-pop var(--dur-fast) var(--ease-pop);
+}
+[data-slot="scroll-bottom"] {
+  transition:
+    opacity var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
+}
+[data-slot="scroll-bottom"][data-state="hidden"] {
+  opacity: 0;
+  transform: translateY(var(--shift-md));
+}
+[data-slot="scroll-bottom"][data-state="visible"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+[data-slot="composer"] {
+  transition:
+    border-color var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease);
+}
+@keyframes chip-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.composer [data-slot="attachment-chip"],
+.composer [data-slot="audio-chip"] {
+  animation: chip-in var(--dur-med) var(--ease-out);
+}
+[data-slot="upload-progress"] {
+  height: 2px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+[data-slot="upload-progress"] > span {
+  display: block;
+  height: 100%;
+  background: var(--brand);
+  transition: width var(--dur-fast) linear;
+}
+[data-slot="context-ring"] {
+  transition: stroke-dasharray var(--dur-med) var(--ease);
+}
+[data-slot="history-row"] {
+  transition: background-color var(--dur-fast) var(--ease);
+}
+@keyframes selected-bar {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+[data-slot="history-row"][data-current="true"]::before {
+  content: "";
+  position: absolute;
+  width: 2px;
+  top: 0;
+  bottom: 0;
+  left: -2px;
+  background: var(--brand);
+  animation: selected-bar var(--dur-med) var(--ease-out);
+}
+[data-slot="run-dot"] {
+  animation: breathe 1.2s var(--ease) infinite;
+}
+[data-slot="chat-title"][data-fresh="true"] {
+  animation: opacity-in var(--dur-med) var(--ease-out);
+}
+@keyframes loaded-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.35);
+  }
+}
+[data-slot="model-status"][data-loaded-fresh="true"] {
+  display: inline-block;
+  animation: loaded-pulse var(--dur-med) var(--ease);
+}
+/* Width snaps: the 300-message candidate exceeded 18 ms in WebKit. */
+.sidebar-desktop[data-collapsed="false"] header > span {
+  animation: opacity-in var(--dur-fast) var(--ease-out);
+}
+::view-transition-old(root) {
+  animation: opacity-out var(--dur-med) var(--ease-in) both;
+}
+::view-transition-new(root) {
+  animation: opacity-in var(--dur-med) var(--ease-out) both;
+}
+[data-slot="side-panel"] {
+  animation: side-panel-in var(--dur-med) var(--ease-out);
+}
+@keyframes side-panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.topbar {
+  transition: border-color var(--dur-fast) var(--ease);
+}
+.topbar[data-scrolled="true"] {
+  border-bottom-color: var(--line);
+}
 /* Both triggers cover the root, pseudo-elements, vendor motion and future text fades. */
 @media (prefers-reduced-motion: reduce) {
   *,

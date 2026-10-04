@@ -1,3 +1,4 @@
+import { FileSaveDialog } from "./FileSaveDialog";
 import { useState } from "react";
 import { useOverlaySession } from "@/hooks/useOverlaySession";
 import type { Chat } from "@/lib/api";
@@ -64,51 +65,31 @@ function ChatActionContent({
     )
       .join("")
       .replace(/^[ .]+|[ .]+$/g, "");
-    const filename =
-      (Array.from(safeTitle).slice(0, 120).join("") || "Untitled chat") +
-      "." +
-      format;
+    const basename =
+      Array.from(safeTitle).slice(0, 120).join("") || "Untitled chat";
     return (
-      <Dialog
+      <FileSaveDialog
         open={open}
-        onOpenChange={(open) => {
-          if (!open) onClose();
-        }}
-      >
-        <DialogContent inert={!open}>
-          <DialogTitle className="pr-12">
-            Export {format === "md" ? "Markdown" : "JSON"}
-          </DialogTitle>
-          <DialogDescription>
-            Download the current branch of “{action.chat.title}”. Other branches
-            remain in Workbench.
-          </DialogDescription>
-          <p className="break-words text-sm text-fg-2">{filename}</p>
-          <div className="flex flex-wrap justify-end gap-2">
-            <Button variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button asChild>
-              <a
-                href={
-                  "/api/chats/" + action.chat.id + "/export?format=" + format
-                }
-                download={filename}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(event) => {
-                  if (preview) event.preventDefault();
-                  setTimeout(onClose, 0);
-                }}
-              >
-                Download
-              </a>
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+        initial={format}
+        onClose={onClose}
+        preview={preview ? "ready" : undefined}
+        title={format === "md" ? "Export Markdown" : "Export JSON"}
+        closeLabel="Close chat export"
+        downloadLabel="Download"
+        description="Save the current branch. Choose a format before saving; other branches remain in Workbench."
+        options={[
+          { format: "md", label: "Markdown (.md)" },
+          { format: "json", label: "JSON (.json)" },
+        ].map((option) => ({
+          ...option,
+          url:
+            "/api/chats/" + action.chat.id + "/export?format=" + option.format,
+          filename: basename + "." + option.format,
+        }))}
+      />
     );
   }
+
   if (action.kind === "delete")
     return (
       <AlertDialog

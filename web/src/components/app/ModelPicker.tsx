@@ -69,6 +69,28 @@ export function ModelPicker({
     return () => clearInterval(timer);
   }, [busy, loadingModel]);
   const phone = useMediaQuery("(max-width: 639px)");
+  const previousLoad = useRef(loadingModel);
+  const [loadedPulse, setLoadedPulse] = useState<string | null>(null);
+  useEffect(() => {
+    const loaded = previousLoad.current;
+    previousLoad.current = loadingModel;
+    if (
+      loaded &&
+      !loadingModel &&
+      models?.some(
+        (model) =>
+          model.connection_id + model.model_id === loaded &&
+          model.loaded === true,
+      )
+    ) {
+      setLoadedPulse(loaded);
+    }
+  }, [loadingModel, models]);
+  useEffect(() => {
+    if (!loadedPulse) return;
+    const timer = setTimeout(() => setLoadedPulse(null), 200);
+    return () => clearTimeout(timer);
+  }, [loadedPulse]);
   const trigger = (
     <Button
       variant="ghost"
@@ -76,7 +98,16 @@ export function ModelPicker({
       aria-label="Choose model"
       onClick={() => setOpen(true)}
     >
-      <span className="text-success" aria-hidden>
+      <span
+        data-slot="model-status"
+        data-loaded-fresh={
+          loadedPulse ===
+            (current?.connection_id ?? "") + (current?.model_id ?? "") ||
+          undefined
+        }
+        className="text-success"
+        aria-hidden
+      >
         {loadingModel ===
         (current?.connection_id ?? "") + (current?.model_id ?? "") ? (
           <LoaderCircle data-activity="spin" className="size-4" />

@@ -31,7 +31,11 @@ export function Panels({
 }) {
   return (
     <>
-      {ui.panel && wide && <aside className="chat-panel">{panel}</aside>}
+      {ui.panel && wide && (
+        <aside data-slot="side-panel" className="chat-panel">
+          {panel}
+        </aside>
+      )}
       <Sheet open={ui.sidebar} onOpenChange={(sidebar) => ui.set({ sidebar })}>
         <SheetContent
           side="left"
