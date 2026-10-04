@@ -79,7 +79,7 @@ export function ModelPicker({
       <span className="text-success" aria-hidden>
         {loadingModel ===
         (current?.connection_id ?? "") + (current?.model_id ?? "") ? (
-          <LoaderCircle className="size-4 animate-spin" />
+          <LoaderCircle data-activity="spin" className="size-4" />
         ) : current?.loaded == null ? (
           ""
         ) : current.loaded ? (
@@ -250,7 +250,7 @@ export function ModelPicker({
               ))}
           {state === "loading-model" && (
             <p className="flex items-center gap-2 p-4 text-fg-2">
-              <LoaderCircle className="size-4 animate-spin" />
+              <LoaderCircle data-activity="spin" className="size-4" />
               Loading {current?.display_name ?? "model"}… {elapsed} s
             </p>
           )}

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { Streamdown } from "streamdown";
 import { createCodePlugin } from "@streamdown/code";
 import { math } from "@streamdown/math";
@@ -18,6 +19,7 @@ export default function Markdown({
   streaming?: boolean;
   sources?: Source[];
 }) {
+  const reduceMotion = useReducedMotion();
   const container = useRef<HTMLDivElement>(null);
   const rendered = sources ? renderCitations(text, sources.length) : text;
   useEffect(() => {
@@ -54,6 +56,7 @@ export default function Markdown({
         shikiTheme={["github-light-default", "github-dark-default"]}
         parseIncompleteMarkdown={streaming}
         isAnimating={streaming}
+        animated={reduceMotion ? false : undefined}
         codeBlockMaxHeight={480}
         controls={{ code: { copy: true, download: false }, table: false }}
         components={{

@@ -1,3 +1,4 @@
+import { MotionPreview } from "./MotionPreview";
 import { PolishPreview } from "./PolishPreview";
 import { TranscriptionPreview } from "./TranscriptionPreview";
 import { lazy, Suspense, useState } from "react";
@@ -261,6 +262,7 @@ export function DesignPage() {
         </h2>
         <DataPane preview />
       </section>
+      <MotionPreview />
       <PolishPreview />
       <TranscriptionPreview />
       <ReviewStates />

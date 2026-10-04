@@ -364,7 +364,7 @@ export const MessageRow = memo(function MessageRow({
                 className="flex min-h-12 items-center gap-2 text-sm text-fg-2"
                 role="status"
               >
-                <LoaderCircle className="size-4 animate-spin" />
+                <LoaderCircle data-activity="spin" className="size-4" />
                 {stage === "queued"
                   ? "Waiting in line…"
                   : stage === "loading-model"

@@ -5,6 +5,7 @@ import { router } from "./router";
 import { registerPWA } from "./lib/pwa";
 import "./styles/fonts.css";
 import "./styles/globals.css";
+import "./styles/motion.css";
 import "./styles/prose.css";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

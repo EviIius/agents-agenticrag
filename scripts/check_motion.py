@@ -37,7 +37,7 @@ def violations(source: Path, allow_globals: bool = False) -> list[str]:
             outside = text[: match.start()] + text[end:]
             if not re.search(r"\b" + re.escape(name) + r"\b", outside):
                 errors.append(f"{relative}: unused keyframe {name}")
-        if re.search(r"will-change\s*:", text):
+        if re.search(r"will-change\s*:|willChange\s*:", text):
             errors.append(f"{relative}: static will-change")
     return errors
 

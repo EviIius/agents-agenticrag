@@ -1,3 +1,4 @@
+import { useOverlaySession } from "@/hooks/useOverlaySession";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -39,6 +40,7 @@ export function TranscriptSheet({
 }) {
   const phone = useMediaQuery("(max-width:639px)");
   const [download, setDownload] = useState<RecordingDownload | null>(null);
+  const downloadSession = useOverlaySession(download);
   const [view, setView] = useState("Text"),
     [version, setVersion] = useState("original");
   const fetched = useQuery({
@@ -190,10 +192,12 @@ export function TranscriptSheet({
           <Download className="size-4" /> Download
         </Button>
       </footer>
-      {download && (
+      {downloadSession.value && (
         <RecordingDownloadDialog
+          open={downloadSession.open}
+          key={downloadSession.sequence}
           attachment={attachment}
-          initial={download}
+          initial={downloadSession.value}
           preview={fixture ? "ready" : undefined}
           onClose={() => setDownload(null)}
         />

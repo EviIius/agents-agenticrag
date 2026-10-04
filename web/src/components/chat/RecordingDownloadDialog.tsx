@@ -29,10 +29,12 @@ export type DownloadPreview =
 export function RecordingDownloadDialog({
   attachment,
   initial,
+  open = true,
   onClose,
   includeAudio = false,
   preview,
 }: {
+  open?: boolean;
   attachment: Attachment;
   initial: RecordingDownload;
   onClose: () => void;
@@ -55,6 +57,7 @@ export function RecordingDownloadDialog({
   const filename =
     selected?.file?.name ?? recordingFilename(attachment, format);
   useEffect(() => {
+    if (!open) return;
     const controller = new AbortController();
     setNotice("");
     setPrepared(undefined);
@@ -101,7 +104,7 @@ export function RecordingDownloadDialog({
       }
     })();
     return () => controller.abort();
-  }, [attachment, format, url, attempt, preview]);
+  }, [attachment, format, url, attempt, preview, open]);
   let canShare = false;
   try {
     canShare = Boolean(
@@ -158,12 +161,13 @@ export function RecordingDownloadDialog({
   );
   return (
     <Dialog
-      open
+      open={open}
       onOpenChange={(open) => {
         if (!open) onClose();
       }}
     >
       <DialogContent
+        inert={!open}
         showCloseButton={false}
         className="flex flex-col gap-0 overflow-clip p-0"
       >

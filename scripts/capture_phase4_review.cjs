@@ -8,13 +8,8 @@ const output = process.argv[2];
   const page = await context.newPage();
   const root=process.env.WORKBENCH_REVIEW_URL || 'http://127.0.0.1:5173';
   const seedFile='artifacts/phase-4/baseline/review-fixture-fake.json';
-  let seed;
-  try {seed=JSON.parse(await fs.readFile(seedFile,'utf8'));} catch {
-    seed={bootstrap:await (await context.request.get(root+'/api/bootstrap')).json(),models:await (await context.request.get(root+'/api/models')).json()};
-    seed.bootstrap.connections.forEach(c=>{c.latency_ms=20;c.model_count=3;c.name='Fake runtime';});
-    seed.models=seed.models.filter(m=>['fake-chat','fake-reasoning','fake-vision'].includes(m.model_id)).map(m=>({...m,params_defaults:{},context_limit:16384,context_length:16384,loaded:m.model_id==='fake-chat',hidden:false}));
-    await fs.writeFile(seedFile,JSON.stringify(seed,null,2)+'\n');
-  }
+  const seed=JSON.parse(await fs.readFile(seedFile,'utf8'));
+  if (!seed.models.length || !seed.models.every(m=>m.model_id.startsWith('fake-')) || !seed.bootstrap.connections.every(c=>c.base_url==='http://127.0.0.1:18080')) throw new Error('Review captures require the committed synthetic fixture.');
   const bootstrap=structuredClone(seed.bootstrap);
   const models=structuredClone(seed.models);
   const model=models.find(m=>m.model_id==='fake-reasoning');
@@ -41,8 +36,9 @@ const output = process.argv[2];
    else if(path==='/api/attachments/pending') body=pending;
    else if(path==='/api/attachments/fake-recording/transcript') body=transcript;
    else if(path==='/api/search/status') body=[];
+   else if(path==='/api/transcription/status') body={available:true,audio_extensions:['.wav'],model:'fake-whisper',glossary_terms:0};
    else if(path.startsWith('/api/favicons/')) return route.fulfill({status:404});
-   else return route.continue();
+   else return route.fulfill({status:404});
    await route.fulfill({json:body});
   });
   const settle=async()=>{

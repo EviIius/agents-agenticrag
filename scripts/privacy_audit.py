@@ -7,7 +7,7 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-AUDIO = {".wav", ".mp3", ".m4a", ".flac", ".aiff", ".aac", ".caf", ".opus", ".ogg", ".wma"}
+AUDIO = {".wav", ".mp3", ".m4a", ".flac", ".aif", ".aiff", ".aac", ".amr", ".caf", ".mka", ".mov", ".mp4", ".oga", ".opus", ".ogg", ".wma"}
 KEY = re.compile(r"\b(?:sk-[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{30,}|AKIA[A-Z0-9]{16})\b")
 
 

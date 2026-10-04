@@ -36,6 +36,8 @@
   /* Code */
   --code-bg: #f3f2ee;
   /* Elevation */
+  --overlay: rgb(29 28 26 / 0.32);
+  --shadow-lg: 0 2px 6px rgb(20 20 18 / 0.06), 0 16px 48px rgb(20 20 18 / 0.14);
   --shadow-sm: 0 1px 2px rgb(20 20 18 / 0.05);
   --shadow-md: 0 1px 3px rgb(20 20 18 / 0.06), 0 6px 20px rgb(20 20 18 / 0.08);
   --shadow-composer:
@@ -50,9 +52,17 @@
   --radius-md: 10px;
   --radius-lg: 14px;
   --radius-xl: 22px;
+  --dur-instant: 80ms;
   --dur-fast: 120ms;
   --dur-med: 200ms;
+  --dur-slow: 320ms;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-pop: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --shift-sm: 4px;
+  --shift-md: 8px;
   /* Layout */
   --sidebar-w: 272px;
   --sidebar-rail-w: 56px;
@@ -85,6 +95,8 @@
   --cite-text: #d9d6cf;
   --cite-bg-hover: #383734;
   --code-bg: #161615;
+  --overlay: rgb(0 0 0 / 0.55);
+  --shadow-lg: 0 2px 6px rgb(0 0 0 / 0.4), 0 20px 56px rgb(0 0 0 / 0.5);
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
   --shadow-md: 0 1px 3px rgb(0 0 0 / 0.35), 0 8px 24px rgb(0 0 0 / 0.35);
   --shadow-composer:
@@ -174,7 +186,6 @@
 }
 
 :root {
-  --overlay: rgb(0 0 0 / 0.5);
 }
 @theme inline {
   --color-overlay: var(--overlay);
@@ -386,12 +397,6 @@ input::placeholder {
 .skeleton {
   background: var(--surface-2);
   border-radius: var(--radius-sm);
-  animation: breathe 1.5s ease-in-out infinite;
-}
-@keyframes breathe {
-  50% {
-    opacity: 0.55;
-  }
 }
 @media (min-width: 1024px) {
   .sidebar-desktop {
@@ -448,23 +453,6 @@ input::placeholder {
     min-height: 44px;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation: none !important;
-    transition: none !important;
-    scroll-behavior: auto !important;
-  }
-}
-[data-reduce-motion="always"] *,
-[data-reduce-motion="always"] *::before,
-[data-reduce-motion="always"] *::after {
-  animation: none !important;
-  transition: none !important;
-  scroll-behavior: auto !important;
-}
-
 .prose-answer ol {
   list-style: decimal;
 }
@@ -599,51 +587,6 @@ html
   pointer-events: auto;
 }
 
-/* Functional motion uses the existing 120/200ms tokens, never layout animation. */
-@keyframes workbench-reveal {
-  from {
-    opacity: 0;
-    translate: 0 4px;
-  }
-  to {
-    opacity: 1;
-    translate: 0 0;
-  }
-}
-.settings-pane,
-.model-selected-mark {
-  animation: workbench-reveal var(--dur-med) var(--ease) both;
-}
-[data-slot="button"] {
-  transition-duration: var(--dur-fast);
-  transition-timing-function: var(--ease);
-  transition-property:
-    color, background-color, border-color, box-shadow, opacity, transform;
-}
-[data-slot="button"]:active:not(:disabled) {
-  transform: scale(0.98);
-}
 [data-slot="command-item"][data-active-model="true"] {
   background: var(--brand-soft);
-}
-[data-slot="dialog-content"],
-[data-slot="dialog-overlay"],
-[data-slot="sheet-content"],
-[data-slot="sheet-overlay"],
-html [data-slot="drawer-content"],
-html [data-slot="drawer-overlay"],
-[data-slot="popover-content"],
-[data-slot="dropdown-menu-content"],
-[data-slot="select-content"] {
-  animation-duration: var(--dur-med);
-  transition-duration: var(--dur-med);
-  transition-timing-function: var(--ease);
-}
-@media (prefers-reduced-motion: reduce) {
-  [data-slot="button"]:active:not(:disabled) {
-    transform: none;
-  }
-}
-[data-reduce-motion="always"] [data-slot="button"]:active:not(:disabled) {
-  transform: none;
 }

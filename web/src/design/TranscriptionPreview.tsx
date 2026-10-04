@@ -1,3 +1,4 @@
+import { useOverlaySession } from "@/hooks/useOverlaySession";
 import { useState } from "react";
 import { AudioChip, UploadChip } from "@/components/chat/AudioChip";
 import { TranscriptSheet } from "@/components/chat/TranscriptSheet";
@@ -86,6 +87,7 @@ const message: Message = {
 export function TranscriptionPreview() {
   const [open, setOpen] = useState(false);
   const [download, setDownload] = useState<DownloadPreview | null>(null);
+  const downloadSession = useOverlaySession(download);
   const states: Attachment[] = [
     {
       ...fakeRecording,
@@ -241,12 +243,14 @@ export function TranscriptionPreview() {
           </Button>
         ))}
       </div>
-      {download && (
+      {downloadSession.value && (
         <RecordingDownloadDialog
+          open={downloadSession.open}
+          key={downloadSession.sequence}
           attachment={fakeRecording}
           initial={{ format: "txt" }}
           includeAudio
-          preview={download}
+          preview={downloadSession.value}
           onClose={() => setDownload(null)}
         />
       )}

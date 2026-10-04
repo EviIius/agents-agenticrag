@@ -82,7 +82,12 @@ for (const width of [320, 390, 1440])
         await expect(
           page.getByRole("option", { name: /fake-reasoning/ }),
         ).toBeVisible();
+        await settle(page);
         await page.keyboard.press("Escape");
+        await expect(
+          page.getByRole("option", { name: /fake-reasoning/ }),
+        ).not.toBeVisible();
+        await settle(page);
         await page.keyboard.press("Control+/");
         await expect(
           page.getByRole("dialog", { name: "Settings" }),
@@ -90,8 +95,13 @@ for (const width of [320, 390, 1440])
         await expect(
           page.getByRole("heading", { name: "Shortcuts", exact: true }),
         ).toBeVisible();
+        await settle(page);
         await page.keyboard.press("Escape");
+        await expect(
+          page.getByRole("dialog", { name: "Settings" }),
+        ).toHaveCount(0);
         await page.keyboard.press("Control+k");
+        await expect(input).toBeFocused();
         await input.fill("palette search phrase");
         await dialog
           .getByRole("option", { name: /Synthetic palette chat/ })

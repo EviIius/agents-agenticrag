@@ -1,3 +1,4 @@
+import { useOverlaySession } from "@/hooks/useOverlaySession";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { AudioLines, Ellipsis, Square, Trash2, X } from "lucide-react";
@@ -78,6 +79,7 @@ export function AudioChip({
   const meta = item.transcript;
   const query = useQueryClient();
   const [download, setDownload] = useState<RecordingDownload | null>(null);
+  const downloadSession = useOverlaySession(download);
   const [open, setOpen] = useState(false),
     [clock, setClock] = useState(Date.now());
   useEffect(() => {
@@ -277,10 +279,12 @@ export function AudioChip({
           </IconButton>
         )}
       </div>
-      {download && (
+      {downloadSession.value && (
         <RecordingDownloadDialog
+          open={downloadSession.open}
+          key={downloadSession.sequence}
           attachment={item}
-          initial={download}
+          initial={downloadSession.value}
           includeAudio={item.audio_available !== false}
           preview={fixture ? "ready" : undefined}
           onClose={() => setDownload(null)}

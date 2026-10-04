@@ -633,7 +633,6 @@ export function LiveAppShell() {
         }}
       />
       <ChatActionDialog
-        key={String(action?.chat.id) + String(action?.kind)}
         action={action}
         onClose={() => setAction(null)}
         onApply={(title) => {

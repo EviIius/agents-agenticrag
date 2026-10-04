@@ -103,7 +103,7 @@ Delete every `tw-animate` utility and every `duration-*`/`ease-*` utility that o
 
 ### 4.4 Overlay choreography
 
-Radix keeps a closing element mounted until its `animationend` fires, so each overlay needs an animation on `[data-state="closed"]`, not only on open.
+Radix keeps a closing element mounted until its `animationend` fires, so each overlay needs an animation on `[data-state="closed"]`, not only on open. Parent-owned conditional dialogs retain their presentation payload for the exit while their logical close and commands remain immediate. Closed content is inert, and reopening starts a fresh session; do not delay commands with timers.
 
 | ID | Surface (`data-slot`) | Enter | Exit |
 |---|---|---|---|

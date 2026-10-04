@@ -1,0 +1,338 @@
+/* First-party motion. Vaul and Sonner keep ownership of their drag/toast physics. */
+@keyframes breathe {
+  50% {
+    opacity: 0.55;
+  }
+}
+@keyframes workbench-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(var(--shift-sm));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.skeleton {
+  animation: breathe 1.5s var(--ease) infinite;
+}
+.settings-pane,
+.model-selected-mark {
+  animation: workbench-reveal var(--dur-med) var(--ease) both;
+}
+[data-activity="spin"] {
+  animation: activity-spin 1s linear infinite;
+}
+@keyframes activity-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+[data-slot="button"],
+[data-slot="tabs-trigger"] {
+  transition:
+    color var(--dur-fast) var(--ease),
+    background-color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease),
+    opacity var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
+}
+[data-slot="button"]:active:not(:disabled) {
+  transform: scale(0.98);
+}
+[data-slot="input"],
+[data-slot="textarea"],
+[data-slot="select-trigger"],
+[data-slot="scroll-area-viewport"],
+[data-slot="slider-thumb"] {
+  transition:
+    color var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease);
+}
+[data-slot="dialog-close"],
+[data-slot="sheet-close"],
+[data-slot="tabs-trigger"]::after {
+  transition: opacity var(--dur-fast) var(--ease);
+}
+[data-slot="switch-track"],
+[data-slot="scroll-area-scrollbar"] {
+  transition: background-color var(--dur-fast) var(--ease);
+}
+[data-slot="switch-thumb"] {
+  transition: translate var(--dur-fast) var(--ease);
+}
+
+/* Direction variables compose with Radix's transform origin and Tailwind centering. */
+:is(
+  [data-slot="popover-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="select-content"],
+  [data-slot="tooltip-content"]
+) {
+  --motion-x: 0px;
+  --motion-y: var(--shift-sm);
+}
+:is(
+  [data-slot="popover-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="select-content"],
+  [data-slot="tooltip-content"]
+)[data-side="bottom"] {
+  --motion-y: calc(-1 * var(--shift-sm));
+}
+:is(
+  [data-slot="popover-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="select-content"],
+  [data-slot="tooltip-content"]
+)[data-side="left"] {
+  --motion-x: var(--shift-sm);
+  --motion-y: 0px;
+}
+:is(
+  [data-slot="popover-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="select-content"],
+  [data-slot="tooltip-content"]
+)[data-side="right"] {
+  --motion-x: calc(-1 * var(--shift-sm));
+  --motion-y: 0px;
+}
+@keyframes floating-in {
+  from {
+    opacity: 0;
+    transform: translate(var(--motion-x), var(--motion-y)) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+@keyframes floating-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+:is(
+  [data-slot="popover-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="select-content"]
+)[data-state="open"] {
+  animation: floating-in var(--dur-med) var(--ease-out) both;
+}
+:is(
+  [data-slot="popover-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="select-content"]
+)[data-state="closed"] {
+  animation: floating-out var(--dur-fast) var(--ease-in) both;
+}
+@keyframes tooltip-in {
+  from {
+    opacity: 0;
+    transform: translate(calc(var(--motion-x) / 2), calc(var(--motion-y) / 2));
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+@keyframes opacity-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes opacity-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+[data-slot="tooltip-content"][data-state]:not([data-state="closed"]) {
+  animation: tooltip-in var(--dur-fast) var(--ease-out) both;
+}
+[data-slot="tooltip-content"][data-state="closed"] {
+  animation: opacity-out var(--dur-instant) var(--ease-in) both;
+}
+:is(
+  [data-slot="dialog-overlay"],
+  [data-slot="alert-dialog-overlay"],
+  [data-slot="sheet-overlay"]
+)[data-state="open"] {
+  animation: opacity-in var(--dur-med) var(--ease-out) both;
+}
+:is(
+  [data-slot="dialog-overlay"],
+  [data-slot="alert-dialog-overlay"],
+  [data-slot="sheet-overlay"]
+)[data-state="closed"] {
+  animation: opacity-out var(--dur-fast) var(--ease-in) both;
+}
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--shift-md)) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes dialog-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+:is(
+  [data-slot="dialog-content"],
+  [data-slot="alert-dialog-content"]
+)[data-state="open"] {
+  animation: dialog-in var(--dur-med) var(--ease-out) both;
+}
+:is(
+  [data-slot="dialog-content"],
+  [data-slot="alert-dialog-content"]
+)[data-state="closed"] {
+  animation: dialog-out var(--dur-fast) var(--ease-in) both;
+}
+[data-slot="sheet-content"] {
+  --motion-x: 100%;
+  --motion-y: 0px;
+}
+[data-slot="sheet-content"][data-side="left"] {
+  --motion-x: -100%;
+}
+[data-slot="sheet-content"][data-side="top"] {
+  --motion-x: 0px;
+  --motion-y: -100%;
+}
+[data-slot="sheet-content"][data-side="bottom"] {
+  --motion-x: 0px;
+  --motion-y: 100%;
+}
+@keyframes sheet-in {
+  from {
+    transform: translate(var(--motion-x), var(--motion-y));
+  }
+  to {
+    transform: translate(0, 0);
+  }
+}
+@keyframes sheet-out {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(var(--motion-x), var(--motion-y));
+  }
+}
+[data-slot="sheet-content"][data-state="open"] {
+  animation: sheet-in var(--dur-slow) var(--ease-sheet) both;
+}
+[data-slot="sheet-content"][data-state="closed"] {
+  animation: sheet-out 240ms var(--ease-in) both;
+}
+html [data-slot="drawer-content"][data-vaul-drawer][data-state],
+html [data-slot="drawer-overlay"][data-vaul-overlay][data-state] {
+  animation-duration: var(--dur-slow);
+  animation-timing-function: var(--ease-sheet);
+  transition-duration: var(--dur-slow);
+  transition-timing-function: var(--ease-sheet);
+}
+@keyframes full-screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes full-screen-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+@media (max-width: 639px) {
+  [data-slot="dialog-content"].settings-dialog[data-state="open"] {
+    animation: full-screen-in var(--dur-slow) var(--ease-sheet) both;
+  }
+  [data-slot="dialog-content"].settings-dialog[data-state="closed"] {
+    animation: full-screen-out 240ms var(--ease-in) both;
+  }
+}
+
+/* Both triggers cover the root, pseudo-elements, vendor motion and future text fades. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  [data-slot="button"]:active:not(:disabled) {
+    transform: none;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+  [data-sd-animate],
+  [data-sd-animate-marker]::marker {
+    animation: none !important;
+  }
+}
+[data-reduce-motion="always"],
+[data-reduce-motion="always"] *,
+[data-reduce-motion="always"]::before,
+[data-reduce-motion="always"]::after,
+[data-reduce-motion="always"] *::before,
+[data-reduce-motion="always"] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+[data-reduce-motion="always"] [data-slot="button"]:active:not(:disabled) {
+  transform: none;
+}
+[data-reduce-motion="always"]::view-transition-group(*),
+[data-reduce-motion="always"]::view-transition-old(*),
+[data-reduce-motion="always"]::view-transition-new(*) {
+  animation: none !important;
+}
+[data-reduce-motion="always"] [data-sd-animate],
+[data-reduce-motion="always"] [data-sd-animate-marker]::marker {
+  animation: none !important;
+}
