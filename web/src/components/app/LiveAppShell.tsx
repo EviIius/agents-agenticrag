@@ -1,4 +1,12 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useSend, useSendState } from "@/hooks/useSend";
+import { useUploads } from "@/hooks/useUploads";
+import { useModelOps } from "@/hooks/useModelOps";
+import { useShortcuts } from "@/hooks/useShortcuts";
+import { ChatMenu } from "./ChatMenu";
+import { HistoryList } from "./HistoryList";
+import { EmptyState } from "./EmptyState";
+import { Panels } from "./Panels";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import {
   useQuery,
@@ -6,38 +14,11 @@ import {
   useInfiniteQuery,
   keepPreviousData,
 } from "@tanstack/react-query";
-import {
-  ArrowDown,
-  X,
-  Ellipsis,
-  PanelLeftOpen,
-  SlidersHorizontal,
-} from "lucide-react";
+import { ArrowDown, PanelLeftOpen, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTitle,
-  DrawerHeader,
-  DrawerDescription,
-} from "@/components/ui/drawer";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { CommandPalette } from "./CommandPalette";
 import { resolvedTheme } from "@/lib/theme";
-import { ChatList } from "./ChatList";
 import { ChatActionDialog } from "./ChatActionDialog";
 import { ModelPicker } from "./ModelPicker";
 import { Welcome } from "./Welcome";
@@ -53,78 +34,35 @@ import { useRuns } from "@/stores/runs";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import {
   api,
-  type Attachment,
   type Bootstrap,
   type Chat,
   type Detail,
-  type Message,
   type Model,
   type Params,
-  type RunResponse,
 } from "@/lib/api";
 import type { components } from "@/lib/api-types";
-import { ApiError } from "@/lib/api";
-import { errorCopy } from "@/lib/errors";
-import { attachTranscription, detachTranscription, attachRun } from "@/lib/sse";
+import { detachTranscription, attachRun } from "@/lib/sse";
 import { latestLeaf, visiblePath } from "@/lib/tree";
 import { useTranscripts } from "@/stores/transcripts";
-import type { AudioUpload } from "@/components/chat/AudioChip";
-import { prepareImage, uploadWithProgress } from "@/lib/attachments";
-import {
-  useAudioExtensions,
-  transcriptionStatusQuery,
-} from "@/hooks/useAudioExtensions";
 import { usePreferenceSync } from "@/hooks/usePreferenceSync";
 export function LiveAppShell() {
   const ui = useUI(),
     navigate = useNavigate(),
     { chatId } = useParams();
   const query = useQueryClient();
+  const sendState = useSendState(chatId);
+  const { busy, pending, sendError } = sendState;
   const desktop = useMediaQuery("(min-width:1024px)"),
     wide = useMediaQuery("(min-width:1280px)"),
     phone = useMediaQuery("(max-width:639px)");
   const [selected, setSelected] = useState<Model>(),
     [web, setWeb] = useState(false),
     [draftParams, setDraftParams] = useState<Params>({}),
-    [files, setFiles] = useState<Attachment[]>([]),
     [search, setSearch] = useState(""),
     [debounced, setDebounced] = useState(""),
-    [above, setAbove] = useState(false),
-    [busy, setBusy] = useState(false),
-    [pending, setPending] = useState("");
-  const [loadingModel, setLoadingModel] = useState<string | null>(null);
-  const [uploads, setUploads] = useState<AudioUpload[]>([]);
-  const uploadControllers = useRef(new Map<string, AbortController>());
-  const [dragging, setDragging] = useState(false);
-  const dragDepth = useRef(0);
-  const transcriptState = useTranscripts((state) => state.attachments);
-  const effectiveFiles = files.map((file) =>
-    file.kind === "audio" ? (transcriptState[file.id] ?? file) : file,
-  );
-  const waitingForTranscript =
-    uploads.some((upload) => !upload.failed) ||
-    effectiveFiles.some(
-      (file) => file.kind === "audio" && file.transcript?.status !== "ready",
-    );
-  const restored = useRef(false);
-  const pendingRecordings = useQuery({
-    queryKey: ["pending-recordings"],
-    queryFn: () => api<Attachment[]>("/attachments/pending"),
-    refetchOnWindowFocus: false,
-  });
-  useEffect(() => {
-    if (!pendingRecordings.data || restored.current) return;
-    restored.current = true;
-    setFiles((files) => [
-      ...files,
-      ...pendingRecordings.data.filter(
-        (item) => !files.some((file) => file.id === item.id),
-      ),
-    ]);
-    pendingRecordings.data.forEach(attachTranscription);
-  }, [pendingRecordings.data]);
-  const modelOperation = useRef(false);
-  const [sendError, setSendError] = useState("");
+    [above, setAbove] = useState(false);
+  const { modelOperation, loadingModel, operateModel, changeModel } =
+    useModelOps({ query, chatId, setSelected });
   const [draftPrompt, setDraftPrompt] = useState<string | null>(null);
   const [action, setAction] = useState<{
     chat: Chat;
@@ -132,23 +70,12 @@ export function LiveAppShell() {
   } | null>(null);
   const scroll = useRef<HTMLDivElement>(null);
   const previousChat = useRef(chatId);
-  const stopRequested = useRef(false);
-  const restoreComposerFocus = useRef(false);
-  useLayoutEffect(() => {
-    if (restoreComposerFocus.current) {
-      restoreComposerFocus.current = false;
-      document
-        .querySelector<HTMLTextAreaElement>(".composer textarea")
-        ?.focus();
-    }
-  }, [chatId]);
   const bootstrap = useQuery({
     queryKey: ["bootstrap"],
     queryFn: () => api<Bootstrap>("/bootstrap"),
     refetchInterval: () => (document.hidden ? false : 30000),
   });
   usePreferenceSync(bootstrap.data?.settings);
-  const audioExtensions = useAudioExtensions(Boolean(bootstrap.data));
   const models = useQuery({
     queryKey: ["models"],
     queryFn: () => api<Model[]>("/models"),
@@ -236,6 +163,19 @@ export function LiveAppShell() {
       : selected
         ? { ...selected, loaded: null }
         : undefined);
+  const {
+    setFiles,
+    effectiveFiles,
+    waitingForTranscript,
+    uploads,
+    setUploads,
+    uploadControllers,
+    dragging,
+    setDragging,
+    dragDepth,
+    audioExtensions,
+    upload,
+  } = useUploads({ query, bootstrap, current });
   useEffect(() => {
     if (models.data?.length) void import("@/components/chat/Markdown");
   }, [models.data]);
@@ -282,60 +222,7 @@ export function LiveAppShell() {
       }
     }
   }, [active.data, detail.data, chatId, query]);
-  useEffect(() => {
-    setPending("");
-  }, [chatId]);
-  useEffect(() => {
-    const listener = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        ui.set({ command: true });
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === ",") {
-        e.preventDefault();
-        ui.set({
-          settings: true,
-          sidebar: false,
-          panel: false,
-          command: false,
-        });
-      }
-      if (
-        (e.metaKey || e.ctrlKey) &&
-        e.shiftKey &&
-        e.key.toLowerCase() === "o"
-      ) {
-        e.preventDefault();
-        ui.set({
-          command: false,
-          settings: false,
-          panel: false,
-          sidebar: false,
-        });
-        navigate("/");
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b") {
-        e.preventDefault();
-        ui.set(
-          desktop ? { collapsed: !ui.collapsed } : { sidebar: !ui.sidebar },
-        );
-      }
-      if (
-        (e.metaKey || e.ctrlKey) &&
-        e.shiftKey &&
-        (e.key === ">" || e.code === "Period")
-      ) {
-        e.preventDefault();
-        ui.set({ panel: !ui.panel });
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === "/") {
-        e.preventDefault();
-        ui.set({ settings: true, settingsPane: "Shortcuts", command: false });
-      }
-    };
-    window.addEventListener("keydown", listener);
-    return () => window.removeEventListener("keydown", listener);
-  }, [navigate, ui, desktop]);
+  useShortcuts({ navigate, ui, desktop });
   const refresh = () => {
     void query.invalidateQueries({ queryKey: ["chat", chatId] });
     void query.invalidateQueries({ queryKey: ["chats"] });
@@ -352,234 +239,25 @@ export function LiveAppShell() {
       return false;
     }
   };
-  const operateModel = async (model: Model, unload = false) => {
-    if (modelOperation.current) return;
-    modelOperation.current = true;
-    setLoadingModel(model.connection_id + model.model_id);
-    const notice = toast.loading(
-      `${unload ? "Ejecting" : "Loading"} ${model.display_name}…`,
-    );
-    try {
-      await api(unload ? "/models/unload" : "/models/load", {
-        connection_id: model.connection_id,
-        model_id: model.model_id,
-      });
-      query.setQueryData(
-        ["models"],
-        await api<Model[]>("/models?refresh=true"),
-      );
-      void query.invalidateQueries({ queryKey: ["context", chatId] });
-      toast.success(`${model.display_name} ${unload ? "ejected" : "loaded"}`, {
-        id: notice,
-      });
-    } catch (e) {
-      toast.error(
-        `Couldn’t ${unload ? "eject" : "load"} ${model.display_name}`,
-        { id: notice, description: String(e) },
-      );
-    } finally {
-      modelOperation.current = false;
-      setLoadingModel(null);
-    }
-  };
-  const changeModel = async (model: Model) => {
-    if (modelOperation.current) return;
-    try {
-      if (chatId) {
-        const updated = await api<Chat>(
-          "/chats/" + chatId,
-          {
-            connection_id: model.connection_id,
-            model_id: model.model_id,
-          },
-          "PATCH",
-        );
-        query.setQueryData<Detail>(
-          ["chat", chatId],
-          (previous) => previous && { ...previous, chat: updated },
-        );
-        void query.invalidateQueries({ queryKey: ["context", chatId] });
-      }
-      setSelected(model);
-      if (!model.loaded) await operateModel(model);
-    } catch (e) {
-      toast.error("Couldn’t switch models", { description: String(e) });
-    }
-  };
-  const onSend = async (text: string, parent?: string | null) => {
-    if (!current || running || modelOperation.current || waitingForTranscript)
-      return false;
-    setSendError("");
-    stopRequested.current = false;
-    setBusy(true);
-    setPending(text);
-    try {
-      let id = chatId;
-      let chat = detail.data?.chat;
-      if (!id) {
-        chat = await api<Chat>("/chats", {
-          connection_id: current.connection_id,
-          model_id: current.model_id,
-          web_enabled: web,
-        });
-        id = chat.id;
-        if (Object.keys(draftParams).length || draftPrompt !== null)
-          await api(
-            "/chats/" + id,
-            { params: draftParams, system_prompt: draftPrompt },
-            "PATCH",
-          );
-      }
-      const response = await api<RunResponse>("/chats/" + id + "/messages", {
-        content: text,
-        parent_id:
-          parent === undefined ? (chat?.current_leaf_id ?? null) : parent,
-        attachment_ids: effectiveFiles.map((f) => f.id),
-        web: chat?.web_enabled ?? web,
-      });
-      if (!chatId) {
-        restoreComposerFocus.current =
-          document.activeElement?.matches(".composer textarea") ?? false;
-        navigate("/c/" + id);
-      }
-      setFiles([]);
-      void query.invalidateQueries({ queryKey: ["pending-recordings"] });
-      setPending("");
-      attachRun(response.run_id, id, response.assistant_message, query);
-      if (stopRequested.current) {
-        await api(`/runs/${response.run_id}/cancel`, {});
-        stopRequested.current = false;
-      }
-      void query.invalidateQueries({ queryKey: ["chat", id] });
-      void query.invalidateQueries({ queryKey: ["chats"] });
-      if (bootstrap.data?.settings["new_chat_model"] !== "fixed")
-        void api(
-          "/settings",
-          {
-            default_connection_id: current.connection_id,
-            default_model_id: current.model_id,
-          },
-          "PATCH",
-        );
-      return true;
-    } catch (e) {
-      setSendError(
-        errorCopy(
-          e instanceof ApiError ? e.code : "provider_error",
-          e instanceof Error ? e.message : String(e),
-          current,
-          bootstrap.data?.connections.find(
-            (c) => c.id === current.connection_id,
-          ),
-        ),
-      );
-      setPending("");
-      return false;
-    } finally {
-      setBusy(false);
-    }
-  };
-  const regenerate = async (message: Message, force = false, model?: Model) => {
-    if (running) return;
-    stopRequested.current = false;
-    setBusy(true);
-    try {
-      const response = await api<RunResponse>(
-        "/messages/" + message.id + "/regenerate",
-        {
-          force_web: force,
-          ...(model
-            ? { connection_id: model.connection_id, model_id: model.model_id }
-            : {}),
-        },
-      );
-      attachRun(
-        response.run_id,
-        message.chat_id,
-        response.assistant_message,
-        query,
-      );
-      if (stopRequested.current) {
-        await api(`/runs/${response.run_id}/cancel`, {});
-        stopRequested.current = false;
-      }
-      refresh();
-    } catch (e) {
-      toast(String(e));
-    } finally {
-      setBusy(false);
-    }
-  };
-  const upload = async (incoming: File[]) => {
-    for (let file of incoming) {
-      try {
-        const suffix = "." + file.name.split(".").at(-1)?.toLowerCase();
-        const extensions = await query.ensureQueryData(
-          transcriptionStatusQuery,
-        );
-        const audio = (extensions.audio_extensions ?? []).includes(suffix);
-        if (audio) {
-          if (!bootstrap.data?.features.transcription)
-            throw new Error("Recordings need the transcription engine");
-          if (file.size > 4 * 1024 ** 3)
-            throw new Error("Recordings can be up to 4 GB.");
-          const id = crypto.randomUUID(),
-            controller = new AbortController();
-          uploadControllers.current.set(id, controller);
-          setUploads((uploads) => [
-            ...uploads,
-            { id, filename: file.name, percent: 0 },
-          ]);
-          try {
-            const attachment = await uploadWithProgress(
-              file,
-              (percent) =>
-                setUploads((uploads) =>
-                  uploads.map((upload) =>
-                    upload.id === id ? { ...upload, percent } : upload,
-                  ),
-                ),
-              controller.signal,
-            );
-            setFiles((files) => [...files, attachment]);
-            attachTranscription(attachment);
-            setUploads((uploads) =>
-              uploads.filter((upload) => upload.id !== id),
-            );
-          } catch (error) {
-            if (error instanceof DOMException && error.name === "AbortError")
-              setUploads((uploads) =>
-                uploads.filter((upload) => upload.id !== id),
-              );
-            else
-              setUploads((uploads) =>
-                uploads.map((upload) =>
-                  upload.id === id
-                    ? { ...upload, failed: true, reason: String(error) }
-                    : upload,
-                ),
-              );
-          } finally {
-            uploadControllers.current.delete(id);
-          }
-          continue;
-        }
-        if (file.type.startsWith("image/")) {
-          if (current?.vision !== true)
-            throw new Error("Images need a vision model.");
-          if (file.size > 20 * 1024 * 1024)
-            throw new Error("Image limit is 20 MB.");
-          file = await prepareImage(file);
-        }
-        const form = new FormData();
-        form.append("file", file);
-        const a = await api<Attachment>("/attachments", form);
-        setFiles((f) => [...f, a]);
-      } catch (e) {
-        toast(String(e));
-      }
-    }
-  };
+  const { onSend, regenerate, stop } = useSend({
+    query,
+    navigate,
+    chatId,
+    current,
+    running,
+    modelOperation,
+    waitingForTranscript,
+    detail,
+    web,
+    draftParams,
+    draftPrompt,
+    effectiveFiles,
+    setFiles,
+    bootstrap,
+    runEntry,
+    refresh,
+    ...sendState,
+  });
   const chatParams = detail.data?.chat.params ?? draftParams;
   const saveParams = (prompt: string | null, params: Params) => {
     if (chatId)
@@ -610,16 +288,7 @@ export function LiveAppShell() {
       model={current}
       disabled={!current || busy || !!loadingModel}
       running={running}
-      onStop={() => {
-        document
-          .querySelector<HTMLTextAreaElement>(".composer textarea")
-          ?.focus();
-        if (runEntry && runEntry[1].stage !== "done")
-          void api("/runs/" + runEntry[0] + "/cancel", {}).catch(() =>
-            toast.error("Couldn’t stop the response. Try again."),
-          );
-        else if (busy) stopRequested.current = true;
-      }}
+      onStop={stop}
       onSend={(text) => onSend(text)}
       error={sendError}
       files={effectiveFiles}
@@ -721,91 +390,18 @@ export function LiveAppShell() {
     />
   );
   const menu = (chat: Chat) => (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <IconButton label={`Actions for ${chat.title}`}>
-          <Ellipsis />
-        </IconButton>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem
-          onSelect={() => {
-            ui.set({ sidebar: false });
-            setAction({ chat, kind: "rename" });
-          }}
-        >
-          Rename
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onSelect={async () => {
-            if (
-              await mutate(
-                "/chats/" + chat.id,
-                { pinned: !chat.pinned },
-                "PATCH",
-              )
-            )
-              toast.success(chat.pinned ? "Chat unpinned" : "Chat pinned", {
-                description: chat.title,
-              });
-          }}
-        >
-          {chat.pinned ? "Unpin" : "Pin"}
-        </DropdownMenuItem>
-        {(["md", "json"] as const).map((format) => (
-          <DropdownMenuItem
-            key={format}
-            onSelect={() => {
-              ui.set({ sidebar: false });
-              setAction({
-                chat,
-                kind: format === "md" ? "export-md" : "export-json",
-              });
-            }}
-          >
-            Export {format === "md" ? "Markdown" : "JSON"}
-          </DropdownMenuItem>
-        ))}
-        <DropdownMenuItem
-          onSelect={() => {
-            ui.set({ sidebar: false });
-            setAction({ chat, kind: "delete" });
-          }}
-        >
-          Delete
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <ChatMenu chat={chat} ui={ui} mutate={mutate} setAction={setAction} />
   );
   const list = (
-    <>
-      <Input
-        aria-label="Search history"
-        placeholder="Search chats…"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="mb-4"
-      />
-      {history.isLoading ? (
-        <p className="p-3 text-sm text-fg-3">Loading chats…</p>
-      ) : historyItems.length ? (
-        <ChatList
-          chats={historyItems}
-          selected={chatId}
-          search={search}
-          menu={menu}
-          onOpen={() => ui.set({ sidebar: false })}
-          hasNext={history.hasNextPage}
-          onNext={() => {
-            if (!history.isFetchingNextPage) void history.fetchNextPage();
-          }}
-        />
-      ) : (
-        <p className="p-3 text-sm text-fg-3">
-          {search ? "No chats found" : "No chats yet"}
-        </p>
-      )}
-    </>
+    <HistoryList
+      search={search}
+      setSearch={setSearch}
+      history={history}
+      historyItems={historyItems}
+      chatId={chatId}
+      menu={menu}
+      ui={ui}
+    />
   );
   let visible = visiblePath(
     detail.data?.messages ?? [],
@@ -925,20 +521,7 @@ export function LiveAppShell() {
             }
           />
         ) : !chatId ? (
-          <section className="empty-chat">
-            <h1 className="greeting">
-              {new Date().getHours() < 12
-                ? "Good morning"
-                : new Date().getHours() < 18
-                  ? "Good afternoon"
-                  : "Good evening"}
-              {ui.name ? `, ${ui.name}` : ""}
-            </h1>
-            {composer}
-            <p className="mt-4 text-center text-xs text-fg-3">
-              Your models. Your Mac.
-            </p>
-          </section>
+          <EmptyState ui={ui} composer={composer} />
         ) : (
           <>
             <LiveThread
@@ -1003,54 +586,7 @@ export function LiveAppShell() {
           </>
         )}
       </main>
-      {ui.panel && wide && <aside className="chat-panel">{panel}</aside>}
-      <Sheet open={ui.sidebar} onOpenChange={(sidebar) => ui.set({ sidebar })}>
-        <SheetContent
-          side="left"
-          className="w-[min(320px,90vw)] p-0"
-          showCloseButton={false}
-        >
-          <SheetTitle className="sr-only">Chat history</SheetTitle>
-          <SheetDescription className="sr-only">
-            Your saved conversations
-          </SheetDescription>
-          <Sidebar history={list} close={() => ui.set({ sidebar: false })} />
-        </SheetContent>
-      </Sheet>
-      {!wide &&
-        (phone ? (
-          <Drawer open={ui.panel} onOpenChange={(panel) => ui.set({ panel })}>
-            <DrawerContent className="overflow-clip">
-              <DrawerHeader className="relative shrink-0 px-14">
-                <IconButton
-                  label="Close chat settings"
-                  className="absolute right-3 top-2"
-                  onClick={() => ui.set({ panel: false })}
-                >
-                  <X />
-                </IconButton>
-                <DrawerTitle>Chat settings</DrawerTitle>
-                <DrawerDescription>
-                  Sampling and context for this conversation
-                </DrawerDescription>
-              </DrawerHeader>
-              <div className="min-h-0 overflow-y-auto">{panel}</div>
-            </DrawerContent>
-          </Drawer>
-        ) : (
-          <Sheet open={ui.panel} onOpenChange={(panel) => ui.set({ panel })}>
-            <SheetContent
-              className="overflow-y-auto p-0"
-              showCloseButton={false}
-            >
-              <SheetTitle className="sr-only">Chat settings</SheetTitle>
-              <SheetDescription className="sr-only">
-                Sampling and context
-              </SheetDescription>
-              {panel}
-            </SheetContent>
-          </Sheet>
-        ))}
+      <Panels ui={ui} wide={wide} phone={phone} panel={panel} list={list} />
       <SettingsDialog
         searchEnabled={Boolean(bootstrap.data?.features.web_search)}
         renderPane={(pane) => (

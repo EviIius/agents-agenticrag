@@ -2,9 +2,9 @@
 
 ## Summary
 
-4A.1–4A.5 are validated: contract, data, prompt and motion guards; locked dependency resolution; production components on `/design`; a shared engine-reported audio extension list; removal of duplicate fixtures and the tracked `.DS_Store`.
+4A is validated: contract, data, prompt and motion guards; locked dependency resolution; production components on `/design`; a shared engine-reported audio extension list; removal of duplicate fixtures and the tracked `.DS_Store`.
 Production presentation is unchanged: all 50 synthetic screenshots match the original build pixel for pixel.
-The app-shell split (4A.6) and motion foundation (4B) are next. Phase 4 is not complete; 4C/4D and the Atelier rename have not started.
+The app-shell split (4A.6) passed its separate full regression run; the motion foundation (4B) is next. Phase 4 is not complete; 4C/4D and the Atelier rename have not started.
 
 ## Done-when checklist
 
@@ -15,7 +15,7 @@ The app-shell split (4A.6) and motion foundation (4B) are next. Phase 4 is not c
 | Complete component regression run | Pass | `artifacts/phase-4/4a-components/e2e-final.txt`: 223 passed, 3 existing skips |
 | No production pixel changes | Pass | `artifacts/phase-4/4a-components/screenshot-diff-final.json`: 50 exact matches |
 | Dependency resolution unchanged | Pass | `artifacts/phase-4/baseline/dependency-constraints.json`, `npm-ci.txt` |
-| 4A.6 split | Pending | Prepared outside checkout; one full regression run required after application |
+| 4A.6 split | Pass | `artifacts/phase-4/4a-split/check.txt`, `e2e.txt`: 223 passed / 3 existing skips; `move-audit.json` verifies unchanged function bodies; 50 exact screenshot matches |
 | 4B foundation | Pending | Outside-checkout synthetic preflight: 24 tests pass; not accepted as the checkpoint's full regression run |
 | Phone review | Not checked | Required at the 4B stop |
 
@@ -24,6 +24,7 @@ The app-shell split (4A.6) and motion foundation (4B) are next. Phase 4 is not c
 - Server tests: `test_phase4_guards.py`, `test_prompt_hashes.py`, synthetic Phase 3 database fixture.
 - Scripts: API compatibility, motion and privacy guards; database fixture generator; synthetic capture and pixel comparison tools.
 - Web: dependency ranges; production fixture bindings; shared audio extensions; removal of five duplicate UI implementations; finite-animation settlement before screenshots/axe.
+- Web split: `useSend`, `useUploads`, `useModelOps`, `useShortcuts`, `ChatMenu`, `HistoryList`, `EmptyState` and `Panels`; no business-logic changes.
 - Docs: reviewed `docs/next/` roadmap, authorization in `AGENTS.md`/`SPEC.md`, this report and checkpoint evidence.
 - No `server/app` file changes and no database migration.
 
@@ -40,6 +41,7 @@ Synthetic fake runtime only. No new runtime, dependency, model call, sampling pa
 
 - Baseline: `make check` — 207 Python / 36 frontend; `make e2e` — 223 passed / 3 existing skips.
 - 4A.1–4A.5: `make check` — 212 Python / 36 frontend; build succeeds; `make e2e` — 223 passed / 3 existing skips in one complete 15.7-minute invocation.
+- 4A.6: checks/build pass; 223 browser tests pass / 3 existing skips in one complete 15.6-minute invocation.
 - API, prompt, ordinary-request and synthetic migration guards pass. Motion guard reports existing violations until 4B replaces the dead classes.
 
 ## Budgets
@@ -48,6 +50,7 @@ Synthetic fake runtime only. No new runtime, dependency, model call, sampling pa
 |---|---:|---:|
 | Original HEAD | 224,491 bytes | 256,000 |
 | 4A.1–4A.5 | 222,902 bytes | Original ± 2 KiB |
+| 4A.6 split | 225,186 bytes | Original ± 2 KiB |
 
 Resolved dependency versions and integrity values are unchanged. Caret ranges constrain future updates; the lockfile and `npm ci` reproduce this build.
 
