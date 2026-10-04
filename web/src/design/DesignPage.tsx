@@ -8,15 +8,15 @@ import { ChatList } from "@/components/app/ChatList";
 import { LiveChatSettings } from "@/components/settings/LiveChatSettings";
 import { Button } from "@/components/ui/button";
 import {
-  AssistantMessage,
-  type AssistantState,
-} from "@/components/chat/AssistantMessage";
-import { UserMessage } from "@/components/chat/UserMessage";
+  MessagePreview,
+  FixtureChatSettings,
+  fixtureModels,
+  type PreviewState,
+} from "./ProductionFixtures";
 import { Composer } from "@/components/chat/Composer";
 import { Welcome } from "@/components/app/Welcome";
 import { Sidebar, type SidebarState } from "@/components/app/Sidebar";
 import { ModelPicker, type PickerState } from "@/components/app/ModelPicker";
-import { ChatSettingsPanel } from "@/components/settings/ChatSettingsPanel";
 import { SearchActivity } from "@/components/chat/SearchActivity";
 import { SourcesSheet } from "@/components/chat/SourcesSheet";
 import type { Source, Message, Chat, Model } from "@/lib/api";
@@ -280,7 +280,15 @@ export function DesignPage() {
           ).map((state) => (
             <div className="design-card" key={state}>
               <h3 className="mb-3 font-medium">{state}</h3>
-              <ModelPicker state={state} />
+              <ModelPicker
+                state={state}
+                models={
+                  state === "offline" || state === "empty"
+                    ? undefined
+                    : fixtureModels
+                }
+                current={fixtureModels[0]}
+              />
             </div>
           ))}
         </div>
@@ -317,13 +325,13 @@ export function DesignPage() {
         </h2>
         <div className="design-card mb-4">
           <h3 className="mb-5 font-medium">User · text, attachment, edit</h3>
-          <UserMessage />
-          <UserMessage attachment />
-          <UserMessage editing />
+          <MessagePreview role="user" />
+          <MessagePreview role="user" attachment />
+          <MessagePreview role="user" editing />
         </div>
         <div className="design-card mb-4">
           <h3 className="mb-5 font-medium">Assistant · complete</h3>
-          <AssistantMessage />
+          <MessagePreview />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           {(
@@ -336,11 +344,11 @@ export function DesignPage() {
               "stopped",
               "error",
               "interrupted",
-            ] as AssistantState[]
+            ] as PreviewState[]
           ).map((state) => (
             <div className="design-card" key={state}>
               <h3 className="mb-3 font-medium">{state}</h3>
-              <AssistantMessage
+              <MessagePreview
                 state={state}
                 text="A partial answer from the Fake runtime. **Formatting stays readable** while the rest arrives."
               />
@@ -353,9 +361,31 @@ export function DesignPage() {
           Composer
         </h2>
         <div className="space-y-4">
-          <Composer suggestions onWebChange={() => {}} />
-          <Composer starter="An editable fixture message" attached reasoning />
-          <Composer starter="A fixture message in progress" running />
+          <Composer
+            model={fixtureModels[0]}
+            context={{ used_tokens: 6200, context_length: 16384 }}
+            suggestions
+            onWebChange={() => {}}
+          />
+          <Composer
+            model={fixtureModels[1]}
+            starter="An editable fixture message"
+            files={[
+              {
+                id: "fake-note",
+                kind: "text",
+                filename: "fake-notes.md",
+                mime_type: "text/markdown",
+                bytes: 64,
+                audio_available: true,
+              },
+            ]}
+          />
+          <Composer
+            model={fixtureModels[0]}
+            starter="A fixture message in progress"
+            running
+          />
         </div>
       </section>
       <section aria-labelledby="chat-settings" className="design-card mb-8">
@@ -363,7 +393,7 @@ export function DesignPage() {
           Chat settings · model defaults
         </h2>
         <div className="max-w-sm">
-          <ChatSettingsPanel />
+          <FixtureChatSettings />
         </div>
       </section>
       <section aria-labelledby="markdown-safety" className="design-card mb-8">

@@ -17,8 +17,6 @@ import {
 export function Composer({
   starter = "",
   running = false,
-  attached = false,
-  reasoning = false,
   autoFocus = false,
   onSend,
   model,
@@ -36,18 +34,18 @@ export function Composer({
   suggestions = false,
   transcriptionReady = false,
   uploads = [],
+  audioExtensions = [],
   onCancelUpload,
   webBlocked = false,
 }: {
   transcriptionReady?: boolean;
+  audioExtensions?: string[];
   uploads?: AudioUpload[];
   onCancelUpload?: (id: string) => void;
   webBlocked?: boolean;
   starter?: string;
   suggestions?: boolean;
   running?: boolean;
-  attached?: boolean;
-  reasoning?: boolean;
   autoFocus?: boolean;
   onSend?: (text: string) => void | Promise<boolean | void>;
   error?: string;
@@ -64,8 +62,6 @@ export function Composer({
   onThinkChange?: (value: string | null) => void;
 }) {
   const [value, setValue] = useState(starter);
-  const [attachment, setAttachment] = useState(attached);
-  const [think, setThink] = useState("Off");
   const fileInput = useRef<HTMLInputElement>(null);
   const textarea = useRef<HTMLTextAreaElement>(null);
   useLayoutEffect(() => {
@@ -145,30 +141,16 @@ export function Composer({
             </div>
           ),
         )}
-        {attachment && (
-          <div className="mb-3 inline-flex max-w-full items-center rounded-md border border-line px-2 text-xs">
-            <span className="truncate">notes.md · fixture</span>
-            <IconButton
-              label="Remove attachment"
-              onClick={() => setAttachment(false)}
-              type="button"
-            >
-              <X />
-            </IconButton>
-          </div>
-        )}
         <textarea
           ref={textarea}
           autoFocus={autoFocus}
-          aria-label={
-            model ? `Message ${model.display_name}` : "Message fake-chat"
-          }
+          aria-label={model ? `Message ${model.display_name}` : "Message"}
           placeholder={
             model
               ? `Message ${model.display_name}…`
               : disabled
                 ? "Choose a model to begin…"
-                : "Message fake-chat…"
+                : "Message…"
           }
           value={value}
           onChange={(event) => setValue(event.target.value)}
@@ -222,26 +204,21 @@ export function Composer({
                 {model?.vision ? "Add image" : "Images need a vision model"}
               </DropdownMenuItem>
               <DropdownMenuItem
-                onSelect={() =>
-                  onAttach
-                    ? (() => {
-                        if (fileInput.current) {
-                          fileInput.current.accept =
-                            ".txt,.md,.csv,.json,.yaml,.yml,.py,.js,.ts,.tsx,.html,.css,.sql,.sh,.log";
-                          fileInput.current.click();
-                        }
-                      })()
-                    : setAttachment(true)
-                }
+                onSelect={() => {
+                  if (fileInput.current) {
+                    fileInput.current.accept =
+                      ".txt,.md,.csv,.json,.yaml,.yml,.py,.js,.ts,.tsx,.html,.css,.sql,.sh,.log";
+                    fileInput.current.click();
+                  }
+                }}
               >
-                {onAttach ? "Add text file" : "Add text file (fixture)"}
+                Add text file
               </DropdownMenuItem>
               <DropdownMenuItem
                 disabled={!transcriptionReady}
                 onSelect={() => {
                   if (fileInput.current) {
-                    fileInput.current.accept =
-                      ".wav,.mp3,.m4a,.flac,.aif,.aiff,.aac,.amr,.caf,.mka,.mov,.mp4,.oga,.ogg,.opus,.webm,.wma";
+                    fileInput.current.accept = audioExtensions.join(",");
                     fileInput.current.click();
                   }
                 }}
@@ -272,34 +249,34 @@ export function Composer({
               <Globe />
             </IconButton>
           )}
-          {(model?.reasoning || reasoning) && (
+          {model?.reasoning && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   type="button"
                   variant="ghost"
                   className="h-11 gap-2 px-2"
-                  aria-label={`Think: ${thinkValue ?? (model ? "Model default" : think)}`}
+                  aria-label={`Think: ${thinkValue ?? "Model default"}`}
                 >
                   <Brain className="size-4" />
                   <span className="hidden text-xs sm:inline">Think</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                {(model
-                  ? ["Model default", ...(model.reasoning?.options ?? [])]
-                  : ["Off", "On", "Low", "Medium", "High"]
-                ).map((level) => (
-                  <DropdownMenuItem
-                    key={level}
-                    onSelect={() => {
-                      setThink(level);
-                      onThinkChange?.(level === "Model default" ? null : level);
-                    }}
-                  >
-                    {level[0].toUpperCase() + level.slice(1)}
-                  </DropdownMenuItem>
-                ))}
+                {["Model default", ...(model.reasoning?.options ?? [])].map(
+                  (level) => (
+                    <DropdownMenuItem
+                      key={level}
+                      onSelect={() => {
+                        onThinkChange?.(
+                          level === "Model default" ? null : level,
+                        );
+                      }}
+                    >
+                      {level[0].toUpperCase() + level.slice(1)}
+                    </DropdownMenuItem>
+                  ),
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -312,7 +289,7 @@ export function Composer({
                   aria-label={
                     context
                       ? `${Math.round(context.used_tokens + value.length * 0.3)} of ${context.context_length} tokens`
-                      : "6.2K of 16K tokens"
+                      : "Context usage unavailable"
                   }
                   className="flex size-11 items-center justify-center"
                 >
@@ -335,7 +312,7 @@ export function Composer({
                       strokeDasharray={
                         context
                           ? `${Math.min(1, (context.used_tokens + value.length * 0.3) / context.context_length) * 51} 51`
-                          : "19 51"
+                          : "0 51"
                       }
                       transform="rotate(-90 10 10)"
                     />
@@ -345,7 +322,7 @@ export function Composer({
               <TooltipContent>
                 {context
                   ? `${Math.round(context.used_tokens + value.length * 0.3)} of ${context.context_length} tokens`
-                  : "6.2K of 16K tokens · fixture"}
+                  : "Choose a model to see context usage"}
               </TooltipContent>
             </Tooltip>
             <Tooltip>

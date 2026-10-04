@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir } from "node:fs/promises";
@@ -27,6 +28,7 @@ for (const width of [390, 1440])
         page.getByText("Synthetic web answer", { exact: false }),
       ).toBeVisible();
       await mkdir("../artifacts/phase-2", { recursive: true });
+      await settle(page);
       await page.screenshot({
         path: `../artifacts/phase-2/web-chat-${width}-${theme}-fake-web.png`,
       });
@@ -42,9 +44,11 @@ for (const width of [390, 1440])
       await expect(
         page.getByRole("dialog", { name: "Citation sources" }),
       ).toBeInViewport({ ratio: 1 });
+      await settle(page);
       await page.screenshot({
         path: `../artifacts/phase-2/citation-card-${width}-${theme}-fake-web.png`,
       });
+      await settle(page);
       const cardAudit = await new AxeBuilder({ page }).analyze();
       expect(
         cardAudit.violations.filter((v) =>
@@ -74,6 +78,7 @@ for (const width of [390, 1440])
           () => document.documentElement.scrollWidth <= innerWidth,
         ),
       ).toBeTruthy();
+      await settle(page);
       const a11y = await new AxeBuilder({ page }).analyze();
       expect(
         a11y.violations.filter((v) =>
@@ -81,6 +86,7 @@ for (const width of [390, 1440])
         ),
       ).toEqual([]);
       await mkdir("../artifacts/phase-2", { recursive: true });
+      await settle(page);
       await page.screenshot({
         path: `../artifacts/phase-2/sources-${width}-${theme}-fake-web.png`,
       });

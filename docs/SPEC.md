@@ -80,6 +80,8 @@ Preserve the launchd identity and Tailscale route; retain verification/report ev
 
 **User confirmation — 3 October 2026 (Phase 3 phone closeout):** After the keyboard-only walkthrough and <1.5 s phone readiness target were explained, Jake confirmed "both those work." Record these as user-confirmed acceptance and the supplied airplane-mode screenshot as offline-shell evidence. No instrumented physical timing sample was collected; retain that evidence limitation without inventing a numeric result. Phase 3 closes with this acceptance and the deferred VoiceOver limitation.
 
+**User authorization — 4 October 2026 (Phase 4):** Proceed with `docs/next/PHASE-4-POLISH-AND-MOTION.md` as corrected after review, and its QA requirements. Stop for review after 4B and 4D. Atelier, Chat controls and Web search are display changes at 4D; internal identifiers and numbered citations remain. C1 send timing/draft rollback is an explicit tested behavior change. Later phases retain their separate approval gates.
+
 1. Save it in the repo as `docs/SPEC.md`.
 2. Paste the prompt in §0 into Codex.
 3. After each phase, review the report (checklist, screenshots, test output) before you reply "continue".
@@ -1465,7 +1467,7 @@ This part exists so that Phases 1–2 leave the right seams, and so the agent wo
   1. Content first. No decorative gradients, glows, emoji or illustration.
   2. Use hairline borders and soft shadows only for floating layers (composer, popovers, dialogs).
   3. Each screen has one primary action.
-  4. Motion is quick and functional (≤ 200 ms) and is removed for reduced motion.
+  4. Motion is functional and brief. Small elements take at most 200 ms; large surfaces (sheets, drawers, sidebar and side panel) at most 320 ms. Only activity indicators loop. Animate opacity and transform; exceptions are collapsible height, sidebar width and context-ring stroke-dasharray. Remove all animation and transitions for system reduced motion and Appearance › Reduce motion › Always. Motion lives in `web/src/styles/motion.css`, selected by data attributes; components carry no animation utility classes.
   5. Status color is always paired with an icon or word.
   6. Metadata (stats, sizes, IDs) is muted and set in tabular figures; IDs use the monospace face.
 

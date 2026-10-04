@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 
 for (const width of [390, 1440]) {
@@ -55,6 +56,7 @@ for (const width of [390, 1440]) {
       await expect(
         selected.getByRole("img", { name: "Selected for chat" }),
       ).toBeVisible();
+      await settle(page);
       await page.screenshot({
         path: `../artifacts/phase-2/load-selected-${width}-${existing ? "existing" : "new"}-${browserName}.png`,
       });
@@ -106,6 +108,7 @@ for (const width of [390, 1440]) {
           drawer.getByRole("button", { name: "Close chat settings" }),
         ).toBeInViewport({ ratio: 1 });
       }
+      await settle(page);
       await page.screenshot({
         path: `../artifacts/phase-2/load-context-32k-${width}-${browserName}.png`,
       });

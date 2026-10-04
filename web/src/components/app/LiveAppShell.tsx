@@ -70,6 +70,10 @@ import { latestLeaf, visiblePath } from "@/lib/tree";
 import { useTranscripts } from "@/stores/transcripts";
 import type { AudioUpload } from "@/components/chat/AudioChip";
 import { prepareImage, uploadWithProgress } from "@/lib/attachments";
+import {
+  useAudioExtensions,
+  transcriptionStatusQuery,
+} from "@/hooks/useAudioExtensions";
 import { usePreferenceSync } from "@/hooks/usePreferenceSync";
 export function LiveAppShell() {
   const ui = useUI(),
@@ -144,6 +148,7 @@ export function LiveAppShell() {
     refetchInterval: () => (document.hidden ? false : 30000),
   });
   usePreferenceSync(bootstrap.data?.settings);
+  const audioExtensions = useAudioExtensions(Boolean(bootstrap.data));
   const models = useQuery({
     queryKey: ["models"],
     queryFn: () => api<Model[]>("/models"),
@@ -509,25 +514,10 @@ export function LiveAppShell() {
     for (let file of incoming) {
       try {
         const suffix = "." + file.name.split(".").at(-1)?.toLowerCase();
-        const audio = [
-          ".wav",
-          ".mp3",
-          ".m4a",
-          ".flac",
-          ".aif",
-          ".aiff",
-          ".aac",
-          ".amr",
-          ".caf",
-          ".mka",
-          ".mov",
-          ".mp4",
-          ".oga",
-          ".ogg",
-          ".opus",
-          ".webm",
-          ".wma",
-        ].includes(suffix);
+        const extensions = await query.ensureQueryData(
+          transcriptionStatusQuery,
+        );
+        const audio = (extensions.audio_extensions ?? []).includes(suffix);
         if (audio) {
           if (!bootstrap.data?.features.transcription)
             throw new Error("Recordings need the transcription engine");
@@ -616,6 +606,7 @@ export function LiveAppShell() {
   const composer = (
     <Composer
       suggestions={!chatId}
+      audioExtensions={audioExtensions}
       model={current}
       disabled={!current || busy || !!loadingModel}
       running={running}

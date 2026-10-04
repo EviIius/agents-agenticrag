@@ -26,8 +26,12 @@ import { Sidebar } from "./Sidebar";
 import { IconButton } from "./IconButton";
 import { TopBar } from "./TopBar";
 import { SettingsDialog } from "@/components/settings/SettingsDialog";
-import { ChatSettingsPanel } from "@/components/settings/ChatSettingsPanel";
-import { Thread } from "@/components/chat/Thread";
+import {
+  FixtureChatSettings as ChatSettingsPanel,
+  FixtureThread as Thread,
+  FixtureSettingsPane,
+  fixtureModels,
+} from "@/design/ProductionFixtures";
 import { Composer } from "@/components/chat/Composer";
 import { useUI } from "@/stores/ui";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -65,6 +69,8 @@ export function AppShell({ children }: { children?: ReactNode }) {
       autoFocus={Boolean(message) && !empty}
       key={starter}
       starter={starter}
+      model={fixtureModels[0]}
+      context={{ used_tokens: 6200, context_length: 16384 }}
       onSend={(text) => {
         setMessage(text);
         navigate("/design/chat/fixture");
@@ -200,7 +206,10 @@ export function AppShell({ children }: { children?: ReactNode }) {
             </SheetContent>
           </Sheet>
         ))}
-      <SettingsDialog />
+      <SettingsDialog
+        searchEnabled
+        renderPane={(pane) => <FixtureSettingsPane pane={pane} />}
+      />
       <CommandDialog
         open={ui.command}
         onOpenChange={(command) => ui.set({ command })}

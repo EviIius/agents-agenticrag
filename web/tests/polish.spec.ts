@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir } from "node:fs/promises";
@@ -53,10 +54,12 @@ for (const width of [320, 390, 1440])
           dialog.getByRole("button", { name: "Close command palette" }),
         ).toBeInViewport({ ratio: 1 });
         await mkdir("../artifacts/phase-3", { recursive: true });
+        await settle(page);
         await page.screenshot({
           animations: "disabled",
           path: `../artifacts/phase-3/palette-${width}-${theme}-fake.png`,
         });
+        await settle(page);
         expect(
           (await new AxeBuilder({ page }).analyze()).violations.filter((v) =>
             ["serious", "critical"].includes(v.impact ?? ""),

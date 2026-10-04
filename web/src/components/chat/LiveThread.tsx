@@ -258,7 +258,7 @@ type MessageRowProps = Omit<
   setEditing: Dispatch<SetStateAction<string | null>>;
   setDraft: Dispatch<SetStateAction<string>>;
 };
-const MessageRow = memo(function MessageRow({
+export const MessageRow = memo(function MessageRow({
   message,
   all,
   stage,

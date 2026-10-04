@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 for (const width of [390, 1440]) {
@@ -116,6 +117,7 @@ for (const width of [390, 1440]) {
     expect(toastClose!.width).toBeGreaterThanOrEqual(44);
     expect(toastClose!.height).toBeGreaterThanOrEqual(44);
     expect(toastClose!.x).toBeGreaterThanOrEqual(toastBounds!.x);
+    await settle(page);
     await page.screenshot({
       path: `../artifacts/phase-2/review-pin-${width}-${browserName}.png`,
     });
@@ -131,6 +133,7 @@ for (const width of [390, 1440]) {
       if (request.url().includes("/export?")) exportsRequested++;
     });
     await page.getByRole("menuitem", { name: "Export Markdown" }).click();
+    await settle(page);
     await page.screenshot({
       path: `../artifacts/phase-2/review-export-${width}-${browserName}.png`,
     });

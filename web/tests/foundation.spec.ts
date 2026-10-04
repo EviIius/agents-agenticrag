@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir } from "node:fs/promises";
@@ -67,6 +68,7 @@ for (const theme of ["light", "dark"] as const) {
       page.getByText("Start with a clear question", { exact: true }),
     ).toBeVisible();
     await noOverflow(page);
+    await settle(page);
     const result = await new AxeBuilder({ page }).analyze();
     expect(
       result.violations.filter((item) =>
@@ -174,6 +176,7 @@ test("screenshots at all review sizes and themes (fake runtime)", async ({
           page.getByText("Start with a clear question", { exact: true }),
         ).toBeVisible();
         await noOverflow(page);
+        await settle(page);
         await page.screenshot({
           path: path.join(
             evidence,

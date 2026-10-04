@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir, readFile } from "node:fs/promises";
@@ -280,10 +281,12 @@ for (const width of [320, 390, 1440])
         ),
       ).toBe(true);
       await mkdir(evidence, { recursive: true });
+      await settle(page);
       await page.screenshot({
         animations: "disabled",
         path: `${evidence}/mobile-save-${width}-${theme}-fake.png`,
       });
+      await settle(page);
       const axe = await new AxeBuilder({ page }).analyze();
       expect(
         axe.violations.filter((v) =>

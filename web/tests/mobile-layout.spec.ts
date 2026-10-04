@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 
@@ -91,6 +92,7 @@ for (const width of [320, 390, 768, 1440]) {
     const bounds = await save.boundingBox();
     expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(phone ? 810 : 844);
     await mkdir("../artifacts/phase-2", { recursive: true });
+    await settle(page);
     await page.screenshot({
       path: `../artifacts/phase-2/panel-safe-${width}-fake-runtime.png`,
     });
@@ -117,6 +119,7 @@ for (const width of [320, 390, 768, 1440]) {
       await expect(
         page.getByRole("option", { name: /fake-chat/ }),
       ).toBeVisible();
+      await settle(page);
       await page.screenshot({
         path: `../artifacts/phase-2/model-keyboard-${width}-fake-runtime.png`,
       });

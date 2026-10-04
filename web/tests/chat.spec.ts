@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir, writeFile } from "node:fs/promises";
@@ -39,9 +40,11 @@ for (const width of [320, 390, 768, 1440])
         composer = await page.getByTestId("composer-row").boundingBox();
       expect(thread!.y + thread!.height).toBeLessThanOrEqual(composer!.y + 1);
       await mkdir(dir, { recursive: true });
+      await settle(page);
       await page.screenshot({
         path: `${dir}/chat-${width}-${theme}-fake-runtime.png`,
       });
+      await settle(page);
       const result = await new AxeBuilder({ page }).analyze();
       expect(
         result.violations.filter((v) =>
@@ -311,6 +314,7 @@ test("preferences and model defaults persist after reload", async ({
       .locator('section[aria-label="Models"]')
       .evaluate((element) => element.scrollWidth <= element.clientWidth),
   ).toBeTruthy();
+  await settle(page);
   await page.screenshot({
     path: `${dir}/settings-models-390-light-fake-runtime.png`,
   });

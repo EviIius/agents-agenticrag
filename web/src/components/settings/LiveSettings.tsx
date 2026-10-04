@@ -41,7 +41,11 @@ export function LiveSettingsPane({
   bootstrap,
   models,
   onModelAction,
+  request = api,
+  queryScope = [],
 }: {
+  request?: typeof api;
+  queryScope?: string[];
   pane: string;
   bootstrap?: Bootstrap;
   models: Model[];
@@ -65,19 +69,19 @@ export function LiveSettingsPane({
     return () => clearInterval(timer);
   }, [loading]);
   const all = useQuery({
-    queryKey: ["models", "all"],
-    queryFn: () => api<Model[]>("/models?include_hidden=true"),
+    queryKey: ["models", ...queryScope, "all"],
+    queryFn: () => request<Model[]>("/models?include_hidden=true"),
     enabled: pane === "Models" || pane === "Search",
   });
   const status = useQuery({
-    queryKey: ["search-status"],
+    queryKey: ["search-status", ...queryScope],
     queryFn: () =>
-      api<components["schemas"]["SearchStatus"][]>("/search/status"),
+      request<components["schemas"]["SearchStatus"][]>("/search/status"),
     enabled: pane === "Search",
   });
   const update = async (endpoint: string, body: unknown, method?: string) => {
     try {
-      await api(endpoint, body, method);
+      await request(endpoint, body, method);
       await query.invalidateQueries();
       toast.success("Saved");
       return true;
@@ -405,7 +409,7 @@ export function LiveSettingsPane({
                         })
                   ).finally(() => {
                     void query.invalidateQueries({
-                      queryKey: ["models", "all"],
+                      queryKey: ["models", ...queryScope, "all"],
                     });
                     setLoading(null);
                   });
@@ -540,7 +544,7 @@ export function LiveSettingsPane({
                 <Button
                   variant="outline"
                   onClick={() =>
-                    void api<components["schemas"]["SearchTestResult"]>(
+                    void request<components["schemas"]["SearchTestResult"]>(
                       "/search/test",
                       { provider },
                     ).then((r) =>

@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir } from "node:fs/promises";
@@ -77,6 +78,7 @@ for (const width of [320, 390, 768, 1440]) {
       expect(bounds.inputBottom).toBeLessThanOrEqual(bounds.wrapperBottom);
       expect(bounds.wrapperBottom).toBeLessThanOrEqual(bounds.listTop + 1);
       await mkdir("../artifacts/phase-2", { recursive: true });
+      await settle(page);
       await page.screenshot({
         path: `../artifacts/phase-2/review-picker-${width}-${theme}.png`,
       });
@@ -160,14 +162,15 @@ for (const width of [320, 390, 768, 1440]) {
         expect(
           await section.evaluate((el) => el.scrollWidth <= el.clientWidth),
         ).toBeTruthy();
-        if ([390, 1440].includes(width))
-          await page.screenshot({
-            path: `../artifacts/phase-2/review-settings-${pane.toLowerCase()}-${width}-${theme}.png`,
-          });
+        if ([390, 1440].includes(width)) await settle(page);
+        await page.screenshot({
+          path: `../artifacts/phase-2/review-settings-${pane.toLowerCase()}-${width}-${theme}.png`,
+        });
         await section.evaluate((element) => {
           element.scrollTop = element.scrollHeight;
         });
       }
+      await settle(page);
       const audit = await new AxeBuilder({ page }).analyze();
       expect(
         audit.violations.filter((item) =>

@@ -1,0 +1,102 @@
+const { chromium } = require(process.cwd() + '/web/node_modules/playwright');
+const fs = require('node:fs/promises');
+const output = process.argv[2];
+(async () => {
+ const browser = await chromium.launch();
+ for (const width of [390,1440]) for (const theme of ['light','dark']) {
+  const context = await browser.newContext({viewport:{width,height:width===390?844:900}});
+  const page = await context.newPage();
+  const root=process.env.WORKBENCH_REVIEW_URL || 'http://127.0.0.1:5173';
+  const seedFile='artifacts/phase-4/baseline/review-fixture-fake.json';
+  let seed;
+  try {seed=JSON.parse(await fs.readFile(seedFile,'utf8'));} catch {
+    seed={bootstrap:await (await context.request.get(root+'/api/bootstrap')).json(),models:await (await context.request.get(root+'/api/models')).json()};
+    seed.bootstrap.connections.forEach(c=>{c.latency_ms=20;c.model_count=3;c.name='Fake runtime';});
+    seed.models=seed.models.filter(m=>['fake-chat','fake-reasoning','fake-vision'].includes(m.model_id)).map(m=>({...m,params_defaults:{},context_limit:16384,context_length:16384,loaded:m.model_id==='fake-chat',hidden:false}));
+    await fs.writeFile(seedFile,JSON.stringify(seed,null,2)+'\n');
+  }
+  const bootstrap=structuredClone(seed.bootstrap);
+  const models=structuredClone(seed.models);
+  const model=models.find(m=>m.model_id==='fake-reasoning');
+  const fixed='2026-10-04T12:00:00+00:00';
+  Object.assign(bootstrap.settings,{'appearance.theme':theme,default_connection_id:model.connection_id,default_model_id:model.model_id,new_chat_model:'fixed',user_name:'','web.default_on':false});
+  const chat={id:'fake-review-chat',title:'Synthetic review conversation',title_source:'user',connection_id:model.connection_id,model_id:model.model_id,pinned:false,params:{},web_enabled:false,created_at:fixed,updated_at:fixed,current_leaf_id:'fake-assistant'};
+  const stats={ttft_ms:800,total_ms:2000,prompt_tokens:32,completion_tokens:64,tokens_per_sec:32,tokens_estimated:false,context_length:16384,dropped_message_count:0,reasoning_ms:1000};
+  const user={id:'fake-user',chat_id:chat.id,role:'user',content:'Explain a small experiment.',status:'complete',attachments:[],created_at:fixed};
+  const assistant={id:'fake-assistant',chat_id:chat.id,parent_id:user.id,role:'assistant',content:'A synthetic answer for reviewing the interface. Start with a clear question, change one thing, then compare the result. [1]',reasoning:'Synthetic reasoning for this review.',status:'complete',stats,model:{connection_id:model.connection_id,model_id:model.model_id,display_name:model.display_name},created_at:fixed,web:{status:'used',queries:['Synthetic query'],providers:['fake'],timings:{plan:150,search:400,fetch:500,rank:10},source_count:1,ranking:'keyword',plan_fallback:false}};
+  const source={n:1,url:'https://example.org/fake',title:'Synthetic review source',site_name:'Example',domain:'example.org',published_at:fixed,fetched_at:fixed,kind:'page',cited:true,passages:[{source_url:'https://example.org/fake',heading:'Example',ord:0,text:'Synthetic evidence for reviewing the citation card.',selection_applied:false}]};
+  const recording={id:'fake-recording',kind:'audio',filename:'fake-recording.wav',mime_type:'audio/wav',bytes:64,audio_available:false,transcript:{status:'ready',channels:'mix',duration_seconds:75,word_count:18,token_estimate:35,elapsed_seconds:1,engine_model:'fake-whisper',warnings:[],correction_count:0}};
+  const transcript={attachment:recording,text:'Synthetic transcript. Review the next release and follow up on Friday.',raw_text:'Synthetic transcript. Review the next release and follow up on Friday.',segments:[{start:0,end:75,text:'Synthetic transcript.',raw_text:'Synthetic transcript.',speaker:'Speaker 1'}],corrections:[]};
+  let pending=[];
+  await page.addInitScript(t=>{localStorage.setItem('workbench-theme',t); Date.prototype.getHours=()=>12;},theme);
+  await page.route('**/api/**', async route=>{
+   const url=new URL(route.request().url()), path=url.pathname;
+   let body;
+   if(path==='/api/bootstrap') body=bootstrap;
+   else if(path==='/api/models') body=models;
+   else if(path==='/api/chats') body={items:[chat],next_cursor:null};
+   else if(path==='/api/chats/'+chat.id) body={chat,messages:[user,assistant],sources:{[assistant.id]:[source]},reads:{[assistant.id]:[]}};
+   else if(path.endsWith('/context')) body={used_tokens:320,context_length:16384,dropped_message_count:0};
+   else if(path==='/api/runs/active') body=[];
+   else if(path==='/api/attachments/pending') body=pending;
+   else if(path==='/api/attachments/fake-recording/transcript') body=transcript;
+   else if(path==='/api/search/status') body=[];
+   else if(path.startsWith('/api/favicons/')) return route.fulfill({status:404});
+   else return route.continue();
+   await route.fulfill({json:body});
+  });
+  const settle=async()=>{
+   await page.evaluate(()=>document.fonts.ready);
+   await page.waitForFunction(()=>document.getAnimations().every(a=>a.playState!=='running'||!Number.isFinite(a.effect?.getComputedTiming().endTime)),{},{timeout:1000});
+  };
+  const shot=async name=>{await settle(); await fs.mkdir(output,{recursive:true});await page.screenshot({path:`${output}/${name}-${width}-${theme}-fake.png`,animations:'disabled'});};
+  await page.goto(root+'/');
+  await page.getByRole('button',{name:'Choose model',exact:true}).waitFor();
+  await shot('new-chat');
+  await page.getByRole('button',{name:'Choose model',exact:true}).click();
+  await page.getByPlaceholder('Search models…').waitFor();
+  await shot('model-picker');
+  await page.keyboard.press('Escape');
+  // Vaul disables automatic focus on touch; use its explicit close when needed.
+  await page.getByPlaceholder('Search models…').waitFor({state:'hidden'});
+  await page.goto(root+'/c/'+chat.id);
+  await page.getByText('A synthetic answer for reviewing the interface.',{exact:false}).waitFor();
+  await shot('active-chat');
+  await shot('web-chat');
+  await page.getByRole('button',{name:/Thought for/}).click();
+  await shot('reasoning-chat');
+  await page.getByRole('button',{name:'Chat settings',exact:true}).click();
+  await page.getByRole('spinbutton',{name:'Context length',exact:true}).waitFor();
+  await shot('chat-settings');
+  await page.getByRole('button',{name:'Close chat settings',exact:true}).click();
+  await page.keyboard.press('Control+,');
+  const dialog=page.getByRole('dialog',{name:'Settings',exact:true});
+  await dialog.waitFor();
+  await dialog.getByRole('button',{name:'Appearance',exact:true}).click();
+  await shot('settings-appearance');
+  await dialog.getByRole('button',{name:'Models',exact:true}).click();
+  await shot('settings-models');
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Control+k');
+  const palette=page.getByRole('dialog',{name:'Command palette',exact:true});
+  await palette.waitFor();
+  await palette.getByRole('option',{name:/Synthetic review conversation/}).waitFor({state:'attached'});
+  await shot('command-palette');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button',{name:/1 sources?/}).click();
+  await page.getByRole('dialog',{name:/Sources/}).waitFor();
+  await shot('sources');
+  await page.keyboard.press('Escape');
+  await page.getByRole('dialog',{name:'Sources',exact:true}).waitFor({state:'hidden'});
+  if(width===390){await page.getByRole('button',{name:'Open sidebar',exact:true}).click();await shot('sidebar-drawer');await page.getByRole('dialog',{name:'Chat history'}).getByRole('button',{name:'Collapse sidebar'}).click();}
+  pending=[recording];
+  await page.goto(root+'/');
+  await page.getByRole('button',{name:'Open transcript for fake-recording.wav',exact:true}).waitFor();
+  await shot('recording-ready');
+  await page.getByRole('button',{name:'Open transcript for fake-recording.wav',exact:true}).click();
+  await page.getByRole('dialog',{name:'fake-recording.wav',exact:true}).waitFor();
+  await shot('transcript');
+  await context.close();
+ }
+ await browser.close();
+})().catch(error=>{console.error(error);process.exit(1)});
