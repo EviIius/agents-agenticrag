@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import shutil
 import sys
 from pathlib import Path
@@ -217,7 +218,11 @@ async def test_worker_protocol(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) 
     output = tmp_path / "result"
     for name in ("two-pages.pdf", "damaged.pdf"):
         monkeypatch.setattr(sys, "argv", ["worker", str(FIXTURES / name), ".pdf", str(output)])
-        worker()
+        logging_level = logging.root.manager.disable
+        try:
+            worker()
+        finally:
+            logging.disable(logging_level)
         result = json.loads(output.read_text())
         assert (
             "text" in result
@@ -354,3 +359,16 @@ def test_recovery_only_removes_interrupted_document_files(tmp_path: Path) -> Non
         (tmp_path / name).write_text("Invented")
     Extractor().recover(tmp_path)
     assert sorted(p.name for p in tmp_path.iterdir()) == ["kept.txt", "kept.wav", "kept.wav.part"]
+
+
+def test_word_table_retains_empty_edge_cells(tmp_path: Path) -> None:
+    target = tmp_path / "invented.docx"
+    xml = (
+        '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+        "<w:body><w:tbl><w:tr><w:tc><w:p/></w:tc>"
+        "<w:tc><w:p><w:r><w:t>Invented cell</w:t></w:r></w:p></w:tc>"
+        "<w:tc><w:p/></w:tc></w:tr></w:tbl></w:body></w:document>"
+    )
+    with ZipFile(target, "w") as archive:
+        archive.writestr("word/document.xml", xml)
+    assert extract(target, ".docx").text == "\tInvented cell\t"

@@ -107,8 +107,8 @@ def word(path: Path) -> Extracted:
                 blocks(child)
 
     blocks(body)
-    text = "".join(parts).strip()
-    if not text:
+    text = "".join(parts).rstrip("\n")
+    if not text.strip():
         raise error("document_unreadable")
     return Extracted(text, None, len(text))
 
