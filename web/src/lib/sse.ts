@@ -249,7 +249,8 @@ export function attachTranscription(attachment: import("./api").Attachment) {
   useTranscripts.getState().put(attachment);
   if (
     !attachment.transcript ||
-    !["queued", "transcribing"].includes(attachment.transcript.status)
+    (!["queued", "transcribing"].includes(attachment.transcript.status) &&
+      attachment.transcript.cleanup?.status !== "running")
   )
     return;
   const source = new EventSource(`/api/attachments/${attachment.id}/events`);
@@ -260,6 +261,10 @@ export function attachTranscription(attachment: import("./api").Attachment) {
     "transcription.done",
     "transcription.failed",
     "transcription.cancelled",
+    "cleanup.started",
+    "cleanup.progress",
+    "cleanup.done",
+    "cleanup.failed",
     "stream.closed",
   ]) {
     source.addEventListener(type, (event) => {
@@ -281,6 +286,18 @@ export function attachTranscription(attachment: import("./api").Attachment) {
         useTranscripts.getState().put({
           ...item,
           transcript: { ...item.transcript, status: "queued" },
+        });
+      if (payload.type === "cleanup.progress" && item?.transcript?.cleanup)
+        useTranscripts.getState().put({
+          ...item,
+          transcript: {
+            ...item.transcript,
+            cleanup: {
+              ...item.transcript.cleanup,
+              done: payload.data.done,
+              chunks: payload.data.total,
+            },
+          },
         });
       if ("attachment" in payload.data)
         useTranscripts

@@ -32,6 +32,7 @@ from .providers.registry import Registry
 from .runs.manager import RunManager
 from .search.pipeline import Pipeline
 from .security import SecurityMiddleware
+from .transcribe.cleanup import Cleanups
 from .transcribe.jobs import TranscriptionManager
 
 
@@ -56,6 +57,7 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
             app.state.transcription = TranscriptionManager(
                 app.state.store, config.transcribe_home, config.data_dir
             )
+            app.state.cleanup = Cleanups(app.state.transcription, app.state.runs)
             await app.state.runs.recover()
             await app.state.transcription.recover()
             app.state.backups = Backups(app.state.store, config.data_dir.expanduser().resolve())

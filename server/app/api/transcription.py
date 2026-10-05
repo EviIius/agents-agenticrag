@@ -14,11 +14,16 @@ from ..errors import AppError
 from ..schemas import (
     Attachment,
     AudioStorage,
+    CleanupRequest,
+    Glossary,
+    GlossaryRequest,
     TranscribeRequest,
     Transcript,
     TranscriptionEvent,
     TranscriptionStatus,
 )
+from ..transcribe.cleanup import Cleanups
+from ..transcribe.glossary import GlossaryFile
 from ..transcribe.jobs import Job, TranscriptionManager
 
 router = APIRouter(prefix="/api")
@@ -62,7 +67,13 @@ async def events(identifier: str, request: Request) -> EventSourceResponse:
         job = Job(identifier)
         state = item.transcript.status if item.transcript else "failed"
         event = "done" if state == "ready" else "cancelled" if state == "cancelled" else "failed"
-        await job.emit("transcription." + event, {"attachment": item.model_dump()})
+        if item.transcript and item.transcript.cleanup:
+            event = (
+                "cleanup.done" if item.transcript.cleanup.status == "ready" else "cleanup.failed"
+            )
+        else:
+            event = "transcription." + event
+        await job.emit(event, {"attachment": item.model_dump()})
         await job.emit("stream.closed", {})
         after = 0  # This new snapshot has its own sequence.
 
@@ -91,6 +102,28 @@ async def cancel(identifier: str, request: Request) -> dict[str, bool]:
     await attachments.attachment(request.app.state.store, identifier)
     await request.app.state.transcription.cancel(identifier)
     return {"ok": True}
+
+
+@router.post("/attachments/{identifier}/cleanup", status_code=202)
+async def cleanup(identifier: str, body: CleanupRequest, request: Request) -> Attachment:
+    manager: Cleanups = request.app.state.cleanup
+    return await manager.start(identifier, body.connection_id, body.model_id)
+
+
+@router.delete("/attachments/{identifier}/cleanup", status_code=204)
+async def discard(identifier: str, request: Request) -> Response:
+    await request.app.state.cleanup.discard(identifier)
+    return Response(status_code=204)
+
+
+@router.get("/transcription/glossary")
+async def glossary(request: Request) -> Glossary:
+    return await GlossaryFile(request.app.state.transcription.engine).read()
+
+
+@router.put("/transcription/glossary")
+async def save_glossary(body: GlossaryRequest, request: Request) -> Glossary:
+    return await GlossaryFile(request.app.state.transcription.engine).write(body.text)
 
 
 def stamp(value: float) -> str:

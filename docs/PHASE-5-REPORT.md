@@ -670,3 +670,9 @@ restart; cause remains unproven. Physical 5C folder/backup review is pending.
 On the phone, create a folder, move a chat, collapse/reopen it, search the chat,
 and delete the folder to confirm the chat returns to history. In Settings → Data,
 try Back up now and check its status. Later phases wait for this checkpoint review.
+
+### Jake's 5C review — 5 October 2026
+
+Jake: "5C is sufficient. Continue on." Checkpoint accepted. This is acceptance,
+not a claim that every listed physical phone check was individually run. Proceed
+to 6A; the reported sidebar/other animation regression remains deferred.

@@ -1,4 +1,5 @@
 import { failureCopy, failureDetail } from "@/lib/errors";
+import { useCleanup } from "@/hooks/useCleanup";
 import { useOverlaySession } from "@/hooks/useOverlaySession";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -105,6 +106,8 @@ export function AudioChip({
   const live = useTranscripts((state) => state.attachments[attachment.id]);
   const item = fixture ? attachment : (live ?? attachment);
   const meta = item.transcript;
+  const cleanup = useCleanup(item, model, !!fixture);
+  const cleaning = meta?.cleanup?.status === "running";
   const query = useQueryClient();
   const [download, setDownload] = useState<RecordingDownload | null>(null);
   const downloadSession = useOverlaySession(download);
@@ -149,6 +152,8 @@ export function AudioChip({
             : ready && !meta.word_count
               ? "No speech found"
               : `${duration(meta?.duration_seconds ?? 0)} · ${meta?.word_count?.toLocaleString()} words · ≈${meta?.token_estimate?.toLocaleString()} tokens`;
+  if (cleaning)
+    label = `Cleaning up… ${meta?.cleanup?.done ?? 0} of ${meta?.cleanup?.chunks ?? 0}`;
   if (meta?.cleanup?.status === "ready") label += " · Cleaned";
   const retry = async (channels = meta?.channels ?? "mix") => {
     if (fixture) return;
@@ -173,7 +178,7 @@ export function AudioChip({
     <>
       <div
         data-slot="audio-chip"
-        data-live={meta?.status === "transcribing" || undefined}
+        data-live={meta?.status === "transcribing" || cleaning || undefined}
         data-testid="audio-chip"
         className={`mb-2 flex max-w-full items-center gap-2 rounded-lg border p-2 ${tooLarge && ready ? "border-warning text-warning" : "border-line bg-surface-2"}`}
       >
@@ -190,7 +195,7 @@ export function AudioChip({
           <span className="block truncate font-medium">{item.filename}</span>
           <span
             data-slot="activity-label"
-            data-live={meta?.status === "transcribing" || undefined}
+            data-live={meta?.status === "transcribing" || cleaning || undefined}
             className="block break-words text-fg-2"
             role="status"
           >
@@ -211,7 +216,16 @@ export function AudioChip({
             </span>
           )}
         </button>
-        {meta && ["queued", "transcribing"].includes(meta.status) ? (
+        {cleaning ? (
+          <IconButton
+            type="button"
+            label="Cancel clean-up"
+            disabled={cleanup.busy}
+            onClick={cleanup.cancel}
+          >
+            <Square />
+          </IconButton>
+        ) : meta && ["queued", "transcribing"].includes(meta.status) ? (
           <IconButton
             type="button"
             label="Cancel transcription"
@@ -263,6 +277,14 @@ export function AudioChip({
                 </DropdownMenuItem>
               ))}
               <DropdownMenuSeparator />
+              {model && !!meta?.word_count && (
+                <DropdownMenuItem
+                  disabled={cleanup.busy}
+                  onSelect={cleanup.start}
+                >
+                  Clean up with {model.display_name}
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem
                 disabled={item.audio_available === false}
                 onSelect={() => void retry("mix")}
@@ -330,6 +352,7 @@ export function AudioChip({
         open={open}
         onOpenChange={setOpen}
         fixture={fixture}
+        model={model}
       />
     </>
   );

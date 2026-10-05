@@ -240,6 +240,7 @@ class CleanupInfo(BaseModel):
     done: int = 0
     kept_original: int = 0
     changed_words: int = 0
+    elapsed_seconds: float | None = None
     error: ErrorDetail | None = None
 
 
@@ -290,6 +291,20 @@ class AudioStorage(BaseModel):
 
 class TranscribeRequest(Input):
     channels: Literal["mix", "split"] = "mix"
+
+
+class CleanupRequest(Input):
+    connection_id: str
+    model_id: str
+
+
+class GlossaryRequest(Input):
+    text: str
+
+
+class Glossary(BaseModel):
+    text: str
+    terms: list[str]
 
 
 class EngineCheck(BaseModel):

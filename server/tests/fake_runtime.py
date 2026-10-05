@@ -106,6 +106,16 @@ def create_fake_runtime() -> FastAPI:
         if ollama:
             app.state.loaded[body.get("model")] = body.get("options", {}).get("num_ctx", 16384)
         text = MARKDOWN
+        cleanup_call = prompt.startswith("You are formatting a speech transcript.")
+        if cleanup_call:
+            source = prompt.split("<chunk>\n", 1)[-1].rsplit("\n</chunk>", 1)[0]
+            text = (
+                "A synthetic rewritten summary with substantially different wording."
+                if "FAKE-REWRITE" in source
+                else source[:1].upper()
+                + source[1:]
+                + ("" if source.endswith((".", "!", "?")) else ".")
+            )
         if isinstance(body.get("format"), dict):
             latest = prompt.split("Latest user message:\n")[-1]
             search = latest.strip().lower() not in {"thanks!", "hello", "rewrite shorter"}

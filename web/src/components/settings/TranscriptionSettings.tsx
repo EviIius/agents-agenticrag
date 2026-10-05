@@ -15,6 +15,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { GlossaryEditor } from "./GlossaryEditor";
 import { Switch } from "@/components/ui/switch";
 export function TranscriptionSettings({
   bootstrap,
@@ -241,6 +242,9 @@ export function TranscriptionSettings({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {data?.configured && (
+        <GlossaryEditor preview={fixture ? "ready" : undefined} />
+      )}
       <p className="text-xs text-fg-3">
         Transcription stays on your Mac. Transcripts use your local Ollama
         model.

@@ -281,6 +281,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/attachments/{identifier}/cleanup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cleanup */
+        post: operations["cleanup_api_attachments__identifier__cleanup_post"];
+        /** Discard */
+        delete: operations["discard_api_attachments__identifier__cleanup_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/transcription/glossary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Glossary */
+        get: operations["glossary_api_transcription_glossary_get"];
+        /** Save Glossary */
+        put: operations["save_glossary_api_transcription_glossary_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/attachments/{identifier}/transcript/download": {
         parameters: {
             query?: never;
@@ -983,6 +1019,8 @@ export interface components {
              * @default 0
              */
             changed_words: number;
+            /** Elapsed Seconds */
+            elapsed_seconds?: number | null;
             error?: components["schemas"]["ErrorDetail"] | null;
         };
         /** CleanupProgressData */
@@ -1000,6 +1038,13 @@ export interface components {
              */
             type: "cleanup.progress";
             data: components["schemas"]["CleanupProgressData"];
+        };
+        /** CleanupRequest */
+        CleanupRequest: {
+            /** Connection Id */
+            connection_id: string;
+            /** Model Id */
+            model_id: string;
         };
         /** ClosedEvent */
         ClosedEvent: {
@@ -1245,6 +1290,18 @@ export interface components {
             name?: string | null;
             /** Position */
             position?: number | null;
+        };
+        /** Glossary */
+        Glossary: {
+            /** Text */
+            text: string;
+            /** Terms */
+            terms: string[];
+        };
+        /** GlossaryRequest */
+        GlossaryRequest: {
+            /** Text */
+            text: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -2509,6 +2566,123 @@ export interface operations {
                     "application/json": {
                         [key: string]: boolean;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cleanup_api_attachments__identifier__cleanup_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CleanupRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Attachment"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    discard_api_attachments__identifier__cleanup_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    glossary_api_transcription_glossary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Glossary"];
+                };
+            };
+        };
+    };
+    save_glossary_api_transcription_glossary_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GlossaryRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Glossary"];
                 };
             };
             /** @description Validation Error */

@@ -61,3 +61,16 @@ to Codex ("Do what you think is best."). Preserve saved model defaults: a preset
 overrides only the values it stores; unspecified values inherit the user's saved
 model defaults, otherwise the runtime default. Empty presets add no sampling
 values of their own. This refines P5-AC1; no provider/run pipeline change is needed.
+
+**User acceptance and authorization — 5 October 2026 (5C and 6A):** Jake said
+"5C is sufficient. Continue on." Record 5C as accepted without inventing individual
+phone test results. Proceed to 6A transcript clean-up and glossary per
+`docs/next/PHASE-6-TRANSCRIPTION-T2-AND-RUNTIMES.md`, stopping for review after 6A.
+The optional second runtime, Library and Research remain separately gated. The
+reported sidebar/other motion regression remains deferred at Jake's request.
+
+**User clarification — 5 October 2026 (6A retry visibility):** Jake delegated the
+conflict between hiding retry controls and the frozen T1 disabled-control behavior
+to Codex ("Do what you think is best."). Preserve the visible disabled
+"Transcribe again" entries after audio removal, with the re-upload explanation.
+This refines the 6A plan's visibility note; unavailable audio still cannot retry.

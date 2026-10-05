@@ -33,6 +33,12 @@ if directive=='#fake:glossary':
     raw='Fake recording. Gismo is a synthetic test term.'
     text=raw.replace('Gismo','GSMOS')
     corrections=[{'found': 'Gismo', 'replaced_with': 'GSMOS', 'count': 1}]
+if directive=='#fake:cleanup':
+    text = ('invented lantern orchard ember sky ' * 50).strip() + '\n\n' + ('FAKE-REWRITE invented branch harvest ' * 50).strip()
+    raw = text
+if directive=='#fake:cleanup-slow':
+    text = 'invented lantern #slow:20 ' * 50
+    raw = text
 if directive=='#fake:silence':
     text=raw=''
     warnings=['No speech was detected in this recording.']
@@ -40,8 +46,10 @@ segments=[{'start': i*25, 'end': (i+1)*25, 'text': part, 'raw_text': part,
            'speaker': 'Speaker %d' % (i%2+1) if directive=='#fake:speakers' else None}
           for i,part in enumerate([text[:len(text)//3],text[len(text)//3:len(text)*2//3],text[len(text)*2//3:]])] if text else []
 out.mkdir(parents=True,exist_ok=True)
+glossary = Path(os.environ.get('FAKE_TRANSCRIBE_GLOSSARY', '/tmp/fake-glossary.txt'))
+terms = [line.partition('=')[0].strip() for line in glossary.read_text().splitlines() if line.strip() and not line.strip().startswith('#')] if glossary.exists() else []
 result={'text': text,'raw_text': raw if not directive.startswith('#fake:words') else text,'segments': segments,
-        'source': {'duration_seconds':75},'engine': {'model':'fake-whisper','prompt': ''},
+        'source': {'duration_seconds':75},'engine': {'model':'fake-whisper','prompt': ', '.join(terms)[:600]},
         'processing': {'elapsed_seconds':1,'speed_x_realtime':75},'warnings': warnings,
         'glossary_corrections':corrections,'channel_mode':'split' if '--channels' in sys.argv else 'mix'}
 (out/(audio.stem+'.json')).write_text(json.dumps(result))

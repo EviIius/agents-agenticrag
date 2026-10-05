@@ -420,6 +420,11 @@ As in §C12, none of this text goes into `message.content`. For `search_blocked_
 
 ## 6. Clean-up (T2)
 
+Implementation note (5 October 2026): the reference guard now lives at
+`server/app/transcribe/cleanup.py`, with its unchanged test vectors at
+`shared/cleanup_guard_cases.json`. Historical reference paths below describe
+the supplied design source; the exact prompt in §6.2 is unchanged.
+
 The user starts it from the transcript panel: **Clean up with {model}**, where the model is the one selected in the composer. It fixes punctuation, capitalisation and paragraph breaks. It must not change what was said.
 
 ### 6.1 Procedure (`transcribe/cleanup.py`)
