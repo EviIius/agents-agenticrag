@@ -10,8 +10,10 @@ from fastapi.responses import FileResponse
 
 from .api import (
     attachments,
+    backup,
     chats,
     connections,
+    folders,
     messages,
     models,
     presets,
@@ -21,6 +23,7 @@ from .api import (
 )
 from .api import settings as settings_api
 from .api.health import router as health_router
+from .backup import Backups
 from .config import APP_NAME, VERSION, Settings
 from .db.core import Store, connect
 from .documents.service import Extractor
@@ -55,9 +58,12 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
             )
             await app.state.runs.recover()
             await app.state.transcription.recover()
+            app.state.backups = Backups(app.state.store, config.data_dir.expanduser().resolve())
+            await app.state.backups.start()
             try:
                 yield
             finally:
+                await app.state.backups.close()
                 await app.state.documents.close()
                 await app.state.transcription.close()
                 await app.state.runs.close()
@@ -85,6 +91,8 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
     app.include_router(health_router)
     for router in (
         attachments.router,
+        folders.router,
+        backup.router,
         transcription.router,
         chats.router,
         connections.router,

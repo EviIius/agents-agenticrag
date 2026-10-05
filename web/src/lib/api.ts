@@ -53,3 +53,6 @@ export type TranscriptionStatus = components["schemas"]["TranscriptionStatus"];
 export type TranscriptionEvent = components["schemas"]["TranscriptionEvent"];
 
 export type Preset = components["schemas"]["Preset"];
+
+export type Folder = components["schemas"]["Folder"];
+export type BackupStatus = components["schemas"]["BackupStatus"];

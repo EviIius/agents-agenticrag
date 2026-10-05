@@ -1,3 +1,6 @@
+import { FoldersGroup } from "./FoldersGroup";
+import type { FolderAction } from "./FolderDialog";
+import { lazy, Suspense } from "react";
 import { OfflineNotice } from "./OfflineNotice";
 import { ChatTitle } from "./ChatTitle";
 import { failureCopy, failureDetail } from "@/lib/errors";
@@ -47,6 +50,7 @@ import {
   type Model,
   type Params,
   type Preset,
+  type Folder,
 } from "@/lib/api";
 import type { components } from "@/lib/api-types";
 import { detachTranscription, attachRun } from "@/lib/sse";
@@ -54,6 +58,7 @@ import { latestLeaf, visiblePath } from "@/lib/tree";
 import { useTranscripts } from "@/stores/transcripts";
 import { usePreferenceSync } from "@/hooks/usePreferenceSync";
 import { useAppEntrance } from "@/hooks/useAppEntrance";
+const FolderDialog = lazy(() => import("./FolderDialog"));
 export function LiveAppShell() {
   const ui = useUI(),
     navigate = useNavigate(),
@@ -83,6 +88,15 @@ export function LiveAppShell() {
     chat: Chat;
     kind: "rename" | "delete" | "export-md" | "export-json";
   } | null>(null);
+  const [folderAction, setFolderAction] = useState<FolderAction | null>(null);
+  const folderList = useQuery({
+    queryKey: ["folders"],
+    queryFn: () => api<Folder[]>("/folders"),
+  });
+  const onFolderAction = (action: FolderAction) => {
+    ui.set({ sidebar: false });
+    setFolderAction(action);
+  };
   const scroll = useRef<HTMLDivElement>(null);
   const previousChat = useRef(chatId);
   const bootstrap = useQuery({
@@ -142,6 +156,7 @@ export function LiveAppShell() {
       api<components["schemas"]["ChatList"]>(
         "/chats?q=" +
           encodeURIComponent(debounced) +
+          (debounced.trim() ? "" : "&folder=none") +
           (pageParam ? "&cursor=" + encodeURIComponent(pageParam) : ""),
       ),
     getNextPageParam: (last) => last.next_cursor ?? undefined,
@@ -261,6 +276,8 @@ export function LiveAppShell() {
   const refresh = () => {
     void query.invalidateQueries({ queryKey: ["chat", chatId] });
     void query.invalidateQueries({ queryKey: ["chats"] });
+    void query.invalidateQueries({ queryKey: ["folders"] });
+    void query.invalidateQueries({ queryKey: ["folder-chats"] });
     void query.invalidateQueries({ queryKey: ["bootstrap"] });
     void query.invalidateQueries({ queryKey: ["models"] });
   };
@@ -461,14 +478,35 @@ export function LiveAppShell() {
   );
   const controlsDirty = useControlDrafts((s) => !!s.drafts[controlDraftKey]);
   const menu = (chat: Chat) => (
-    <ChatMenu chat={chat} ui={ui} mutate={mutate} setAction={setAction} />
+    <ChatMenu
+      chat={chat}
+      ui={ui}
+      mutate={mutate}
+      setAction={setAction}
+      folders={folderList.data}
+      onFolderAction={onFolderAction}
+    />
   );
   const list = (
     <HistoryList
       search={search}
       setSearch={setSearch}
       history={history}
-      historyItems={historyItems}
+      historyItems={
+        search ? historyItems : historyItems.filter((chat) => !chat.folder_id)
+      }
+      folders={
+        <FoldersGroup
+          folders={folderList.data ?? []}
+          loading={folderList.isPending}
+          failed={folderList.isError}
+          retry={() => void folderList.refetch()}
+          onAction={onFolderAction}
+          menu={menu}
+          chatId={chatId}
+          onOpen={() => ui.set({ sidebar: false })}
+        />
+      }
       chatId={chatId}
       menu={menu}
       ui={ui}
@@ -505,6 +543,19 @@ export function LiveAppShell() {
       <aside className="sidebar-desktop" data-collapsed={ui.collapsed}>
         <Sidebar collapsed={ui.collapsed} history={list} />
       </aside>
+      {folderAction && (
+        <Suspense fallback={null}>
+          <FolderDialog
+            key={
+              folderAction.kind +
+              folderAction.folder?.id +
+              folderAction.chat?.id
+            }
+            action={folderAction}
+            onClose={() => setFolderAction(null)}
+          />
+        </Suspense>
+      )}
       <main
         className="app-main"
         onDragOver={(e) => e.preventDefault()}

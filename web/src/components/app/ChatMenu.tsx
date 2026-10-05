@@ -1,3 +1,5 @@
+import type { FolderAction } from "./FolderDialog";
+import type { Folder } from "@/lib/api";
 import type { Dispatch, SetStateAction } from "react";
 import { Ellipsis } from "lucide-react";
 import { toast } from "sonner";
@@ -9,6 +11,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 export type ChatAction = {
@@ -16,11 +22,15 @@ export type ChatAction = {
   kind: "rename" | "delete" | "export-md" | "export-json";
 };
 export function ChatMenu({
+  folders = [],
+  onFolderAction,
   chat,
   ui,
   mutate,
   setAction,
 }: {
+  folders?: Folder[];
+  onFolderAction?: (action: FolderAction) => void;
   chat: Chat;
   ui: ReturnType<typeof useUI.getState>;
   mutate: (url: string, body: unknown, method?: string) => Promise<boolean>;
@@ -72,6 +82,47 @@ export function ChatMenu({
             Export {format === "md" ? "Markdown" : "JSON"}
           </DropdownMenuItem>
         ))}
+        {onFolderAction && (
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>Move to folder</DropdownMenuSubTrigger>
+            <DropdownMenuPortal>
+              <DropdownMenuSubContent className="max-h-72 max-w-[calc(100vw-2rem)] overflow-y-auto">
+                {folders.map((folder) => (
+                  <DropdownMenuItem
+                    key={folder.id}
+                    disabled={chat.folder_id === folder.id}
+                    onSelect={() =>
+                      void mutate(
+                        "/chats/" + chat.id,
+                        { folder_id: folder.id },
+                        "PATCH",
+                      )
+                    }
+                  >
+                    {folder.name}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuItem
+                  onSelect={() => onFolderAction({ kind: "create", chat })}
+                >
+                  New folder…
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={!chat.folder_id}
+                  onSelect={() =>
+                    void mutate(
+                      "/chats/" + chat.id,
+                      { folder_id: null },
+                      "PATCH",
+                    )
+                  }
+                >
+                  Remove from folder
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuPortal>
+          </DropdownMenuSub>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           variant="destructive"

@@ -1,3 +1,4 @@
+import { OrganizationPreview } from "./OrganizationPreview";
 import { DocumentsPreview } from "./DocumentsPreview";
 import { EverydayPreview } from "./EverydayPreview";
 import config from "../../../shared/config.json";
@@ -70,6 +71,8 @@ const webMessage: Message = {
 const Markdown = lazy(() => import("@/components/chat/Markdown"));
 export function DesignPage() {
   const ui = useUI();
+  if (new URLSearchParams(location.search).has("organize"))
+    return <OrganizationPreview />;
   if (new URLSearchParams(location.search).has("documents"))
     return <DocumentsPreview />;
   if (new URLSearchParams(location.search).has("everyday"))

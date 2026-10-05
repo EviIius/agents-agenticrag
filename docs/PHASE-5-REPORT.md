@@ -437,3 +437,13 @@ Worker memory is not part of the reported uvicorn RSS sample.
 On the phone, add a PDF and a `.docx`, tap their chips to inspect the extracted
 text, then ask a question about them. Confirm the keyboard, review sheet and
 response work. 5C (folders/automatic backups) waits for checkpoint review.
+
+### 5B phone closeout — 5 October 2026
+
+Jake: “Both PDF and .docx work.” Physical document acceptance is now user-confirmed;
+this closes G-16 for 5B. Jake authorized 5C.
+
+Jake also reported: “the animation for the sidebar and stuff stopped working,
+diagnose it at a later point.” Record this as an unresolved physical motion
+regression; the earlier automated motion results do not establish current phone
+behavior. Diagnosis is deferred at Jake’s request while 5C proceeds.

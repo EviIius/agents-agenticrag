@@ -30,6 +30,8 @@ def main() -> None:
         # This spec discrepancy is documented in docs/PHASE-0-REPORT.md.
         pairs += [("text", "surface-3", 4.5), ("on-brand", "brand", 5.5), ("brand", "brand-soft", 4.5), ("text-2", "brand-soft", 4.5)]
         pairs += [("line-input", surface, 3.2) for surface in ("bg", "surface")]
+        pairs += [("on-brand", "danger", 4.5)]
+        pairs += [(foreground, background, 4.5) for foreground in ("danger", "warning") for background in ("bg", "surface", "surface-2")]
         for foreground, background, threshold in pairs:
             actual = ratio(theme[foreground], theme[background])
             count += 1

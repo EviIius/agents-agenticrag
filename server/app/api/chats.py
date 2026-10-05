@@ -83,10 +83,18 @@ async def delete_all(body: DeleteChats, request: Request) -> None:
 
 
 @router.get("")
-async def listing(request: Request, q: str = "", cursor: str | None = None) -> ChatList:
+async def listing(
+    request: Request, q: str = "", cursor: str | None = None, folder: str | None = None
+) -> ChatList:
     store = request.app.state.store
     params: list[object] = []
     sql = "SELECT * FROM chats WHERE EXISTS (SELECT 1 FROM messages WHERE chat_id=chats.id)"
+    if folder is not None:
+        if folder == "none":
+            sql += " AND folder_id IS NULL"
+        else:
+            sql += " AND folder_id=?"
+            params.append(folder)
     if q.strip():
         terms = re.findall(r"\w+", q)
         if terms:

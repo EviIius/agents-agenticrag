@@ -217,7 +217,14 @@ export function CommandPalette({
                   >
                     <FileText />
                     <span className="min-w-0">
-                      <span className="block truncate">{chat.title}</span>
+                      <span className="block truncate">
+                        {chat.title}
+                        {chat.folder_name && (
+                          <span className="ml-2 text-xs text-fg-3">
+                            · {chat.folder_name}
+                          </span>
+                        )}
+                      </span>
                       {chat.snippet && (
                         <span className="block line-clamp-2 text-xs text-fg-2">
                           {chat.snippet}

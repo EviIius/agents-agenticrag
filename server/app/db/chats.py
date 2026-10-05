@@ -2,12 +2,17 @@ import json
 
 from ..errors import AppError
 from ..schemas import Chat, ChatCreate, ChatPatch, Preset
+from . import folders
 from .connections import now, uid
 from .core import Store
 
 
 async def chat(store: Store, identifier: str) -> Chat:
-    row = await store.one("SELECT * FROM chats WHERE id=?", (identifier,))
+    row = await store.one(
+        "SELECT chats.*,folders.name AS folder_name FROM chats LEFT JOIN folders "
+        "ON folders.id=chats.folder_id WHERE chats.id=?",
+        (identifier,),
+    )
     if not row:
         raise AppError("not_found", "Chat not found.", 404)
     return Chat(**{**row, "params": json.loads(str(row["params_json"]))})
@@ -34,6 +39,8 @@ async def create(store: Store, body: ChatCreate, preset: Preset | None = None) -
 
 async def patch(store: Store, identifier: str, body: ChatPatch) -> Chat:
     await chat(store, identifier)
+    if "folder_id" in body.model_fields_set and body.folder_id is not None:
+        await folders.get(store, body.folder_id)
     values = body.model_dump(exclude_unset=True)
     if "current_leaf_id" in values and values["current_leaf_id"]:
         leaf = await store.one(

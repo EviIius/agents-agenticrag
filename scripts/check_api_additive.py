@@ -22,11 +22,15 @@ def compare(old: Any, new: Any, path: str = "$") -> list[str]:
             elif key == "required" and isinstance(value, list):
                 if set(value) != set(new[key]):
                     errors.append(f"{path}.required: required fields changed")
+            elif key == "parameters" and isinstance(value, list):
+                errors.extend(parameters(value, new[key], f"{path}.parameters"))
             elif key == "enum":
                 if not set(value).issubset(new[key]):
                     errors.append(f"{path}.enum: removed value")
             else:
                 errors.extend(compare(value, new[key], f"{path}.{key}"))
+        if "parameters" not in old and "parameters" in new:
+            errors.extend(parameters([], new["parameters"], f"{path}.parameters"))
         if "required" not in old and isinstance(new.get("required"), list) and new["required"]:
             errors.append(f"{path}.required: added required fields")
     elif isinstance(old, list):
@@ -36,6 +40,27 @@ def compare(old: Any, new: Any, path: str = "$") -> list[str]:
             errors.extend(compare(before, after, f"{path}[{index}]"))
     elif old != new:
         errors.append(f"{path}: contract value changed")
+    return errors
+
+
+def parameters(old: list[Any], new: Any, path: str) -> list[str]:
+    if not isinstance(new, list):
+        return [f"{path}: parameters changed type"]
+    def identity(value: dict[str, Any]) -> tuple[Any, Any, Any]:
+        return value.get("name"), value.get("in"), value.get("$ref")
+    before = {identity(p): p for p in old}
+    after = {identity(p): p for p in new}
+    errors: list[str] = []
+    if len(after) != len(new):
+        errors.append(f"{path}: duplicate parameter")
+    for key, value in before.items():
+        if key not in after:
+            errors.append(f"{path}.{key}: removed parameter")
+        else:
+            errors.extend(compare(value, after[key], f"{path}.{key}"))
+    for key, value in after.items():
+        if key not in before and (value.get("required") or "$ref" in value):
+            errors.append(f"{path}.{key}: added required or unresolved parameter")
     return errors
 
 

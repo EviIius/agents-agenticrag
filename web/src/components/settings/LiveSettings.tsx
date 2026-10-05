@@ -1,3 +1,4 @@
+import { BackupPane } from "./BackupPane";
 import { ModelRename } from "./ModelRename";
 import { failureCopy, failureDetail } from "@/lib/errors";
 import config from "../../../../shared/config.json";
@@ -832,6 +833,13 @@ export function DataPane({ preview = false }: { preview?: boolean }) {
           Export all chats
         </a>
       </Button>
+      <BackupPane
+        fixture={
+          preview
+            ? { last_at: "2026-10-05T03:30:00", count: 7, bytes: 43000000 }
+            : undefined
+        }
+      />
       <LegacyImportDialog preview={preview ? "ready" : undefined} />
       <AlertDialog
         open={open}
@@ -881,6 +889,8 @@ export function DataPane({ preview = false }: { preview?: boolean }) {
                   set({ settings: false, sidebar: false, panel: false });
                   query.removeQueries({ queryKey: ["chat"] });
                   await query.invalidateQueries({ queryKey: ["chats"] });
+                  await query.invalidateQueries({ queryKey: ["folders"] });
+                  await query.invalidateQueries({ queryKey: ["folder-chats"] });
                   navigate("/");
                   toast("Chats deleted");
                 } catch (failure) {

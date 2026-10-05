@@ -153,3 +153,37 @@ Legacy data is only read for import; the new database is independent.
 Atelier runs as the existing `dev.agenticrag.workbench` launchd service, independently of Codex. The local Ollama runtime handles chat; the installed transcription engine runs as a subprocess. A Codex weekly limit stops development assistance, not the installed app. Keep the Mac awake and connected to Tailscale to use it from your phone. Web search still depends on its configured provider.
 
 The verified Phase 4C fallback is commit `9b48ce8` on `codex/phase-4-motion`. To restore that build, use a separate checkout of that commit and run `scripts/deploy.sh --apply`; the script backs up the database and retains the service label, data paths and Tailscale configuration. Do not overwrite or reset a checkout containing unsaved work.
+
+## Automatic database backups and restoration
+
+Atelier makes an online SQLite backup at startup if the latest automatic copy is
+older than 24 hours, then daily at 03:30 in the Mac’s local time zone. Settings →
+Data shows the last copy, total size, warnings and **Back up now**. Copies are
+private (`0600`) in `~/.local/share/workbench/data/backups/auto-YYYYMMDD-HHMM.db`;
+the newest seven are retained. Deployment backups are separate and untouched.
+Low free space skips the copy and shows a warning.
+
+These are **database-only** backups: chats, branches, stored sources, transcript
+rows, settings, folders and document metadata are included. Attachment, extracted
+document and library files on disk are not included. Restoring the database does
+not recreate a deleted audio file or other missing attachment. Preserve your
+current data folder and any available attachment files before restoring.
+
+To restore safely:
+
+1. Stop the job: `launchctl bootout gui/$(id -u)/dev.agenticrag.workbench`.
+2. Copy the chosen backup to a private location outside the data directory.
+   Preserve the **entire current data directory** as a separate dated copy.
+3. Create a clean `~/.local/share/workbench/data` directory (`0700`). Put the chosen
+   copy there as `workbench.db` (`0600`). Do **not** carry over `workbench.db-wal`
+   or `workbench.db-shm` from the previous database. Retain attachment directories
+   from the preserved data if available; their files must match restored rows.
+4. For rollback across a migration, deploy the source version matching the backup.
+   Otherwise restart the existing job with `launchctl bootstrap gui/$(id -u)
+   ~/Library/LaunchAgents/dev.agenticrag.workbench.plist`.
+5. Check `/api/health`, open known chats and transcript outputs, and confirm their
+   attachments remain available. Keep the preserved folder until satisfied.
+
+Practice this sequence on a copied data folder before replacing production data.
+The Phase 5C rehearsal script and report record a copied-data restoration and
+previous-version rollback without modifying production. No restore UI is provided.

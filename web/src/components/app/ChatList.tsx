@@ -27,6 +27,7 @@ export function ChatList({
   onOpen,
   hasNext,
   onNext,
+  grouped = true,
 }: {
   activeChats?: string[];
   chats: Chat[];
@@ -36,6 +37,7 @@ export function ChatList({
   onOpen: () => void;
   hasNext: boolean;
   onNext: () => void;
+  grouped?: boolean;
 }) {
   const sentinel = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -55,7 +57,7 @@ export function ChatList({
         previous = heading;
         return (
           <div key={chat.id}>
-            {show && (
+            {grouped && show && (
               <p className="mt-4 px-3 py-2 text-[11px] tracking-wide text-fg-3 uppercase">
                 {heading}
               </p>
@@ -72,6 +74,11 @@ export function ChatList({
                 className="min-w-0 flex-1 truncate px-3 py-2 text-sm"
               >
                 <ChatTitle title={chat.title} />
+                {search && chat.folder_name && (
+                  <span className="ml-2 text-xs text-fg-3">
+                    · {chat.folder_name}
+                  </span>
+                )}
               </Link>
               {activeChats.includes(chat.id) && (
                 <span

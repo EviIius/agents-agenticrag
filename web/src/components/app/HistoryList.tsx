@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ChatList } from "./ChatList";
 export function HistoryList({
+  folders,
   activeChats,
   search,
   setSearch,
@@ -14,6 +15,7 @@ export function HistoryList({
   menu,
   ui,
 }: {
+  folders?: ReactNode;
   activeChats?: string[];
   search: string;
   setSearch: Dispatch<SetStateAction<string>>;
@@ -43,6 +45,7 @@ export function HistoryList({
           ⌘K
         </kbd>
       </div>
+      {!search && folders}
       {history.isLoading ? (
         <div role="status" aria-label="Loading chats" className="space-y-3 p-3">
           <div className="skeleton h-9" />

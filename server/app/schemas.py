@@ -133,6 +133,31 @@ class Preset(BaseModel):
     updated_at: str
 
 
+class FolderCreate(Input):
+    name: str = Field(min_length=1, max_length=80)
+
+
+class FolderPatch(Input):
+    name: str | None = Field(None, min_length=1, max_length=80)
+    position: int | None = Field(None, ge=0)
+
+
+class Folder(BaseModel):
+    id: str
+    name: str
+    position: int
+    count: int = 0
+    created_at: str
+    updated_at: str
+
+
+class BackupStatus(BaseModel):
+    last_at: str | None = None
+    count: int = 0
+    bytes: int = 0
+    warning: str | None = None
+
+
 class ChatCreate(Input):
     preset_id: str | None = None
     connection_id: str | None = None
@@ -141,6 +166,7 @@ class ChatCreate(Input):
 
 
 class ChatPatch(Input):
+    folder_id: str | None = None
     title: str | None = Field(None, min_length=1, max_length=200)
     pinned: bool | None = None
     current_leaf_id: str | None = None
@@ -152,6 +178,8 @@ class ChatPatch(Input):
 
 
 class Chat(BaseModel):
+    folder_id: str | None = None
+    folder_name: str | None = None
     id: str
     title: str
     title_source: str = "fallback"
