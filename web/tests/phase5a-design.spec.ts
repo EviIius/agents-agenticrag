@@ -88,6 +88,7 @@ for (const width of [390, 1440])
         .getByRole("button", { name: "Save preset", exact: true })
         .click();
       await expect(editor.getByRole("alert")).toContainText("already exists");
+      await expect(editor.getByRole("alert")).toBeInViewport();
       await capture("preset-collision");
       await editor.getByRole("button", { name: "Cancel", exact: true }).click();
       await page.getByRole("button", { name: "Delete", exact: true }).click();

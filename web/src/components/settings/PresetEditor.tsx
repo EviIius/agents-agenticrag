@@ -110,12 +110,12 @@ export default function PresetEditor({
             values={values}
             onChange={setValues}
           />
-          {error && (
-            <p role="alert" className="text-sm text-danger">
-              {error}
-            </p>
-          )}
         </div>
+        {error && (
+          <p role="alert" className="text-sm text-danger">
+            {error}
+          </p>
+        )}
         <div className="flex justify-end gap-2 border-t border-line pt-3">
           <Button variant="ghost" disabled={busy} onClick={onClose}>
             Cancel
