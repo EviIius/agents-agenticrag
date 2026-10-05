@@ -1,3 +1,4 @@
+import { EverydayPreview } from "./EverydayPreview";
 import config from "../../../shared/config.json";
 import { RefinementPreview } from "./RefinementPreview";
 import { ConversationMotionPreview } from "./ConversationMotionPreview";
@@ -68,6 +69,8 @@ const webMessage: Message = {
 const Markdown = lazy(() => import("@/components/chat/Markdown"));
 export function DesignPage() {
   const ui = useUI();
+  if (new URLSearchParams(location.search).has("everyday"))
+    return <EverydayPreview />;
   return (
     <div className="design-page">
       <header className="mb-10">
@@ -96,6 +99,9 @@ export function DesignPage() {
           </Button>
           <Button variant="outline" onClick={() => ui.set({ theme: "system" })}>
             System
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/design?everyday">Everyday chat states</Link>
           </Button>
           <Button asChild variant="outline">
             <Link to="/design/chat/fixture">Fixture chat</Link>

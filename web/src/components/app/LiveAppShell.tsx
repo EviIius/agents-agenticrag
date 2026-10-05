@@ -31,7 +31,11 @@ import { Composer } from "@/components/chat/Composer";
 import { LiveThread } from "@/components/chat/LiveThread";
 import { SettingsDialog } from "@/components/settings/SettingsDialog";
 import { LiveSettingsPane } from "@/components/settings/LiveSettings";
-import { LiveChatSettings } from "@/components/settings/LiveChatSettings";
+import {
+  ChatControlsUnavailable,
+  LiveChatSettings,
+} from "@/components/settings/LiveChatSettings";
+import { controlsKey, useControlDrafts } from "@/stores/control-drafts";
 import { useUI } from "@/stores/ui";
 import { useRuns } from "@/stores/runs";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -42,6 +46,7 @@ import {
   type Detail,
   type Model,
   type Params,
+  type Preset,
 } from "@/lib/api";
 import type { components } from "@/lib/api-types";
 import { detachTranscription, attachRun } from "@/lib/sse";
@@ -72,6 +77,7 @@ export function LiveAppShell() {
   }, [chatId]);
   const { modelOperation, loadingModel, operateModel, changeModel } =
     useModelOps({ query, chatId, setSelected });
+  const [draftOverridden, setDraftOverridden] = useState(false);
   const [draftPrompt, setDraftPrompt] = useState<string | null>(null);
   const [action, setAction] = useState<{
     chat: Chat;
@@ -85,6 +91,20 @@ export function LiveAppShell() {
     refetchInterval: () => (document.hidden ? false : 30000),
   });
   usePreferenceSync(bootstrap.data?.settings);
+  const presets = useQuery({
+    queryKey: ["presets"],
+    queryFn: () => api<Preset[]>("/presets"),
+    enabled: !!bootstrap.data,
+  });
+  const defaultPreset = presets.data?.find(
+    (p) => p.id === bootstrap.data?.settings.default_preset_id,
+  );
+  const effectiveDraftParams = draftOverridden
+    ? draftParams
+    : (defaultPreset?.params ?? draftParams);
+  const effectiveDraftPrompt = draftOverridden
+    ? draftPrompt
+    : (defaultPreset?.system_prompt ?? draftPrompt);
   const models = useQuery({
     queryKey: ["models"],
     queryFn: () => api<Model[]>("/models"),
@@ -219,6 +239,7 @@ export function LiveAppShell() {
             bootstrap.data?.settings.default_connection_id,
       );
       if (choice) setSelected(choice);
+      setDraftOverridden(false);
       setDraftParams({});
       setDraftPrompt(null);
       setWeb(Boolean(bootstrap.data?.settings["web.default_on"]));
@@ -263,8 +284,9 @@ export function LiveAppShell() {
     waitingForTranscript,
     detail,
     web,
-    draftParams,
-    draftPrompt,
+    draftParams: effectiveDraftParams,
+    draftPrompt: effectiveDraftPrompt,
+    draftOverridden,
     effectiveFiles,
     setFiles,
     bootstrap,
@@ -272,17 +294,19 @@ export function LiveAppShell() {
     refresh,
     ...sendState,
   });
-  const chatParams = detail.data?.chat.params ?? draftParams;
-  const saveParams = (prompt: string | null, params: Params) => {
+  const chatParams = detail.data?.chat.params ?? effectiveDraftParams;
+  const saveParams = async (prompt: string | null, params: Params) => {
     if (chatId)
-      void mutate(
+      return mutate(
         "/chats/" + chatId,
         { system_prompt: prompt, params },
         "PATCH",
       );
     else {
+      setDraftOverridden(true);
       setDraftParams(params);
       setDraftPrompt(prompt);
+      return true;
     }
   };
   const webBlocked =
@@ -355,7 +379,10 @@ export function LiveAppShell() {
       onThinkChange={(value) => {
         const p = { ...chatParams, reasoning: value };
         if (chatId) void mutate("/chats/" + chatId, { params: p }, "PATCH");
-        else setDraftParams(p);
+        else {
+          setDraftOverridden(true);
+          setDraftParams(p);
+        }
       }}
       web={detail.data?.chat.web_enabled ?? web}
       onWebChange={
@@ -373,41 +400,57 @@ export function LiveAppShell() {
       }
     />
   );
-  const panel = (
-    <LiveChatSettings
-      drawer={phone && !wide}
-      key={`${chatId ?? "new"}:${current?.connection_id}:${current?.model_id}`}
-      chat={detail.data?.chat}
-      draftParams={draftParams}
-      draftPrompt={draftPrompt}
-      model={current}
-      onSave={saveParams}
-      onDefaults={(params) => {
-        if (current)
-          void mutate(
-            "/models/prefs",
-            {
-              connection_id: current.connection_id,
-              model_id: current.model_id,
-              params,
-            },
-            "PUT",
-          );
-      }}
-      onContext={(length) => {
-        if (current)
-          void mutate(
-            "/models/prefs",
-            {
-              connection_id: current.connection_id,
-              model_id: current.model_id,
-              context_length: length,
-            },
-            "PUT",
-          );
-      }}
-    />
+  const panel =
+    chatId && !detail.data ? (
+      <ChatControlsUnavailable
+        drawer={phone && !wide}
+        failed={detail.isError}
+        retry={() => void detail.refetch()}
+      />
+    ) : (
+      <LiveChatSettings
+        drawer={phone && !wide}
+        key={`${chatId ?? "new"}:${current?.connection_id}:${current?.model_id}:${defaultPreset?.id}`}
+        chat={detail.data?.chat}
+        initialPreset={
+          !chatId && !draftOverridden ? defaultPreset?.id : undefined
+        }
+        draftParams={effectiveDraftParams}
+        draftPrompt={effectiveDraftPrompt}
+        model={current}
+        onSave={saveParams}
+        onDefaults={(params) => {
+          if (current)
+            return mutate(
+              "/models/prefs",
+              {
+                connection_id: current.connection_id,
+                model_id: current.model_id,
+                params,
+              },
+              "PUT",
+            );
+        }}
+        onContext={(length) => {
+          if (current)
+            return mutate(
+              "/models/prefs",
+              {
+                connection_id: current.connection_id,
+                model_id: current.model_id,
+                context_length: length,
+              },
+              "PUT",
+            );
+        }}
+      />
+    );
+  const controlDraftKey = controlsKey(
+    chatId,
+    current?.connection_id,
+    current?.model_id,
   );
+  const controlsDirty = useControlDrafts((s) => !!s.drafts[controlDraftKey]);
   const menu = (chat: Chat) => (
     <ChatMenu chat={chat} ui={ui} mutate={mutate} setAction={setAction} />
   );
@@ -520,9 +563,17 @@ export function LiveAppShell() {
           )}
           <IconButton
             label="Chat controls"
+            className="relative"
             onClick={() => ui.set({ panel: !ui.panel })}
           >
             <SlidersHorizontal />
+            {controlsDirty && (
+              <span
+                aria-hidden="true"
+                className="absolute right-1 top-1 size-1.5 rounded-full bg-brand"
+              />
+            )}
+            {controlsDirty && <span className="sr-only">Unsaved changes</span>}
           </IconButton>
           {detail.data && menu(detail.data.chat)}
         </header>
@@ -653,6 +704,7 @@ export function LiveAppShell() {
               void mutate("/chats/" + chatId, { web_enabled: next }, "PATCH");
           },
           chatSettings: () => ui.set({ panel: true }),
+          applyPreset: () => ui.set({ panel: true, choosePreset: true }),
           settings: () => ui.set({ settings: true }),
           shortcuts: () =>
             ui.set({ settings: true, settingsPane: "Shortcuts" }),

@@ -20,7 +20,9 @@ def main() -> None:
     ).splitlines()
     paths = set(changed + untracked)
     paths.update(
-        str(p.relative_to(ROOT)) for p in (ROOT / "artifacts/phase-4").rglob("*") if p.is_file()
+        str(p.relative_to(ROOT))
+        for phase in ("phase-4", "phase-5")
+        for p in (ROOT / "artifacts" / phase).rglob("*") if p.is_file()
     )
     marker_file = os.environ.get("WORKBENCH_PRIVACY_MARKERS_FILE")
     markers = Path(marker_file).read_text().splitlines() if marker_file else []
@@ -32,7 +34,7 @@ def main() -> None:
         if path.suffix.lower() in AUDIO:
             failures.append({"path": name, "reason": "audio must not be committed"})
         if (
-            name.startswith("artifacts/phase-4/")
+            name.startswith(("artifacts/phase-4/", "artifacts/phase-5/"))
             and path.suffix.lower() in {".png", ".webm", ".jpg"}
             and not re.search(r"fake|synthetic", path.name)
         ):
@@ -57,7 +59,7 @@ def main() -> None:
             {
                 "scanned": len(paths),
                 "failures": failures,
-                "limits": "Changed files and Phase 4 evidence only; images require human review; optional local private-marker file.",
+                "limits": "Changed files and Phase 4/5 evidence; images require human review; optional local private-marker file.",
             },
             indent=2,
         )

@@ -110,7 +110,31 @@ class ModelPrefs(ModelAction):
     hidden: bool | None = None
 
 
+class PresetCreate(Input):
+    name: str = Field(min_length=1, max_length=80)
+    system_prompt: str | None = None
+    params: Parameters = Field(default_factory=lambda: Parameters.model_validate({}))
+
+
+class PresetPatch(Input):
+    name: str | None = Field(None, min_length=1, max_length=80)
+    system_prompt: str | None = None
+    params: Parameters | None = None
+    position: int | None = Field(None, ge=0)
+
+
+class Preset(BaseModel):
+    id: str
+    name: str
+    system_prompt: str | None = None
+    params: dict[str, Any] = Field(default_factory=dict)
+    position: int
+    created_at: str
+    updated_at: str
+
+
 class ChatCreate(Input):
+    preset_id: str | None = None
     connection_id: str | None = None
     model_id: str | None = None
     web_enabled: bool | None = None

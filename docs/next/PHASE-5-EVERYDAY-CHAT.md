@@ -223,3 +223,10 @@ OCR, images inside PDFs, spreadsheets, slide decks, EPUB. Nested folders, drag a
 | P5-AC12 | Web answers are unchanged: `make eval-web` offline replay matches the Phase 4 baseline. |
 
 Report each checkpoint in `docs/PHASE-5-REPORT.md`.
+
+**User clarification — 5 October 2026 (preset precedence):** Jake delegated the
+conflict between exact preset-only sampling and the frozen model-default pipeline
+to Codex ("Do what you think is best."). Preserve saved model defaults: a preset
+overrides only the values it stores; unspecified values inherit the user's saved
+model defaults, otherwise the runtime default. Empty presets add no sampling
+values of their own. This refines P5-AC1; no provider/run pipeline change is needed.

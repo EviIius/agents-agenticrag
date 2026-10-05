@@ -1,7 +1,7 @@
 import json
 
 from ..errors import AppError
-from ..schemas import Chat, ChatCreate, ChatPatch
+from ..schemas import Chat, ChatCreate, ChatPatch, Preset
 from .connections import now, uid
 from .core import Store
 
@@ -13,12 +13,21 @@ async def chat(store: Store, identifier: str) -> Chat:
     return Chat(**{**row, "params": json.loads(str(row["params_json"]))})
 
 
-async def create(store: Store, body: ChatCreate) -> Chat:
+async def create(store: Store, body: ChatCreate, preset: Preset | None = None) -> Chat:
     identifier, date = uid(), now()
     await store.execute(
         "INSERT INTO chats(id,connection_id,model_id,web_enabled,created_at,updat"
-        "ed_at) VALUES (?,?,?,?,?,?)",
-        (identifier, body.connection_id, body.model_id, bool(body.web_enabled), date, date),
+        "ed_at,system_prompt,params_json) VALUES (?,?,?,?,?,?,?,?)",
+        (
+            identifier,
+            body.connection_id,
+            body.model_id,
+            bool(body.web_enabled),
+            date,
+            date,
+            preset.system_prompt if preset else None,
+            json.dumps(preset.params if preset else {}),
+        ),
     )
     return await chat(store, identifier)
 

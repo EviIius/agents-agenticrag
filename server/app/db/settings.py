@@ -6,6 +6,7 @@ from urllib.parse import urlsplit
 from .core import Store
 
 DEFAULTS: dict[str, Any] = {
+    "default_preset_id": None,
     "default_connection_id": None,
     "default_model_id": None,
     "new_chat_model": "last_used",
@@ -123,6 +124,12 @@ async def patch(store: Store, values: dict[str, Any]) -> None:
             or any(not isinstance(v, str) or not v for v in values[key].values())
         ):
             raise ValueError("Choose a connection and model")
+    if "default_preset_id" in values and values["default_preset_id"] is not None:
+        identifier = values["default_preset_id"]
+        if not isinstance(identifier, str) or not await store.one(
+            "SELECT id FROM presets WHERE id=?", (identifier,)
+        ):
+            raise ValueError("Choose an existing preset")
     await store.batch(
         [
             (

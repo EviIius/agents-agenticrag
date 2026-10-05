@@ -94,12 +94,15 @@ for (const width of [390, 1440]) {
         controls.getByRole("button", { name: "64K", exact: true }),
       ).toHaveCount(0);
       await context.fill("16384");
+      await controls
+        .getByRole("button", { name: "Apply context length" })
+        .click();
       await controls.getByRole("button", { name: "32K", exact: true }).click();
       await expect(
         controls.getByRole("button", { name: "32K", exact: true }),
       ).toHaveAttribute("aria-pressed", "true");
       await controls
-        .getByRole("button", { name: "Save settings", exact: true })
+        .getByRole("button", { name: "Apply context length", exact: true })
         .click();
       if (width < 640) {
         const drawer = page.getByRole("dialog", { name: "Chat controls" });
@@ -164,11 +167,8 @@ for (const width of [390, 1440]) {
     });
     await settings.getByRole("button", { name: "Models", exact: true }).click();
     const card = settings
-      .getByRole("textbox", {
-        name: "Display name for fake-reasoning",
-        exact: true,
-      })
-      .locator("..");
+      .getByRole("button", { name: "Rename fake-reasoning", exact: true })
+      .locator("../..");
     await card.getByRole("button", { name: "Load", exact: true }).click();
     await expect(
       card.getByRole("button", { name: "Eject", exact: true }),

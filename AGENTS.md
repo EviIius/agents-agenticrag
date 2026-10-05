@@ -54,3 +54,10 @@ the recording privacy rule. No new packages or model calls. Later phases and
 optional chat forking remain separately gated.
 
 **User authorization — 4 October 2026 (4B review and 4C):** Jake asked Codex to verify the live Workbench and iPhone Mirroring, fix Markdown/JSON chat exports to use the cancellable format-selection/save/share flow already provided for recording outputs, then continue to 4C. Preparing a file may fetch the existing export endpoint; cancellation never starts a download or opens the native share sheet. Keep the chat export dialog available after save/share/download. Physical review observations by Codex must be labeled as such, not attributed to Jake. The 4D review stop remains in force.
+
+**User clarification — 5 October 2026 (preset precedence):** Jake delegated the
+conflict between exact preset-only sampling and the frozen model-default pipeline
+to Codex ("Do what you think is best."). Preserve saved model defaults: a preset
+overrides only the values it stores; unspecified values inherit the user's saved
+model defaults, otherwise the runtime default. Empty presets add no sampling
+values of their own. This refines P5-AC1; no provider/run pipeline change is needed.

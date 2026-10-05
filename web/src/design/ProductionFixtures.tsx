@@ -193,6 +193,8 @@ export function FixtureChatSettings({ drawer = false }: { drawer?: boolean }) {
   return (
     <LiveChatSettings
       drawer={drawer}
+      request={fixtureRequest}
+      queryScope={["design-controls"]}
       model={fixtureModels[1]}
       onSave={() => {}}
       onDefaults={() => {}}
@@ -230,11 +232,13 @@ const fixtureBootstrap: Bootstrap = {
 const fixtureRequest: typeof api = async <T,>(url: string): Promise<T> => {
   const value = url.startsWith("/models")
     ? fixtureModels
-    : url === "/search/status"
+    : url === "/presets"
       ? []
-      : url === "/search/test"
-        ? { ok: true, results: [], ms: 20 }
-        : undefined;
+      : url === "/search/status"
+        ? []
+        : url === "/search/test"
+          ? { ok: true, results: [], ms: 20 }
+          : undefined;
   return value as T;
 };
 export function FixtureSettingsPane({ pane }: { pane: string }) {

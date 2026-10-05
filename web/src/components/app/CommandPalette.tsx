@@ -29,6 +29,7 @@ import {
 import { IconButton } from "./IconButton";
 import { Button } from "@/components/ui/button";
 export type PaletteActions = {
+  applyPreset?: () => void;
   newChat: () => void;
   switchModel: () => void;
   toggleSearch: () => void;
@@ -97,6 +98,15 @@ export function CommandPalette({
             icon: SlidersHorizontal,
             action: actions.chatSettings,
           },
+          ...(actions.applyPreset
+            ? [
+                {
+                  label: "Apply preset…",
+                  icon: SlidersHorizontal,
+                  action: actions.applyPreset,
+                },
+              ]
+            : []),
           { label: "Settings", icon: Settings, action: actions.settings },
           { label: "Toggle theme", icon: Moon, action: actions.toggleTheme },
           { label: "Shortcuts", icon: Keyboard, action: actions.shortcuts },

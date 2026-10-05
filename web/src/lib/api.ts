@@ -51,3 +51,5 @@ export async function api<T>(
 export type Transcript = components["schemas"]["Transcript"];
 export type TranscriptionStatus = components["schemas"]["TranscriptionStatus"];
 export type TranscriptionEvent = components["schemas"]["TranscriptionEvent"];
+
+export type Preset = components["schemas"]["Preset"];

@@ -8,7 +8,17 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
-from .api import attachments, chats, connections, messages, models, runs, search, transcription
+from .api import (
+    attachments,
+    chats,
+    connections,
+    messages,
+    models,
+    presets,
+    runs,
+    search,
+    transcription,
+)
 from .api import settings as settings_api
 from .api.health import router as health_router
 from .config import APP_NAME, VERSION, Settings
@@ -76,6 +86,7 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
         connections.router,
         messages.router,
         models.router,
+        presets.router,
         runs.router,
         settings_api.router,
         search.router,

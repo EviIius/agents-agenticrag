@@ -52,11 +52,40 @@ function SelectContent({
   children,
   position = "item-aligned",
   align = "center",
+  onCloseAutoFocus,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
+  const restoreBackground = React.useRef<() => void>(() => {});
+  const bindContent = React.useCallback((node: HTMLDivElement | null) => {
+    restoreBackground.current();
+    if (!node?.isConnected) return;
+    const changed: HTMLElement[] = [];
+    let current: HTMLElement | null = node;
+    while (current && current !== document.body) {
+      for (const sibling of current.parentElement?.children ?? []) {
+        if (
+          sibling instanceof HTMLElement &&
+          sibling !== current &&
+          !sibling.inert
+        ) {
+          sibling.inert = true;
+          changed.push(sibling);
+        }
+      }
+      current = current.parentElement;
+    }
+    restoreBackground.current = () => {
+      for (const sibling of changed) sibling.inert = false;
+    };
+  }, []);
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
+        ref={bindContent}
+        onCloseAutoFocus={(event) => {
+          restoreBackground.current();
+          onCloseAutoFocus?.(event);
+        }}
         data-slot="select-content"
         className={cn(
           "relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-md",

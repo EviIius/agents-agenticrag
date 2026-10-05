@@ -107,8 +107,13 @@ for (const width of [320, 390, 768, 1440]) {
       ).toBeDisabled();
       await expect(context).toHaveAttribute("aria-invalid", "true");
       await context.fill("16384");
+      await expect(context).toHaveAttribute("aria-invalid", "false");
       await expect(
         controls.getByRole("button", { name: "Save settings", exact: true }),
+      ).toBeDisabled();
+      await context.fill("8192");
+      await expect(
+        controls.getByRole("button", { name: "Apply context length" }),
       ).toBeEnabled();
       await page.getByRole("button", { name: "Close chat controls" }).click();
       await page.keyboard.press("Control+,");

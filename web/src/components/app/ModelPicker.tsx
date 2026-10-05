@@ -157,7 +157,13 @@ export function ModelPicker({
                     .map((model) => (
                       <CommandItem
                         key={model.connection_id + model.model_id}
-                        value={model.display_name + " " + model.connection_id}
+                        value={
+                          model.display_name +
+                          " " +
+                          model.model_id +
+                          " " +
+                          model.connection_id
+                        }
                         data-active-model={
                           current?.model_id === model.model_id &&
                           current?.connection_id === model.connection_id
@@ -199,6 +205,9 @@ export function ModelPicker({
                               />
                             )}
                           </span>
+                          {model.display_name !== model.model_id && (
+                            <p className="meta break-all">{model.model_id}</p>
+                          )}
                           <p className="meta">
                             {[
                               model.params,
@@ -331,6 +340,7 @@ export function ModelPicker({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent
+        aria-label="Choose model"
         align="start"
         className="flex max-h-(--radix-popover-content-available-height) w-[min(420px,calc(100vw-32px))] flex-col overflow-hidden p-0"
       >

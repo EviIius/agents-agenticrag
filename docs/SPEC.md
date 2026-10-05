@@ -2402,3 +2402,10 @@ Hard rules:
 **User amendment — 3 October 2026 (deployment and storage):** Keep the engine’s public source under `transcribe/` in the Workbench repo and run it as a subprocess. Model weights, actual config, glossary and interpreter selection are ignored by Git; deployment copies them inside the installed app at `~/.local/share/workbench/app/transcribe` to avoid Documents access restrictions. Source recordings remain outside the repo. Uploaded audio is temporary by default: remove Workbench’s copy after durable transcription, preserving transcript text, raw text, timestamps and metadata. Failed/cancelled audio remains retryable until cleared. Settings offers opt-in audio retention and bulk clearing of inactive audio without deleting outputs or chats. This supersedes TRANSCRIPTION-SPEC decisions 1 and 3 and §12’s separate deployment folder. Jake authorized removal of existing uploaded audio copies.
 
 Completed transcript outputs are kept even when unsent; seven-day housekeeping removes only unfinished unsent attachments.
+
+**User clarification — 5 October 2026 (preset precedence):** Jake delegated the
+conflict between exact preset-only sampling and the frozen model-default pipeline
+to Codex ("Do what you think is best."). Preserve saved model defaults: a preset
+overrides only the values it stores; unspecified values inherit the user's saved
+model defaults, otherwise the runtime default. Empty presets add no sampling
+values of their own. This refines P5-AC1; no provider/run pipeline change is needed.

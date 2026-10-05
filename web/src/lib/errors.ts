@@ -11,6 +11,8 @@ export function errorCopy(
     title = model?.display_name ?? "This model",
     n = context ?? model?.context_length ?? 8192;
   const copy: Record<string, string> = {
+    preset_name_taken:
+      "A preset with this name already exists. Choose another name.",
     runtime_unreachable: `Can't reach ${name} at ${host}. Is it running?`,
     model_not_found: `${title} isn't available on ${name} anymore.`,
     model_load_failed: `${name} couldn't load ${title}, most likely not enough memory. Eject other models or pick a smaller one.`,

@@ -8,6 +8,7 @@ type UI = {
   settings: boolean;
   settingsPane: string;
   command: boolean;
+  choosePreset: boolean;
   answerFont: "serif" | "sans";
   textSize: "S" | "M" | "L";
   reduceMotion: "system" | "always";
@@ -22,6 +23,7 @@ export const useUI = create<UI>((set) => ({
   settings: false,
   settingsPane: "Appearance",
   command: false,
+  choosePreset: false,
   answerFont: "serif",
   textSize: "M",
   reduceMotion: "system",

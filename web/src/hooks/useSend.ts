@@ -70,6 +70,7 @@ export function useSend({
   web,
   draftParams,
   draftPrompt,
+  draftOverridden = false,
   effectiveFiles,
   setFiles,
   bootstrap,
@@ -94,6 +95,7 @@ export function useSend({
   web: boolean;
   draftParams: Params;
   draftPrompt: string | null;
+  draftOverridden?: boolean;
   effectiveFiles: Attachment[];
   setFiles: Dispatch<SetStateAction<Attachment[]>>;
   bootstrap: { data?: Bootstrap };
@@ -133,9 +135,10 @@ export function useSend({
           connection_id: current.connection_id,
           model_id: current.model_id,
           web_enabled: web,
+          ...(draftOverridden ? { preset_id: null } : {}),
         });
         id = chat.id;
-        if (Object.keys(draftParams).length || draftPrompt !== null)
+        if (draftOverridden)
           await api(
             "/chats/" + id,
             { params: draftParams, system_prompt: draftPrompt },

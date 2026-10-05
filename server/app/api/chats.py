@@ -9,7 +9,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import Response
 
 from ..db import attachments as records
-from ..db import chats, messages, settings
+from ..db import chats, messages, presets, settings
 from ..db.connections import now, uid
 from ..db.legacy import import_legacy
 from ..errors import AppError
@@ -129,7 +129,11 @@ async def create(body: ChatCreate, request: Request) -> Chat:
             body.model_id = model.model_id
     if body.web_enabled is None:
         body.web_enabled = values["web.default_on"]
-    return await chats.create(request.app.state.store, body)
+    identifier = (
+        body.preset_id if "preset_id" in body.model_fields_set else values["default_preset_id"]
+    )
+    preset = await presets.get(request.app.state.store, identifier) if identifier else None
+    return await chats.create(request.app.state.store, body, preset)
 
 
 @router.get("/{identifier}")

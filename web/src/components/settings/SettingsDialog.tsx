@@ -33,6 +33,7 @@ function centerActiveTab(nav: HTMLElement) {
 const basePanes = [
   "Connections",
   "Models",
+  "Presets",
   "Appearance",
   "Data",
   "Shortcuts",
@@ -47,12 +48,12 @@ export function SettingsDialog({
 }) {
   const panes: string[] = searchEnabled
     ? [
-        ...basePanes.slice(0, 2),
+        ...basePanes.slice(0, 3),
         "Search",
         "Transcription",
-        ...basePanes.slice(2),
+        ...basePanes.slice(3),
       ]
-    : [...basePanes.slice(0, 2), "Transcription", ...basePanes.slice(2)];
+    : [...basePanes.slice(0, 3), "Transcription", ...basePanes.slice(3)];
   const ui = useUI();
   const pane = ui.settingsPane;
   const navigation = useRef<HTMLElement>(null);

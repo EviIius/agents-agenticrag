@@ -1,7 +1,8 @@
+import { ModelRename } from "./ModelRename";
 import { failureCopy, failureDetail } from "@/lib/errors";
 import config from "../../../../shared/config.json";
 import { LegacyImportDialog } from "./LegacyImportDialog";
-import { useState, useEffect, useRef } from "react";
+import { lazy, Suspense, useState, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { useUI } from "@/stores/ui";
@@ -38,6 +39,7 @@ import { OllamaSearchKey } from "./OllamaSearchKey";
 import { Textarea } from "@/components/ui/textarea";
 import { api, type Bootstrap, type Model } from "@/lib/api";
 import type { components } from "@/lib/api-types";
+const PresetsPane = lazy(() => import("./PresetsPane"));
 export function LiveSettingsPane({
   pane,
   bootstrap,
@@ -92,6 +94,16 @@ export function LiveSettingsPane({
       return false;
     }
   };
+  if (pane === "Presets")
+    return (
+      <Suspense fallback={<p role="status">Loading presets…</p>}>
+        <PresetsPane
+          bootstrap={bootstrap}
+          request={request}
+          queryScope={queryScope}
+        />
+      </Suspense>
+    );
   if (pane === "Transcription")
     return <TranscriptionSettings bootstrap={bootstrap} />;
   if (pane === "Connections")
@@ -206,7 +218,7 @@ export function LiveSettingsPane({
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={() =>
-                        void update("/connections/" + c.id, undefined, "DELETE")
+                        update("/connections/" + c.id, undefined, "DELETE")
                       }
                     >
                       Remove
@@ -371,22 +383,24 @@ export function LiveSettingsPane({
             key={m.connection_id + m.model_id}
             className="rounded-lg border border-line p-4"
           >
-            <Input
-              aria-label={`Display name for ${m.model_id}`}
-              defaultValue={m.display_name}
-              onBlur={(e) => {
-                if (e.target.value !== m.display_name)
-                  void update(
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="font-medium break-words">{m.display_name}</h3>
+              <ModelRename
+                model={m}
+                onSave={(display_name) =>
+                  update(
                     "/models/prefs",
                     {
                       connection_id: m.connection_id,
                       model_id: m.model_id,
-                      display_name: e.target.value,
+                      display_name,
                     },
                     "PUT",
-                  );
-              }}
-            />
+                  )
+                }
+              />
+            </div>
+            <p className="mt-2 text-xs text-fg-3 break-all">{m.model_id}</p>
             <p className="my-3 text-xs text-fg-3 break-all">
               {m.params} · {m.quant} ·{" "}
               {m.size_bytes ? (m.size_bytes / 1e9).toFixed(1) + " GB" : ""} ·{" "}
@@ -450,16 +464,11 @@ export function LiveSettingsPane({
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <LiveChatSettings
-                    key={JSON.stringify([
-                      m.connection_id,
-                      m.model_id,
-                      m.params_defaults,
-                      m.context_length,
-                    ])}
+                    key={JSON.stringify([m.connection_id, m.model_id])}
                     model={m}
                     defaultsOnly
                     onSave={(_, params) =>
-                      void update(
+                      update(
                         "/models/prefs",
                         {
                           connection_id: m.connection_id,
@@ -470,7 +479,7 @@ export function LiveSettingsPane({
                       )
                     }
                     onDefaults={(params) =>
-                      void update(
+                      update(
                         "/models/prefs",
                         {
                           connection_id: m.connection_id,
@@ -481,7 +490,7 @@ export function LiveSettingsPane({
                       )
                     }
                     onContext={(context_length) =>
-                      void update(
+                      update(
                         "/models/prefs",
                         {
                           connection_id: m.connection_id,
