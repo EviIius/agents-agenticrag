@@ -13,6 +13,13 @@ export function errorCopy(
   const copy: Record<string, string> = {
     preset_name_taken:
       "A preset with this name already exists. Choose another name.",
+    document_no_text:
+      "This PDF has no selectable text. Scanned documents aren't supported yet.",
+    document_encrypted:
+      "This PDF is password-protected. Remove the password and try again.",
+    document_unreadable: "Couldn't read this file. It may be damaged.",
+    document_too_large: "Documents can be up to 50 MB and 1,500 pages.",
+    document_timeout: "This document took too long to read.",
     runtime_unreachable: `Can't reach ${name} at ${host}. Is it running?`,
     model_not_found: `${title} isn't available on ${name} anymore.`,
     model_load_failed: `${name} couldn't load ${title}, most likely not enough memory. Eject other models or pick a smaller one.`,

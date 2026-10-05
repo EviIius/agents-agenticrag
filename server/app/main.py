@@ -23,6 +23,7 @@ from .api import settings as settings_api
 from .api.health import router as health_router
 from .config import APP_NAME, VERSION, Settings
 from .db.core import Store, connect
+from .documents.service import Extractor
 from .errors import AppError, register_handlers
 from .providers.registry import Registry
 from .runs.manager import RunManager
@@ -42,6 +43,8 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
             app.state.db = db
             app.state.store = Store(db)
             app.state.config = config
+            app.state.documents = Extractor()
+            app.state.documents.recover(config.data_dir / "attachments")
             app.state.registry = Registry(app.state.store)
             app.state.runs = RunManager(app.state.store, app.state.registry, config.data_dir)
             app.state.search = Pipeline(app.state.runs, config.web_fixtures)
@@ -55,6 +58,7 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
             try:
                 yield
             finally:
+                await app.state.documents.close()
                 await app.state.transcription.close()
                 await app.state.runs.close()
                 await app.state.registry.close()

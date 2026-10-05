@@ -38,6 +38,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/attachments/{identifier}/text": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document Text */
+        get: operations["document_text_api_attachments__identifier__text_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/attachments/pending": {
         parameters: {
             query?: never;
@@ -713,6 +730,14 @@ export interface components {
              * @default true
              */
             audio_available: boolean;
+            document?: components["schemas"]["DocumentInfo"] | null;
+        };
+        /** AttachmentExtensions */
+        AttachmentExtensions: {
+            /** Text */
+            text?: string[];
+            /** Document */
+            document?: string[];
         };
         /** AudioStorage */
         AudioStorage: {
@@ -745,6 +770,7 @@ export interface components {
         };
         /** Bootstrap */
         Bootstrap: {
+            attachment_extensions?: components["schemas"]["AttachmentExtensions"];
             /** App Name */
             app_name: string;
             /** Version */
@@ -1049,6 +1075,25 @@ export interface components {
             model_count: number;
             /** Error */
             error?: string | null;
+        };
+        /** DocumentInfo */
+        DocumentInfo: {
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "pdf" | "docx";
+            /** Pages */
+            pages: number | null;
+            /** Chars */
+            chars: number;
+            /** Token Estimate */
+            token_estimate: number;
+        };
+        /** DocumentText */
+        DocumentText: {
+            /** Text */
+            text: string;
         };
         /** DoneData */
         DoneData: {
@@ -1837,6 +1882,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Attachment"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_text_api_attachments__identifier__text_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentText"];
                 };
             };
             /** @description Validation Error */

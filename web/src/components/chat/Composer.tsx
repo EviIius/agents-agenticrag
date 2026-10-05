@@ -1,5 +1,12 @@
+import { DocumentChip } from "./DocumentChip";
 import { AudioChip, UploadChip, type AudioUpload } from "./AudioChip";
-import { useRef, useState, useLayoutEffect, useEffect } from "react";
+import {
+  useRef,
+  useState,
+  useLayoutEffect,
+  useEffect,
+  useCallback,
+} from "react";
 import { ArrowUp, Plus, Brain, X, Square, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/app/IconButton";
@@ -36,12 +43,14 @@ export function Composer({
   transcriptionReady = false,
   uploads = [],
   audioExtensions = [],
+  attachmentExtensions,
   onCancelUpload,
   webBlocked = false,
 }: {
   optimistic?: boolean;
   transcriptionReady?: boolean;
   audioExtensions?: string[];
+  attachmentExtensions?: import("@/lib/api").Bootstrap["attachment_extensions"];
   uploads?: AudioUpload[];
   onCancelUpload?: (id: string) => void;
   webBlocked?: boolean;
@@ -59,12 +68,35 @@ export function Composer({
   onAttach?: (files: File[]) => void;
   files?: import("@/lib/api").Attachment[];
   onRemove?: (id: string) => void;
-  context?: { used_tokens: number; context_length: number };
+  context?: { used_tokens: number; context_length: number; reserve?: number };
   thinkValue?: string;
   onThinkChange?: (value: string | null) => void;
 }) {
   const [value, setValue] = useState(starter);
   const [attachmentMenuOpen, setAttachmentMenuOpen] = useState(false);
+  const restoreAttachmentBackground = useRef<() => void>(() => {});
+  const bindAttachmentMenu = useCallback((node: HTMLDivElement | null) => {
+    restoreAttachmentBackground.current();
+    if (!node?.isConnected) return;
+    const changed: HTMLElement[] = [];
+    let current: HTMLElement | null = node;
+    while (current && current !== document.body) {
+      for (const sibling of current.parentElement?.children ?? []) {
+        if (
+          sibling instanceof HTMLElement &&
+          sibling !== current &&
+          !sibling.inert
+        ) {
+          sibling.inert = true;
+          changed.push(sibling);
+        }
+      }
+      current = current.parentElement;
+    }
+    restoreAttachmentBackground.current = () => {
+      for (const sibling of changed) sibling.inert = false;
+    };
+  }, []);
   const revision = useRef(0),
     mounted = useRef(true);
   useEffect(() => {
@@ -146,6 +178,13 @@ export function Composer({
               model={model}
               onRemove={() => onRemove?.(file.id)}
             />
+          ) : file.document ? (
+            <DocumentChip
+              key={file.id}
+              attachment={file}
+              model={model}
+              onRemove={() => onRemove?.(file.id)}
+            />
           ) : (
             <div
               key={file.id}
@@ -163,6 +202,20 @@ export function Composer({
             </div>
           ),
         )}
+        {files.some((file) => file.document) &&
+          context &&
+          context.used_tokens + value.length * 0.3 >
+            context.context_length -
+              (context.reserve ??
+                Math.max(1024, Math.min(8192, context.context_length * 0.25))) -
+              256 && (
+            <p role="status" className="mb-3 text-xs text-warning">
+              This message and its documents may exceed{" "}
+              {model?.display_name ?? "this model"}'s context window (
+              {context.context_length.toLocaleString()} tokens). Choose a model
+              with a larger context or remove a document.
+            </p>
+          )}
         <textarea
           ref={textarea}
           autoFocus={autoFocus}
@@ -217,6 +270,8 @@ export function Composer({
               </IconButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
+              ref={bindAttachmentMenu}
+              onCloseAutoFocus={() => restoreAttachmentBackground.current()}
               align="start"
               onKeyDown={(event) => {
                 // Escape also works before Radix's document listener mounts.
@@ -248,12 +303,23 @@ export function Composer({
                 onSelect={() => {
                   if (fileInput.current) {
                     fileInput.current.accept =
-                      ".txt,.md,.csv,.json,.yaml,.yml,.py,.js,.ts,.tsx,.html,.css,.sql,.sh,.log";
+                      attachmentExtensions?.text?.join(",") ?? "";
                     fileInput.current.click();
                   }
                 }}
               >
                 Add text file
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => {
+                  if (fileInput.current) {
+                    fileInput.current.accept =
+                      attachmentExtensions?.document?.join(",") ?? "";
+                    fileInput.current.click();
+                  }
+                }}
+              >
+                Add document (PDF, Word)
               </DropdownMenuItem>
               <DropdownMenuItem
                 disabled={!transcriptionReady}
@@ -392,7 +458,9 @@ export function Composer({
               </TooltipTrigger>
               <TooltipContent>
                 {waiting
-                  ? "Waiting for the transcript"
+                  ? uploads.some((u) => u.kind === "document" && !u.failed)
+                    ? "Waiting for the document"
+                    : "Waiting for the transcript"
                   : running
                     ? "Stop generating"
                     : "Send message"}

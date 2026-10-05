@@ -172,6 +172,22 @@ class ChatList(BaseModel):
     next_cursor: str | None = None
 
 
+class DocumentInfo(BaseModel):
+    source: Literal["pdf", "docx"]
+    pages: int | None
+    chars: int
+    token_estimate: int
+
+
+class DocumentText(BaseModel):
+    text: str
+
+
+class AttachmentExtensions(BaseModel):
+    text: list[str] = Field(default_factory=list)
+    document: list[str] = Field(default_factory=list)
+
+
 class Attachment(BaseModel):
     id: str
     kind: Literal["image", "text", "audio"]
@@ -180,6 +196,7 @@ class Attachment(BaseModel):
     bytes: int
     transcript: "TranscriptInfo | None" = None
     audio_available: bool = True
+    document: DocumentInfo | None = None
 
 
 class MessageModel(BaseModel):
@@ -447,6 +464,7 @@ class ContextInfo(BaseModel):
 
 
 class Bootstrap(BaseModel):
+    attachment_extensions: AttachmentExtensions = Field(default_factory=AttachmentExtensions)
     app_name: str
     version: str
     data_dir: str

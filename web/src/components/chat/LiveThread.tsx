@@ -1,6 +1,7 @@
 import { WaitingDots } from "./WaitingDots";
 import { useFreshRows } from "@/stores/fresh";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { DocumentChip } from "./DocumentChip";
 import { AudioChip } from "./AudioChip";
 import {
   lazy,
@@ -399,6 +400,8 @@ export const MessageRow = memo(function MessageRow({
             {(message.attachments ?? []).map((a) =>
               a.kind === "audio" ? (
                 <AudioChip key={a.id} attachment={a} model={selectedModel} />
+              ) : a.document ? (
+                <DocumentChip key={a.id} attachment={a} model={selectedModel} />
               ) : (
                 <a
                   className="block text-xs text-brand"

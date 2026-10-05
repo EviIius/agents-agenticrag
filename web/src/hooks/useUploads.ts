@@ -60,17 +60,26 @@ export function useUploads({
           transcriptionStatusQuery,
         );
         const audio = (extensions.audio_extensions ?? []).includes(suffix);
-        if (audio) {
-          if (!bootstrap.data?.features.transcription)
+        const document =
+          bootstrap.data?.attachment_extensions?.document?.includes(suffix);
+        if (audio || document) {
+          if (audio && !bootstrap.data?.features.transcription)
             throw new Error("Recordings need the transcription engine");
           if (file.size > 4 * 1024 ** 3)
             throw new Error("Recordings can be up to 4 GB.");
+          if (document && file.size > 50 * 1024 ** 2)
+            throw new Error("Documents can be up to 50 MB and 1,500 pages.");
           const id = crypto.randomUUID(),
             controller = new AbortController();
           uploadControllers.current.set(id, controller);
           setUploads((uploads) => [
             ...uploads,
-            { id, filename: file.name, percent: 0 },
+            {
+              id,
+              filename: file.name,
+              percent: 0,
+              ...(document ? { kind: "document" as const } : {}),
+            },
           ]);
           try {
             const attachment = await uploadWithProgress(
@@ -84,7 +93,7 @@ export function useUploads({
               controller.signal,
             );
             setFiles((files) => [...files, attachment]);
-            attachTranscription(attachment);
+            if (audio) attachTranscription(attachment);
             setUploads((uploads) =>
               uploads.filter((upload) => upload.id !== id),
             );

@@ -809,6 +809,11 @@ Pings use the `sse-starlette` default comment every 15 s.
 | `search_no_results` | notice | "The web search found nothing for “{query}”. This answer uses the model's own knowledge." | Retry with search |
 | `pages_unreadable` | notice | "Couldn't read any of the search results ({reason}). This answer uses the model's own knowledge." | Retry with search |
 | `uncited` | note under the sources row | "This answer doesn't cite specific sources." | — |
+| `document_no_text` | upload | "This PDF has no selectable text. Scanned documents aren't supported yet." | Choose another file |
+| `document_encrypted` | upload | "This PDF is password-protected. Remove the password and try again." | Choose another file |
+| `document_unreadable` | upload | "Couldn't read this file. It may be damaged." | Choose another file |
+| `document_too_large` | upload | "Documents can be up to 50 MB and 1,500 pages." | Choose a smaller file |
+| `document_timeout` | upload | "This document took too long to read." | Retry |
 
 Never add these texts to `message.content`. The server stores only codes and details, in `error_json` and `web_json.notice`; components map the codes to this copy.
 

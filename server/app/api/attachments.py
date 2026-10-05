@@ -1,4 +1,5 @@
 import asyncio
+import json
 import mimetypes
 import shutil
 from pathlib import Path
@@ -10,8 +11,9 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 
 from ..db import attachments as records
 from ..db.connections import now, uid
+from ..documents.extract import UPLOAD_LIMIT, error
 from ..errors import AppError, error_response
-from ..schemas import Attachment
+from ..schemas import Attachment, DocumentText
 from ..transcribe.engine import AUDIO
 from ..transcribe.jobs import TranscriptionManager
 
@@ -32,8 +34,26 @@ TEXT = {
     ".sql",
     ".sh",
     ".log",
+    ".jsx",
+    ".xml",
+    ".toml",
+    ".ini",
+    ".go",
+    ".rs",
+    ".java",
+    ".c",
+    ".cpp",
+    ".h",
+    ".rb",
+    ".swift",
+    ".kt",
+    ".tex",
+    ".srt",
+    ".vtt",
 }
 
+
+DOCUMENT = {".pdf", ".docx"}
 
 AUDIO_LIMIT = 4 * 1024**3
 
@@ -109,8 +129,14 @@ async def upload(
             raise
         finally:
             await file.close()
+    if suffix in DOCUMENT:
+        return await upload_document(file, request, filename, suffix)
     if not image and suffix not in TEXT:
-        raise AppError("unsupported_type", "PDF and Office support comes later.", 422)
+        raise AppError(
+            "unsupported_type",
+            "Choose an image, supported text file, PDF, Word document or recording.",
+            422,
+        )
     limit = 20 * 1024 * 1024 if image else 512 * 1024
     data = await file.read(limit + 1)
     if len(data) > limit:
@@ -153,6 +179,76 @@ async def upload(
     return attachment
 
 
+async def upload_document(
+    file: UploadFile, request: Request, filename: str, suffix: str
+) -> Attachment:
+    identifier = uid()
+    folder = request.app.state.config.data_dir / "attachments"
+    folder.mkdir(parents=True, exist_ok=True)
+    source = folder / f"{identifier}{suffix}.part"
+    target = folder / f"{identifier}.txt"
+    partial = target.with_suffix(".txt.part")
+    try:
+        size = 0
+        with source.open("xb") as destination:
+            source.chmod(0o600)
+            while chunk := await file.read(1024 * 1024):
+                size += len(chunk)
+                if size > UPLOAD_LIMIT:
+                    raise error("document_too_large")
+                destination.write(chunk)
+        result = await request.app.state.documents.extract(source, suffix)
+        text = result.text.encode("utf-8")
+        with partial.open("xb") as destination:
+            partial.chmod(0o600)
+            destination.write(text)
+        partial.replace(target)
+        mime = (
+            "application/pdf"
+            if suffix == ".pdf"
+            else ("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+        )
+        meta = {"source": suffix[1:], "pages": result.pages, "chars": result.chars}
+        await request.app.state.store.execute(
+            "INSERT INTO attachments(id,kind,filename,mime_type,bytes,path,created_at,meta_json) "
+            "VALUES (?,'text',?,?,?,?,?,?)",
+            (
+                identifier,
+                filename,
+                mime,
+                len(text),
+                f"attachments/{identifier}.txt",
+                now(),
+                json.dumps(meta),
+            ),
+        )
+        return await records.attachment(request.app.state.store, identifier)
+    except BaseException:
+        target.unlink(missing_ok=True)
+        await request.app.state.store.execute("DELETE FROM attachments WHERE id=?", (identifier,))
+        raise
+    finally:
+        source.unlink(missing_ok=True)
+        partial.unlink(missing_ok=True)
+        await file.close()
+
+
+@router.get("/{identifier}/text")
+async def document_text(identifier: str, request: Request) -> DocumentText:
+    item = await records.attachment(request.app.state.store, identifier)
+    if not item.document:
+        raise AppError("unsupported_type", "This attachment is not a document.", 422)
+    row = await request.app.state.store.one(
+        "SELECT path FROM attachments WHERE id=?", (identifier,)
+    )
+    assert row is not None
+    root = request.app.state.config.data_dir.resolve()
+    path = (root / str(row["path"])).resolve()
+    if not path.is_relative_to(root) or not path.is_file():
+        raise AppError("not_found", "Document text not found.", 404)
+    return DocumentText(text=path.read_text())
+
+
 @router.get("/pending")
 async def pending(request: Request) -> list[Attachment]:
     store = request.app.state.store
@@ -187,6 +283,8 @@ async def get(identifier: str, request: Request) -> FileResponse:
         )
     return FileResponse(
         path,
-        media_type=str(row["mime_type"]),
-        filename=str(row["filename"]),
+        media_type="text/plain" if row["meta_json"] else str(row["mime_type"]),
+        filename=Path(str(row["filename"])).stem + ".txt"
+        if row["meta_json"]
+        else str(row["filename"]),
     )

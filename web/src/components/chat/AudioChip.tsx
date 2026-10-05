@@ -2,7 +2,14 @@ import { failureCopy, failureDetail } from "@/lib/errors";
 import { useOverlaySession } from "@/hooks/useOverlaySession";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { AudioLines, Ellipsis, Square, Trash2, X } from "lucide-react";
+import {
+  AudioLines,
+  FileText,
+  Ellipsis,
+  Square,
+  Trash2,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { api, type Attachment, type Model, type Transcript } from "@/lib/api";
 import { attachTranscription, detachTranscription } from "@/lib/sse";
@@ -27,6 +34,7 @@ export type AudioUpload = {
   id: string;
   filename: string;
   percent: number;
+  kind?: "document";
   failed?: boolean;
   reason?: string;
 };
@@ -43,7 +51,11 @@ export function UploadChip({
       role="status"
       className="mb-2 flex max-w-full items-center gap-2 rounded-lg border border-line bg-surface-2 p-2 text-xs"
     >
-      <AudioLines className="size-4 shrink-0" />
+      {upload.kind === "document" ? (
+        <FileText className="size-4 shrink-0" />
+      ) : (
+        <AudioLines className="size-4 shrink-0" />
+      )}
       <div className="min-w-0 flex-1">
         <p className="truncate">{upload.filename}</p>
         <div
@@ -61,7 +73,9 @@ export function UploadChip({
         <p className="text-fg-2">
           {upload.failed
             ? "Upload didn't finish"
-            : `Uploading ${upload.percent}%`}
+            : upload.kind === "document" && upload.percent === 100
+              ? "Reading document…"
+              : `Uploading ${upload.percent}%`}
         </p>
         {upload.failed && upload.reason && (
           <p className="break-words text-danger">{upload.reason}</p>

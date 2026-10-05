@@ -325,6 +325,7 @@ export function LiveAppShell() {
       optimistic={Boolean(chatId)}
       suggestions={!chatId}
       audioExtensions={audioExtensions}
+      attachmentExtensions={bootstrap.data?.attachment_extensions}
       model={current}
       disabled={!current || busy || !!loadingModel}
       running={running}
@@ -346,7 +347,10 @@ export function LiveAppShell() {
           detachTranscription(id);
           useTranscripts.getState().remove(id);
         };
-        if (effectiveFiles.find((file) => file.id === id)?.kind === "audio")
+        if (
+          effectiveFiles.find((file) => file.id === id)?.kind === "audio" ||
+          effectiveFiles.find((file) => file.id === id)?.document
+        )
           void api(`/attachments/${id}`, undefined, "DELETE").then(
             remove,
             (error) =>
@@ -368,10 +372,15 @@ export function LiveAppShell() {
                       ? 800
                       : a.kind === "audio"
                         ? (a.transcript?.token_estimate ?? 0)
-                        : Math.round(a.bytes * 0.3)),
+                        : (a.document?.token_estimate ??
+                          Math.round(a.bytes * 0.3))),
                   0,
                 ),
               context_length: current.context_length ?? 8192,
+              reserve:
+                typeof chatParams.max_tokens === "number"
+                  ? chatParams.max_tokens
+                  : undefined,
             }
           : undefined
       }
@@ -523,7 +532,7 @@ export function LiveAppShell() {
             role="status"
             className="pointer-events-none absolute inset-4 z-40 flex items-center justify-center rounded-xl border-2 border-dashed border-brand bg-bg/80 text-sm"
           >
-            Drop images, text files or recordings
+            Drop images, documents, text files or recordings
           </div>
         )}
         <header data-scrolled={scrolled || undefined} className="topbar">

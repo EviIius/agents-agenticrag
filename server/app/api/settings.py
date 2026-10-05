@@ -5,8 +5,9 @@ from fastapi import APIRouter, Request
 from ..config import APP_NAME, VERSION
 from ..db import settings
 from ..errors import AppError
-from ..schemas import Bootstrap
+from ..schemas import AttachmentExtensions, Bootstrap
 from ..search.providers import Providers
+from .attachments import DOCUMENT, TEXT
 from .connections import listing
 
 router = APIRouter(prefix="/api")
@@ -17,6 +18,7 @@ async def bootstrap(request: Request) -> Bootstrap:
     values = await settings.get(request.app.state.store)
     service = Providers(request.app.state.store, values, request.app.state.search.fixtures)
     return Bootstrap(
+        attachment_extensions=AttachmentExtensions(text=sorted(TEXT), document=sorted(DOCUMENT)),
         app_name=APP_NAME,
         version=VERSION,
         data_dir=str(request.app.state.config.data_dir.expanduser().resolve()),

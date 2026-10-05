@@ -1,3 +1,4 @@
+import { ApiError } from "./api";
 export async function prepareImage(file: File): Promise<File> {
   const image = await createImageBitmap(file);
   const scale = Math.min(1, 2048 / Math.max(image.width, image.height));
@@ -45,7 +46,13 @@ export function uploadWithProgress(
       try {
         const data = JSON.parse(xhr.responseText);
         if (xhr.status >= 200 && xhr.status < 300) resolve(data);
-        else reject(new Error(data.error?.message ?? "Upload didn't finish"));
+        else
+          reject(
+            new ApiError(
+              data.error?.code ?? "http_error",
+              data.error?.message ?? "Upload didn't finish",
+            ),
+          );
       } catch {
         reject(new Error("Upload didn't finish"));
       }
