@@ -74,3 +74,9 @@ conflict between hiding retry controls and the frozen T1 disabled-control behavi
 to Codex ("Do what you think is best."). Preserve the visible disabled
 "Transcribe again" entries after audio removal, with the re-upload explanation.
 This refines the 6A plan's visibility note; unavailable audio still cannot retry.
+
+**User acceptance — 5 October 2026 (6A):** Jake said “I confirmed it works.
+Move on.” Close the 6A review stop, retaining source/evidence and the deferred
+motion/accessibility limitations. The next phase's explicit gates remain: 6B
+needs a named second runtime; 7-0 needs `sqlite-vec` approval and an embedding
+model selection before installation or probe execution.

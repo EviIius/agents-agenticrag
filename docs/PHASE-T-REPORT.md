@@ -163,7 +163,7 @@ validated and deployed, with the required 6A review stop; 6B is not started.
 | P6-AC4: glossary survives deployment | Pass | API save, actual `install_engine` in a private temporary directory, redeploy and byte comparison |
 | P6-AC5: all T1 tests unchanged | Pass | Complete `e2e.txt`: 403 passed, three existing skips, 33.2 minutes |
 | P6-AC6: privacy | Pass | `privacy-audit.json`; invented fixtures only |
-| Phone review | Not checked | Stop after 6A for Jake's review |
+| Phone review | Accepted by Jake | “I confirmed it works. Move on.” No individual device measurements invented. |
 
 All evidence paths in this checkpoint are under `artifacts/phase-6/6a/` unless
 otherwise stated. Implementation source is committed at `533418b`; application
@@ -282,7 +282,7 @@ clean-up module has 94.2% line coverage and the glossary module 100%.
 | G-13 reduced motion | Pass automated; physical issue deferred | Existing motion tests unchanged; physical regression deferred |
 | G-14 production design states | Pass | `/design?cleanup`, 144 synthetic captures |
 | G-15 migration rollback | Not triggered | Existing schema version 7; no migration |
-| G-16 Jake's phone check | Not checked for 6A | Required review stop; no invented results |
+| G-16 Jake's phone check | Accepted by Jake | “I confirmed it works. Move on.” |
 
 ### Test-diff ledger
 
@@ -361,12 +361,21 @@ that the word-change guard proves semantic accuracy or perfect transcription.
   it later. It is still deferred; no physical motion pass is claimed by this phase.
 - Clean-up retains sections rejected by the word guard. Originals remain available,
   and timestamps/subtitles always use the original transcript. Clean-up is manual.
-- Jake's 6A phone review is pending. This report stops at 6A; 6B requires a named,
-  explicitly approved second runtime. Library and Research remain separately gated.
+- Jake accepted the 6A review on 5 October: “I confirmed it works. Move on.”
+  This closes the review stop without inventing a device timing, VoiceOver result
+  or individual control checklist. 6B requires a named, explicitly approved second
+  runtime. Library dependency/model selection and Research remain separately gated.
 
-### Open questions for Jake
+### Review closeout — 5 October 2026
 
-Open a saved transcript on your phone, run
-“Clean up with …”, switch versions, and check cancellation/discard. In Settings ›
-Transcription, review the glossary editor. Do not send private terms or recording
-text as review evidence; reporting whether the controls work is sufficient.
+Jake said: **“I confirmed it works. Move on.”** The 6A checkpoint is accepted.
+Source `533418b` and evidence `19c25a1` remain the validated fallback. The
+sidebar motion regression and earlier accessibility limitations remain deferred.
+
+The next implementation decision is optional 6B or the Library probe (7-0).
+The Ollama-only amendment remains in force until Jake names a second runtime.
+Phase 7 §2 explicitly requires approval of `sqlite-vec` and selection of an
+embedding model before installing/running the probe. Read-only Ollama metadata
+confirms `qwen3-embedding:0.6b` is installed and reports the `embedding` capability;
+no model calls or downloads were made during this closeout. Those approvals
+are requested separately and are not inferred from acceptance of 6A.
