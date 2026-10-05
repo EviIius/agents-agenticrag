@@ -447,3 +447,226 @@ Jake also reported: “the animation for the sidebar and stuff stopped working,
 diagnose it at a later point.” Record this as an unresolved physical motion
 regression; the earlier automated motion results do not establish current phone
 behavior. Diagnosis is deferred at Jake’s request while 5C proceeds.
+
+## Checkpoint 5C — folders and automatic backups (5 October 2026)
+
+### Summary
+
+Chats can be organized in one-level folders, moved, removed, renamed and searched
+with their folder name visible. Deleting a folder returns its chats to history.
+Private automatic SQLite backups run at startup when due and daily at 03:30 on
+the Mac, retaining seven copies; Settings → Data provides status and Back up now.
+This is the 5C review stop. Optional forking and later phases remain unstarted.
+
+### Done-when checklist
+
+| Item | Status | Evidence |
+|---|---|---|
+| P5-AC9 folders | Pass | `test_folders_crud_move_filters_search_and_delete_keeps_chats`, `test_folder_pagination_and_empty_chats_count`; browser create/move/collapse/search/rename/cancel/delete at 390/1440 in both engines |
+| P5-AC10 backups | Pass automated and copied-data rehearsal | Startup, daily timer/injected clock/DST, private online copy, row counts/integrity, seven-file retention, deploy backups untouched, low disk skip, failure/cancellation cleanup; production manual backup smoke; `rollback.json` |
+| P5-AC11 QA gates | Automated checks passed; phone review pending | Gates below |
+| P5-AC12 web unchanged | Frozen core guards passed; no new aggregate eval claim | No provider/run/search/prompt edits; ordinary request capture, prompt hash and all existing web tests pass |
+
+### Changed files
+
+- Server: additive `007_folders.sql`; `db/folders.py`, folders API; chat projection,
+  assignment and optional listing filter; `backup.py`, backup API and lifecycle;
+  optional chat folder fields, Folder and BackupStatus schemas.
+- Web: Folders group and lazy folder dialog; Move to folder submenu; folder names
+  beside search results in history and the command palette; normal history uses
+  `folder=none` so pagination does not hide unfiled chats behind folder entries;
+  backup status/action in Data; cache invalidation after folder/chat changes.
+- Design: `/design?organize`, 21 states built from production components.
+- QA: new unit/integration/browser/design tests; backup coverage target; optional
+  API query-parameter guard plus regression cases; destructive/warning contrast
+  pairs; exact current-schema assertions in two existing tests.
+- Docs: README clean-database restore procedure; 5B user phone closeout and
+  deferred motion issue recorded above; this report and `artifacts/phase-5/5c/`.
+
+### Implementation choices and deviations
+
+No dependencies or model-call stages were added. There are no nested folders,
+drag-and-drop organization, per-folder instructions, restore UI or optional forks.
+`GET /chats` without a folder filter preserves its existing set and pagination;
+`folder=none` selects unfiled chats, and `folder=<id>` selects one folder. Counts
+match visible history (chats with messages). Folder deletion uses `ON DELETE SET NULL`
+and never deletes messages or chats. Absent folder assignment leaves it unchanged;
+explicit null removes it. Existing message, sampling and web behavior is untouched.
+
+Backups use the existing aiosqlite online-backup API under the store commit lock,
+with one backup at a time and an injected local clock/disk checker for tests.
+A private partial file is closed and fsynced before atomic replacement. Cancellation
+waits for the actual copy before closing the destination and releasing capacity.
+Only `auto-*.db` files are pruned; deploy backups remain separate. Manual backups
+in the same minute atomically replace that minute's copy. Disk allowance includes
+current WAL bytes in addition to the main database for a conservative size check.
+Failures expose fixed warning text without filesystem paths or private contents.
+The daily timer is separate from streaming; no run-state polling was added.
+
+The API guard previously rejected any changed parameter-array length. Comparing
+parameters by name/location now permits optional additions while retaining checks
+for removals, type/schema changes, required additions and duplicates. Existing
+guard tests remain unchanged and new cases demonstrate these constraints.
+
+The new delete-folder design state exposed an existing `dark:bg-destructive/60`
+fill with insufficient text contrast. The shared destructive Button now uses the
+opaque existing danger token. Palette tokens and motion rules remain unchanged;
+74 contrast pairs and the new dark-state axe scans pass.
+
+### Test output and iteration
+
+`make check`: **250 Python tests, 36 frontend tests, 74 contrast pairs**.
+Coverage: providers 85.8%, runs 89.2%, search 88.9%, transcribe 90.7%,
+documents 96.6%, new backup module 96.8%. Lint, formatting, types, API generation,
+additive API, prompt/payload/privacy/motion guards pass.
+
+Focused browser run: **16 passed** (Chromium and WebKit). Its predecessor had
+12 passes and four dark delete-button contrast failures, fixed in the shared
+button. No assertion was weakened. Initial new-test mistakes involved the fixture's
+schema version/snapshot tuple and a missing required synthetic title source; the
+new tests/fixture were corrected. Existing tests only update exact schema 6 → 7.
+Synthetic screenshot captures scroll their component into view to include controls.
+
+Final `make e2e`: **385 passed, 3 existing skips (30.9 minutes)**, one complete
+Chromium/WebKit invocation against source commit `48fbb9f`. The source SHA manifest
+matched before and after the run. Existing WebKit skips are the once-only real-time timeout gate, once-only
+screenshot review set, and offline reload limitation requiring physical Safari;
+none were added. See `source-verification.json` and `e2e.txt`.
+
+The default `make eval-web` command was attempted, but it uses real Ollama planner
+and answer calls even with frozen search fixtures. It was interrupted; its partial
+output (`eval-web-interrupted.txt`) is not acceptance or aggregate comparison
+evidence. No production prompt/provider/run/search code changed. Existing frozen
+web, prompt and request guards pass; no new real-runtime eval improvement is claimed.
+
+### Budgets
+
+| Measure | 5B | 5C |
+|---|---|---|
+| Initial static-import JS gzip | 234,656 B | 236,159 B (+1,503 B; limit 256,000 B) |
+| Streaming p95 at 100 tokens/s | 3.30 ms Chromium / 3.00 ms WebKit | 3.70 ms Chromium / 3.00 ms WebKit |
+| First-token overhead | 77.59 ms Chromium / 61.15 ms WebKit | 65.34 ms Chromium / 65.26 ms WebKit |
+| 300-message scroll median | 16.70 ms Chromium / 17.00 ms WebKit | 16.70 ms Chromium / 17.00 ms WebKit |
+
+The folder dialog is lazy-loaded. Backup settings are reached through the existing
+Settings chunk. `bundle.json` counts recursive static imports, excluding lazy imports.
+Only the streaming row renders during the existing performance test.
+
+### Gates
+
+| Gate | Status | Evidence |
+|---|---|---|
+| G-1 check/coverage | Pass | `check.txt`; backup module ≥80%, existing coverage unchanged |
+| G-2 complete E2E | Pass | `e2e.txt`, one complete invocation against frozen source |
+| G-3 tests not weakened | Pass | `test-diff-ledger.md`; exact schema assertions only |
+| G-4 performance | Pass | `bundle.json`, `regenerated/phase-1/`, `regenerated/phase-3/` |
+| G-5 accessibility | Pass automated; VoiceOver unresolved/deferred | 168 synthetic screenshots/21 states, zero serious/critical axe; existing full keyboard walkthrough; 74 contrast pairs |
+| G-6 API only grows | Pass | Guard allows new optional folder query; rejects breaking parameter changes; `check.txt` |
+| G-7 database only grows | Pass | `007_folders.sql`; old Phase 3 and Phase 5B column/row projections unchanged |
+| G-8 frozen prompts | Pass | Existing prompt hashes |
+| G-9 web unchanged | Pass existing guards; no new aggregate eval evidence | Provider/run/search source unchanged; existing web tests and request captures |
+| G-10 ordinary payload | Pass | Existing golden request and explicit parameter capture tests |
+| G-11 privacy | Pass within scanner/manual limits | `privacy-audit.json`; isolated invented fixtures only; copied real data never emitted or committed |
+| G-12 deployment invariants | Pass | `deployment-invariants.json`, `deployment.txt`; existing PWA/no-API-cache tests |
+| G-13 motion | Automated guards pass; physical sidebar regression unresolved | Existing motion specs, unchanged motion source; Jake explicitly deferred diagnosis |
+| G-14 design | Pass | `/design?organize`, screenshot/axe manifest |
+| G-15 rollback | Pass | `rollback.json`: automatic restore and previous-app boot, identical rows, private backup; 4.892 s |
+| G-16 Jake phone review | Not checked for 5C | Ready for review; 5B confirmation recorded above |
+
+### Test-diff ledger
+
+| Existing file/test | Change | Why | Behavior still asserted? |
+|---|---|---|---|
+| `test_foundation.py` / migration idempotence/private DB | Exact version 6 → 7 | Authorized migration | Yes; both startups, privacy, idempotence retained |
+| `test_documents.py` / old metadata and row preservation | Exact version 6 → 7 | Test applies all current migrations | Yes; NULL old metadata and every projected old row retained |
+
+No existing browser test, timeout, skip or performance threshold changed. All
+folder/backup browser/unit tests and API-parameter guard regressions are new.
+
+### Core unchanged
+
+All browser references below are part of the same complete final invocation.
+
+| Core | Guard |
+|---|---|
+| C1 send/stream/stats | `chat.spec.ts` |
+| C2 stop | `chat.spec.ts`, `phase3-accessibility.spec.ts` |
+| C3 resume | `chat.spec.ts`, `web.spec.ts` |
+| C4 long answer/timeout | `chat.spec.ts` |
+| C5 branches/actions/exports | `actions.spec.ts` |
+| C6 models/load/context | `load-selection.spec.ts`, `ui-regressions.spec.ts` |
+| C7 explicit sampling/presets | `parameters.spec.ts`, `phase5a.spec.ts`, Python captures |
+| C8 web/citations/retry | `web.spec.ts`, Python search/evidence/grading tests |
+| C9 transcription/storage/downloads | Existing transcription, audio-storage, recording-download specs and Python tests |
+| C10 phone layout/keyboard | `mobile-layout.spec.ts`, `mobile-composer.spec.ts` |
+| C11 palette/PWA/update | `polish.spec.ts`, `pwa.spec.ts` |
+| C12 legacy read-only import | `test_legacy_import.py` |
+| C13 deployment identity | `test_deployment.py`, deployment metadata |
+| C14 HTML/remote-image safety | `foundation.spec.ts`, existing SSRF tests |
+| C15 budgets | `performance.spec.ts`, frame/first-token tests |
+| C16 axe/keyboard | Existing accessibility specs plus organization design scans |
+
+The 5B document upload, extraction, review, context and memory guards also pass
+in this run. Historical evidence stays intact; regenerated metrics live under 5C.
+
+### Migrations and restore rehearsal
+
+`007_folders.sql` creates folders and adds nullable `chats.folder_id` with an index
+and `ON DELETE SET NULL`. No existing table is rebuilt or renamed. Both Phase 3
+and Phase 5B fixtures retain every projected old column/row; old chats are unfiled.
+
+The rehearsal makes a private full data-folder copy and SQLite online backup,
+boots schema 7, adds an invented folder/chat, creates a real automatic backup,
+changes only the copied database, then restores that backup into a clean database
+location without stale WAL/SHM. It boots the new app and verifies identical rows.
+It also restores the pre-migration backup and boots 5B commit `ed87cb2`, schema 6,
+with identical old rows. All three app health/shell checks return 200. The private
+copy is removed; production is unmodified; no model calls. Duration: 4.892 s.
+
+Rehearsal command: `uv run --directory server python ../scripts/rehearse_backup_restore.py --previous ed87cb2`.
+README documents the service stop, full current-folder preservation, clean DB
+restore, optional matching-source rollback and chat/transcript verification.
+A database-only backup cannot recreate missing attachment or library files.
+
+### Deployment and fallback
+
+`scripts/deploy.sh --apply` deployed source `48fbb9f`. Local and verified HTTPS
+Tailscale health return 200; `/design` returns 404. Schema is 7, installed static
+files match the tested build (`index-W_uSK9nx.js`), bind remains 127.0.0.1:8787
+with one worker, and launchd arguments/Tailscale configuration are unchanged.
+A deployment backup was made first; a startup automatic copy exists. Back up now
+returned 200 and its private (`0600`) SQLite copy has integrity `ok` and matching
+chat/message/transcript/folder counts. An invented folder/chat smoke verified
+assignment, rename and deletion preserving the chat; synthetic rows were removed.
+No answer, planner or title calls were made by this verification.
+
+Source is saved as `48fbb9f`; the preceding accepted 5B fallback is `ed87cb2`.
+Across the migration, returning to 5B uses its matching pre-migration database
+copy, as rehearsed. The evidence/report commit follows the source commit.
+
+### Screenshots
+
+`screenshots.json` lists 168 `organization-*-fake.png` images: 21 states ×
+390/1440 × light/dark × Chromium/WebKit. Folder lists, empty/loading/error states,
+menus, move/search, create/rename/delete/error/busy dialogs and every backup status
+appear using the production components and invented fixture data.
+
+### Runtime observations and known limitations
+
+No new runtime adapter or model-call stage. Existing real Ollama eval behavior
+is described above; the partial interrupted eval is not a successful eval report.
+Backup cadence is tested with an injected clock; no claim about days of physical
+operation is made. A stopped service makes a due copy on startup; actual behavior across Mac sleep
+has not been measured. The daily task uses the Mac's local time while running.
+
+Jake reported sidebar and other animation stopped, explicitly asking for diagnosis
+later. This is an unresolved physical regression, even though automated motion
+checks pass. Motion diagnosis was not performed during 5C. VoiceOver previously
+failed and remains deferred. The earlier iOS keyboard issue recovered after a
+restart; cause remains unproven. Physical 5C folder/backup review is pending.
+
+### Open questions for Jake / review stop
+
+On the phone, create a folder, move a chat, collapse/reopen it, search the chat,
+and delete the folder to confirm the chat returns to history. In Settings → Data,
+try Back up now and check its status. Later phases wait for this checkpoint review.

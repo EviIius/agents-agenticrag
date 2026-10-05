@@ -1,0 +1,50 @@
+..F.....                                                                 [100%]
+=================================== FAILURES ===================================
+____________ test_phase5b_migration_preserves_every_existing_column ____________
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-186/test_phase5b_migration_preserv0')
+
+    async def test_phase5b_migration_preserves_every_existing_column(tmp_path: Path) -> None:
+        dbpath = tmp_path / "phase5b.db"
+        shutil.copy2(Path(__file__).parent / "fixtures/db/phase3.db", dbpath)
+        async with aiosqlite.connect(dbpath) as db:
+            for p in sorted(MIGRATIONS.glob("*.sql")):
+                n = int(p.name.split("_")[0])
+                if 3 < n <= 6:
+>                   await db.executescript(p.read_text() + f"\nPRAGMA user_version={n};")
+
+tests/test_folders_backups.py:124: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.14/site-packages/aiosqlite/core.py:255: in executescript
+    cursor = await self._execute(self._conn.executescript, sql_script)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.14/site-packages/aiosqlite/core.py:160: in _execute
+    return await future
+           ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tx = <_queue.SimpleQueue object at 0x10a52a9e0>
+
+    def _connection_worker_thread(tx: _TxQueue):
+        """
+        Execute function calls on a separate thread.
+    
+        :meta private:
+        """
+        while True:
+            # Continues running until all queue items are processed,
+            # even after connection is closed (so we can finalize all
+            # futures)
+    
+            future, function = tx.get()
+    
+            try:
+                LOG.debug("executing %s", function)
+>               result = function()
+                         ^^^^^^^^^^
+E               sqlite3.OperationalError: duplicate column name: audio_available
+
+.venv/lib/python3.14/site-packages/aiosqlite/core.py:63: OperationalError
+=========================== short test summary info ============================
+FAILED tests/test_folders_backups.py::test_phase5b_migration_preserves_every_existing_column
+1 failed, 7 passed in 0.61s

@@ -1,0 +1,29 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+All checks passed!
+. scripts/tool-env.sh; uv run --directory server ruff format --check app tests
+83 files already formatted
+. scripts/tool-env.sh; uv run --directory server mypy app tests
+Success: no issues found in 81 source files
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_coverage.py
+........................................................................ [ 28%]
+........................................................................ [ 57%]
+........................................................................ [ 86%]
+.................................                                        [100%]
+249 passed in 39.77s
+providers line coverage: 343/400 = 85.8%
+runs line coverage: 381/427 = 89.2%
+search line coverage: 1547/1741 = 88.9%
+transcribe line coverage: 370/408 = 90.7%
+documents line coverage: 196/203 = 96.6%
+backup.py line coverage: 90/93 = 96.8%
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_contrast.py
+light: body/background 16.17:1; secondary 6.55:1; tertiary 4.96:1
+dark: body/background 14.34:1; secondary 6.56:1; tertiary 4.88:1
+Contrast: 60 token pairs passed.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/generate_api_types.py --check
+✨ openapi-typescript 7.13.0
+🚀 /var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/tmp3xsdj17u/openapi.json → /var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/tmp3xsdj17u/api-types.ts [46.7ms]
+API contract: up to date.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_api_additive.py
+$.paths./api/chats.get.parameters: structural list changed
+make: *** [check] Error 1
