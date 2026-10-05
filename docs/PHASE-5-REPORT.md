@@ -217,3 +217,223 @@ requests; a connection failure can leave partial order, reported inline.
 5A is the next review. On the installed phone app, try a preset, save controls,
 close/reopen with unsaved changes, apply context separately, and rename a model.
 The normal phone checklist in QA §7 still applies. 5B (documents) waits for review.
+
+---
+
+## Checkpoint 5B — PDF and Word attachments (5 October 2026)
+
+### Summary
+
+PDFs and Word `.docx` files can be attached from the picker, drop or paste.
+The app extracts selectable text, adds PDF page markers, preserves Word paragraph
+and table order, and deletes the uploaded original. Document chips show page/token
+estimates and open an extracted-text review sheet with Copy. Context warnings
+follow model changes; the existing chat, search and transcription pipelines remain frozen.
+This is the 5B review stop; 5C is not started.
+
+### Done-when checklist
+
+| Item | Status | Evidence |
+|---|---|---|
+| P5-AC5: PDF and Word reach the model | Pass | `test_upload_send_preserves_name_pages_table_and_only_text`; `documents.spec.ts` captured prompt includes original synthetic filenames, both page markers and tab-separated table cells |
+| P5-AC6: errors and cleanup | Pass | Unit fixtures for scanned, encrypted and damaged PDFs; upload-size and timeout tests; bounded extraction/ZIP/XML/page/text limits; cancellation/worker shutdown/recovery cleanup tests |
+| P5-AC7: original is not retained | Pass | Successful upload leaves only private `.txt`; failed/cancelled uploads leave no file or row; removal deletes extracted text; durable metadata is retained with sent messages |
+| P5-AC8: privacy | Pass, within scanner/manual limits | `privacy-audit.json`; synthetic fixture generator; `*-fake.png` screenshots only; parser stdout/stderr suppressed, exception details replaced by fixed error codes |
+| P5-AC11: checkpoint QA gates | Automated checks passed; phone review pending | Gates below |
+| P5-AC12: web unchanged | Frozen | No edits to search/runs/providers or model-facing prompts; prompt hash, ordinary request capture and existing web tests pass |
+
+### Changed files
+
+- Server: `documents/extract.py`, `documents/service.py`, `documents/worker.py`;
+  document branch and text-review endpoint in `api/attachments.py`; authoritative
+  extension lists in bootstrap; optional document schemas/projection; lifecycle
+  worker cleanup; migration `006_attachment_meta.sql`.
+- Web: `DocumentChip`, lazy `DocumentSheet`; composer picker/metadata/context warning;
+  upload progress/cancellation/error mapping; sent-message document chip; API types.
+- Design: `/design?documents` and 15 production states (including the expanded menu).
+- QA: document unit, browser, design/axe and real 50 MiB browser memory tests;
+  synthetic fixture generator and six fixture files; documents coverage target;
+  copied-data rollback rehearsal; foundation schema-version assertion.
+- Docs/evidence: fixed error copy in SPEC §C12; this append-only 5B report;
+  `artifacts/phase-5/5b/`. Existing 5A report/evidence remains historical and intact.
+
+### Implementation choices and limits
+
+No new packages, model calls or pipeline changes. Documents remain `kind='text'`;
+the existing assembler sends the complete extracted text inside its existing file
+wrapper. The new metadata column is nullable. GET of a new document attachment
+returns the retained `.txt`, with a text MIME type and filename; existing image,
+plain-text and audio attachment downloads retain their prior behavior.
+
+Two extraction subprocesses run at most, each with a 30-second wall deadline.
+Timeout/cancellation kills and awaits the worker before releasing capacity and
+removing its temporary result. Startup recovery removes only interrupted document
+parts/results, preserving completed text and audio. Limits: 50 MiB input,
+1,500 PDF pages, 2,000,000 extracted characters, 16 MiB document XML/PDF page
+content stream, 64 MiB total declared ZIP expansion and 2,048 ZIP entries.
+ZIP entries are read in place; they are never unpacked into arbitrary paths.
+Word DTD/custom-entity XML is rejected. Headers, footers, comments and tracked
+deletions/moved-from paragraphs are excluded. No OCR, images inside documents,
+legacy `.doc`, spreadsheet or slide support.
+
+The attachment menu's new axe coverage found aria-hidden background controls
+could still receive focus. It now applies native `inert` and restores focus on
+close, matching the existing Select pattern. This preserves its existing modal
+interaction while fixing the hidden-focus finding.
+
+### Test output and iteration
+
+`make check`: 240 Python tests; 36 frontend tests; 60 contrast token pairs.
+Coverage: providers 85.8%, runs 89.2%, search 88.9%, transcribe 90.7%,
+new documents package 96.6%. Lint, format, types, generated API, additive API,
+motion, privacy, prompt and golden request guards pass.
+
+Final focused browser run: 18 passed across Chromium and WebKit. Earlier focused
+runs found a new-test selector mistake and the attachment menu focus finding;
+both were fixed before acceptance. A design-only JSX edit interrupted one run;
+a subsequent startup attempt found its isolated test servers still bound, so
+those owned test processes were stopped and production restored before retry.
+The full regression script includes cleanup and service restoration on exit.
+A later startup was blocked by an orphaned Vite process on port 5173 from
+the interrupted run; its repository command and orphaned parent were verified
+before stopping it. The final complete run started with all test ports free.
+Code review also found that trimming a table-only Word document removed tabs
+for empty edge cells. The new regression failed before the fix and passed after
+retaining those tabs; the first full run was interrupted and restarted against
+the corrected source. The worker protocol unit test restores the logging level
+after exercising the worker so other tests retain their own logging environment.
+The initial check also correctly required updating the exact current schema
+assertion from 5 to 6. No timeout/threshold/assertion was weakened.
+
+Final `make e2e`: **369 passed, 3 existing skips, 0 failures (28.5m)**
+from one complete Chromium/WebKit invocation against the frozen final source.
+`source-verification.json` records unchanged source hashes during that run.
+Earlier interrupted runs and the port-collision startup are retained separately;
+they are not combined with this result.
+
+### Budgets
+
+| Measure | 5A | 5B |
+|---|---|---|
+| Initial static-import JS gzip | 233,783 B | 234,656 B (+873 B; budget 256,000 B) |
+| Streaming p95 | 3.3 ms Chromium / 3.0 ms WebKit | 3.30 ms Chromium / 3.00 ms WebKit |
+| First-token overhead | 67.95 ms Chromium / 61.05 ms WebKit | 77.59 ms Chromium / 61.15 ms WebKit |
+| 300-message scroll median | 16.7 ms Chromium / 17 ms WebKit | 16.70 ms Chromium / 17.00 ms WebKit |
+| 50 MiB document upload server RSS growth | New measure | 3.984 MiB Chromium / 1.188 MiB WebKit (limit 20 MiB) |
+
+`bundle.json` excludes lazy imports. The review sheet is lazy-loaded. Memory
+measures are real browser XHR uploads with uvicorn RSS sampled by `ps` every
+50 ms; extraction worker memory is separate and was not included in the server
+RSS criterion. No uploaded source was read into a single server/JS buffer.
+
+### Gates
+
+| Gate | Status | Evidence |
+|---|---|---|
+| G-1 check/coverage | Pass | `check.txt`; documents added to coverage targets, ≥80% |
+| G-2 one complete E2E run | Pass | `e2e.txt`; one final invocation, both engines |
+| G-3 tests not weakened | Pass | `test-diff-ledger.md`; table below |
+| G-4 performance | Pass | `bundle.json`, final regenerated frame/first-token/scroll metrics; memory JSON |
+| G-5 accessibility | Pass automated; VoiceOver remains deferred | 120 synthetic screenshots; 15 states × 2 widths × 2 themes × 2 engines, zero serious/critical findings; full keyboard/contrast checks |
+| G-6 additive API | Pass | `check.txt`; optional document metadata, bootstrap extension list, new text endpoint |
+| G-7 additive database | Pass | Phase 3 row projection guard plus `test_phase5a_rows_and_meta_nullable_survive_migration` |
+| G-8 frozen prompts | Pass | `test_prompt_hashes.py` |
+| G-9 web behavior | Pass existing guards; no new real-runtime eval | No search/runs/providers edits; all existing web tests in final run |
+| G-10 ordinary payload | Pass | Phase 3 golden default request, parameter capture tests |
+| G-11 privacy | Pass within audit limits | `privacy-audit.json`; synthetic images reviewed; physical-phone content not captured |
+| G-12 deployment invariants | Pass | `deployment.txt`, `deployment-invariants.json`; existing deployment and PWA tests |
+| G-13 reduced motion | Pass automated | Unchanged full `motion.spec.ts` / `phone-motion.spec.ts` coverage |
+| G-14 design | Pass | `/design?documents`, screenshots/axe JSON |
+| G-15 rollback | Pass | `rollback.json`: schema 6 → 5, both app health/shell 200, old row hashes identical, 3.063 s, private copy removed |
+| G-16 Jake phone review | Not checked for 5B | Ready for review; no physical result invented |
+
+### Test-diff ledger
+
+| Existing file and test | Change | Why | Behavior still asserted? |
+|---|---|---|---|
+| `server/tests/test_foundation.py` / migration idempotence/private DB | Exact schema version 5 → 6 | Authorized additive migration | Yes: exact version on both startups and all privacy/idempotence assertions retained |
+
+All other document tests are new; existing browser/core tests are unchanged.
+
+### Core unchanged
+
+All references below point to the same complete final E2E invocation or `check.txt`.
+
+| Core | Passing guard |
+|---|---|
+| C1 send/stream/stats | `chat.spec.ts` |
+| C2 stop | `chat.spec.ts`, `phase3-accessibility.spec.ts` |
+| C3 resume | `chat.spec.ts`, `web.spec.ts` |
+| C4 long answer/timeout | `chat.spec.ts` |
+| C5 actions/branches/exports | `actions.spec.ts` |
+| C6 models/load/context | `load-selection.spec.ts`, `ui-regressions.spec.ts` |
+| C7 explicit sampling | `parameters.spec.ts`, `test_chat.py`, `test_presets.py` |
+| C8 web/citations/retry | `web.spec.ts`, existing search/evidence/grading Python tests |
+| C9 recording/transcription/storage/downloads | `transcription.spec.ts`, `recording-download.spec.ts`, `audio-storage.spec.ts`, `test_transcription.py` |
+| C10 phone layout/keyboard | `mobile-layout.spec.ts`, `mobile-composer.spec.ts` |
+| C11 palette/PWA/update | `polish.spec.ts`, `pwa.spec.ts` |
+| C12 legacy read-only import | `test_legacy_import.py` |
+| C13 deployment identity | `test_deployment.py`, deployment invariant evidence |
+| C14 untrusted HTML/remote images | `foundation.spec.ts`, existing SSRF tests |
+| C15 budgets | `performance.spec.ts`, chat frame and first-token tests |
+| C16 axe/keyboard | Existing accessibility specs plus `documents-design.spec.ts` |
+
+### Migrations and rollback
+
+`006_attachment_meta.sql` adds only nullable `attachments.meta_json`. Both synthetic
+Phase 3 and Phase 5A databases migrate without changing projected old columns;
+old attachments receive NULL document metadata. The rollback script uses a private
+copy of the actual data folder, an SQLite online backup, current app startup and
+synthetic new document metadata, then restores the backup without stale WAL/SHM
+sidecars and boots commit `a553702`. It removes the private copy and never modifies
+production. Its health/shell/schema/row-hash result is in `rollback.json`.
+
+### Deployment and fallback
+
+Source commits: `444a5de` (PDF/Word attachments) and `588eb70` (preserve
+empty Word table edge cells).
+
+Deployed with `./scripts/deploy.sh --apply`, with a database backup before
+installation. Local and Tailscale HTTPS health returned 200; `/design` returned
+404. Existing launchd arguments and Tailscale route are unchanged. Schema is 6;
+installed static bytes match the build, including `index-C9iQs0iq.js`.
+
+Synthetic PDF and Word uploads succeeded on the installed app. Their review text
+was verified, only a private extracted `.txt` remained, and DELETE removed the
+synthetic files/rows. No model call or private document content was used.
+
+The saved 5A fallback is `a553702`. Restore its database backup before deploying
+the older source; the copied-data rollback rehearsal verifies this sequence.
+Current source is saved in the two commits above; the final evidence commit
+follows on `codex/phase-5-everyday-chat`. Earlier checkpoint evidence is restored
+unchanged; this complete run's measurements are copied under `5b/regenerated/`.
+
+### Screenshots
+
+`screenshots.json` lists all 120 `*-fake.png` files in `artifacts/phase-5/5b/`.
+PDF/Word chips, overflow, upload/extraction/failure, review text/loading/error,
+all five fixed upload errors and Add menu appear at 390 and 1440 in both themes
+and browser engines. Only invented synthetic document text/names are pictured.
+
+### Evals and runtime observations
+
+No production prompt or provider/run/search code changed. The prompt hash and
+ordinary request capture guards and existing offline web tests pass. No new
+real-Ollama answer/search eval was run and no claim about aggregate eval improvement
+is made. Document extraction uses existing Python, pypdf, ZipFile and ElementTree.
+Production document smoke testing uses synthetic uploads without model calls.
+
+### Known limitations carried forward
+
+VoiceOver failed in Jake's earlier check and is deferred; it did not pass.
+The iOS keyboard focus issue recovered after a phone restart; its cause remains
+unproven. Natural physical-phone launch motion was not instrumented in the
+previous checkpoint. Physical 5B upload/review/send has not been checked by Jake.
+Token counts are estimates; complex PDF reading order depends on selectable text.
+Worker memory is not part of the reported uvicorn RSS sample.
+
+### Open questions for Jake / review stop
+
+On the phone, add a PDF and a `.docx`, tap their chips to inspect the extracted
+text, then ask a question about them. Confirm the keyboard, review sheet and
+response work. 5C (folders/automatic backups) waits for checkpoint review.
