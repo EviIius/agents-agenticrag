@@ -1,0 +1,35 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+All checks passed!
+. scripts/tool-env.sh; uv run --directory server ruff format --check app tests
+72 files already formatted
+. scripts/tool-env.sh; uv run --directory server mypy app tests
+Success: no issues found in 70 source files
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_coverage.py
+...............................F........................................ [ 33%]
+........................................................................ [ 66%]
+........................................................................ [100%]
+=================================== FAILURES ===================================
+___________________ test_migration_is_idempotent_and_private ___________________
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-167/test_migration_is_idempotent_a0')
+
+    @pytest.mark.asyncio
+    async def test_migration_is_idempotent_and_private(tmp_path: Path) -> None:
+        for _ in range(2):
+            async with connect(tmp_path) as db:
+                async with db.execute("PRAGMA user_version") as cursor:
+>                   assert await cursor.fetchone() == (4,)
+E                   assert (5,) == (4,)
+E                     
+E                     At index 0 diff: 5 != 4
+E                     Use -v to get more diff
+
+tests/test_foundation.py:18: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_foundation.py::test_migration_is_idempotent_and_private - a...
+1 failed, 215 passed in 21.86s
+providers line coverage: 343/400 = 85.8%
+runs line coverage: 381/427 = 89.2%
+search line coverage: 1547/1741 = 88.9%
+transcribe line coverage: 370/408 = 90.7%
+make: *** [check] Error 1
