@@ -65,9 +65,7 @@ for (const width of [390, 1440])
         .getByRole("button", { name: "2 sources", exact: true })
         .click();
       const dialog = page.getByRole("dialog").last();
-      await expect(
-        dialog.getByText("via DuckDuckGo", { exact: true }),
-      ).toBeVisible();
+      await expect(dialog.getByText(/^via DuckDuckGo(?: ·|$)/)).toBeVisible();
       await dialog
         .getByText("What the model saw", { exact: true })
         .first()

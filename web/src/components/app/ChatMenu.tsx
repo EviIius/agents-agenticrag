@@ -27,7 +27,7 @@ export function ChatMenu({
   setAction: Dispatch<SetStateAction<ChatAction | null>>;
 }) {
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <IconButton label={`Actions for ${chat.title}`}>
           <Ellipsis />

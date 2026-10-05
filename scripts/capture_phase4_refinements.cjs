@@ -46,9 +46,17 @@ const output = process.argv[2];
   });
   const settle=async()=>{
    await page.evaluate(()=>document.fonts.ready);
-   await page.waitForFunction(()=>document.getAnimations().every(a=>a.playState!=='running'||!Number.isFinite(a.effect?.getComputedTiming().endTime)),{},{timeout:1000});
+   await page.evaluate(async()=>{
+    const start=performance.now();let clear=0;
+    while(performance.now()-start<1000){
+     await new Promise(requestAnimationFrame);
+     const busy=document.getAnimations().some(a=>a.playState==='running'&&Number.isFinite(a.effect?.getComputedTiming().endTime));
+     clear=busy?0:clear+1;if(clear>=2)return;
+    }
+    throw new Error('Finite capture motion did not settle');
+   });
   };
-  const shot=async name=>{await settle(); await fs.mkdir(output,{recursive:true});await page.screenshot({path:`${output}/${name}-${width}-${theme}-fake.png`,animations:'disabled'});if(process.env.WORKBENCH_REVIEW_AUDIT){const result=await new AxeBuilder({page}).analyze();await fs.writeFile(`${output}/axe-${name}-${width}-${theme}-fake.json`,JSON.stringify(result.violations,null,2));if(result.violations.some(v=>['serious','critical'].includes(v.impact)))throw new Error(`Accessibility gate failed: ${name} ${width} ${theme}`);} };
+  const shot=async name=>{await settle(); await fs.mkdir(output,{recursive:true});await page.screenshot({path:`${output}/${name}-${width}-${theme}-fake.png`,animations:'disabled'});if(process.env.WORKBENCH_REVIEW_AUDIT){await settle();const result=await new AxeBuilder({page}).analyze();await fs.writeFile(`${output}/axe-${name}-${width}-${theme}-fake.json`,JSON.stringify(result.violations,null,2));if(result.violations.some(v=>['serious','critical'].includes(v.impact)))throw new Error(`Accessibility gate failed: ${name} ${width} ${theme}`);} };
   await page.goto(root+'/c/'+chat.id);
   await page.getByText('A synthetic example of one code surface and one table.',{exact:false}).waitFor();
   await page.getByRole('article',{name:'assistant message'}).hover();

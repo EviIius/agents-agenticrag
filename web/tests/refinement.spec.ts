@@ -204,3 +204,58 @@ test("message alignment, single code/table surfaces and inline rename", async ({
     animations: "disabled",
   });
 });
+
+for (const width of [390, 1440])
+  for (const theme of ["light", "dark"]) {
+    test(`chat menu keeps background semantics and returns focus ${width} ${theme}`, async ({
+      page,
+      request,
+    }) => {
+      const [connection] = await (await request.get("/api/connections")).json();
+      const chat = await (
+        await request.post("/api/chats", {
+          data: { connection_id: connection.id, model_id: "fake-chat" },
+        })
+      ).json();
+      await request.patch(`/api/chats/${chat.id}`, {
+        data: { title: "Synthetic menu review" },
+      });
+      await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+      await page.addInitScript(
+        (value) => localStorage.setItem("workbench-theme", value),
+        theme,
+      );
+      await page.goto(`/c/${chat.id}`);
+      const trigger = page
+        .getByRole("button", {
+          name: "Actions for Synthetic menu review",
+          exact: true,
+        })
+        .last();
+      await trigger.click();
+      await expect(
+        page.getByRole("menuitem", { name: "Delete", exact: true }),
+      ).toBeVisible();
+      await settle(page);
+      await expect(page.locator(".topbar")).not.toHaveAttribute(
+        "aria-hidden",
+        "true",
+      );
+      await expect(page.locator(".composer textarea")).toBeVisible();
+      const audit = await new AxeBuilder({ page }).analyze();
+      expect(
+        audit.violations.filter((v) =>
+          ["serious", "critical"].includes(v.impact ?? ""),
+        ),
+      ).toEqual([]);
+      await page.keyboard.press("Escape");
+      await expect(page.getByRole("menu")).toHaveCount(0);
+      await expect(trigger).toBeFocused();
+      await page
+        .locator(".composer textarea")
+        .fill("Synthetic draft after menu");
+      await expect(page.locator(".composer textarea")).toHaveValue(
+        "Synthetic draft after menu",
+      );
+    });
+  }
