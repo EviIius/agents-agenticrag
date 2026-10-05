@@ -65,9 +65,16 @@ test("T-1/T-2/T-5 upload, transcript views, downloads, local chat and follow-up"
   );
   await expect(
     page.getByRole("button", {
-      name: "Search is off in chats with a recording",
+      name: "Web search",
+      exact: true,
     }),
   ).toHaveAttribute("aria-disabled", "true");
+  await expect(
+    page.getByRole("button", { name: "Web search", exact: true }),
+  ).toHaveAttribute("title", "Search is off in chats with a recording");
+  await expect(
+    page.getByRole("button", { name: "Web search", exact: true }),
+  ).toHaveAttribute("aria-pressed", "false");
   await page.getByRole("button", { name: "Send message" }).click();
   await expect(page).toHaveURL(/\/c\//);
   await expect(

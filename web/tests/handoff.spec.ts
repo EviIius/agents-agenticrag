@@ -49,7 +49,7 @@ test("cold new-chat handoff preserves a completed SSE answer before and after a 
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Search off", exact: true }).click();
+  await page.getByRole("button", { name: "Web search", exact: true }).click();
   let captured = false;
   let release!: () => void;
   const hold = new Promise<void>((resolve) => {

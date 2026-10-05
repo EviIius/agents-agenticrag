@@ -86,10 +86,10 @@ for (const width of [320, 390, 768, 1440]) {
         await page.getByRole("button", { name: "Close", exact: true }).click();
       else await page.keyboard.press("Escape");
       await page
-        .getByRole("button", { name: "Chat settings", exact: true })
+        .getByRole("button", { name: "Chat controls", exact: true })
         .click();
       const controls = page.getByRole("region", {
-        name: "Chat settings controls",
+        name: "Chat controls",
       });
       await expect(
         controls.getByRole("button", { name: "64K", exact: true }),
@@ -110,7 +110,7 @@ for (const width of [320, 390, 768, 1440]) {
       await expect(
         controls.getByRole("button", { name: "Save settings", exact: true }),
       ).toBeEnabled();
-      await page.getByRole("button", { name: "Close chat settings" }).click();
+      await page.getByRole("button", { name: "Close chat controls" }).click();
       await page.keyboard.press("Control+,");
       const settings = page.getByRole("dialog", {
         name: "Settings",
@@ -123,7 +123,7 @@ for (const width of [320, 390, 768, 1440]) {
       for (const pane of [
         "Connections",
         "Models",
-        "Search",
+        "Web search",
         "Transcription",
         "Appearance",
         "Data",

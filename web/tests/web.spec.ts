@@ -15,10 +15,10 @@ for (const width of [390, 1440])
       );
       await page.goto("/");
       await expect(
-        page.getByRole("button", { name: "Search off", exact: true }),
+        page.getByRole("button", { name: "Web search", exact: true }),
       ).toBeVisible();
       await page
-        .getByRole("button", { name: "Search off", exact: true })
+        .getByRole("button", { name: "Web search", exact: true })
         .click();
       await page
         .locator(".composer textarea")
@@ -128,7 +128,7 @@ test("search activity appears within 300ms and collapses after completion", asyn
     },
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Search off", exact: true }).click();
+  await page.getByRole("button", { name: "Web search", exact: true }).click();
   await page
     .locator(".composer textarea")
     .fill("Who lost the 2021 NBA Finals? Show a table.");
@@ -192,7 +192,7 @@ test("a late streaming chat snapshot cannot erase the completed SSE answer", asy
     },
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Search off", exact: true }).click();
+  await page.getByRole("button", { name: "Web search", exact: true }).click();
   let intercepted = false;
   let release!: () => void;
   const hold = new Promise<void>((resolve) => {

@@ -331,7 +331,7 @@ test("chat save cancellation keeps formats editable and never opens a fallback d
   await page
     .getByRole("menuitem", { name: "Export JSON", exact: true })
     .click();
-  const dialog = page.getByRole("dialog", { name: "Export JSON", exact: true });
+  const dialog = page.getByRole("dialog", { name: "Export chat", exact: true });
   await expect(
     dialog.getByRole("button", { name: "JSON (.json)", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
@@ -591,7 +591,7 @@ for (const width of [390, 1440])
         .getByRole("button", { name: "Preview JSON export", exact: true })
         .click();
       const dialog = page.getByRole("dialog", {
-        name: "Export JSON",
+        name: "Export chat",
         exact: true,
       });
       await settle(page);
@@ -723,9 +723,7 @@ test("new-chat send waits for confirmation; edit and regenerate animate only new
   await page
     .getByRole("textbox", { name: "Edit message", exact: true })
     .fill("Synthetic edited message #long:30 #slow:30");
-  await page
-    .getByRole("button", { name: "Save & submit", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Send", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Stop generating", exact: true }),
   ).toBeVisible();

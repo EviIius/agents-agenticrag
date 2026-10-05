@@ -59,15 +59,15 @@ export function LiveChatSettings({
     context >= 1024 &&
     (!limit || context <= limit);
   return (
-    <section className="p-5" aria-label="Chat settings controls">
+    <section className="p-5" aria-label="Chat controls">
       {!drawer && (
         <header className="sticky top-0 z-10 -mx-5 -mt-5 mb-6 flex items-center justify-between bg-surface px-5 py-3">
           <h2 className="font-medium">
-            {defaultsOnly ? "Model defaults" : "Chat settings"}
+            {defaultsOnly ? "Model defaults" : "Chat controls"}
           </h2>
           {!defaultsOnly && (
             <IconButton
-              label="Close chat settings"
+              label="Close chat controls"
               onClick={() => useUI.getState().set({ panel: false })}
             >
               <X />
@@ -80,6 +80,7 @@ export function LiveChatSettings({
       </p>
       {!defaultsOnly && (
         <>
+          <h3 className="mb-3 text-sm font-medium">System prompt</h3>
           <label className="mb-3 flex min-h-11 items-center gap-2 text-sm">
             <Switch
               aria-label="Use default system prompt"
@@ -97,74 +98,60 @@ export function LiveChatSettings({
           />
         </>
       )}
-      {controls.map(([key, label, min, max, step]) => (
-        <fieldset key={key} className="mb-5">
-          <legend className="text-sm font-medium">{label}</legend>
-          <label className="my-2 flex min-h-11 items-center gap-2 text-xs text-fg-2">
-            <Switch
-              aria-label={`Use model default for ${label}`}
-              checked={params[key] == null}
-              onCheckedChange={(checked) =>
-                setParams((p) => ({
-                  ...p,
-                  [key]: checked ? null : min,
-                }))
-              }
-            />
-            Model default
-          </label>
-          {key !== "seed" && params[key] != null && (
-            <Slider
-              className="my-4"
-              aria-label={`${label} slider`}
-              min={min}
-              max={max}
-              step={step}
-              value={[params[key]]}
-              onValueChange={([value]) =>
-                setParams((previous) => ({ ...previous, [key]: value }))
-              }
-            />
-          )}
-          <Input
-            type="number"
-            aria-label={label}
-            min={min}
-            max={max}
-            step={step}
-            disabled={params[key] == null}
-            value={params[key] ?? ""}
-            onChange={(e) =>
-              setParams((p) => ({ ...p, [key]: Number(e.target.value) }))
-            }
-          />
-        </fieldset>
-      ))}
-      {model?.reasoning && (
-        <label className="mb-5 block text-sm">
-          Reasoning
-          <Select
-            value={params.reasoning ?? "default"}
-            onValueChange={(value) =>
-              setParams((p) => ({
-                ...p,
-                reasoning: value === "default" ? null : value,
-              }))
-            }
-          >
-            <SelectTrigger aria-label="Reasoning">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="default">Model default</SelectItem>
-              {model.reasoning.options.map((value) => (
-                <SelectItem key={value} value={value}>
-                  {value[0].toUpperCase() + value.slice(1)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </label>
+      <h3 className="mb-4 text-sm font-medium">Sampling</h3>
+      {[...controls.filter(([key]) => key !== "max_tokens"), controls[3]].map(
+        ([key, label, min, max, step]) => (
+          <fieldset key={key} className="mb-5">
+            <legend className="text-sm font-medium">
+              {key === "max_tokens" && (
+                <span className="mb-4 block">Length and context</span>
+              )}
+              {label}
+            </legend>
+            <label className="my-2 flex min-h-11 items-center gap-2 text-xs text-fg-2">
+              <Switch
+                aria-label={`Use model default for ${label}`}
+                checked={params[key] == null}
+                onCheckedChange={(checked) =>
+                  setParams((p) => ({
+                    ...p,
+                    [key]: checked ? null : min,
+                  }))
+                }
+              />
+              Model default
+            </label>
+            {key !== "seed" && params[key] != null && (
+              <Slider
+                className="my-4"
+                aria-label={`${label} slider`}
+                min={min}
+                max={max}
+                step={step}
+                value={[params[key]]}
+                onValueChange={([value]) =>
+                  setParams((previous) => ({ ...previous, [key]: value }))
+                }
+              />
+            )}
+            {params[key] == null ? (
+              <p className="text-xs text-fg-3">Model default</p>
+            ) : (
+              <Input
+                type="number"
+                aria-label={label}
+                min={min}
+                max={max}
+                step={step}
+                disabled={params[key] == null}
+                value={params[key] ?? ""}
+                onChange={(e) =>
+                  setParams((p) => ({ ...p, [key]: Number(e.target.value) }))
+                }
+              />
+            )}
+          </fieldset>
+        ),
       )}
       <label className="mb-5 block text-sm">
         Context length
@@ -203,6 +190,32 @@ export function LiveChatSettings({
             </Button>
           ))}
       </div>
+      {model?.reasoning && (
+        <label className="mb-5 block text-sm">
+          Reasoning
+          <Select
+            value={params.reasoning ?? "default"}
+            onValueChange={(value) =>
+              setParams((p) => ({
+                ...p,
+                reasoning: value === "default" ? null : value,
+              }))
+            }
+          >
+            <SelectTrigger aria-label="Reasoning">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="default">Model default</SelectItem>
+              {model.reasoning.options.map((value) => (
+                <SelectItem key={value} value={value}>
+                  {value[0].toUpperCase() + value.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </label>
+      )}
       <div className="flex flex-col gap-2">
         {!defaultsOnly && (
           <Button

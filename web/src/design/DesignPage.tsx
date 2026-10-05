@@ -1,3 +1,5 @@
+import config from "../../../shared/config.json";
+import { RefinementPreview } from "./RefinementPreview";
 import { ConversationMotionPreview } from "./ConversationMotionPreview";
 import { MotionPreview } from "./MotionPreview";
 import { PolishPreview } from "./PolishPreview";
@@ -69,7 +71,9 @@ export function DesignPage() {
   return (
     <div className="design-page">
       <header className="mb-10">
-        <p className="mb-3 text-xs text-fg-3">WORKBENCH / FOUNDATION</p>
+        <p className="mb-3 text-xs text-fg-3">
+          {config.APP_NAME.toUpperCase()} / FOUNDATION
+        </p>
         <h1 className="font-serif text-3xl leading-10">
           A quieter place to think.
         </h1>
@@ -264,6 +268,7 @@ export function DesignPage() {
         <DataPane preview />
       </section>
       <MotionPreview />
+      <RefinementPreview />
       <ConversationMotionPreview />
       <PolishPreview />
       <TranscriptionPreview />
@@ -394,7 +399,7 @@ export function DesignPage() {
       </section>
       <section aria-labelledby="chat-settings" className="design-card mb-8">
         <h2 id="chat-settings" className="text-lg font-medium">
-          Chat settings · model defaults
+          Chat controls · model defaults
         </h2>
         <div className="max-w-sm">
           <FixtureChatSettings />

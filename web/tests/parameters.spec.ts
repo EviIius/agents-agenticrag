@@ -30,9 +30,9 @@ for (const width of [390, 1440]) {
       page.getByRole("button", { name: "Choose model" }),
     ).toContainText("fake-chat");
     const open = () =>
-      page.getByRole("button", { name: "Chat settings", exact: true }).click();
+      page.getByRole("button", { name: "Chat controls", exact: true }).click();
     const close = () =>
-      page.getByRole("button", { name: "Close chat settings" }).click();
+      page.getByRole("button", { name: "Close chat controls" }).click();
     await open();
     for (const [label, value] of [
       ["Temperature", "0.55"],

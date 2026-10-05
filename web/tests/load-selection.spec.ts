@@ -40,7 +40,7 @@ for (const width of [390, 1440]) {
       await page.goto(chat ? "/c/" + chat.id : "/");
       if (width >= 640)
         await page
-          .getByRole("button", { name: "Chat settings", exact: true })
+          .getByRole("button", { name: "Chat controls", exact: true })
           .click();
       await page
         .getByRole("button", { name: "Choose model", exact: true })
@@ -77,10 +77,10 @@ for (const width of [390, 1440]) {
         ).toBe("fake-vision");
       if (width < 640)
         await page
-          .getByRole("button", { name: "Chat settings", exact: true })
+          .getByRole("button", { name: "Chat controls", exact: true })
           .click();
       const controls = page.getByRole("region", {
-        name: "Chat settings controls",
+        name: "Chat controls",
       });
       await expect(
         controls.getByText("fake-vision", { exact: true }),
@@ -102,10 +102,10 @@ for (const width of [390, 1440]) {
         .getByRole("button", { name: "Save settings", exact: true })
         .click();
       if (width < 640) {
-        const drawer = page.getByRole("dialog", { name: "Chat settings" });
+        const drawer = page.getByRole("dialog", { name: "Chat controls" });
         expect(await drawer.evaluate((element) => element.scrollTop)).toBe(0);
         await expect(
-          drawer.getByRole("button", { name: "Close chat settings" }),
+          drawer.getByRole("button", { name: "Close chat controls" }),
         ).toBeInViewport({ ratio: 1 });
       }
       await settle(page);
@@ -113,7 +113,7 @@ for (const width of [390, 1440]) {
         path: `../artifacts/phase-2/load-context-32k-${width}-${browserName}.png`,
       });
       await page
-        .getByRole("button", { name: "Close chat settings", exact: true })
+        .getByRole("button", { name: "Close chat controls", exact: true })
         .click();
       const question = `Context payload ${width} ${existing} ${browserName}`;
       await page.locator(".composer textarea").fill(question);

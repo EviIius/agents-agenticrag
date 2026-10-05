@@ -222,7 +222,14 @@ export function Composer({
                   }
                 }}
               >
-                {model?.vision ? "Add image" : "Images need a vision model"}
+                <span>
+                  Add image
+                  {!model?.vision && (
+                    <span className="block text-xs text-fg-3">
+                      Images need a vision model
+                    </span>
+                  )}
+                </span>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onSelect={() => {
@@ -251,24 +258,25 @@ export function Composer({
             </DropdownMenuContent>
           </DropdownMenu>
           {onWebChange && (
-            <IconButton
-              label={
-                webBlocked
-                  ? "Search is off in chats with a recording"
-                  : web
-                    ? "Search on"
-                    : "Search off"
-              }
+            <Button
               type="button"
+              variant="ghost"
+              aria-label="Web search"
               aria-pressed={web && !webBlocked}
               aria-disabled={webBlocked}
-              className={web && !webBlocked ? "bg-brand-soft text-brand" : ""}
+              title={
+                webBlocked
+                  ? "Search is off in chats with a recording"
+                  : undefined
+              }
+              className={`h-11 gap-2 px-2 rounded-full ${web && !webBlocked ? "bg-brand-soft text-brand" : ""}`}
               onClick={() => {
                 if (!webBlocked) onWebChange(!web);
               }}
             >
-              <Globe />
-            </IconButton>
+              <Globe className="size-4" />
+              <span className="hidden text-xs sm:inline">Search</span>
+            </Button>
           )}
           {model?.reasoning && (
             <DropdownMenu>

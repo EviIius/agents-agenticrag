@@ -76,18 +76,9 @@ export function SearchActivity({
           </Button>
         </div>
       )}
-      <Collapsible
-        open={open}
-        onOpenChange={setOpen}
-        className="rounded-lg border border-line p-3"
-      >
+      <Collapsible open={open} onOpenChange={setOpen} className="py-1">
         <CollapsibleTrigger className="flex min-h-11 w-full cursor-pointer flex-wrap items-center gap-2 text-left">
-          <Globe className="size-4" />
-          <span data-slot="activity-label" data-live={live || undefined}>
-            {live
-              ? "Searching the web…"
-              : `Searched the web · ${sources.length} sources · ${(Object.values(info?.timings ?? {}).reduce((a, b) => a + b, 0) / 1000).toFixed(1)}s`}
-          </span>
+          {!domains.length && <Globe className="size-4" />}
           <span className="flex gap-1">
             {domains.map((domain, index) => (
               <span
@@ -98,6 +89,11 @@ export function SearchActivity({
                 <Favicon domain={domain} />
               </span>
             ))}
+          </span>
+          <span data-slot="activity-label" data-live={live || undefined}>
+            {live
+              ? "Searching the web…"
+              : `Searched the web · ${sources.length} sources · ${(Object.values(info?.timings ?? {}).reduce((a, b) => a + b, 0) / 1000).toFixed(1)} s`}
           </span>
           <ChevronDown className="ml-auto size-3" />
         </CollapsibleTrigger>
@@ -110,7 +106,7 @@ export function SearchActivity({
                 data-live={live || undefined}
                 className="break-words"
               >
-                {s.label} · {s.detail}
+                {activityCopy(s)}
               </li>
             ))}
             {!steps?.length &&
@@ -124,4 +120,21 @@ export function SearchActivity({
       </Collapsible>
     </div>
   );
+}
+
+function activityCopy(step: { label: string; detail: string; status: string }) {
+  if (step.label === "read" || step.label === "reading") {
+    let site = step.detail;
+    try {
+      site = new URL(step.detail).hostname;
+    } catch {
+      /* Keep the supplied detail. */
+    }
+    return `${step.status === "failed" ? "Couldn't read" : "Read"} ${site}`;
+  }
+  if (step.label === "query" || step.label === "search")
+    return `Searched: ${step.detail}`;
+  if (step.label === "plan") return step.detail || "Planning the search";
+  if (step.label === "done") return "Search complete";
+  return step.detail || step.label.replaceAll("_", " ");
 }

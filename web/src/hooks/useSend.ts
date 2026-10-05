@@ -1,3 +1,4 @@
+import { failureCopy, failureDetail } from "@/lib/errors";
 import {
   useEffect,
   useLayoutEffect,
@@ -216,7 +217,7 @@ export function useSend({
       if (currentChat.current === chatId)
         setSendError(
           errorCopy(
-            e instanceof ApiError ? e.code : "provider_error",
+            e instanceof ApiError ? e.code : "unknown",
             e instanceof Error ? e.message : String(e),
             current,
             bootstrap.data?.connections.find(
@@ -258,7 +259,7 @@ export function useSend({
       }
       refresh();
     } catch (e) {
-      toast(String(e));
+      toast.error(failureCopy(e), { description: failureDetail(e) });
     } finally {
       setBusy(false);
     }

@@ -1,3 +1,4 @@
+import { failureCopy, failureDetail } from "@/lib/errors";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, type QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -96,7 +97,7 @@ export function useUploads({
               setUploads((uploads) =>
                 uploads.map((upload) =>
                   upload.id === id
-                    ? { ...upload, failed: true, reason: String(error) }
+                    ? { ...upload, failed: true, reason: failureCopy(error) }
                     : upload,
                 ),
               );
@@ -117,7 +118,7 @@ export function useUploads({
         const a = await api<Attachment>("/attachments", form);
         setFiles((f) => [...f, a]);
       } catch (e) {
-        toast(String(e));
+        toast.error(failureCopy(e), { description: failureDetail(e) });
       }
     }
   };

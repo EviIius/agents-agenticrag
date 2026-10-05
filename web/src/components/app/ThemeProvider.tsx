@@ -12,6 +12,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       const resolved = resolvedTheme(theme, media.matches);
       const update = () => {
         document.documentElement.dataset.theme = resolved;
+        const bg = getComputedStyle(document.documentElement)
+          .getPropertyValue("--bg")
+          .trim();
+        document
+          .querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')
+          .forEach((meta) => {
+            meta.content = bg;
+          });
       };
       if (
         applied.current &&

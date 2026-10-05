@@ -56,25 +56,29 @@ export function Sidebar({
           </Link>
         </IconButton>
       ) : null}
-      <Button
-        variant="ghost"
-        className={
-          collapsed ? "icon-button" : "mb-5 h-11 justify-start gap-3 text-fg-2"
-        }
-        onClick={() => {
-          set({ command: true });
-          close?.();
-        }}
-        aria-label="Search chats"
-      >
-        <Search className="size-4" />
-        {!collapsed && (
-          <>
-            <span className="flex-1 text-left">Search chats</span>
-            <kbd className="meta">⌘K</kbd>
-          </>
-        )}
-      </Button>
+      {collapsed && (
+        <Button
+          variant="ghost"
+          className={
+            collapsed
+              ? "icon-button"
+              : "mb-5 h-11 justify-start gap-3 text-fg-2"
+          }
+          onClick={() => {
+            set({ command: true });
+            close?.();
+          }}
+          aria-label="Search chats"
+        >
+          <Search className="size-4" />
+          {!collapsed && (
+            <>
+              <span className="flex-1 text-left">Search chats</span>
+              <kbd className="meta">⌘K</kbd>
+            </>
+          )}
+        </Button>
+      )}
       <nav aria-label="Chat history" className="min-h-0 flex-1 overflow-y-auto">
         {!collapsed && (
           <>

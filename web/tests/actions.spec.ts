@@ -74,7 +74,7 @@ for (const width of [390, 1440]) {
     await page
       .getByRole("textbox", { name: "Edit message", exact: true })
       .fill(edited);
-    await page.getByRole("button", { name: "Save & submit" }).click();
+    await page.getByRole("button", { name: "Send", exact: true }).click();
     await expect
       .poll(
         async () =>
@@ -147,9 +147,9 @@ for (const width of [390, 1440]) {
     });
     await page.getByRole("button", { name: "Cancel", exact: true }).click();
     expect(exportsDownloaded).toBe(0);
-    await expect(
-      page.getByRole("dialog", { name: "Export Markdown" }),
-    ).toHaveCount(0);
+    await expect(page.getByRole("dialog", { name: "Export chat" })).toHaveCount(
+      0,
+    );
     if (width < 640)
       await page.getByRole("button", { name: "Open sidebar" }).click();
     await actions.click();
@@ -162,12 +162,12 @@ for (const width of [390, 1440]) {
       original,
     );
     await expect(
-      page.getByRole("dialog", { name: "Export Markdown" }),
+      page.getByRole("dialog", { name: "Export chat" }),
     ).toBeVisible();
     await page.getByRole("button", { name: "Cancel", exact: true }).click();
-    await expect(
-      page.getByRole("dialog", { name: "Export Markdown" }),
-    ).toHaveCount(0);
+    await expect(page.getByRole("dialog", { name: "Export chat" })).toHaveCount(
+      0,
+    );
     if (width < 640)
       await page.getByRole("button", { name: "Open sidebar" }).click();
     await actions.click();
@@ -177,10 +177,10 @@ for (const width of [390, 1440]) {
     const download = await downloadReady;
     expect(download.suggestedFilename()).toBe(original + ".json");
     await expect(
-      page.getByRole("dialog", { name: "Export JSON" }),
+      page.getByRole("dialog", { name: "Export chat" }),
     ).toBeVisible();
     await page.getByRole("button", { name: "Cancel", exact: true }).click();
-    await expect(page.getByRole("dialog", { name: "Export JSON" })).toHaveCount(
+    await expect(page.getByRole("dialog", { name: "Export chat" })).toHaveCount(
       0,
     );
     if (width < 640)

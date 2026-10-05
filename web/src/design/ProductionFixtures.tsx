@@ -1,3 +1,4 @@
+import config from "../../../shared/config.json";
 /** Synthetic data and event bindings for production components; no duplicate UI. */
 import { useState, type RefObject } from "react";
 import { MessageRow, LiveThread } from "@/components/chat/LiveThread";
@@ -201,7 +202,7 @@ export function FixtureChatSettings({ drawer = false }: { drawer?: boolean }) {
 }
 
 const fixtureBootstrap: Bootstrap = {
-  app_name: "Workbench",
+  app_name: config.APP_NAME,
   version: "1.0.0-alpha.0",
   data_dir: "Synthetic preview · no saved data",
   settings: {

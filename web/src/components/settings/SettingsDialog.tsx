@@ -1,3 +1,4 @@
+import config from "../../../../shared/config.json";
 import {
   Dialog,
   DialogContent,
@@ -90,22 +91,24 @@ export function SettingsDialog({
           >
             {panes.map((name) => (
               <Button
-                key={name}
+                key={name === "Search" ? "Web search" : name}
                 variant="ghost"
                 onClick={() => setPane(name)}
                 className={`min-h-11 shrink-0 justify-start ${pane === name ? "bg-brand-soft text-brand" : ""}`}
                 aria-current={pane === name ? "page" : undefined}
               >
-                {name}
+                {name === "Search" ? "Web search" : name}
               </Button>
             ))}
           </nav>
           <section
             key={pane}
-            aria-label={pane}
+            aria-label={pane === "Search" ? "Web search" : pane}
             className="settings-pane min-h-0 min-w-0 flex-1 space-y-5 overflow-y-auto pb-6"
           >
-            <h2 className="text-lg font-medium">{pane}</h2>
+            <h2 className="text-lg font-medium">
+              {pane === "Search" ? "Web search" : pane}
+            </h2>
             {pane === "Appearance" ? (
               <>
                 <fieldset>
@@ -116,6 +119,7 @@ export function SettingsDialog({
                         <Button
                           key={theme[0].toUpperCase() + theme.slice(1)}
                           variant={theme === ui.theme ? "default" : "outline"}
+                          data-slot="segmented-choice"
                           className="min-h-11 capitalize"
                           aria-pressed={theme === ui.theme}
                           onClick={() => ui.set({ theme })}
@@ -135,6 +139,7 @@ export function SettingsDialog({
                         variant={
                           answerFont === ui.answerFont ? "secondary" : "outline"
                         }
+                        data-slot="segmented-choice"
                         className="min-h-11 capitalize"
                         aria-pressed={answerFont === ui.answerFont}
                         onClick={() => ui.set({ answerFont })}
@@ -155,6 +160,7 @@ export function SettingsDialog({
                         variant={
                           textSize === ui.textSize ? "secondary" : "outline"
                         }
+                        data-slot="segmented-choice"
                         className="min-h-11 min-w-11"
                         aria-pressed={textSize === ui.textSize}
                         onClick={() => ui.set({ textSize })}
@@ -186,7 +192,7 @@ export function SettingsDialog({
                 </label>
                 <label className="block space-y-2">
                   <span className="font-medium">
-                    What should Workbench call you?
+                    What should {config.APP_NAME} call you?
                   </span>
                   <Input
                     className="h-11"

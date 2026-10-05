@@ -16,7 +16,7 @@ for (const width of [390, 1440]) {
     if (width < 640)
       await page.getByRole("button", { name: "Open sidebar" }).click();
     await page.getByRole("button", { name: "Settings", exact: true }).click();
-    await page.getByRole("button", { name: "Search", exact: true }).click();
+    await page.getByRole("button", { name: "Web search", exact: true }).click();
     const field = page.getByLabel("Ollama search API key");
     await expect(
       page.getByRole("button", { name: "Save Ollama key" }),

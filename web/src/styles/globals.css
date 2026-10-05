@@ -224,7 +224,7 @@ button:not(:disabled),
 }
 :focus-visible {
   outline: 2px solid var(--brand);
-  outline-offset: 3px;
+  outline-offset: 2px;
 }
 input,
 textarea,
@@ -601,4 +601,122 @@ html
   height: 24px;
   background: linear-gradient(to top, var(--bg), transparent);
   pointer-events: none;
+}
+
+/* Phase 4D: production component presentation; motion remains in motion.css. */
+.user-bubble {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--user-bubble);
+  font-size: 15px;
+  line-height: 23px;
+}
+[data-slot="message-footer"][data-role="user"] {
+  justify-content: flex-end;
+}
+[data-slot="message-footer"] {
+  margin-top: 8px;
+}
+[data-slot="message-stats"] .meta {
+  font-size: 11px;
+  line-height: 16px;
+}
+.source-passage {
+  font-family: var(--font-reading);
+}
+[data-slot="segmented-choice"] {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: transparent;
+}
+[data-slot="segmented-choice"][aria-pressed="true"] {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+[data-slot="dialog-content"],
+[data-slot="alert-dialog-content"],
+[data-slot="popover-content"] {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+[data-slot="dropdown-menu-content"],
+[data-slot="dropdown-menu-sub-content"] {
+  border-radius: var(--radius-md);
+}
+[role="option"]:focus-visible,
+[role="menuitem"]:focus-visible {
+  outline-offset: -2px;
+}
+.topbar {
+  position: relative;
+}
+.topbar-title,
+.topbar-title-input {
+  display: none;
+}
+@media (min-width: 768px) {
+  .topbar-title,
+  .topbar-title-input {
+    display: block;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(28%, 280px);
+    text-align: center;
+    z-index: 1;
+  }
+  .topbar-title {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 13px;
+    color: var(--text-2);
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  [data-slot="history-row"] {
+    min-height: 36px;
+    height: 36px;
+  }
+  [data-slot="history-row"] .icon-button {
+    height: 36px;
+    min-height: 36px;
+    width: 36px;
+  }
+  [data-slot="message-footer"][data-role="user"] [data-slot="message-actions"],
+  [data-slot="message-footer"][data-role="assistant"]:not([data-last="true"])
+    [data-slot="message-actions"],
+  [data-slot="message-stats"],
+  [data-slot="model-action"] {
+    opacity: 0;
+  }
+  article:hover [data-slot="message-actions"],
+  article:focus-within [data-slot="message-actions"],
+  article:hover [data-slot="message-stats"],
+  article:focus-within [data-slot="message-stats"],
+  [role="option"]:hover [data-slot="model-action"],
+  [role="option"]:focus-within [data-slot="model-action"],
+  [role="option"][data-selected="true"] [data-slot="model-action"] {
+    opacity: 1;
+  }
+  .palette-close {
+    display: none;
+  }
+}
+@media (pointer: coarse) {
+  [data-slot="command-input-wrapper"]:has(+ [data-slot="command-list"]) {
+    padding-right: 52px;
+  }
+}
+.history-search [data-slot="input"] {
+  background: var(--surface-2);
+  border: 0;
+}
+
+@media (min-width: 768px) {
+  .topbar:has(.topbar-title, .topbar-title-input) > div:first-child {
+    max-width: calc(36% - 20px);
+    margin-right: auto;
+  }
 }

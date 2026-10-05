@@ -33,8 +33,8 @@ test("touch composer accepts typing before and after mobile overlays", async ({
   await page.getByRole("button", { name: "Choose model" }).tap();
   await page.getByRole("button", { name: "Close", exact: true }).tap();
   await typeByTouch();
-  await page.getByRole("button", { name: "Chat settings", exact: true }).tap();
-  await page.getByRole("button", { name: "Close chat settings" }).tap();
+  await page.getByRole("button", { name: "Chat controls", exact: true }).tap();
+  await page.getByRole("button", { name: "Close chat controls" }).tap();
   await typeByTouch();
   await page.getByRole("button", { name: "Add attachment" }).tap();
   await page.getByRole("menu", { name: "Add attachment", exact: true }).focus();

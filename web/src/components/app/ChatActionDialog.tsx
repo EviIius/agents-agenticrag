@@ -1,3 +1,4 @@
+import config from "../../../../shared/config.json";
 import { FileSaveDialog } from "./FileSaveDialog";
 import { useState } from "react";
 import { useOverlaySession } from "@/hooks/useOverlaySession";
@@ -73,10 +74,10 @@ function ChatActionContent({
         initial={format}
         onClose={onClose}
         preview={preview ? "ready" : undefined}
-        title={format === "md" ? "Export Markdown" : "Export JSON"}
+        title="Export chat"
         closeLabel="Close chat export"
         downloadLabel="Download"
-        description="Save the current branch. Choose a format before saving; other branches remain in Workbench."
+        description={`Save the current branch. Choose a format before saving; other branches remain in ${config.APP_NAME}.`}
         options={[
           { format: "md", label: "Markdown (.md)" },
           { format: "json", label: "JSON (.json)" },

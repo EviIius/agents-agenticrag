@@ -1,3 +1,6 @@
+import { OfflineNotice } from "./OfflineNotice";
+import { ChatTitle } from "./ChatTitle";
+import { failureCopy, failureDetail } from "@/lib/errors";
 import { useSend, useSendState } from "@/hooks/useSend";
 import { useUploads } from "@/hooks/useUploads";
 import { useModelOps } from "@/hooks/useModelOps";
@@ -240,7 +243,7 @@ export function LiveAppShell() {
       refresh();
       return true;
     } catch (e) {
-      toast.error(String(e));
+      toast.error(failureCopy(e), { description: failureDetail(e) });
       return false;
     }
   };
@@ -316,7 +319,10 @@ export function LiveAppShell() {
         if (effectiveFiles.find((file) => file.id === id)?.kind === "audio")
           void api(`/attachments/${id}`, undefined, "DELETE").then(
             remove,
-            (error) => toast.error(String(error)),
+            (error) =>
+              toast.error(failureCopy(error), {
+                description: failureDetail(error),
+              }),
           );
         else remove();
       }}
@@ -466,7 +472,7 @@ export function LiveAppShell() {
         {dragging && (
           <div
             role="status"
-            className="pointer-events-none absolute inset-4 z-40 flex items-center justify-center rounded-xl border border-brand bg-surface text-sm"
+            className="pointer-events-none absolute inset-4 z-40 flex items-center justify-center rounded-xl border-2 border-dashed border-brand bg-bg/80 text-sm"
           >
             Drop images, text files or recordings
           </div>
@@ -497,11 +503,17 @@ export function LiveAppShell() {
               }
             />
           </div>
-          <span className="hidden max-w-64 truncate text-xs text-fg-3 md:block">
-            {detail.data?.chat.title ?? ""}
-          </span>
+          {detail.data && (
+            <ChatTitle
+              key={detail.data.chat.id}
+              title={detail.data.chat.title}
+              onRename={(title) =>
+                mutate("/chats/" + detail.data!.chat.id, { title }, "PATCH")
+              }
+            />
+          )}
           <IconButton
-            label="Chat settings"
+            label="Chat controls"
             onClick={() => ui.set({ panel: !ui.panel })}
           >
             <SlidersHorizontal />
@@ -509,11 +521,10 @@ export function LiveAppShell() {
           {detail.data && menu(detail.data.chat)}
         </header>
         {bootstrap.isError ? (
-          <div role="alert" className="m-auto max-w-md p-6">
-            <h1 className="text-lg font-medium">Can't reach Workbench</h1>
-            <p className="my-4 text-sm text-fg-2">{String(bootstrap.error)}</p>
-            <Button onClick={() => void bootstrap.refetch()}>Try again</Button>
-          </div>
+          <OfflineNotice
+            detail={String(bootstrap.error)}
+            onRetry={() => void bootstrap.refetch()}
+          />
         ) : bootstrap.data?.connections.length === 0 ? (
           <Welcome
             detections={detect.data}

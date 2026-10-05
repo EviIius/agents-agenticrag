@@ -38,3 +38,32 @@ The second full 4B invocation passed 245 cases and failed two WebKit normal-over
 All additional short-lived flag checks record state on the page clock (MutationObserver), so transport latency cannot miss the 200 ms model pulse or fresh message entrance. New tests seed visible history entries before navigation, choose the named Actions trigger, scope the New chat link to the sidebar banner, and use the actual `/design` reduced-motion/theme buttons. These correct new fixture/selector setup without changing any pre-existing gate. A missing pointer-event override for code controls and keyboard focus for the table's inner scroll area were fixed in production components; the native code-copy polite output is retained once.
 
 Final 4C acceptance: `4c/e2e.txt` passed 289 cases with the same 3 existing skips. New populated-history handoff cases exposed the deferred-route race; production now synchronously commits confirmed navigation using the installed Router DOM provider. No old assertion, timeout or budget changed.
+
+
+## 4D display and visual refinements
+
+All original flows, assertion counts, timeout/performance budgets and skips are retained. Changes below implement approved display labels/presentation, not new behavior or mocks.
+
+| File | Change | Reason and retained assertions |
+|---|---|---|
+| actions.spec.ts | Edit button exact “Send”; export dialog “Export chat” | Approved copy and neutral shared heading; branch contents, rename/pin/delete and download content preserved |
+| conversation-motion.spec.ts | Edit button, export heading | Same send, rollback, native sharing, copy, reduced motion and budgets |
+| foundation.spec.ts | Chat controls labels | Same production controls, keyboard and axe assertions |
+| handoff.spec.ts | Stable “Web search” button name | Same populated-history handoff and activity budget |
+| load-selection.spec.ts | Chat controls labels/region | Same loaded selection and context bounds |
+| mobile-composer.spec.ts | Chat controls labels | Same phone typing/send/keyboard checks |
+| mobile-layout.spec.ts | Chat controls labels; footer becomes Manage models button | Same safe-area, 44 px touch, full footer-in-viewport and scroll/search assertions |
+| motion.spec.ts | Shared export heading | Same normal/reduced exit lifetime and state budgets |
+| parameters.spec.ts | Chat controls labels | Exact runtime parameter payload and persistence assertions retained |
+| phase3-accessibility.spec.ts | Stable Web search name; explicit aria-pressed=true | Old “Search on” name implied state; explicit pressed state retains it; keyboard checks unchanged |
+| pwa.spec.ts | Can't reach Atelier heading | Same offline/cache, API exclusion and standalone checks |
+| review.spec.ts | Atelier/Chat controls/Web search labels; explicit pressed state | Same welcome, suggestions, layout and axe checks |
+| search-provider-settings.spec.ts | Settings nav Web search | Same real fake-provider key save/redaction/removal flows |
+| ui-regressions.spec.ts | Chat controls region/name | Same context/model/keyboard constraints |
+| web.spec.ts | Stable Web search button name | Same search/citation/SSE and 300 ms visibility assertions |
+
+The first affected run retained its failures: “Send” initially matched both the edit and composer buttons, and the tablet footer test still searched for removed provenance text. Selectors now use exact Send and the specified Manage models button; geometry and functional assertions are intact. No assertion was removed. New `refinement.spec.ts` adds name/PWA, defaults, theme metadata, offline Details, inline rename and production surface checks.
+
+`polish.spec.ts`: 4D explicitly makes the palette Close button touch-only. The full-in-viewport assertion remains on coarse pointers; fine pointers now assert no accessible Close button. The same keyboard command/closure/focus, accessibility, theme and action assertions remain. Shortcut hints are aria-hidden so action names remain stable.
+
+`ui-regressions.spec.ts` also renames the Settings section iteration and its region selector from Search to Web search. `transcription.spec.ts` uses the stable Web search button name, retaining aria-disabled=true and additionally verifying the original recording-protection explanation in its title and aria-pressed=false. All original follow-up/runtime/download assertions remain. The full attempt with stale labels is retained as `4d/e2e-labels-interrupted.txt` (134 passed, two stale-label failures, one interrupted, 165 not run).

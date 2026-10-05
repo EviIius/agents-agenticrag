@@ -8,6 +8,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 export type ChatAction = {
@@ -71,7 +72,9 @@ export function ChatMenu({
             Export {format === "md" ? "Markdown" : "JSON"}
           </DropdownMenuItem>
         ))}
+        <DropdownMenuSeparator />
         <DropdownMenuItem
+          variant="destructive"
           onSelect={() => {
             ui.set({ sidebar: false });
             setAction({ chat, kind: "delete" });

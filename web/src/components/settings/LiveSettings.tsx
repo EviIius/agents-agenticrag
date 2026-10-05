@@ -1,3 +1,5 @@
+import { failureCopy, failureDetail } from "@/lib/errors";
+import config from "../../../../shared/config.json";
 import { LegacyImportDialog } from "./LegacyImportDialog";
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -86,7 +88,7 @@ export function LiveSettingsPane({
       toast.success("Saved");
       return true;
     } catch (e) {
-      toast.error(String(e));
+      toast.error(failureCopy(e), { description: failureDetail(e) });
       return false;
     }
   };
@@ -289,7 +291,10 @@ export function LiveSettingsPane({
           </label>
         )}
         <label className="block space-y-2 text-sm">
-          <span>Utility model · search queries and titles</span>
+          <span>Helper model</span>
+          <p className="text-xs text-fg-3">
+            Plans web searches and writes chat titles.
+          </p>
           <Select
             value={
               bootstrap?.settings.utility_model
@@ -306,7 +311,7 @@ export function LiveSettingsPane({
               )
             }
           >
-            <SelectTrigger aria-label="Utility model">
+            <SelectTrigger aria-label="Helper model">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -765,14 +770,16 @@ export function LiveSettingsPane({
         <div>⌘/Ctrl , · Settings</div>
         <div>⌘/Ctrl Shift O · New chat</div>
         <div>⌘/Ctrl B · Toggle sidebar</div>
-        <div>⌘/Ctrl Shift . · Chat settings</div>
+        <div>⌘/Ctrl Shift . · Chat controls</div>
         <div>⌘/Ctrl / · Shortcuts</div>
       </dl>
     );
   if (pane === "About")
     return (
       <>
-        <p>Workbench {bootstrap?.version}</p>
+        <p>
+          {config.APP_NAME} {bootstrap?.version}
+        </p>
         <p className="text-sm break-all">Data folder: {bootstrap?.data_dir}</p>
         <ul className="space-y-2 text-sm text-fg-2">
           {bootstrap?.connections.map((connection) => (

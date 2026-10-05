@@ -29,6 +29,7 @@ import {
   DrawerHeader,
   DrawerClose,
 } from "@/components/ui/drawer";
+import { useUI } from "@/stores/ui";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 export type PickerState =
   "ready" | "loading" | "offline" | "empty" | "loading-model";
@@ -127,7 +128,11 @@ export function ModelPicker({
           Loading… {elapsed}s
         </span>
       )}
-      <span className="hidden text-xs text-fg-3 sm:block">Ollama</span>
+      <span className="hidden text-xs text-fg-3 sm:block">
+        {connections?.find(
+          (connection) => connection.id === current?.connection_id,
+        )?.name ?? ""}
+      </span>
       <ChevronDown className="size-3 shrink-0" />
     </Button>
   );
@@ -213,8 +218,9 @@ export function ModelPicker({
                         </div>
                         {onModelAction && (
                           <Button
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
+                            data-slot="model-action"
                             className="min-h-11 shrink-0 px-2"
                             disabled={busy !== null || !!loadingModel}
                             aria-label={`${model.loaded ? "Eject" : "Load"} ${model.display_name}`}
@@ -287,12 +293,18 @@ export function ModelPicker({
           )}
         </>
       </CommandList>
-      <p className="shrink-0 border-t border-line p-3 text-xs text-fg-2">
-        {`${models?.length ?? 0} models · capabilities reported by Ollama`}
-        <span className="mt-1 block">
-          Load selects the model for this chat.
-        </span>
-      </p>
+      <div className="shrink-0 border-t border-line p-2">
+        <Button
+          variant="ghost"
+          className="min-h-11 w-full justify-start"
+          onClick={() => {
+            setOpen(false);
+            useUI.getState().set({ settings: true, settingsPane: "Models" });
+          }}
+        >
+          Manage models…
+        </Button>
+      </div>
     </Command>
   );
   if (phone)

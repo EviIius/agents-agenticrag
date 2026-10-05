@@ -178,13 +178,13 @@ export function AppShell({ children }: { children?: ReactNode }) {
             <DrawerContent className="overflow-hidden">
               <DrawerHeader className="relative shrink-0 px-14">
                 <IconButton
-                  label="Close chat settings"
+                  label="Close chat controls"
                   className="absolute right-3 top-2"
                   onClick={() => ui.set({ panel: false })}
                 >
                   <X />
                 </IconButton>
-                <DrawerTitle>Chat settings</DrawerTitle>
+                <DrawerTitle>Chat controls</DrawerTitle>
                 <DrawerDescription>
                   Fake runtime · preview controls
                 </DrawerDescription>
@@ -198,7 +198,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
               className="overflow-y-auto p-0"
               showCloseButton={false}
             >
-              <SheetTitle className="sr-only">Chat settings</SheetTitle>
+              <SheetTitle className="sr-only">Chat controls</SheetTitle>
               <SheetDescription className="sr-only">
                 Fixture generation controls
               </SheetDescription>

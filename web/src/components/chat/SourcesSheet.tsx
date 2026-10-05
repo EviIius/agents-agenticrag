@@ -46,19 +46,17 @@ export function SourcesSheet({
         ))}
         <p className="text-xs text-fg-3">
           via {message.web?.providers?.join(", ") || "Unknown provider"}
+          {Object.entries(message.web?.timings ?? {})
+            .filter(([key]) =>
+              ["plan", "search", "fetch", "read"].includes(key),
+            )
+            .map(
+              ([key, ms]) =>
+                ` · ${key === "fetch" ? "read" : key} ${(ms / 1000).toFixed(1)} s`,
+            )
+            .join("")}
+          {message.web?.plan_fallback ? " · Planner fallback used" : ""}
         </p>
-        <p className="text-xs text-fg-3">Ranking: {message.web?.ranking}</p>
-        {message.web?.plan_fallback && (
-          <p className="text-xs text-fg-3">Planner fallback used</p>
-        )}
-        <dl className="grid grid-cols-2 gap-1 text-xs text-fg-3">
-          {Object.entries(message.web?.timings ?? {}).map(([k, v]) => (
-            <div key={k}>
-              <dt className="inline capitalize">{k}: </dt>
-              <dd className="inline">{(v / 1000).toFixed(2)}s</dd>
-            </div>
-          ))}
-        </dl>
       </div>
       {sources.map((s) => (
         <section key={s.n} className="rounded-lg border border-line p-3">
@@ -91,7 +89,7 @@ export function SourcesSheet({
               {s.passages.map((p) => (
                 <div key={p.ord} className="border-t border-line py-3">
                   <h4 className="text-xs font-medium">{p.heading}</h4>
-                  <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-xs leading-5 text-fg-2">
+                  <pre className="source-passage mt-2 whitespace-pre-wrap break-words text-[15px] leading-[23px] text-fg-2">
                     {p.text}
                   </pre>
                 </div>

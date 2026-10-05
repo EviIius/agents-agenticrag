@@ -93,7 +93,7 @@ export function CommandPalette({
             disabled: searchDisabled,
           },
           {
-            label: "Chat settings",
+            label: "Chat controls",
             icon: SlidersHorizontal,
             action: actions.chatSettings,
           },
@@ -126,24 +126,22 @@ export function CommandPalette({
         showCloseButton={false}
         className="flex flex-col gap-0 overflow-clip p-0"
       >
-        <header className="relative shrink-0 space-y-1 border-b border-line p-4 pr-16">
-          <DialogTitle>Command palette</DialogTitle>
-          <DialogDescription>
-            Search chats or choose an action
-          </DialogDescription>
-          <IconButton
-            label="Close command palette"
-            className="absolute right-3 top-3"
-            onClick={() => onOpenChange(false)}
-          >
-            <X />
-          </IconButton>
-        </header>
+        <DialogTitle className="sr-only">Command palette</DialogTitle>
+        <DialogDescription className="sr-only">
+          Search chats or run a command
+        </DialogDescription>
+        <IconButton
+          label="Close command palette"
+          className="palette-close absolute right-2 top-2 z-10"
+          onClick={() => onOpenChange(false)}
+        >
+          <X />
+        </IconButton>
         <Command shouldFilter={false} className="min-h-0">
           <CommandInput
             ref={inputRef}
             aria-label="Search chats and actions"
-            placeholder="Search chats and actions…"
+            placeholder="Search chats or run a command…"
             value={text}
             onValueChange={setText}
           />
@@ -160,6 +158,20 @@ export function CommandPalette({
                   >
                     <Icon />
                     <span>{label}</span>
+                    <kbd
+                      aria-hidden="true"
+                      className="ml-auto text-xs text-fg-3"
+                    >
+                      {
+                        {
+                          "New chat": "⌘⇧O",
+
+                          "Chat controls": "⌘⇧>",
+                          Settings: "⌘,",
+                          Shortcuts: "⌘/",
+                        }[label]
+                      }
+                    </kbd>
                   </CommandItem>
                 ))}
               </CommandGroup>

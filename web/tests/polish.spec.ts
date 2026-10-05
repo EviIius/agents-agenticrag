@@ -50,9 +50,12 @@ for (const width of [320, 390, 1440])
           dialog.getByRole("option", { name: /Synthetic palette chat/ }),
         ).toBeVisible();
         await input.fill("");
-        await expect(
-          dialog.getByRole("button", { name: "Close command palette" }),
-        ).toBeInViewport({ ratio: 1 });
+        const close = dialog.getByRole("button", {
+          name: "Close command palette",
+        });
+        if (await page.evaluate(() => matchMedia("(pointer: coarse)").matches))
+          await expect(close).toBeInViewport({ ratio: 1 });
+        else await expect(close).toHaveCount(0);
         await mkdir("../artifacts/phase-3", { recursive: true });
         await settle(page);
         await page.screenshot({

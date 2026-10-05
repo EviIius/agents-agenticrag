@@ -1,3 +1,4 @@
+import { failureCopy, failureDetail } from "@/lib/errors";
 import { useOverlaySession } from "@/hooks/useOverlaySession";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -145,13 +146,13 @@ export function AudioChip({
       attachTranscription(next);
       void query.invalidateQueries({ queryKey: ["transcript", item.id] });
     } catch (error) {
-      toast.error(String(error));
+      toast.error(failureCopy(error), { description: failureDetail(error) });
     }
   };
   const cancel = () => {
     if (!fixture)
       void api(`/attachments/${item.id}/cancel`, {}).catch((error) =>
-        toast.error(String(error)),
+        toast.error(failureCopy(error), { description: failureDetail(error) }),
       );
   };
   return (

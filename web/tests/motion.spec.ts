@@ -292,7 +292,7 @@ for (const width of [390, 1440])
       for (const [button, title] of [
         ["Motion rename", "Rename chat"],
         ["Motion delete", "Delete chat?"],
-        ["Motion export", "Export Markdown"],
+        ["Motion export", "Export chat"],
       ]) {
         await page.getByRole("button", { name: button, exact: true }).click();
         const surface = page.getByRole(

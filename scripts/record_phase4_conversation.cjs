@@ -83,7 +83,7 @@ const { chromium } = require(process.cwd() + "/web/node_modules/playwright");
     } else {
       if (name.startsWith("search"))
         await page
-          .getByRole("button", { name: "Search off", exact: true })
+          .getByRole("button", { name: "Web search", exact: true })
           .click();
       const prompt = name.startsWith("search")
         ? "Who lost the 2021 NBA Finals? Show a table."

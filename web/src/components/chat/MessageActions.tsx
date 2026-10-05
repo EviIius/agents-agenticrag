@@ -95,20 +95,46 @@ export function MessageActions({
               </IconButton>
             </PopoverTrigger>
             <PopoverContent className="max-h-[60dvh] overflow-y-auto">
-              <p className="font-medium break-all">
-                {message.model?.display_name}
-              </p>
-              <dl className="mt-3 space-y-2 text-xs">
-                {Object.entries(message.stats ?? {}).map(([key, value]) => (
-                  <div key={key}>
-                    <dt className="text-fg-3">{key.replaceAll("_", " ")}</dt>
-                    <dd className="break-all">
-                      {key === "params" && !Object.keys(value as object).length
-                        ? "Model defaults"
-                        : typeof value === "object"
-                          ? JSON.stringify(value)
-                          : String(value)}
-                    </dd>
+              <dl className="space-y-3 text-xs">
+                {[
+                  ["Model", message.model?.display_name ?? "Unknown"],
+                  [
+                    "Speed",
+                    message.stats
+                      ? `${message.stats.tokens_per_sec.toFixed(1)} tokens/s`
+                      : "Unavailable",
+                  ],
+                  [
+                    "Tokens",
+                    message.stats
+                      ? `${message.stats.tokens_estimated ? "≈" : ""}${message.stats.completion_tokens}`
+                      : "Unavailable",
+                  ],
+                  [
+                    "Time to first token",
+                    message.stats?.ttft_ms == null
+                      ? "Unavailable"
+                      : `${(message.stats.ttft_ms / 1000).toFixed(2)} s`,
+                  ],
+                  [
+                    "Context used",
+                    message.stats?.prompt_tokens == null
+                      ? "Unavailable"
+                      : `${message.stats.prompt_tokens} of ${message.stats.context_length} tokens`,
+                  ],
+                  [
+                    "Parameters sent",
+                    Object.entries(message.stats?.params ?? {})
+                      .map(([key, value]) => `${key}: ${String(value)}`)
+                      .join(" · ") || "Model defaults",
+                  ],
+                  ...(message.web?.ranking
+                    ? [["Ranking", message.web.ranking]]
+                    : []),
+                ].map(([label, value]) => (
+                  <div key={label}>
+                    <dt className="text-fg-3">{label}</dt>
+                    <dd className="break-words">{value}</dd>
                   </div>
                 ))}
               </dl>

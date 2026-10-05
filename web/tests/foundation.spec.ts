@@ -50,14 +50,14 @@ for (const theme of ["light", "dark"] as const) {
       await expect(
         page.getByRole("button", { name: "Choose model", exact: true }),
       ).toContainText("fake-vision");
-      await page.getByLabel("Chat settings", { exact: true }).click();
+      await page.getByLabel("Chat controls", { exact: true }).click();
       await expect(
         page
-          .getByRole("heading", { name: "Chat settings", exact: true })
+          .getByRole("heading", { name: "Chat controls", exact: true })
           .last(),
       ).toBeVisible();
       await noOverflow(page);
-      await page.getByLabel("Close chat settings").click();
+      await page.getByLabel("Close chat controls").click();
       await expect(page.getByLabel("Message fake-chat")).toBeVisible();
     });
   }

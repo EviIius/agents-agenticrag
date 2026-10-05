@@ -147,3 +147,9 @@ For a full rollback, stop the Workbench job, restore
 It points at the untouched old package under `~/.local/share/agenticrag`. Alternatively,
 check out the legacy branch in a separate checkout and follow its setup instructions.
 Legacy data is only read for import; the new database is independent.
+
+## Codex usage limits and app availability
+
+Atelier runs as the existing `dev.agenticrag.workbench` launchd service, independently of Codex. The local Ollama runtime handles chat; the installed transcription engine runs as a subprocess. A Codex weekly limit stops development assistance, not the installed app. Keep the Mac awake and connected to Tailscale to use it from your phone. Web search still depends on its configured provider.
+
+The verified Phase 4C fallback is commit `9b48ce8` on `codex/phase-4-motion`. To restore that build, use a separate checkout of that commit and run `scripts/deploy.sh --apply`; the script backs up the database and retains the service label, data paths and Tailscale configuration. Do not overwrite or reset a checkout containing unsaved work.

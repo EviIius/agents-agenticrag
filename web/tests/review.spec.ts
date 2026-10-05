@@ -54,15 +54,15 @@ for (const width of [390, 1440])
       ).not.toBeVisible();
       await shot("reasoning-chat");
       await page
-        .getByRole("button", { name: "Chat settings", exact: true })
+        .getByRole("button", { name: "Chat controls", exact: true })
         .click();
       await expect(
         page.getByRole("spinbutton", { name: "Context length" }),
       ).toBeVisible();
       await shot("chat-settings");
-      await page.getByRole("button", { name: "Close chat settings" }).click();
+      await page.getByRole("button", { name: "Close chat controls" }).click();
       await expect(
-        page.getByRole("dialog", { name: "Chat settings" }),
+        page.getByRole("dialog", { name: "Chat controls" }),
       ).not.toBeVisible();
       if (width < 640) {
         await page.getByRole("button", { name: "Open sidebar" }).click();
@@ -205,7 +205,7 @@ for (const width of [390, 1440])
       ).toEqual([]);
       await page.getByRole("button", { name: "Add all", exact: true }).click();
       await expect(
-        page.getByRole("heading", { name: "Welcome to Workbench" }),
+        page.getByRole("heading", { name: "Welcome to Atelier" }),
       ).not.toBeVisible();
       await page.getByRole("button", { name: "Explain", exact: true }).click();
       await expect(page.locator(".composer textarea")).toHaveValue("Explain ");
@@ -214,8 +214,8 @@ for (const width of [390, 1440])
         .getByRole("button", { name: "Search the web", exact: true })
         .click();
       await expect(
-        page.getByRole("button", { name: "Search on", exact: true }),
-      ).toBeVisible();
+        page.getByRole("button", { name: "Web search", exact: true }),
+      ).toHaveAttribute("aria-pressed", "true");
       await expect(page.locator(".composer textarea")).toHaveValue(
         "Search the web for ",
       );

@@ -19,7 +19,7 @@ export function errorCopy(
     interrupted: "Interrupted because the server restarted.",
     provider_error: `${name} returned an error: ${detail}`,
   };
-  return copy[code] ?? detail;
+  return copy[code] ?? "Something went wrong. Try again.";
 }
 export function messageError(
   message: Message,
@@ -42,4 +42,16 @@ export function messageError(
     connections.find((c) => c.id === message.model?.connection_id),
     message.stats?.context_length,
   );
+}
+
+export function failureCopy(error: unknown) {
+  return errorCopy(
+    error && typeof error === "object" && "code" in error
+      ? String(error.code)
+      : "unknown",
+    "",
+  );
+}
+export function failureDetail(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
 }

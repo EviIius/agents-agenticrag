@@ -152,14 +152,14 @@ test("keyboard walkthrough send stop regenerate branch model switch citation", a
   await expect(page).toHaveURL("http://127.0.0.1:5173/");
   await expect(page.getByRole("heading", { name: /Good / })).toBeVisible();
   await settle(page);
-  const toggle = page.getByRole("button", { name: "Search off", exact: true });
+  const toggle = page.getByRole("button", { name: "Web search", exact: true });
   await expect(toggle).toBeVisible();
   await toggle.focus();
   await expect(toggle).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(
-    page.getByRole("button", { name: "Search on", exact: true }),
-  ).toBeVisible();
+    page.getByRole("button", { name: "Web search", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
   await composer.focus();
   await composer.fill("Who lost the 2021 NBA Finals? Show a table.");
   await page.keyboard.press("Control+Enter");

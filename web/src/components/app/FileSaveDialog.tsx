@@ -1,3 +1,4 @@
+import config from "../../../../shared/config.json";
 import { useEffect, useState, useRef } from "react";
 import { Check, X } from "lucide-react";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -148,7 +149,9 @@ export function FileSaveDialog({
         rel="noopener noreferrer"
         onClick={(event) => {
           if (preview) event.preventDefault();
-          setNotice("Download opened separately. Workbench stays in this tab.");
+          setNotice(
+            `Download opened separately. ${config.APP_NAME} stays in this tab.`,
+          );
         }}
       >
         {canShare ? "Download separately" : downloadLabel}
@@ -241,7 +244,7 @@ export function FileSaveDialog({
               {canShare
                 ? "Choose Save to Files in the share sheet, or cancel to return here."
                 : phone
-                  ? "The download opens separately. Keep this Workbench tab open to return or choose another format."
+                  ? `The download opens separately. Keep this ${config.APP_NAME} tab open to return or choose another format.`
                   : "The download opens separately; this dialog stays available to change formats."}
             </p>
           )}

@@ -141,7 +141,7 @@ export function CitationPill({
               </span>
             </p>
             <p className="text-sm font-medium break-words">{s.title}</p>
-            <p className="text-xs leading-5 text-fg-2">
+            <p className="source-passage text-[14px] leading-[21px] text-fg-2">
               {bestPassage(s, sentence)}
             </p>
             {s.kind === "snippet" && (

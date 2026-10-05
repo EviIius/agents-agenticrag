@@ -40,7 +40,7 @@ export function TopBar() {
       </span>
       <div className="flex shrink-0 items-center">
         <IconButton
-          label="Chat settings"
+          label="Chat controls"
           onClick={() => set({ panel: !useUI.getState().panel })}
         >
           <SlidersHorizontal />

@@ -236,6 +236,7 @@ export function LiveThread({
             <MessageRow
               key={message.id}
               message={message}
+              lastAssistant={last?.id === message.id}
               all={all}
               position={message.status === "streaming" ? position : undefined}
               stage={message.status === "streaming" ? stage : undefined}
@@ -289,7 +290,7 @@ function OptimisticRow({ message }: { message: Message }) {
         className="min-w-0 py-4"
       >
         <h2 className="sr-only">You said</h2>
-        <div className="ml-auto w-fit max-w-full rounded-2xl border border-line bg-surface-2 px-4 py-3">
+        <div className="user-bubble ml-auto w-fit">
           <p className="whitespace-pre-wrap break-words">{message.content}</p>
           {message.attachments?.map((attachment) => (
             <p key={attachment.id} className="text-xs text-fg-2">
@@ -308,6 +309,7 @@ type MessageRowProps = Omit<
   "messages" | "scrollRef" | "onAboveBottomChange" | "sources" | "reads"
 > & {
   message: Message;
+  lastAssistant?: boolean;
   sources?: Source[];
   reads?: WebRead[];
   editing: string | null;
@@ -317,6 +319,7 @@ type MessageRowProps = Omit<
 };
 export const MessageRow = memo(function MessageRow({
   message,
+  lastAssistant = true,
   position,
   all,
   stage,
@@ -386,12 +389,12 @@ export const MessageRow = memo(function MessageRow({
                   if (await onEdit(message, draft)) setEditing(null);
                 }}
               >
-                Save & submit
+                Send
               </Button>
             </div>
           </div>
         ) : (
-          <div className="ml-auto w-fit max-w-full rounded-2xl border border-line bg-surface-2 px-4 py-3">
+          <div className="user-bubble ml-auto w-fit">
             <p className="whitespace-pre-wrap break-words">{message.content}</p>
             {(message.attachments ?? []).map((a) =>
               a.kind === "audio" ? (
@@ -451,7 +454,16 @@ export const MessageRow = memo(function MessageRow({
             />
           )}
           <Suspense
-            fallback={<p className="text-fg-2">Loading formatted answer…</p>}
+            fallback={
+              <div
+                role="status"
+                aria-label="Loading formatted answer"
+                className="space-y-3 py-3"
+              >
+                <div className="skeleton h-4 w-4/5" />
+                <div className="skeleton h-4 w-3/5" />
+              </div>
+            }
           >
             <Markdown
               text={message.content}
@@ -508,7 +520,7 @@ export const MessageRow = memo(function MessageRow({
                       Start new chat
                     </Button>
                     <Button variant="outline" onClick={onChatSettings}>
-                      Chat settings
+                      Chat controls
                     </Button>
                   </>
                 )}
@@ -530,22 +542,35 @@ export const MessageRow = memo(function MessageRow({
             </>
           )}
           {renderSources?.(message, sources ?? [], reads ?? [])}
-          {message.status !== "streaming" && <StatsLine message={message} />}
         </>
       )}
       {message.status !== "streaming" && (
-        <MessageActions
-          message={message}
-          models={models}
-          onRegenerateWith={(m) => onRegenerateWith?.(message, m)}
-          messages={all}
-          onEdit={() => {
-            setEditing(message.id);
-            setDraft(message.content);
-          }}
-          onRegenerate={() => onRegenerate(message)}
-          onBranch={onBranch}
-        />
+        <div
+          data-slot="message-footer"
+          data-role={message.role}
+          data-last={lastAssistant || undefined}
+          className="flex flex-wrap items-center justify-between gap-x-3"
+        >
+          <div data-slot="message-actions">
+            <MessageActions
+              message={message}
+              models={models}
+              onRegenerateWith={(m) => onRegenerateWith?.(message, m)}
+              messages={all}
+              onEdit={() => {
+                setEditing(message.id);
+                setDraft(message.content);
+              }}
+              onRegenerate={() => onRegenerate(message)}
+              onBranch={onBranch}
+            />
+          </div>
+          {message.role === "assistant" && (
+            <div data-slot="message-stats" className="min-w-0 text-right">
+              <StatsLine message={message} />
+            </div>
+          )}
+        </div>
       )}
     </article>
   );
