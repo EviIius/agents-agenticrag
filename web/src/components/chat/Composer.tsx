@@ -64,6 +64,7 @@ export function Composer({
   onThinkChange?: (value: string | null) => void;
 }) {
   const [value, setValue] = useState(starter);
+  const [attachmentMenuOpen, setAttachmentMenuOpen] = useState(false);
   const revision = useRef(0),
     mounted = useRef(true);
   useEffect(() => {
@@ -206,13 +207,25 @@ export function Composer({
           rows={2}
         />
         <div className="flex min-w-0 items-center gap-1">
-          <DropdownMenu>
+          <DropdownMenu
+            open={attachmentMenuOpen}
+            onOpenChange={setAttachmentMenuOpen}
+          >
             <DropdownMenuTrigger asChild>
               <IconButton label="Add attachment" type="button">
                 <Plus />
               </IconButton>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
+            <DropdownMenuContent
+              align="start"
+              onKeyDown={(event) => {
+                // Escape also works before Radix's document listener mounts.
+                if (event.key === "Escape") {
+                  event.preventDefault();
+                  setAttachmentMenuOpen(false);
+                }
+              }}
+            >
               <DropdownMenuItem
                 disabled={model?.vision !== true}
                 onSelect={() => {
