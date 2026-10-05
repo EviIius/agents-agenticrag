@@ -23,9 +23,9 @@ remove it. The empty-chat-only entrance was replaced with this app entrance.
 | Entrance on new and restored chats; neither reduced trigger animates | Automated pass | `phone-motion.spec.ts` |
 | Types, lint, unit tests and frozen contracts | Pass | `check.txt`: 212 Python, 36 web, 58 contrast pairs |
 | Production build | Pass | `build.txt` |
-| Fully green browser run | Running | `e2e.txt` |
-| Deploy and verify health/invariants | Pending | Deployment is conditional on the full run and unchanged source hashes |
-| Confirm the fix in iPhone Mirroring | Pending | To check after deployment |
+| Fully green browser run | Pass | `e2e.txt`: 321 passed, 3 existing skips, single complete run |
+| Deploy and verify health/invariants | Pass | `deployment.txt`, `deployment-invariants.json`; health 200, production design 404 |
+| Confirm the fix in iPhone Mirroring | Pass | Fresh launch: both System and Always dismiss and retain their selection |
 
 ## Changed files
 
@@ -55,7 +55,7 @@ insertion effect removes that ordering race without changing dependencies.
 run passed WebKit but a new Chromium assertion incorrectly expected the desktop
 picker to be a dialog. The regression now explicitly uses the phone viewport in
 both engines; all 14 targeted cases pass. No existing assertion was weakened.
-The full browser result remains pending above.
+The full browser run passed: 321 tests and three existing skips.
 
 ## Screenshots
 
@@ -77,18 +77,34 @@ and no replay on navigation. Tests reset the shared fake motion preference.
 
 No server, database migration, prompt, inference, search or transcription code
 changed. The API/row preservation/prompt/payload guards pass in `make check`.
-The full existing core/browser tests and performance gates are running against
+The full existing core/browser tests and performance gates passed against
 frozen source (`tested-source-hashes.json`). No migration means no new rollback
-rehearsal is required. Full checkpoint gate details retain the 4D report and will
-be supplemented by the completed run and physical verification here.
+rehearsal is required. Full checkpoint gate details retain the 4D report and are supplemented by the completed run and physical verification here.
 
 ## Known limitations carried forward
 
 VoiceOver remains user-reported failed and deferred. The earlier iPhone keyboard
 failure recovered after a restart; its cause remains unproven. No new claim is
-made about either limitation. Native motion feel still requires the phone check.
+made about either limitation. The natural 200 ms launch was not instrumented on the phone; browser tests cover
+its timing and readiness. Physical CSS timing was checked with a temporary trigger.
 
 ## Open questions for Jake
 
 None: Jake authorized fixing and confirming this on his mirrored iPhone, then
 starting Phase 5. Phase 5A is the next review stop.
+
+## Physical phone verification — 5 October 2026
+
+The first post-deploy check resumed the old running page. After fully closing
+and relaunching Atelier, tapping Follow system and Always both closed the selector
+and persisted the selected value. Safari Inspector then confirmed the deployed
+script `index-C5_O3LNm.js`, System motion and OS reduced motion off. A temporary
+entrance attribute produced an `app-in` animationend event of exactly 200 ms.
+This checks the real phone CSS engine with a synthetic trigger, not a measured
+natural launch. The attribute and listener were removed afterward. Restoring
+Always and reloading produced animation `none` and transition `0s`. No message
+text, recording name or transcript was read or recorded during inspection.
+Safari developer features were restored to their original off setting.
+
+Initial gzip JS is 229,667 bytes, +61 bytes versus 4D and below 256,000.
+Source commit: `ee65129`. Deployment performed its normal database backup first.
