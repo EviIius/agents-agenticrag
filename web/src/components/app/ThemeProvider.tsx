@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useInsertionEffect, useRef, type ReactNode } from "react";
 import { useUI } from "@/stores/ui";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { resolvedTheme } from "@/lib/theme";
@@ -41,7 +41,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     media.addEventListener("change", apply);
     return () => media.removeEventListener("change", apply);
   }, [theme, reduced]);
-  useEffect(() => {
+  // Apply motion CSS before Radix layout effects decide whether an exit is animated.
+  // A passive effect cancels that exit afterward, leaving Presence waiting forever.
+  useInsertionEffect(() => {
     Object.assign(document.documentElement.dataset, {
       answerFont,
       textSize,

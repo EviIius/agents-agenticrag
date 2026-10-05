@@ -36,8 +36,10 @@ import { Composer } from "@/components/chat/Composer";
 import { useUI } from "@/stores/ui";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { fixtureTitles } from "@/design/fixtures";
+import { useAppEntrance } from "@/hooks/useAppEntrance";
 export function AppShell({ children }: { children?: ReactNode }) {
   const ui = useUI();
+  const entering = useAppEntrance(true);
   const phone = useMediaQuery("(max-width: 639px)");
   const wide = useMediaQuery("(min-width: 1280px)");
   const location = useLocation();
@@ -84,7 +86,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
   );
   const panel = <ChatSettingsPanel drawer={phone && !wide} />;
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-app-entry={entering || undefined}>
       <aside className="sidebar-desktop" data-collapsed={ui.collapsed}>
         <Sidebar collapsed={ui.collapsed} />
       </aside>

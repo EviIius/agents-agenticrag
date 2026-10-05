@@ -48,6 +48,7 @@ import { detachTranscription, attachRun } from "@/lib/sse";
 import { latestLeaf, visiblePath } from "@/lib/tree";
 import { useTranscripts } from "@/stores/transcripts";
 import { usePreferenceSync } from "@/hooks/usePreferenceSync";
+import { useAppEntrance } from "@/hooks/useAppEntrance";
 export function LiveAppShell() {
   const ui = useUI(),
     navigate = useNavigate(),
@@ -108,6 +109,11 @@ export function LiveAppShell() {
     queryFn: () => api<Detail>("/chats/" + chatId),
     enabled: !!chatId,
   });
+  const entering = useAppEntrance(
+    !!bootstrap.data &&
+      (!bootstrap.data.connections.length || models.isSuccess) &&
+      (!chatId || detail.isSuccess),
+  );
   const history = useInfiniteQuery({
     queryKey: ["chats", debounced],
     initialPageParam: "",
@@ -443,7 +449,7 @@ export function LiveAppShell() {
     return rows;
   }, [detail.data?.messages, runId, chatId]);
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-app-entry={entering || undefined}>
       <aside className="sidebar-desktop" data-collapsed={ui.collapsed}>
         <Sidebar collapsed={ui.collapsed} history={list} />
       </aside>

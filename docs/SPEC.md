@@ -82,6 +82,13 @@ Preserve the launchd identity and Tailscale route; retain verification/report ev
 
 **User authorization — 4 October 2026 (Phase 4):** Proceed with `docs/next/PHASE-4-POLISH-AND-MOTION.md` as corrected after review, and its QA requirements. Stop for review after 4B and 4D. Atelier, Chat controls and Web search are display changes at 4D; internal identifiers and numbered citations remain. C1 send timing/draft rollback is an explicit tested behavior change. Later phases retain their separate approval gates.
 
+**User authorization — 4 October 2026 (Phase 5):** Fix and confirm Reduce motion
+› Always and the missing app entrance on the mirrored iPhone, then proceed with
+`docs/next/PHASE-5-EVERYDAY-CHAT.md`. Presets, documents, folders and automatic
+backups are authorized, with review stops after 5A, 5B and 5C. No new packages or
+model calls; document privacy follows recording privacy. Optional forking and
+later phases retain their separate gates.
+
 1. Save it in the repo as `docs/SPEC.md`.
 2. Paste the prompt in §0 into Codex.
 3. After each phase, review the report (checklist, screenshots, test output) before you reply "continue".

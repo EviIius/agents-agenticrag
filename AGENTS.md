@@ -45,4 +45,12 @@ Completed transcript outputs are kept even when unsent; seven-day housekeeping r
 
 **User authorization — 4 October 2026 (Phase 4):** Proceed with the reviewed roadmap corrections and Phase 4, stopping after 4B and 4D for review. Use Atelier, Chat controls and Web search as display labels at 4D; retain internal Workbench identifiers and compact numbered citations. CSS motion only, no new dependencies or model calls. Small motion is at most 200 ms; large surfaces at most 320 ms. Motion lives in `web/src/styles/motion.css`, checked by `scripts/check_motion.py`. C1's send timing and draft rollback are an explicit behavior change requiring rejection, chat-switch and new-draft tests. Future phases, `sqlite-vec`, embedding model installation and a second runtime are not authorized by this amendment.
 
+**User authorization — 4 October 2026 (Phase 5):** Fix and verify the reported
+Reduce motion › Always failure and missing app entrance using iPhone Mirroring,
+then build `docs/next/PHASE-5-EVERYDAY-CHAT.md`. Presets, folders, document
+attachments and automatic backups are in scope; this lifts the earlier non-goal
+on folders. Stop for review after 5A, 5B and 5C. Document text and filenames follow
+the recording privacy rule. No new packages or model calls. Later phases and
+optional chat forking remain separately gated.
+
 **User authorization — 4 October 2026 (4B review and 4C):** Jake asked Codex to verify the live Workbench and iPhone Mirroring, fix Markdown/JSON chat exports to use the cancellable format-selection/save/share flow already provided for recording outputs, then continue to 4C. Preparing a file may fetch the existing export endpoint; cancellation never starts a download or opens the native share sheet. Keep the chat export dialog available after save/share/download. Physical review observations by Codex must be labeled as such, not attributed to Jake. The 4D review stop remains in force.

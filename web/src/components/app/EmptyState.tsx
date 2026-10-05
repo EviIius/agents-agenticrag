@@ -1,6 +1,5 @@
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useUI } from "@/stores/ui";
-let hasEntered = false;
 export function EmptyState({
   ui,
   composer,
@@ -8,16 +7,8 @@ export function EmptyState({
   ui: ReturnType<typeof useUI.getState>;
   composer: ReactNode;
 }) {
-  const [fresh, setFresh] = useState(!hasEntered);
-  useEffect(() => {
-    hasEntered = true;
-    const timer = setTimeout(() => {
-      setFresh(false);
-    }, 400);
-    return () => clearTimeout(timer);
-  }, []);
   return (
-    <section className="empty-chat" data-empty-fresh={fresh || undefined}>
+    <section className="empty-chat">
       <h1 className="greeting">
         {new Date().getHours() < 12
           ? "Good morning"
