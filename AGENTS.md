@@ -142,3 +142,10 @@ case regressions, lexical support 0.8823817 vs 0.8852879, median TTFT 4.467 vs
 thresholds; this is a specific accepted variance, not a general G9 exemption.
 Finish the full regression gates before 7B deployment, then stop for review.
 Research remains unauthorized.
+
+**User acceptance — 6 October 2026 (7B):** Jake reported “The citation is correct
+and information too.” Record Library answer/citation verification on his iPhone
+and close the 7B review stop without inventing other phone checklist results.
+Defer the recording attachment dropdown layout issue for later, as requested;
+track it in `docs/DEFERRED-FIXES.md`. Keep private filenames/text and the supplied
+phone screenshots out of repo evidence. Research remains unauthorized.

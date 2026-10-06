@@ -1,4 +1,4 @@
-# Phase 7 report — checkpoint 7B, deployed for review
+# Phase 7 report — checkpoint 7B, accepted
 
 ## Summary
 
@@ -8,7 +8,9 @@ specific web-replay score/timing variance; all 25 web cases pass with no case
 regressions. Static/unit/frontend checks and the build pass. The complete browser
 suite passes in one invocation: 431 passed, three existing skips (37.5 minutes),
 against frozen source `e6e5272`. The candidate is deployed and both health routes
-return 200. Physical 7B phone review remains outstanding. All earlier failed evals remain available.
+return 200. Jake confirmed the Library answer information and citation on his
+iPhone: “The citation is correct and information too.” The recording attachment
+menu layout is deferred at his request. All earlier failed evals remain available.
 
 ## Done-when checklist
 
@@ -23,7 +25,7 @@ return 200. Physical 7B phone review remains outstanding. All earlier failed eva
 | P7-AC13 web unchanged | Pass with accepted variance | Real offline replay 25/25, no flips; unchanged web browser tests pass in full run |
 | P7-AC14 follow-up retrieval | Pass in baseline | All five expected file/page lookups retrieved; no query-rewriting call proposed |
 | P7-AC15 privacy | Scanner and synthetic image review pass | All uploads/eval data invented; no production Library read |
-| P7-AC16 full QA gates | Technical gates pass; phone review open | Table below |
+| P7-AC16 full QA gates | Technical gates pass; Library phone check confirmed | Table below |
 
 ## Changed files
 
@@ -283,7 +285,7 @@ rehearsal is retained. No merge to main or remote push is part of this checkpoin
 | G-13 reduced motion | Pass: static guard plus both full-suite reduced-motion triggers |
 | G-14 design states | Ten production-component states, 80 state captures |
 | G-15 rollback | Not applicable: no 7B migration; accepted 7A rehearsal retained |
-| G-16 phone review | Not checked for 7B; no Jake results invented |
+| G-16 phone review | Jake: “The citation is correct and information too.” Library information/citation confirmed; other checklist items not individually repeated |
 
 ## Core unchanged
 
@@ -325,19 +327,21 @@ VoiceOver remains a reported failure, deferred by Jake. The iOS keyboard issue
 recovered after restart; its cause remains unproven. The sidebar/other motion
 regression is still deferred at Jake's request. The earlier intermittent WebKit
 copy test remains recorded in 7A. Library backup originals still require a separate
-private Library-folder backup. No private document was used to verify retrieval.
+private Library-folder backup. Automated retrieval evidence uses only synthetic
+files. Jake separately confirmed his own Library answer/citation; no private file
+text or filename from his screenshots is retained in repo evidence. The iPhone
+recording attachment dropdown clips its upper item and reaches the bottom home
+indicator; deferred for later per Jake. See `docs/DEFERRED-FIXES.md`.
 
-## Open questions for Jake
+## Review outcome
 
 Jake approved both recommendations on 6 October: “Approve the recommendations”.
-Continue generic table citation refinements with before/after evidence and the
-unchanged 100% gate; accept the specific web variance while preserving all release
-thresholds and reports. Technical verification and deployment are complete.
-Stop for 7B phone review: reopen Atelier, enable the Book/Library control, ask a
-question about an indexed file and open a citation. Only pass/fail feedback is
-needed; no private file text is requested. The standard QA phone checklist also
-remains available; no unperformed result is inferred. Optional second runtime and Research remain
-unauthorized.
+Technical verification and deployment are complete. He then confirmed the phone
+Library review: “The citation is correct and information too.” This closes the
+7B review stop for Library answers and citations without inventing results for
+other phone checklist items. He requested that the recording attachment dropdown
+be put on the list to fix later; no UI change is included in this closeout.
+Optional second runtime and Research remain unauthorized.
 
 ---
 
