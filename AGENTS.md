@@ -108,3 +108,10 @@ The full check/browser suites and actual installed/development probes passed.
 Stop for 7-0 review before 7A. J7 eval targets remain unapproved until a later
 explicit decision before 7B. Record the initial launchd activation failure and
 successful recovery without claiming its cause was proven.
+
+**User acceptance and authorization — 5 October 2026 (7-0 and 7A):** Jake said
+“Not sure how to verify it, so I guess continue on”. Accept the technical 7-0
+probe without inventing physical phone checks. Proceed to Phase 7A Library
+storage, ingestion and Settings UI, stopping for review after 7A. Retrieval,
+composer integration and the new answer prompt remain 7B work; J7 eval targets
+still need approval before 7B. Ollama only; Research remains unauthorized.

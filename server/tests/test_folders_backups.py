@@ -130,7 +130,7 @@ async def test_phase5b_migration_preserves_every_existing_column(tmp_path: Path)
         await migrate(db)
     assert snapshot(dbpath, columns)[1] == before
     with sqlite3.connect(dbpath) as db:
-        assert db.execute("PRAGMA user_version").fetchone()[0] == 7
+        assert db.execute("PRAGMA user_version").fetchone()[0] == 8
         assert all(r[0] is None for r in db.execute("SELECT folder_id FROM chats"))
         assert db.execute("SELECT COUNT(*) FROM folders").fetchone()[0] == 0
 

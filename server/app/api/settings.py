@@ -25,6 +25,7 @@ async def bootstrap(request: Request) -> Bootstrap:
         settings=await settings.get(request.app.state.store, True),
         connections=await listing(request),
         features={
+            "library": bool(request.app.state.library.available and values["library.embedding"]),
             "web_search": any(service.configured(p) for p in values["web.provider_order"]),
             "transcription": (await request.app.state.transcription.engine.status()).ready,
         },
@@ -39,7 +40,10 @@ async def get(request: Request) -> dict[str, Any]:
 @router.patch("/settings")
 async def patch(body: dict[str, Any], request: Request) -> dict[str, Any]:
     try:
-        await settings.patch(request.app.state.store, body)
+        if any(k.startswith("library.") for k in body):
+            await request.app.state.library.preferences(body)
+        else:
+            await settings.patch(request.app.state.store, body)
     except (ValueError, TypeError) as exc:
         raise AppError("validation_error", str(exc), 422) from exc
     return await get(request)

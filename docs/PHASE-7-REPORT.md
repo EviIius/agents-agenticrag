@@ -196,8 +196,9 @@ Library UI. No live iPhone screenshot or physical review was performed here.
 
 ## Open questions for Jake
 
-Review checkpoint 7-0 and confirm continuation to **7A: Library storage, ingestion
-and Settings UI**. Library UI/retrieval has not started. No embedding-model pull
+Jake accepted the technical checkpoint and authorized 7A on 5 October 2026:
+“Not sure how to verify it, so I guess continue on”. No physical phone result is
+inferred from this acceptance. No embedding-model pull
 is needed. Eval targets J7 still require approval before 7B, and Research remains
 gated. VoiceOver, the earlier unexplained iOS keyboard incident and the reported
 sidebar/other physical motion issue retain their prior unresolved/deferred status.

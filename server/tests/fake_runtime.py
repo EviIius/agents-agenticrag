@@ -1,6 +1,7 @@
 """Scripted test runtime. All model IDs and responses explicitly identify the fake."""
 
 import asyncio
+import hashlib
 import json
 import re
 import time
@@ -10,7 +11,7 @@ from typing import Any
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
-MODELS = ["fake-chat", "fake-reasoning", "fake-vision"]
+MODELS = ["fake-chat", "fake-reasoning", "fake-vision", "fake-embedding", "fake-embedding-alt"]
 MARKDOWN = (
     "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n"
     "```python\nprint('Hello')\n```\n\n"
@@ -46,11 +47,30 @@ def create_fake_runtime() -> FastAPI:
         model = body.get("model", "fake-chat")
         context = 32768 if model == "fake-vision" else 16384
         return {
-            "capabilities": ["completion"]
+            "capabilities": (
+                ["embedding"]
+                if model in ("fake-embedding", "fake-embedding-alt")
+                else ["completion"]
+            )
             + (["thinking"] if model == "fake-reasoning" else [])
             + (["vision"] if model == "fake-vision" else []),
             "model_info": {"general.architecture": "fake", "fake.context_length": context},
             "parameters": f"num_ctx {context}",
+        }
+
+    @app.post("/api/embed", response_model=None)
+    async def embed(request: Request) -> dict[str, Any] | JSONResponse:
+        body = await request.json()
+        app.state.captures.append(body)
+        await asyncio.sleep(0.025)
+        if body.get("model") not in ("fake-embedding", "fake-embedding-alt"):
+            return JSONResponse({"error": "Fake embedding model unavailable"}, status_code=404)
+        dimension = 16 if body["model"] == "fake-embedding-alt" else 8
+        return {
+            "embeddings": [
+                [float(v + 1) / 256 for v in hashlib.sha256(text.encode()).digest()[:dimension]]
+                for text in body["input"]
+            ]
         }
 
     @app.get("/api/ps")

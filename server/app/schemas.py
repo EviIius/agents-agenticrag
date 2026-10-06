@@ -660,3 +660,66 @@ class LegacyStatus(BaseModel):
 class LegacyImport(BaseModel):
     imported: int
     skipped: int
+
+
+class LibraryEmbedding(Input):
+    connection_id: str
+    model_id: str
+
+
+class LibrarySelection(Input):
+    embedding: LibraryEmbedding | None = None
+
+
+class LibraryCollection(Input):
+    name: str = Field(min_length=1, max_length=120)
+
+
+class LibraryMove(Input):
+    collection_id: str | None = None
+
+
+class LibraryDelete(Input):
+    confirmation: str
+
+
+class LibraryDocument(BaseModel):
+    id: str
+    collection_id: str | None = None
+    filename: str
+    mime_type: str
+    bytes: int
+    status: Literal["queued", "extracting", "embedding", "ready", "failed", "stale"]
+    error: dict[str, str] | None = None
+    pages: int | None = None
+    chunk_count: int = 0
+    token_estimate: int | None = None
+    embedding_model: str | None = None
+    progress_done: int = 0
+    progress_total: int = 0
+    created_at: str
+    updated_at: str
+
+
+class LibraryCollectionInfo(BaseModel):
+    id: str
+    name: str
+    created_at: str
+    updated_at: str
+
+
+class LibraryIndex(BaseModel):
+    available: bool
+    embedding: dict[str, Any] | None = None
+    requires_local: bool
+    query_prefix: str
+    document_prefix: str
+    counts: dict[str, int]
+    bytes: int
+    documents: list[LibraryDocument]
+    collections: list[LibraryCollectionInfo]
+    event_id: int
+
+
+class LibraryText(BaseModel):
+    text: str

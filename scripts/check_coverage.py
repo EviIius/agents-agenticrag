@@ -9,7 +9,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "server"))
-TARGETS = [ROOT / 'server/app' / name for name in ('providers', 'runs', 'search', 'transcribe', 'documents')]
+TARGETS = [ROOT / 'server/app' / name for name in ('providers', 'runs', 'search', 'transcribe', 'documents', 'library')]
 TARGETS.append(ROOT / 'server/app/backup.py')
 hits: dict[str, set[int]] = {}
 

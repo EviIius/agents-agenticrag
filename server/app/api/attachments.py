@@ -68,7 +68,7 @@ class UploadSpaceGuard:
         if (
             scope["type"] == "http"
             and scope["method"] == "POST"
-            and scope["path"] == "/api/attachments"
+            and scope["path"] in ("/api/attachments", "/api/library/documents")
         ):
             headers = dict(scope["headers"])
             try:
@@ -78,7 +78,11 @@ class UploadSpaceGuard:
             self.data_dir.mkdir(parents=True, exist_ok=True)
             if length and shutil.disk_usage(self.data_dir).free < length + 5 * 1024**3:
                 await error_response(
-                    "disk_full", "There isn't enough free space on the Mac for this recording.", 507
+                    "disk_full",
+                    "There isn't enough free space on the Mac for this file."
+                    if scope["path"] == "/api/library/documents"
+                    else "There isn't enough free space on the Mac for this recording.",
+                    507,
                 )(scope, receive, send)
                 return
         await self.app(scope, receive, send)

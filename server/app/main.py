@@ -14,6 +14,7 @@ from .api import (
     chats,
     connections,
     folders,
+    library,
     messages,
     models,
     presets,
@@ -28,6 +29,7 @@ from .config import APP_NAME, VERSION, Settings
 from .db.core import Store, connect
 from .documents.service import Extractor
 from .errors import AppError, register_handlers
+from .library.ingest import Library
 from .providers.registry import Registry
 from .runs.manager import RunManager
 from .search.pipeline import Pipeline
@@ -58,6 +60,8 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
                 app.state.store, config.transcribe_home, config.data_dir
             )
             app.state.cleanup = Cleanups(app.state.transcription, app.state.runs)
+            app.state.library = Library(app.state.store, app.state.runs, config.data_dir)
+            await app.state.library.start()
             await app.state.runs.recover()
             await app.state.transcription.recover()
             app.state.backups = Backups(app.state.store, config.data_dir.expanduser().resolve())
@@ -65,6 +69,7 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
             try:
                 yield
             finally:
+                await app.state.library.close()
                 await app.state.backups.close()
                 await app.state.documents.close()
                 await app.state.transcription.close()
@@ -94,6 +99,7 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
     for router in (
         attachments.router,
         folders.router,
+        library.router,
         backup.router,
         transcription.router,
         chats.router,

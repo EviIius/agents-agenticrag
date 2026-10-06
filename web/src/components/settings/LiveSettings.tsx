@@ -40,6 +40,7 @@ import { OllamaSearchKey } from "./OllamaSearchKey";
 import { Textarea } from "@/components/ui/textarea";
 import { api, type Bootstrap, type Model } from "@/lib/api";
 import type { components } from "@/lib/api-types";
+const LibraryPane = lazy(() => import("./LibraryPane"));
 const PresetsPane = lazy(() => import("./PresetsPane"));
 export function LiveSettingsPane({
   pane,
@@ -76,7 +77,7 @@ export function LiveSettingsPane({
   const all = useQuery({
     queryKey: ["models", ...queryScope, "all"],
     queryFn: () => request<Model[]>("/models?include_hidden=true"),
-    enabled: pane === "Models" || pane === "Search",
+    enabled: pane === "Models" || pane === "Search" || pane === "Library",
   });
   const status = useQuery({
     queryKey: ["search-status", ...queryScope],
@@ -95,6 +96,16 @@ export function LiveSettingsPane({
       return false;
     }
   };
+  if (pane === "Library")
+    return (
+      <Suspense fallback={<p role="status">Loading Library…</p>}>
+        <LibraryPane
+          request={request}
+          queryScope={queryScope}
+          models={all.data ?? models}
+        />
+      </Suspense>
+    );
   if (pane === "Presets")
     return (
       <Suspense fallback={<p role="status">Loading presets…</p>}>

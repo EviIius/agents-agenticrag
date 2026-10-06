@@ -50,10 +50,16 @@ export function SettingsDialog({
     ? [
         ...basePanes.slice(0, 3),
         "Search",
+        "Library",
         "Transcription",
         ...basePanes.slice(3),
       ]
-    : [...basePanes.slice(0, 3), "Transcription", ...basePanes.slice(3)];
+    : [
+        ...basePanes.slice(0, 3),
+        "Library",
+        "Transcription",
+        ...basePanes.slice(3),
+      ];
   const ui = useUI();
   const pane = ui.settingsPane;
   const navigation = useRef<HTMLElement>(null);
