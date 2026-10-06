@@ -1,17 +1,14 @@
-# Phase 7 report — checkpoint 7B, incomplete
+# Phase 7 report — checkpoint 7B, deployed for review
 
 ## Summary
 
-Jake approved the generic Library prompt refinement on 6 October with “Go ahead
-and”. Version 2 passed its first full real-model eval, but a complete repeat on
-the deletion-race-corrected source missed one table-row citation (27/28, 96.4%).
-The 100% gate is retained and 7B remains open under QA §9. Web replay passes all
-25 cases with no pass-to-fail flips, but lexical support and latency differ from
-the recorded baseline; Jake accepted this specific G9 variance on 6 October: “Approve the recommendations”.
-Version 3 adds the approved generic Citation-column instruction; its eval and
-complete browser regression gates remain pending.
-The installed application remains healthy at accepted 7A. No 7B deployment,
-merge or completion is claimed. All current unit/static/frontend checks pass.
+Version 3 passes every approved J7 target on the unchanged synthetic corpus,
+including 100% supporting citations for graded final answers. Jake approved the
+specific web-replay score/timing variance; all 25 web cases pass with no case
+regressions. Static/unit/frontend checks and the build pass. The complete browser
+suite passes in one invocation: 431 passed, three existing skips (37.5 minutes),
+against frozen source `e6e5272`. The candidate is deployed and both health routes
+return 200. Physical 7B phone review remains outstanding. All earlier failed evals remain available.
 
 ## Done-when checklist
 
@@ -21,12 +18,12 @@ merge or completion is claimed. All current unit/static/frontend checks pass.
 | P7-AC8 Library never runs web | Pass unit | Sentinel hook, including forced regenerate |
 | P7-AC9 local privacy | Pass unit | Remote send/regenerate rejected before message insertion or runtime input |
 | P7-AC10 one answer call | Pass unit | Captured request, no tools or extra sampling parameters |
-| P7-AC11 cards/pages/history | Pass focused browser | Both engines, widths, themes; exact matching passage page; removed-original explanation |
+| P7-AC11 cards/pages/history | Pass full browser | Both engines, widths, themes; exact matching passage page; removed-original explanation |
 | P7-AC12 J7 eval | Pass v3 | Latest full run `123025`: all seven J7 targets pass |
-| P7-AC13 web unchanged | Variance accepted; full browser suite pending | Real offline replay 25/25, no flips; complete browser suite outstanding |
+| P7-AC13 web unchanged | Pass with accepted variance | Real offline replay 25/25, no flips; unchanged web browser tests pass in full run |
 | P7-AC14 follow-up retrieval | Pass in baseline | All five expected file/page lookups retrieved; no query-rewriting call proposed |
 | P7-AC15 privacy | Scanner and synthetic image review pass | All uploads/eval data invented; no production Library read |
-| P7-AC16 full QA gates | Incomplete | Table below |
+| P7-AC16 full QA gates | Technical gates pass; phone review open | Table below |
 
 ## Changed files
 
@@ -38,10 +35,11 @@ merge or completion is claimed. All current unit/static/frontend checks pass.
   generated API types and additive design fixture fields.
 - Evals: twelve invented documents, 34 cases, generation manifest/script, isolated
   production-path full/retrieval harness and unchanged-answer regrade tool.
-- Tests/docs: 19 server cases and 12 browser cases added; authorization in
+- Tests/docs: 19 server cases and 14 browser cases added; authorization in
   `AGENTS.md`; this report, proposal and test ledger under `artifacts/phase-7/7b`.
 
-Work is currently uncommitted. Accepted fallback remains `aeb653d` (7A evidence)
+Source is saved at `2b82b1d`, with fixture isolation at `43e793a` and accurate previews at `b12b7f7` and touch targets at `84a7b82` and short-viewport geometry at `e6e5272`; final source hashes and checkpoint evidence are retained.
+Accepted fallback remains `aeb653d` (7A evidence)
 with source checkpoint `5f43800`. No new dependency, model installation, migration,
 web/planner prompt change or additional chat-call type is introduced.
 
@@ -171,27 +169,40 @@ unchanged from accepted 7A; the Library branch is conditional in the run path.
 
 Version-one Library prompt SHA-256:
 `34d32c6b61f79fbce81410c05e22a831dd22ae19e5062741cb1bac5bd0c7f591`.
-It remains anchored to the original plan and retained baseline. The active
+It remains anchored to the original plan and retained baseline. The retained
 version-two hash is `0c62d5f79b809ed85e0e2e51a1dba1f94bf7e85866d8a3bb775efa997c673a0e`,
-frozen in `test_prompt_hashes.py`; the approved refinement is checked against
+superseded by the version-three hash above in `test_prompt_hashes.py`; the approved refinements are checked against
 the original plan in `test_library_answers.py`. Existing prompt hashes are
 unchanged. Both successful and failed before/after evals remain linked here.
 
 ## Test output and budgets
 
-`7b/check-final-attempt2.txt`: **298 Python and 36 frontend tests pass**, 74 contrast
+`7b/check-tablet.txt`: **298 Python and 36 frontend tests pass**, 74 contrast
 pairs, types, lint, formatting, coverage, additive API guard, motion/privacy and
 existing frozen prompt/payload/row guards. Coverage: providers 86.5%, runs 89.4%,
-search 88.9%, transcription 93.1%, documents 96.6%, Library 92.6% (762/823; `7b/coverage-final.json`), backups 96.8%.
+search 88.9%, transcription 93.1%, documents 96.6%, Library 92.6% (762/823; `7b/coverage-tablet.json`), backups 96.8%.
 
 `7b/e2e-focused-attempt5.txt`: **12 passed**, both engines, 1.5 minutes. It asserts
 actual light/dark theme values, checks ten design states with axe at 390/1440,
 tests scope keyboard dismissal, citations, original removal, controls and notices.
-This is a focused invocation: the complete core suite is still outstanding.
+This focused invocation is retained as development evidence; the later complete
+run below supplies the release gate.
 The first complete invocation was interrupted after 44 passes to fix the deletion
 race. A second was stopped after three passes to correct the new test import type
 error. Neither is a regression gate pass; both logs are retained separately.
-No full browser invocation is running while the new citation gate awaits approval.
+A later run exposed two light-theme fixture failures after an earlier test saved
+dark appearance. It was stopped at 86 passes, two failures and one interruption
+(11.1 minutes). The new fixture explicitly sets server-backed appearance; no
+assertion, timeout or product behavior changed. Its failure log is preserved in
+`e2e-theme-isolation-failure.txt`, and the new complete invocation runs against
+frozen checkpoint `e6e5272`.
+The preceding run was interrupted at 183 passes (18 minutes) for a preview
+accuracy correction: fallback/searching states no longer reuse ready citations,
+uncited states omit inline citations, and prerequisite states show disabled
+controls. New assertions verify these distinctions. No production behavior or
+existing core assertion changed; `e2e-interrupted-for-preview-fixtures.txt`
+retains the partial run, and `e2e-preview-focused.txt` passes all 12 cases in
+both engines (1.6 minutes).
 
 Development attempts exposed missing-control visibility, a mismatched fake
 answer, tooltip expectations on coarse pointers, a wrong test theme storage key,
@@ -199,39 +210,105 @@ an API-union compatibility issue and typing errors in the new eval. Corrected
 logs are retained, no existing assertion was weakened, and no new skip was added.
 `7b/test-diff-ledger.md` records all edits.
 
-Build passes. Initial JS is **239,797 bytes gzip**, +2,035 from 7A's 237,762,
-below both the 8 KiB growth allowance and 256,000-byte ceiling (`7b/bundle.json`).
-New streaming/scroll/first-token overhead measurements await the full suite.
+Build passes. Initial JS is **239,819 bytes gzip**, +2,057 from 7A's 237,762,
+below both the 8 KiB growth allowance and 256,000-byte ceiling (`7b/bundle-final.json`).
+Touch review then corrected both new Library targets to 44×44 pixels and
+allowed the toolbar to wrap at 320 pixels with a reasoning model. The prior run
+was interrupted at 133 passes (15.4 minutes), retained in
+`e2e-interrupted-for-touch-targets.txt`. `e2e-touch-focused.txt` passes all
+28 Library/mobile cases across both engines (2.2 minutes), including target
+dimensions, viewport bounds, no horizontal overflow and existing keyboard/panel
+checks. No existing assertion or timeout was weakened. Final streaming/scroll/first-token measurements are listed below.
+An existing tablet picker viewport assertion then failed at a measured 0.99814
+intersection. One spacing unit below the computed maximum fixes the observed
+clipping; the cause of the rounding remains unproven. The existing test is
+unchanged. `e2e-tablet-viewport-failure.txt` retains the interrupted run, and
+`e2e-tablet-focused.txt` passes all 30 model/mobile checks in both engines
+(1.5 minutes). The final full run uses frozen source `e6e5272` and passes the unchanged
+tablet test in both engines.
 Historical artifacts overwritten by these incomplete invocations were archived
 as metadata/logs under `7b/regenerated-metrics/` and synthetic images in a private
 temporary folder, then restored to accepted evidence; `archive.json`
 records their hashes. The installed service was restored after each browser invocation; local and
 Tailscale health both returned 200 (`7b/service-restored.json`).
 
+### Complete frozen release run
+
+`7b/e2e.txt`: **431 passed, 3 documented existing skips, 37.5 minutes**, one
+`make e2e` invocation with Chromium and WebKit. No source changed during it:
+all 389 source hashes match `frozen-source.json`. All 104 reviewed screenshot
+hashes match `image-review/reviewed-final.json`. No new skips or relaxed assertions.
+The previous failures were corrected and remain recorded above.
+
+| Measure | Chromium | WebKit | Gate |
+|---|---:|---:|---|
+| Streaming row render p95 at 100 tokens/s | 2.9 ms | 3.0 ms | ≤8 ms |
+| Rows rendered during streaming | 1 | 1 | 1 |
+| 300-message scroll median | 16.7 ms | 17 ms | <20 ms |
+| First-token render delay | 76.53 ms | 63.52 ms | ≤150 ms |
+
+Measurements are retained under `7b/regenerated-final/phase-1/` and `phase-3/`.
+Overwritten historical evidence was archived and restored, including synthetic
+binary outputs kept outside Git; `regenerated-final/archive.json` records hashes.
+
+## Deployment and fallback
+
+`7b/deployment.json`: source `e6e5272` deployed successfully on 6 October 2026.
+Before copying code, the service was stopped and its SQLite database backed up
+privately; the former installed source was preserved. The installed source
+matches the candidate. Schema remains 8→8, integrity checks pass, local and
+Tailscale health are 200, `/design` is 404 in production, Library is available,
+and transcription is ready. The launchd plist, single-worker loopback binding,
+Tailscale route and transcription interpreter remain unchanged. No production
+Library content or filename was read. Fallback locations are recorded privately
+by deployment metadata. There is no 7B migration; the accepted 7A rollback
+rehearsal is retained. No merge to main or remote push is part of this checkpoint.
+
 ## QA gates
 
 | Gate | Status/evidence |
 |---|---|
 | G-1 check and coverage | Pass: current check, current coverage JSON |
-| G-2 complete E2E | Outstanding; focused pass cannot close this gate |
+| G-2 complete E2E | Pass: 431 passed, 3 existing skips, one full invocation |
 | G-3 test strength | Ledger; no existing assertions weakened |
-| G-4 performance | Bundle pass; complete streaming/scroll measurements outstanding |
-| G-5 accessibility | New-state axe/keyboard focused pass; full walkthrough outstanding |
+| G-4 performance | Pass: bundle-final.json and final performance measurements above |
+| G-5 accessibility | Pass automated: full axe/state/keyboard suite; VoiceOver deferred limitation |
 | G-6 API grows | Pass: additive guard |
 | G-7 database grows | No new migration; existing row-preservation tests pass |
 | G-8 prompts frozen | Active v3 hash plus unchanged legacy hashes; original plan/baseline and before/after reports retained |
 | G-9 web answers | E12/E13 25/25 pass; specific aggregate variance accepted by Jake; all release thresholds retained |
 | G-10 ordinary runtime payload | Existing golden capture and parameter tests pass |
 | G-11 privacy | Scanner clean; all 104 synthetic images reviewed via 32 contact sheets |
-| G-12 deployment invariants | Unit checks pass; no 7B deployment; 7A restored healthy |
-| G-13 reduced motion | Static motion guard passes; full browser trigger checks outstanding |
+| G-12 deployment invariants | Pass: deployment.json, PWA/API-cache suite and deployment unit checks |
+| G-13 reduced motion | Pass: static guard plus both full-suite reduced-motion triggers |
 | G-14 design states | Ten production-component states, 80 state captures |
 | G-15 rollback | Not applicable: no 7B migration; accepted 7A rehearsal retained |
 | G-16 phone review | Not checked for 7B; no Jake results invented |
 
-Core C1–C16 remains subject to the outstanding complete E2E run. Unit guards for
-C7, C8, C9, C12–C14 and static C15–C16 checks pass in the current `make check`;
-do not infer new browser/core passes from a prior checkpoint.
+## Core unchanged
+
+All browser entries below refer to the single final `7b/e2e.txt` invocation;
+server guards refer to `7b/check-tablet.txt`. Existing approved behavior changes
+and the checkpoint-specific web variance remain documented in the ledger.
+
+| Core | Passing evidence |
+|---|---|
+| C1 send/stream/stats | chat.spec.ts |
+| C2 Stop/partial | chat.spec.ts; phase3-accessibility.spec.ts |
+| C3 reconnect | chat.spec.ts; web.spec.ts late snapshot |
+| C4 long answer/idle timeout | chat.spec.ts Chromium real-time gate; existing WebKit skip retained |
+| C5 actions/history/exports | actions.spec.ts; conversation-motion.spec.ts |
+| C6 model load/context | load-selection.spec.ts; ui-regressions.spec.ts; mobile-layout.spec.ts |
+| C7 explicit parameters | parameters.spec.ts; test_chat.py payload captures |
+| C8 web | web.spec.ts; server web tests; accepted real replay |
+| C9 transcription | transcription.spec.ts; recording-download.spec.ts; audio-storage.spec.ts; server tests |
+| C10 phone layout/keyboard | mobile-layout.spec.ts; mobile-composer.spec.ts |
+| C11 palette/PWA | polish.spec.ts; pwa.spec.ts |
+| C12 legacy import | test_legacy_import.py |
+| C13 deployment | test_deployment.py; deployment.json |
+| C14 untrusted input | foundation.spec.ts; server SSRF tests |
+| C15 performance | performance.spec.ts; chat.spec.ts frame/first-token |
+| C16 automated accessibility | foundation.spec.ts; review.spec.ts; phase3-accessibility.spec.ts; contrast guard; VoiceOver remains deferred |
 
 ## Screenshots
 
@@ -239,7 +316,7 @@ do not infer new browser/core passes from a prior checkpoint.
 `fake-library-answer-preview-*`, and `states/fake-library-answer-*` use only the
 isolated fake server and invented files. Actual theme assertions were added before
 the final capture. All 104 synthetic images were inspected by Codex using 32 contact sheets under
-`image-review/`, with representative full-resolution views. They contain only
+`image-review/`, with the reviewed hashes retained. They contain only
 invented files and isolated fake chats. Captures are not a physical iPhone check.
 
 ## Known limitations carried forward
@@ -255,8 +332,11 @@ private Library-folder backup. No private document was used to verify retrieval.
 Jake approved both recommendations on 6 October: “Approve the recommendations”.
 Continue generic table citation refinements with before/after evidence and the
 unchanged 100% gate; accept the specific web variance while preserving all release
-thresholds and reports. Complete the full frozen browser invocation and deployment checks,
-then stop for 7B phone review. Optional second runtime and Research remain
+thresholds and reports. Technical verification and deployment are complete.
+Stop for 7B phone review: reopen Atelier, enable the Book/Library control, ask a
+question about an indexed file and open a citation. Only pass/fail feedback is
+needed; no private file text is requested. The standard QA phone checklist also
+remains available; no unperformed result is inferred. Optional second runtime and Research remain
 unauthorized.
 
 ---

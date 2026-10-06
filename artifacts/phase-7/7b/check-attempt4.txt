@@ -1,0 +1,20 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+All checks passed!
+. scripts/tool-env.sh; uv run --directory server ruff format --check app tests
+98 files already formatted
+. scripts/tool-env.sh; uv run --directory server mypy app tests
+evals/library/run_eval.py:131: error: List item 0 has incompatible type "tuple[str, tuple[int, str, int, str]]"; expected "tuple[str, tuple[str, str, str, str, str]]"  [list-item]
+evals/library/run_eval.py:140: error: List item 1 has incompatible type "tuple[str, tuple[int, bytes]]"; expected "tuple[str, tuple[str, str, str, str, str]]"  [list-item]
+evals/library/run_eval.py:195: error: Cannot assign to a method  [method-assign]
+evals/library/run_eval.py:195: error: Incompatible types in assignment (expression has type "def fake_init(self: Ollama, connection_id: str, base_url: str, keep_alive: str = ..., **kwargs: Any) -> None", variable has type "Callable[[Ollama, str, str, str, AsyncClient | None, float], None]")  [assignment]
+evals/library/run_eval.py:307: error: Argument 1 to "get" of "dict" has incompatible type "Any | None"; expected "str"  [arg-type]
+evals/library/run_eval.py:327: error: Cannot assign to a method  [method-assign]
+evals/library/run_eval.py:392: error: Unsupported operand types for + ("str" and "list[dict[str, Any]]")  [operator]
+evals/library/run_eval.py:392: error: Unsupported operand types for + ("str" and "dict[str, Any]")  [operator]
+evals/library/run_eval.py:392: error: Unsupported operand types for + ("str" and "dict[str, str]")  [operator]
+evals/library/run_eval.py:392: error: Unsupported operand types for + ("str" and "bool")  [operator]
+evals/library/run_eval.py:392: error: Unsupported operand types for + ("str" and "None")  [operator]
+evals/library/run_eval.py:392: note: Right operand is of type "list[dict[str, Any]] | dict[str, Any] | dict[str, str] | bool | str | Any | None"
+tests/test_library_eval.py:41: error: "object" has no attribute "append"  [attr-defined]
+Found 12 errors in 2 files (checked 96 source files)
+make: *** [check] Error 1

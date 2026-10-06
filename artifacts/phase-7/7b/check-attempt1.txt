@@ -1,0 +1,20 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+All checks passed!
+. scripts/tool-env.sh; uv run --directory server ruff format --check app tests
+unformatted: File would be reformatted
+   --> tests/fake_runtime.py:152:20
+    |
+151 |             numbers = re.findall(r'<source id="(\d+)"', prompt)
+    -             text = "Synthetic Library answer: invented lanterns are blue " + "".join(
+    -                 f"[{n}]" for n in numbers[:2]
+    -             ) + "."
+152 +             text = (
+153 +                 "Synthetic Library answer: invented lanterns are blue "
+154 +                 + "".join(f"[{n}]" for n in numbers[:2])
+155 +                 + "."
+156 +             )
+157 |             if "#uncited" in prompt:
+    |
+
+1 file would be reformatted, 96 files already formatted
+make: *** [check] Error 1
