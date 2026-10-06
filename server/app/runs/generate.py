@@ -80,7 +80,9 @@ async def generate(
                 params.get("reasoning"),
             )
             chat = await chats.chat(manager.store, run.message.chat_id)
-            if (
+            if chat.library_enabled and manager.library_hook:
+                await manager.library_hook(run, request, context)
+            elif (
                 context.has_recording
                 and (await settings.get(manager.store))["transcription.block_web"]
             ):
@@ -163,6 +165,8 @@ async def generate(
             stats.tokens_per_sec = stats.completion_tokens / max(0.001, last_delta - first)
         if manager.web_finalize:
             await manager.web_finalize(run)
+        if manager.library_finalize:
+            await manager.library_finalize(run)
         await messages.save(manager.store, run.message, True)
         manager.registry.updated = 0  # A generation may have loaded/ejected a model.
         if run.message.error:

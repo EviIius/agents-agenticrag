@@ -29,6 +29,10 @@ async def start_regeneration(identifier: str, body: Regenerate, request: Request
     model = await request.app.state.registry.resolve(
         body.connection_id or chat.connection_id, body.model_id or chat.model_id
     )
+    if chat.library_enabled:
+        from ..library.privacy import guard
+
+        await guard(store, model.connection_id, await settings.get(store))
     params = await request.app.state.registry.params(model, chat.params)
     assembled = await assemble(
         store,

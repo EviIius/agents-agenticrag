@@ -530,20 +530,22 @@ export const MessageRow = memo(function MessageRow({
               </div>
             </div>
           )}
-          {!renderSources && message.web?.status === "used" && (
-            <>
-              <SourcesSheet
-                message={message}
-                sources={sources ?? []}
-                reads={reads ?? []}
-              />
-              {message.web.notice?.code === "uncited" && (
-                <p className="mb-3 text-xs text-fg-3">
-                  This answer doesn't cite specific sources.
-                </p>
-              )}
-            </>
-          )}
+          {!renderSources &&
+            (message.web?.status === "used" ||
+              message.library?.status === "used") && (
+              <>
+                <SourcesSheet
+                  message={message}
+                  sources={sources ?? []}
+                  reads={reads ?? []}
+                />
+                {message.web?.notice?.code === "uncited" && (
+                  <p className="mb-3 text-xs text-fg-3">
+                    This answer doesn't cite specific sources.
+                  </p>
+                )}
+              </>
+            )}
           {renderSources?.(message, sources ?? [], reads ?? [])}
         </>
       )}

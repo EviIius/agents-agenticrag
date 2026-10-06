@@ -158,6 +158,10 @@ class BackupStatus(BaseModel):
     warning: str | None = None
 
 
+class LibraryScope(Input):
+    collection_ids: list[str] = Field(default_factory=list, max_length=100)
+
+
 class ChatCreate(Input):
     preset_id: str | None = None
     connection_id: str | None = None
@@ -166,6 +170,8 @@ class ChatCreate(Input):
 
 
 class ChatPatch(Input):
+    library_enabled: bool | None = None
+    library_scope: LibraryScope | None = None
     folder_id: str | None = None
     title: str | None = Field(None, min_length=1, max_length=200)
     pinned: bool | None = None
@@ -178,6 +184,8 @@ class ChatPatch(Input):
 
 
 class Chat(BaseModel):
+    library_enabled: bool = False
+    library_scope: LibraryScope | None = None
     folder_id: str | None = None
     folder_name: str | None = None
     id: str
@@ -405,6 +413,8 @@ class Stats(BaseModel):
 
 
 class Passage(BaseModel):
+    page_start: int | None = None
+    page_end: int | None = None
     source_url: str
     heading: str = ""
     ord: int
@@ -420,7 +430,10 @@ class Source(BaseModel):
     domain: str
     published_at: str | None = None
     fetched_at: str
-    kind: Literal["page", "snippet"] = "page"
+    kind: Literal["page", "snippet", "document"] = "page"
+    document_id: str | None = None
+    page_start: int | None = None
+    page_end: int | None = None
     passages: list[Passage]
     cited: bool = False
 
@@ -452,6 +465,15 @@ class WebRead(BaseModel):
     reason: str | None = None
 
 
+class LibraryInfo(BaseModel):
+    status: Literal["used", "skipped", "failed"]
+    notice: ErrorDetail | None = None
+    queries: list[str] = Field(default_factory=list)
+    timings: dict[str, float] = Field(default_factory=dict)
+    source_count: int = 0
+    passage_count: int = 0
+
+
 class Message(BaseModel):
     id: str
     chat_id: str
@@ -465,6 +487,7 @@ class Message(BaseModel):
     attachments: list[Attachment] = Field(default_factory=list)
     stats: Stats | None = None
     web: WebInfo | None = None
+    library: LibraryInfo | None = None
     created_at: str
 
 
@@ -480,6 +503,7 @@ class Send(Input):
     parent_id: str | None = None
     attachment_ids: list[str] = Field(default_factory=list, max_length=8)
     web: bool | None = None
+    library: bool | None = None
 
 
 class Regenerate(Input):
@@ -598,6 +622,10 @@ class SearchEvent(BaseModel):
         "search.read",
         "search.done",
         "search.failed",
+        "library.searching",
+        "library.results",
+        "library.done",
+        "library.failed",
     ]
     data: dict[str, Any]
 

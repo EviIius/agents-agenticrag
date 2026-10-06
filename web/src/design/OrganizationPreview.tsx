@@ -28,6 +28,7 @@ const chat: Chat = {
   pinned: false,
   params: {},
   web_enabled: false,
+  library_enabled: false,
 };
 export const organizationStates = [
   "Folders",

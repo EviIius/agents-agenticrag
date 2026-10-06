@@ -10,6 +10,7 @@ import {
   SlidersHorizontal,
   X,
   Layers,
+  BookOpen,
 } from "lucide-react";
 import { api, type Chat } from "@/lib/api";
 import type { components } from "@/lib/api-types";
@@ -29,6 +30,7 @@ import {
 import { IconButton } from "./IconButton";
 import { Button } from "@/components/ui/button";
 export type PaletteActions = {
+  toggleLibrary?: () => void;
   applyPreset?: () => void;
   newChat: () => void;
   switchModel: () => void;
@@ -44,6 +46,7 @@ export function CommandPalette({
   actions,
   onChat,
   searchDisabled,
+  libraryDisabled,
   previewChats,
   previewState,
 }: {
@@ -52,6 +55,7 @@ export function CommandPalette({
   actions: PaletteActions;
   onChat: (chat: Chat) => void;
   searchDisabled?: boolean;
+  libraryDisabled?: boolean;
   previewChats?: Chat[];
   previewState?: "loading" | "error" | "empty";
 }) {
@@ -98,6 +102,16 @@ export function CommandPalette({
             icon: SlidersHorizontal,
             action: actions.chatSettings,
           },
+          ...(actions.toggleLibrary
+            ? [
+                {
+                  label: "Toggle library",
+                  icon: BookOpen,
+                  action: actions.toggleLibrary,
+                  disabled: libraryDisabled,
+                },
+              ]
+            : []),
           ...(actions.applyPreset
             ? [
                 {

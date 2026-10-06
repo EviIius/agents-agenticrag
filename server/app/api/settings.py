@@ -25,7 +25,7 @@ async def bootstrap(request: Request) -> Bootstrap:
         settings=await settings.get(request.app.state.store, True),
         connections=await listing(request),
         features={
-            "library": bool(request.app.state.library.available and values["library.embedding"]),
+            "library": bool(request.app.state.library.available),
             "web_search": any(service.configured(p) for p in values["web.provider_order"]),
             "transcription": (await request.app.state.transcription.engine.status()).ready,
         },

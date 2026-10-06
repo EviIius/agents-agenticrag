@@ -71,8 +71,11 @@ const webMessage: Message = {
   },
 };
 const Markdown = lazy(() => import("@/components/chat/Markdown"));
+const LibraryAnswersPreview = lazy(() => import("./LibraryAnswersPreview"));
 export function DesignPage() {
   const ui = useUI();
+  if (new URLSearchParams(location.search).has("library-answers"))
+    return <LibraryAnswersPreview />;
   if (new URLSearchParams(location.search).has("library"))
     return <LibraryPreview />;
   if (new URLSearchParams(location.search).has("cleanup"))
@@ -475,6 +478,7 @@ const reviewChat: Chat = {
   pinned: true,
   params: {},
   web_enabled: false,
+  library_enabled: false,
 };
 const reviewModel: Model = {
   connection_id: "design",

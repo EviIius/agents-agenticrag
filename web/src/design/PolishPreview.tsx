@@ -14,6 +14,7 @@ const chats: Chat[] = [
     title: "Synthetic example chat",
     title_source: "user",
     web_enabled: false,
+    library_enabled: false,
     pinned: false,
     params: {},
     created_at: "2026-10-03",

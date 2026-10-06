@@ -68,6 +68,8 @@ export function useSend({
   waitingForTranscript,
   detail,
   web,
+  library = false,
+  libraryScope = null,
   draftParams,
   draftPrompt,
   draftOverridden = false,
@@ -93,6 +95,8 @@ export function useSend({
   waitingForTranscript: boolean;
   detail: { data?: Detail };
   web: boolean;
+  library?: boolean;
+  libraryScope?: import("@/components/chat/LibraryControl").Scope;
   draftParams: Params;
   draftPrompt: string | null;
   draftOverridden?: boolean;
@@ -138,6 +142,12 @@ export function useSend({
           ...(draftOverridden ? { preset_id: null } : {}),
         });
         id = chat.id;
+        if (library || libraryScope !== null)
+          await api(
+            "/chats/" + id,
+            { library_enabled: library, library_scope: libraryScope },
+            "PATCH",
+          );
         if (draftOverridden)
           await api(
             "/chats/" + id,
@@ -150,7 +160,8 @@ export function useSend({
         parent_id:
           parent === undefined ? (chat?.current_leaf_id ?? null) : parent,
         attachment_ids: effectiveFiles.map((f) => f.id),
-        web: chat?.web_enabled ?? web,
+        web: library ? false : (chat?.web_enabled ?? web),
+        ...(library ? { library: true } : {}),
       });
       // Commit the confirmed rows atomically before removing the optimistic row.
       const rows = [response.user_message, response.assistant_message].filter(

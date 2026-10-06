@@ -115,3 +115,30 @@ probe without inventing physical phone checks. Proceed to Phase 7A Library
 storage, ingestion and Settings UI, stopping for review after 7A. Retrieval,
 composer integration and the new answer prompt remain 7B work; J7 eval targets
 still need approval before 7B. Ollama only; Research remains unauthorized.
+
+**User acceptance and authorization — 6 October 2026 (7A and 7B):** Jake asked
+to continue to 7B, reviewed the proposed J7 targets, then said “go ahead then”.
+Proceed with retrieval, composer integration, cited answers and the synthetic
+eval harness. J7 targets in Phase 7 §8 are approved as written. Stop for review
+after 7B; missed targets keep the phase open. Ollama remains the only runtime,
+and Research remains unauthorized. Do not use the user's real Library files
+for logs, screenshots, fixtures or eval evidence.
+
+**User authorization — 6 October 2026 (7B prompt refinement):** After the
+version-one eval missed per-fact citation placement, Jake said “Go ahead and”
+in response to the proposed generic refinement and before/after retest. Apply
+the documented per-sentence/per-row citation and explicit-stated-facts
+reinforcement, retain the original baseline and unchanged corpus/cases, and
+rerun the full eval without lowering J7 targets. Finish 7B regression gates and
+deployment if they pass, then stop for 7B review. Research remains unauthorized.
+
+**User authorization — 6 October 2026 (7B table citations and web variance):**
+Jake said “Approve the recommendations”. Apply the proposed generic Citation
+column refinement and continue in-scope citation wording refinements with retained
+before/after reports, unchanged corpus/cases and the 100% J7 target. Accept the
+documented G9 web replay variance for this checkpoint: all 25 cases pass with no
+case regressions, lexical support 0.8823817 vs 0.8852879, median TTFT 4.467 vs
+3.968 seconds and p90 5.987 vs 4.786 seconds. Preserve both reports and all release
+thresholds; this is a specific accepted variance, not a general G9 exemption.
+Finish the full regression gates before 7B deployment, then stop for review.
+Research remains unauthorized.

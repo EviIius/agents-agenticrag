@@ -263,6 +263,15 @@ async def start_message(identifier: str, body: Send, request: Request) -> RunRes
         raise AppError("run_active", "This chat is still generating.", 409)
     model = await request.app.state.registry.resolve(data.chat.connection_id, data.chat.model_id)
     parent = next((m for m in data.messages if m.id == body.parent_id), None)
+    if body.library is True and body.web is True:
+        raise AppError("validation_error", "Choose Library or web search for this message.", 422)
+    library_on = body.library if body.library is not None else data.chat.library_enabled
+    if body.web is True:
+        library_on = False
+    if library_on:
+        from ..library.privacy import guard
+
+        await guard(store, model.connection_id, await settings.get(store))
     if body.parent_id and not parent:
         raise AppError("validation_error", "Parent belongs to another chat.", 422)
     if len(set(body.attachment_ids)) != len(body.attachment_ids):
@@ -344,6 +353,14 @@ async def start_message(identifier: str, body: Send, request: Request) -> RunRes
         statements.append(("UPDATE attachments SET message_id=? WHERE id=?", (user_id, a["id"])))
     if body.web is not None:
         statements.append(("UPDATE chats SET web_enabled=? WHERE id=?", (body.web, identifier)))
+    if body.library is not None:
+        statements.append(
+            ("UPDATE chats SET library_enabled=? WHERE id=?", (body.library, identifier))
+        )
+    if library_on:
+        statements.append(("UPDATE chats SET web_enabled=0 WHERE id=?", (identifier,)))
+    elif body.web is True:
+        statements.append(("UPDATE chats SET library_enabled=0 WHERE id=?", (identifier,)))
     await store.batch(statements)
     assistant = await messages.message(store, assistant_id)
     run = request.app.state.runs.start(assistant, model, assembled, params)

@@ -58,6 +58,8 @@ import { latestLeaf, visiblePath } from "@/lib/tree";
 import { useTranscripts } from "@/stores/transcripts";
 import { usePreferenceSync } from "@/hooks/usePreferenceSync";
 import { useAppEntrance } from "@/hooks/useAppEntrance";
+import { useLibraryIndex } from "@/hooks/useLibraryIndex";
+import type { Scope } from "@/components/chat/LibraryControl";
 const FolderDialog = lazy(() => import("./FolderDialog"));
 export function LiveAppShell() {
   const ui = useUI(),
@@ -71,6 +73,8 @@ export function LiveAppShell() {
     phone = useMediaQuery("(max-width:639px)");
   const [selected, setSelected] = useState<Model>(),
     [web, setWeb] = useState(false),
+    [library, setLibrary] = useState(false),
+    [libraryScope, setLibraryScope] = useState<Scope>(null),
     [draftParams, setDraftParams] = useState<Params>({}),
     [search, setSearch] = useState(""),
     [debounced, setDebounced] = useState(""),
@@ -105,6 +109,7 @@ export function LiveAppShell() {
     refetchInterval: () => (document.hidden ? false : 30000),
   });
   usePreferenceSync(bootstrap.data?.settings);
+  const libraryIndex = useLibraryIndex(!!bootstrap.data?.features.library);
   const presets = useQuery({
     queryKey: ["presets"],
     queryFn: () => api<Preset[]>("/presets"),
@@ -243,6 +248,8 @@ export function LiveAppShell() {
         ) ?? models.data[0],
       );
       setWeb(Boolean(bootstrap.data?.settings["web.default_on"]));
+      setLibrary(false);
+      setLibraryScope(null);
     }
   }, [models.data, selected, bootstrap.data]);
   useEffect(() => {
@@ -257,6 +264,8 @@ export function LiveAppShell() {
       setDraftOverridden(false);
       setDraftParams({});
       setDraftPrompt(null);
+      setLibrary(false);
+      setLibraryScope(null);
       setWeb(Boolean(bootstrap.data?.settings["web.default_on"]));
     }
     previousChat.current = chatId;
@@ -301,6 +310,10 @@ export function LiveAppShell() {
     waitingForTranscript,
     detail,
     web,
+    library: detail.data?.chat.library_enabled ?? library,
+    libraryScope: chatId
+      ? (detail.data?.chat.library_scope ?? null)
+      : libraryScope,
     draftParams: effectiveDraftParams,
     draftPrompt: effectiveDraftPrompt,
     draftOverridden,
@@ -336,6 +349,58 @@ export function LiveAppShell() {
       ).some((message) =>
         message.attachments?.some((file) => file.kind === "audio"),
       ));
+  const effectiveLibrary = detail.data?.chat.library_enabled ?? library;
+  const scope = chatId
+    ? (detail.data?.chat.library_scope ?? null)
+    : libraryScope;
+  const libraryReason = (() => {
+    if (!libraryIndex.data?.embedding)
+      return "Choose an embedding model in Settings › Library";
+    if (!libraryIndex.data.available) return "Library is unavailable";
+    if (
+      !libraryIndex.data.documents.some(
+        (d) =>
+          d.status === "ready" &&
+          (!scope ||
+            (d.collection_id &&
+              scope.collection_ids?.includes(d.collection_id))),
+      )
+    )
+      return "No ready files in this scope";
+    if (libraryIndex.data.requires_local) {
+      const connection = bootstrap.data?.connections.find(
+        (c) => c.id === current?.connection_id,
+      );
+      const host = connection ? new URL(connection.base_url).hostname : "";
+      if (!(host === "localhost" || host === "[::1]" || /^127\./.test(host)))
+        return "Library text can only go to a local model";
+    }
+  })();
+  const exclusivityNote = () => {
+    if (!sessionStorage.getItem("workbench-library-note")) {
+      toast("Library and web search can't be combined in one message.");
+      sessionStorage.setItem("workbench-library-note", "1");
+    }
+  };
+  const toggleLibrary = (value: boolean) => {
+    if (value && libraryReason) return;
+    setLibrary(value);
+    if (value) {
+      setWeb(false);
+      exclusivityNote();
+    }
+    if (chatId)
+      void mutate("/chats/" + chatId, { library_enabled: value }, "PATCH");
+  };
+  const toggleWeb = (value: boolean) => {
+    setWeb(value);
+    if (value) {
+      setLibrary(false);
+      if (effectiveLibrary) exclusivityNote();
+    }
+    if (chatId)
+      void mutate("/chats/" + chatId, { web_enabled: value }, "PATCH");
+  };
   const composer = (
     <Composer
       key={chatId ?? "new"}
@@ -353,6 +418,26 @@ export function LiveAppShell() {
       uploads={uploads}
       transcriptionReady={Boolean(bootstrap.data?.features.transcription)}
       webBlocked={webBlocked}
+      libraryControl={
+        bootstrap.data?.features.library
+          ? {
+              enabled: effectiveLibrary,
+              reason: libraryReason,
+              scope,
+              collections: libraryIndex.data?.collections ?? [],
+              onToggle: toggleLibrary,
+              onScope: (next) => {
+                setLibraryScope(next);
+                if (chatId)
+                  void mutate(
+                    "/chats/" + chatId,
+                    { library_scope: next },
+                    "PATCH",
+                  );
+              },
+            }
+          : undefined
+      }
       onCancelUpload={(id) => {
         uploadControllers.current.get(id)?.abort();
         setUploads((uploads) => uploads.filter((upload) => upload.id !== id));
@@ -411,19 +496,7 @@ export function LiveAppShell() {
         }
       }}
       web={detail.data?.chat.web_enabled ?? web}
-      onWebChange={
-        bootstrap.data?.features.web_search
-          ? (value) => {
-              setWeb(value);
-              if (chatId)
-                void mutate(
-                  "/chats/" + chatId,
-                  { web_enabled: value },
-                  "PATCH",
-                );
-            }
-          : undefined
-      }
+      onWebChange={bootstrap.data?.features.web_search ? toggleWeb : undefined}
     />
   );
   const panel =
@@ -752,6 +825,7 @@ export function LiveAppShell() {
         onOpenChange={(command) => ui.set({ command })}
         onChat={(chat) => navigate("/c/" + chat.id)}
         searchDisabled={webBlocked || !bootstrap.data?.features.web_search}
+        libraryDisabled={!effectiveLibrary && !!libraryReason}
         actions={{
           newChat: () => navigate("/"),
           switchModel: () =>
@@ -759,10 +833,9 @@ export function LiveAppShell() {
           toggleSearch: () => {
             if (webBlocked || !bootstrap.data?.features.web_search) return;
             const next = !(detail.data?.chat.web_enabled ?? web);
-            setWeb(next);
-            if (chatId)
-              void mutate("/chats/" + chatId, { web_enabled: next }, "PATCH");
+            toggleWeb(next);
           },
+          toggleLibrary: () => toggleLibrary(!effectiveLibrary),
           chatSettings: () => ui.set({ panel: true }),
           applyPreset: () => ui.set({ panel: true, choosePreset: true }),
           settings: () => ui.set({ settings: true }),

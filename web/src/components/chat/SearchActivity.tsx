@@ -4,7 +4,7 @@ import {
   CollapsibleTrigger,
   CollapsibleContent,
 } from "@/components/ui/collapsible";
-import { Globe, ChevronDown } from "lucide-react";
+import { Globe, ChevronDown, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Message, Source } from "@/lib/api";
 import { Favicon } from "./CitationPill";
@@ -41,6 +41,38 @@ export function SearchActivity({
         }),
     ]),
   ).slice(0, 4);
+  const library = message.library;
+  if (library)
+    return (
+      <div className="mb-4 text-xs text-fg-2" data-testid="library-activity">
+        {library.notice && (
+          <div className="mb-2 rounded-lg border border-line p-3" role="status">
+            <p>
+              {library.notice.code === "library_empty"
+                ? "No ready files in this scope. This answer uses the model's own knowledge."
+                : library.notice.code === "uncited"
+                  ? "This answer doesn't cite specific sources."
+                  : `Couldn't search your files (${library.notice.message}). This answer uses the model's own knowledge.`}
+            </p>
+            {library.notice.code !== "uncited" && (
+              <Button variant="link" className="px-0 text-xs" onClick={onRetry}>
+                Retry with Library
+              </Button>
+            )}
+          </div>
+        )}
+        {library.status === "used" && (
+          <p className="flex min-h-11 items-center gap-2" role="status">
+            <BookOpen className="size-4" />
+            <span data-slot="activity-label" data-live={live || undefined}>
+              {live
+                ? "Searching your files…"
+                : `Searched your files · ${library.passage_count} passages from ${library.source_count} files · ${((library.timings?.total ?? 0) / 1000).toFixed(1)} s`}
+            </span>
+          </p>
+        )}
+      </div>
+    );
   if (!info && !steps?.length) return null;
   if (info?.notice?.code === "search_blocked_recording")
     return (

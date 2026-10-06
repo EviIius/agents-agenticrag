@@ -56,6 +56,8 @@ class RunManager:
         self.waiting: dict[str, int] = {}
         self.web_hook: WebHook | None = None
         self.web_finalize: Callable[[Run], Awaitable[None]] | None = None
+        self.library_hook: Callable[[Run, ChatRequest, Context], Awaitable[None]] | None = None
+        self.library_finalize: Callable[[Run], Awaitable[None]] | None = None
         self.chat_locks: dict[str, asyncio.Lock] = {}
 
     def chat_lock(self, chat_id: str) -> asyncio.Lock:

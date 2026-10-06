@@ -30,6 +30,7 @@ from .db.core import Store, connect
 from .documents.service import Extractor
 from .errors import AppError, register_handlers
 from .library.ingest import Library
+from .library.pipeline import Pipeline as LibraryPipeline
 from .providers.registry import Registry
 from .runs.manager import RunManager
 from .search.pipeline import Pipeline
@@ -62,6 +63,9 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
             app.state.cleanup = Cleanups(app.state.transcription, app.state.runs)
             app.state.library = Library(app.state.store, app.state.runs, config.data_dir)
             await app.state.library.start()
+            app.state.library_search = LibraryPipeline(app.state.runs, app.state.library)
+            app.state.runs.library_hook = app.state.library_search
+            app.state.runs.library_finalize = app.state.library_search.finalize
             await app.state.runs.recover()
             await app.state.transcription.recover()
             app.state.backups = Backups(app.state.store, config.data_dir.expanduser().resolve())

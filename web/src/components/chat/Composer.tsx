@@ -1,4 +1,5 @@
 import { DocumentChip } from "./DocumentChip";
+import { LibraryControl } from "./LibraryControl";
 import { AudioChip, UploadChip, type AudioUpload } from "./AudioChip";
 import {
   useRef,
@@ -46,8 +47,10 @@ export function Composer({
   attachmentExtensions,
   onCancelUpload,
   webBlocked = false,
+  libraryControl,
 }: {
   optimistic?: boolean;
+  libraryControl?: React.ComponentProps<typeof LibraryControl>;
   transcriptionReady?: boolean;
   audioExtensions?: string[];
   attachmentExtensions?: import("@/lib/api").Bootstrap["attachment_extensions"];
@@ -357,6 +360,7 @@ export function Composer({
               <span className="hidden text-xs sm:inline">Search</span>
             </Button>
           )}
+          {libraryControl && <LibraryControl {...libraryControl} />}
           {model?.reasoning && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

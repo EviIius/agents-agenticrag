@@ -180,8 +180,8 @@ export function LibraryView({
         Only send library text to local models
       </label>
       <p className="text-sm text-fg-3">
-        Library turns off web search for that message. Answering from files is
-        coming soon.
+        Turn on Library beside Web search in the composer to answer from these
+        files with citations. Library turns off web search for that message.
       </p>
       <details>
         <summary className="cursor-pointer py-3 text-sm">

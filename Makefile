@@ -36,5 +36,7 @@ eval-web:
 	. scripts/tool-env.sh; uv run --directory server python evals/web/run_eval.py $(if $(CASE),--case $(CASE),) $(if $(MODEL),--model $(MODEL),) $(if $(LIVE),--live,) $(if $(RANKING),--ranking $(RANKING),)
 eval-web-record:
 	. scripts/tool-env.sh; uv run --directory server python evals/web/run_eval.py --record $(if $(CASE),--case $(CASE),) $(if $(MODEL),--model $(MODEL),)
+eval-library:
+	. scripts/tool-env.sh; uv run --directory server python evals/library/run_eval.py $(if $(RETRIEVAL_ONLY),--retrieval-only,) $(if $(FAKE_EMBEDDING),--fake-embedding,) $(if $(MODEL),--model $(MODEL),)
 deploy:
 	./scripts/deploy.sh --apply $(DEPLOY_ARGS)

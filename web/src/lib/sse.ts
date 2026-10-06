@@ -63,6 +63,10 @@ export function attachRun(
     "search.read",
     "search.done",
     "search.failed",
+    "library.searching",
+    "library.results",
+    "library.done",
+    "library.failed",
   ]) {
     source.addEventListener(type, (event) => {
       if (closed) return;
@@ -143,6 +147,47 @@ export function attachRun(
               },
             ],
           });
+      }
+      if (type.startsWith("library.")) {
+        const run = useRuns.getState().runs[id];
+        if (run) {
+          const library: NonNullable<Message["library"]> =
+            type === "library.done"
+              ? data.library
+              : {
+                  ...(run.message.library ?? {
+                    status: "used",
+                    queries: [],
+                    timings: {},
+                    source_count: 0,
+                    passage_count: 0,
+                  }),
+                  ...(type === "library.failed"
+                    ? {
+                        status:
+                          data.code === "library_empty"
+                            ? ("skipped" as const)
+                            : ("failed" as const),
+                        notice: { code: data.code, message: data.message },
+                      }
+                    : {}),
+                };
+          useRuns.getState().patch(id, {
+            message: { ...run.message, library },
+            ...(type === "library.done" ? { sources: data.sources } : {}),
+            stage: ["library.done", "library.failed"].includes(type)
+              ? "waiting"
+              : "search",
+            steps: [
+              ...run.steps,
+              {
+                label: type.replace("library.", ""),
+                detail: "",
+                status: type === "library.failed" ? "failed" : "ok",
+              },
+            ],
+          });
+        }
       }
       if (type === "message.done" || type === "message.error") {
         if (frame) cancelAnimationFrame(frame);

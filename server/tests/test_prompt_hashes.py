@@ -7,10 +7,20 @@ import re
 from pathlib import Path
 
 from app.db.settings import DEFAULTS
+from app.library.prompt import PROMPT as LIBRARY
 from app.search.planner import PROMPT as PLANNER
 from app.search.prompt import PROMPT as ANSWER
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def test_library_prompt_v3_hash() -> None:
+    # Approved 6 October; before/after reports are linked in PHASE-7-REPORT.md.
+    # Original baseline: evals/library/reports/2026-10-06-114229-full.json.
+    assert (
+        hashlib.sha256(LIBRARY.encode()).hexdigest()
+        == "1e2b0f1e7a08ddf7ee4628b96165bbd24b7b73fbfae3020559f3e4d902fcfbc1"
+    ), "Prompt edits require linked before/after eval evidence and an intentional hash update."
 
 
 def test_phase3_prompt_hashes() -> None:

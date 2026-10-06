@@ -1,3 +1,266 @@
+# Phase 7 report — checkpoint 7B, incomplete
+
+## Summary
+
+Jake approved the generic Library prompt refinement on 6 October with “Go ahead
+and”. Version 2 passed its first full real-model eval, but a complete repeat on
+the deletion-race-corrected source missed one table-row citation (27/28, 96.4%).
+The 100% gate is retained and 7B remains open under QA §9. Web replay passes all
+25 cases with no pass-to-fail flips, but lexical support and latency differ from
+the recorded baseline; Jake accepted this specific G9 variance on 6 October: “Approve the recommendations”.
+Version 3 adds the approved generic Citation-column instruction; its eval and
+complete browser regression gates remain pending.
+The installed application remains healthy at accepted 7A. No 7B deployment,
+merge or completion is claimed. All current unit/static/frontend checks pass.
+
+## Done-when checklist
+
+| Item | Status | Evidence |
+|---|---|---|
+| P7-AC1–7 storage/ingestion | Retained; synthetic regression checks pass | Accepted 7A report below; 298-test current check |
+| P7-AC8 Library never runs web | Pass unit | Sentinel hook, including forced regenerate |
+| P7-AC9 local privacy | Pass unit | Remote send/regenerate rejected before message insertion or runtime input |
+| P7-AC10 one answer call | Pass unit | Captured request, no tools or extra sampling parameters |
+| P7-AC11 cards/pages/history | Pass focused browser | Both engines, widths, themes; exact matching passage page; removed-original explanation |
+| P7-AC12 J7 eval | Pass v3 | Latest full run `123025`: all seven J7 targets pass |
+| P7-AC13 web unchanged | Variance accepted; full browser suite pending | Real offline replay 25/25, no flips; complete browser suite outstanding |
+| P7-AC14 follow-up retrieval | Pass in baseline | All five expected file/page lookups retrieved; no query-rewriting call proposed |
+| P7-AC15 privacy | Scanner and synthetic image review pass | All uploads/eval data invented; no production Library read |
+| P7-AC16 full QA gates | Incomplete | Table below |
+
+## Changed files
+
+- Server: new `library/retrieve.py`, `pipeline.py`, `privacy.py`, `prompt.py`;
+  additive schema, chat, message, settings and run-hook wiring. Existing search
+  prompt/planner/ranking/normalization code is imported without modification.
+- Web: new Library control, composer index SSE hook and design preview; composer,
+  command palette, send, activity, citations and Sources sheet integration;
+  generated API types and additive design fixture fields.
+- Evals: twelve invented documents, 34 cases, generation manifest/script, isolated
+  production-path full/retrieval harness and unchanged-answer regrade tool.
+- Tests/docs: 19 server cases and 12 browser cases added; authorization in
+  `AGENTS.md`; this report, proposal and test ledger under `artifacts/phase-7/7b`.
+
+Work is currently uncommitted. Accepted fallback remains `aeb653d` (7A evidence)
+with source checkpoint `5f43800`. No new dependency, model installation, migration,
+web/planner prompt change or additional chat-call type is introduced.
+
+## Deviations from SPEC.md
+
+- Bootstrap advertises the Library control when the extension is available even
+  before selecting an embedding model, so it can show the required disabled
+  reason. The plan's earlier bootstrap condition would hide that state.
+- Existing `SearchEvent.type` gains the four Library event names rather than
+  replacing the `RunEvent` union structure. The Phase 3 additive API guard passes.
+- Passages gain optional exact page ranges. A citation opens the matching
+  passage's PDF page; retrieval grading checks selected pages rather than an
+  aggregate first/last range that could conceal missing pages.
+- On coarse pointers, global tooltips are intentionally hidden. The disabled
+  reason is also available in the Library scope popover and accessible description.
+- Vector retrieval uses supported row-id prefilters for small scopes, expanding
+  global candidates for larger scopes, with exact scoped cosine fallback at
+  vec0's 4,096-candidate limit. This preserves complete scoped results rather than
+  imposing an incorrect fixed global cutoff. Large-scope/tie tests cover fallback.
+
+## Runtime observations and evals
+
+Full baseline: `server/evals/library/reports/2026-10-06-114229-full.json` and `.md`.
+It uses only a temporary synthetic database, approved loopback Ollama,
+`qwen3-embedding:0.6b` (1,024 dimensions) and default
+`qwen3:30b-a3b-workbench-32k`. Twelve invented files were indexed, 34 cases produced
+39 ordinary answer calls including follow-up turns, and no title/planner/judge
+call was added. The corpus and cases remain fixed.
+
+| J7 metric | Measured | Target | Status |
+|---|---:|---:|---|
+| Expected file/page selected | 28/28, 100% | ≥90% | Pass |
+| Required facts in final answers | 28/28, 100% | ≥85% | Pass |
+| Required facts with supporting inline citations | 24/28, 85.7% | 100% | **Miss** |
+| Unsupported-question abstention | 6/6 | ≥5/6 | Pass |
+| Injection obeyed | 0 | 0 | Pass |
+| Warm first provider delta median | 373.38 ms | ≤6,000 ms | Pass |
+| 20,000-passage retrieval median | 85.17 ms | ≤300 ms | Pass |
+
+The 50-query retrieval benchmark uses deterministic invented vectors at the real
+model's 1,024 dimensions; p95 is 97.03 ms and query embedding is excluded. This is
+a synthetic workload, not a guarantee for every scope distribution. First-token
+time includes retrieval and retains the existing first text-or-reasoning-delta
+statistic; it does not promise a completed visible answer in that time.
+
+The original grader falsely rejected facts followed by sentence-ending periods
+in source text. A targeted correction permits terminal punctuation while tests
+still reject larger numbers and decimals. The original report is preserved.
+`2026-10-06-114229-full-regraded.json` links its hash and regrades the same answers
+with **zero model calls**: citations improve from 18/28 to 24/28 and still fail.
+No prompt, model answer, threshold, corpus or case was altered to improve a score.
+
+Actual misses: `shipping-warehouse` puts a citation only after the second sentence;
+`price-table` and `weight-table` put a lone citation below the table;
+`resume-numbers` cites only its final row. All values are supported by retrieved
+text, but per-statement citation placement is incomplete. Reviewing all 39
+synthetic answers also found this placement issue in the first turns of
+`follow-leave` and `follow-sensor`, and an unstated gender pronoun in the first
+`follow-resume` answer. The automatic final-turn fact metric does not capture
+these additional issues; they remain recorded.
+
+All five follow-up retrieval cases pass with the existing heuristic. No query
+rewriting or extra call is needed. The development fake-SHA embedding run scored
+24/28 retrieval (85.7%) and about 14 ms at eight dimensions; it is retained as an
+experimental report and is not substituted for real J7 evidence.
+
+### Approved version-two comparison and repeat
+
+`115217-full.json`: every J7 gate passes on the unchanged corpus, cases and
+models. Retrieval/facts/citations are 28/28, abstentions 6/6, injection 0;
+first delta median 377.86 ms, retrieval median 84.89 ms. `library-comparison.json`
+confirms the only application-source change from the baseline was the approved
+Library prompt. All 39 synthetic answers were reviewed; table/sentence citation
+placement improves, although an unstated gender pronoun persists in a preliminary
+follow-up answer. This is recorded, not a claim of universal entailment.
+
+A concrete deletion race was then corrected: snapshot insertion checks whether
+the original still exists inside its transaction, and initial SSE removes its
+link when deleted during retrieval. The exact selected passage text is retained.
+A new test deletes the file between retrieval and insertion and verifies the
+stored source, SSE and history all identify a removed original. Fifteen focused
+Library tests pass. A new-test import typing issue was corrected without changing
+assertions.
+
+`120211-full.json`: the complete repeat after that source correction has 28/28
+retrieval/facts, 27/28 (96.4%) citation support, six abstentions, zero injection,
+377.85 ms first-delta median and 88.65 ms retrieval median (p95 93.54 ms).
+`resume-numbers` again cites only its final row. The 115217 passing run is not
+substituted for this newer failure. The additional generic Citation-column
+instruction is approved in `table-citation-refinement-proposal.md` and applied in version 3.
+No target was lowered and no additional sampling parameter was introduced.
+
+### Approved version-three result
+
+Jake approved both recommendations on 6 October: “Approve the recommendations”.
+Version 3 adds a generic Citation-column instruction. The full unchanged-corpus
+run `123025-full.json` passes every J7 target: retrieval/facts/citations 28/28,
+six abstentions, zero injection, first-provider-delta median 377.57 ms and
+20,000-passage retrieval median 87.44 ms (p95 98.61 ms). Only the Library prompt
+changed from the preceding complete repeat; `library-comparison-v3.json` records
+hashes, both metrics and the reviewed-answer limitations. All earlier failed and
+passing runs remain intact. Active prompt hash:
+`1e2b0f1e7a08ddf7ee4628b96165bbd24b7b73fbfae3020559f3e4d902fcfbc1`.
+
+Codex reviewed all 39 synthetic answers. Every graded final answer supports its
+required facts; the preliminary `follow-sensor` paragraph still cites only its
+end and `follow-resume` uses an unstated gender pronoun. The final-turn declared
+fact grader does not establish support for every extra statement. No universal
+hallucination-free or semantic-entailment claim is made.
+
+### Web regression comparison
+
+`server/evals/web/reports/2026-10-06-115508-qwen3-30b-a3b-instruct-2507-q4_K_M-offline-keyword.json`
+uses the same installed model, empty sampling settings, cases, frozen
+`phase2-final-corpus` and real planner/answer calls as the recorded full baseline
+`2026-10-03-032410`. Every E12/E13 gate passes: 25/25 cases versus 24/25, facts 100%
+versus 96%, decision/validity 100%, no forbidden/uncited output and no case flips.
+The controlled injection is exercised and ignored. Web prompt hashes match.
+
+Strict G9 is **not** automatically satisfied: lexical citation support is
+0.8823817 versus 0.8852879; TTFT median 4.467 s versus 3.968 s and p90 5.987 s versus
+4.786 s. Every web release threshold passes, but Jake accepted this specific
+variance on 6 October (“Approve the recommendations”), with all thresholds retained. Output/host-load variance is
+possible; its cause is not proven. `web-comparison.json` preserves the complete
+comparison and the explicit checkpoint-specific acceptance. Search/provider sources are
+unchanged from accepted 7A; the Library branch is conditional in the run path.
+
+Version-one Library prompt SHA-256:
+`34d32c6b61f79fbce81410c05e22a831dd22ae19e5062741cb1bac5bd0c7f591`.
+It remains anchored to the original plan and retained baseline. The active
+version-two hash is `0c62d5f79b809ed85e0e2e51a1dba1f94bf7e85866d8a3bb775efa997c673a0e`,
+frozen in `test_prompt_hashes.py`; the approved refinement is checked against
+the original plan in `test_library_answers.py`. Existing prompt hashes are
+unchanged. Both successful and failed before/after evals remain linked here.
+
+## Test output and budgets
+
+`7b/check-final-attempt2.txt`: **298 Python and 36 frontend tests pass**, 74 contrast
+pairs, types, lint, formatting, coverage, additive API guard, motion/privacy and
+existing frozen prompt/payload/row guards. Coverage: providers 86.5%, runs 89.4%,
+search 88.9%, transcription 93.1%, documents 96.6%, Library 92.6% (762/823; `7b/coverage-final.json`), backups 96.8%.
+
+`7b/e2e-focused-attempt5.txt`: **12 passed**, both engines, 1.5 minutes. It asserts
+actual light/dark theme values, checks ten design states with axe at 390/1440,
+tests scope keyboard dismissal, citations, original removal, controls and notices.
+This is a focused invocation: the complete core suite is still outstanding.
+The first complete invocation was interrupted after 44 passes to fix the deletion
+race. A second was stopped after three passes to correct the new test import type
+error. Neither is a regression gate pass; both logs are retained separately.
+No full browser invocation is running while the new citation gate awaits approval.
+
+Development attempts exposed missing-control visibility, a mismatched fake
+answer, tooltip expectations on coarse pointers, a wrong test theme storage key,
+an API-union compatibility issue and typing errors in the new eval. Corrected
+logs are retained, no existing assertion was weakened, and no new skip was added.
+`7b/test-diff-ledger.md` records all edits.
+
+Build passes. Initial JS is **239,797 bytes gzip**, +2,035 from 7A's 237,762,
+below both the 8 KiB growth allowance and 256,000-byte ceiling (`7b/bundle.json`).
+New streaming/scroll/first-token overhead measurements await the full suite.
+Historical artifacts overwritten by these incomplete invocations were archived
+as metadata/logs under `7b/regenerated-metrics/` and synthetic images in a private
+temporary folder, then restored to accepted evidence; `archive.json`
+records their hashes. The installed service was restored after each browser invocation; local and
+Tailscale health both returned 200 (`7b/service-restored.json`).
+
+## QA gates
+
+| Gate | Status/evidence |
+|---|---|
+| G-1 check and coverage | Pass: current check, current coverage JSON |
+| G-2 complete E2E | Outstanding; focused pass cannot close this gate |
+| G-3 test strength | Ledger; no existing assertions weakened |
+| G-4 performance | Bundle pass; complete streaming/scroll measurements outstanding |
+| G-5 accessibility | New-state axe/keyboard focused pass; full walkthrough outstanding |
+| G-6 API grows | Pass: additive guard |
+| G-7 database grows | No new migration; existing row-preservation tests pass |
+| G-8 prompts frozen | Active v3 hash plus unchanged legacy hashes; original plan/baseline and before/after reports retained |
+| G-9 web answers | E12/E13 25/25 pass; specific aggregate variance accepted by Jake; all release thresholds retained |
+| G-10 ordinary runtime payload | Existing golden capture and parameter tests pass |
+| G-11 privacy | Scanner clean; all 104 synthetic images reviewed via 32 contact sheets |
+| G-12 deployment invariants | Unit checks pass; no 7B deployment; 7A restored healthy |
+| G-13 reduced motion | Static motion guard passes; full browser trigger checks outstanding |
+| G-14 design states | Ten production-component states, 80 state captures |
+| G-15 rollback | Not applicable: no 7B migration; accepted 7A rehearsal retained |
+| G-16 phone review | Not checked for 7B; no Jake results invented |
+
+Core C1–C16 remains subject to the outstanding complete E2E run. Unit guards for
+C7, C8, C9, C12–C14 and static C15–C16 checks pass in the current `make check`;
+do not infer new browser/core passes from a prior checkpoint.
+
+## Screenshots
+
+`artifacts/phase-7/7b/fake-library-card-*`, `fake-library-sources-*`,
+`fake-library-answer-preview-*`, and `states/fake-library-answer-*` use only the
+isolated fake server and invented files. Actual theme assertions were added before
+the final capture. All 104 synthetic images were inspected by Codex using 32 contact sheets under
+`image-review/`, with representative full-resolution views. They contain only
+invented files and isolated fake chats. Captures are not a physical iPhone check.
+
+## Known limitations carried forward
+
+VoiceOver remains a reported failure, deferred by Jake. The iOS keyboard issue
+recovered after restart; its cause remains unproven. The sidebar/other motion
+regression is still deferred at Jake's request. The earlier intermittent WebKit
+copy test remains recorded in 7A. Library backup originals still require a separate
+private Library-folder backup. No private document was used to verify retrieval.
+
+## Open questions for Jake
+
+Jake approved both recommendations on 6 October: “Approve the recommendations”.
+Continue generic table citation refinements with before/after evidence and the
+unchanged 100% gate; accept the specific web variance while preserving all release
+thresholds and reports. Complete the full frozen browser invocation and deployment checks,
+then stop for 7B phone review. Optional second runtime and Research remain
+unauthorized.
+
+---
+
 # Phase 7 report — checkpoint 7A
 
 ## Summary

@@ -147,6 +147,22 @@ def create_fake_runtime() -> FastAPI:
             text = json.dumps(
                 {**decision, "queries": [latest[:120]] if search else [], "freshness": "any"}
             )
+        elif "<library_results>" in prompt:
+            numbers = re.findall(r'<source id="(\d+)"', prompt)
+            first = re.search(
+                r'<source id="1"[^>]*>\nCitation label: \[1\]\n\n(.*?)</source>', prompt, re.S
+            )
+            passage = first[1].strip() if first else "Invented lanterns are blue."
+            passage = re.sub(r"^Section: [^\n]*\n", "", passage).split("\n\n", 1)[0]
+            text = (
+                "Synthetic Library answer: "
+                + passage
+                + " "
+                + "".join(f"[{n}]" for n in numbers[:2])
+                + "."
+            )
+            if "#uncited" in prompt:
+                text = "Synthetic Library answer without citations."
         elif "<search_results" in prompt and "#uncited" in prompt:
             text = MARKDOWN
         elif "<search_results" in prompt:

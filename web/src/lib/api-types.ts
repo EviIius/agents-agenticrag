@@ -1094,6 +1094,12 @@ export interface components {
         };
         /** Chat */
         Chat: {
+            /**
+             * Library Enabled
+             * @default false
+             */
+            library_enabled: boolean;
+            library_scope?: components["schemas"]["LibraryScope"] | null;
             /** Folder Id */
             folder_id?: string | null;
             /** Folder Name */
@@ -1170,6 +1176,9 @@ export interface components {
         };
         /** ChatPatch */
         ChatPatch: {
+            /** Library Enabled */
+            library_enabled?: boolean | null;
+            library_scope?: components["schemas"]["LibraryScope"] | null;
             /** Folder Id */
             folder_id?: string | null;
             /** Title */
@@ -1632,10 +1641,40 @@ export interface components {
             /** Event Id */
             event_id: number;
         };
+        /** LibraryInfo */
+        LibraryInfo: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "used" | "skipped" | "failed";
+            notice?: components["schemas"]["ErrorDetail"] | null;
+            /** Queries */
+            queries?: string[];
+            /** Timings */
+            timings?: {
+                [key: string]: number;
+            };
+            /**
+             * Source Count
+             * @default 0
+             */
+            source_count: number;
+            /**
+             * Passage Count
+             * @default 0
+             */
+            passage_count: number;
+        };
         /** LibraryMove */
         LibraryMove: {
             /** Collection Id */
             collection_id?: string | null;
+        };
+        /** LibraryScope */
+        LibraryScope: {
+            /** Collection Ids */
+            collection_ids?: string[];
         };
         /** LibrarySelection */
         LibrarySelection: {
@@ -1674,6 +1713,7 @@ export interface components {
             attachments?: components["schemas"]["Attachment"][];
             stats?: components["schemas"]["Stats"] | null;
             web?: components["schemas"]["WebInfo"] | null;
+            library?: components["schemas"]["LibraryInfo"] | null;
             /** Created At */
             created_at: string;
         };
@@ -1787,6 +1827,10 @@ export interface components {
         };
         /** Passage */
         Passage: {
+            /** Page Start */
+            page_start?: number | null;
+            /** Page End */
+            page_end?: number | null;
             /** Source Url */
             source_url: string;
             /**
@@ -1889,7 +1933,7 @@ export interface components {
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            type: "search.done" | "search.failed" | "search.planning" | "search.queries" | "search.read" | "search.reading" | "search.results" | "search.skipped";
+            type: "library.done" | "library.failed" | "library.results" | "library.searching" | "search.done" | "search.failed" | "search.planning" | "search.queries" | "search.read" | "search.reading" | "search.results" | "search.skipped";
             /** Data */
             data: {
                 [key: string]: unknown;
@@ -1966,6 +2010,8 @@ export interface components {
             attachment_ids?: string[];
             /** Web */
             web?: boolean | null;
+            /** Library */
+            library?: boolean | null;
         };
         /** Source */
         Source: {
@@ -1988,7 +2034,13 @@ export interface components {
              * @default page
              * @enum {string}
              */
-            kind: "page" | "snippet";
+            kind: "page" | "snippet" | "document";
+            /** Document Id */
+            document_id?: string | null;
+            /** Page Start */
+            page_start?: number | null;
+            /** Page End */
+            page_end?: number | null;
             /** Passages */
             passages: components["schemas"]["Passage"][];
             /**
