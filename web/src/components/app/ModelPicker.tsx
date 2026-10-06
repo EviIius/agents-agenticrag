@@ -342,7 +342,7 @@ export function ModelPicker({
       <PopoverContent
         aria-label="Choose model"
         align="start"
-        className="flex max-h-(--radix-popover-content-available-height) w-[min(420px,calc(100vw-32px))] flex-col overflow-hidden p-0"
+        className="flex max-h-[calc(var(--radix-popover-content-available-height)-var(--spacing))] w-[min(420px,calc(100vw-32px))] flex-col overflow-hidden p-0"
       >
         {content}
       </PopoverContent>
