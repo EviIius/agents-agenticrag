@@ -1,0 +1,443 @@
+{
+  "question": "According to the Git manuals, compare reset --soft with revert: which moves HEAD without changing the index or working tree, and which records new commits that reverse earlier changes?",
+  "numeric_selection_trial": null,
+  "planner_property_words": [
+    "According",
+    "to",
+    "the",
+    "Git",
+    "manuals",
+    "compare",
+    "reset",
+    "soft",
+    "with",
+    "revert",
+    "which",
+    "moves",
+    "HEAD",
+    "without",
+    "changing",
+    "index",
+    "or",
+    "working",
+    "tree",
+    "and",
+    "records",
+    "new",
+    "commits",
+    "that",
+    "reverse",
+    "earlier",
+    "changes"
+  ],
+  "raw_answer": "According to the Git manuals, `git reset --soft` moves the HEAD without changing the index or working tree [1][3]. In contrast, `git revert` records new commits that reverse the changes introduced by earlier commits [4][5].",
+  "message": {
+    "id": "547106c313064feb8ee5226a95aefb71",
+    "chat_id": "30483573b49b42bea1b9e4db1c93ac57",
+    "parent_id": "c483781612bc4909bf02c98af698c724",
+    "role": "assistant",
+    "content": "According to the Git manuals, `git reset --soft` moves the HEAD without changing the index or working tree [1][3]. In contrast, `git revert` records new commits that reverse the changes introduced by earlier commits [4][5].",
+    "reasoning": null,
+    "status": "complete",
+    "error": null,
+    "model": {
+      "connection_id": "7ec04182cbc2434abb2b3c7d8edcea7c",
+      "model_id": "qwen3:30b-a3b-workbench-32k",
+      "display_name": "qwen3:30b-a3b-workbench-32k"
+    },
+    "attachments": [],
+    "stats": {
+      "reasoning_ms": null,
+      "ttft_ms": 16372.059124987572,
+      "total_ms": 17040.84191599395,
+      "prompt_tokens": 3421,
+      "completion_tokens": 51,
+      "tokens_per_sec": 76.38286687364926,
+      "tokens_estimated": false,
+      "load_ms": 7.315208,
+      "finish_reason": "stop",
+      "context_length": 32768,
+      "dropped_message_count": 0,
+      "params": {}
+    },
+    "web": {
+      "status": "used",
+      "freshness": "any",
+      "notice": null,
+      "queries": [
+        "Git reset --soft behavior index working tree",
+        "Git revert behavior new commits reverse changes"
+      ],
+      "timings": {
+        "plan": 740.0918339844793,
+        "search": 680.3144169971347,
+        "fetch": 11980.841166980099,
+        "rank": 5.582291982136667
+      },
+      "source_count": 6,
+      "plan_fallback": false,
+      "providers": [
+        "SearXNG"
+      ],
+      "ranking": "keyword",
+      "selection_condition": null
+    },
+    "library": null,
+    "created_at": "2026-10-06T21:29:52.234811+00:00"
+  },
+  "sources": [
+    {
+      "n": 1,
+      "url": "https://git-scm.com/docs/git-reset/2.21.0",
+      "title": "Git",
+      "site_name": "git-scm.com",
+      "domain": "git-scm.com",
+      "published_at": "2026-04-20",
+      "fetched_at": "2026-10-06T21:29:53.658147+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://git-scm.com/docs/git-reset/2.21.0",
+          "heading": "",
+          "ord": 0,
+          "text": "**git-reset**manual",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://git-scm.com/docs/git-reset/2.21.0",
+          "heading": "SYNOPSIS",
+          "ord": 3,
+          "text": "*git reset* [-q] [<tree-ish>] [--] <paths>…\n*git reset* (--patch | -p) [<tree-ish>] [--] [<paths>…]\n*git reset* [--soft | --mixed [-N] | --hard | --merge | --keep] [-q] [<commit>]",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://git-scm.com/docs/git-reset/2.21.0",
+          "heading": "DESCRIPTION",
+          "ord": 5,
+          "text": "- *git reset* [-q] [<tree-ish>] [--] <paths>…\n- \nThis form resets the index entries for all *<paths>* to their\nstate at*<tree-ish>* .  (It does not affect the working tree or\nthe current branch.)This means that `git``reset`*<paths>* is the opposite of`git``add`*<paths>* .After running `git``reset`*<paths>* to update the index entry, you can\nuse git-checkout[1] to check the contents out of the index to\nthe working tree.\nAlternatively, using git-checkout[1] and specifying a commit, you\ncan copy the contents of a path out of a commit to the index and to the\nworking tree in one go.\n- *git reset* (--patch | -p) [<tree-ish>] [--] [<paths>…]\n- \nInteractively select hunks in the difference between the index and *<tree-ish>* (defaults to`HEAD` ).  The chosen hunks are applied\nin reverse to the index.This means that `git``reset``-p` is the opposite of`git``add``-p` , i.e.\nyou can use it to selectively reset hunks. See the “Interactive Mode”\nsection of git-add[1] to learn how to operate the`--patch` mode.\n- *git reset* [<mode>] [<commit>]\n- \nThis form resets the current branch head to *<commit>* and\npossibly updates the index (resetting it to the tree of*<commit>* ) and\nthe working tree depending on*<mode>* . If*<mode>* is omitted,\ndefaults to`--mixed` . The*<mode>* must be one of the following:\n  - --soft\n  - \nDoes not touch the index file or the working tree at all (but resets the head to *<commit>* , just like all modes do). This leaves\nall your changed files \"Changes to be committed\", as`git``status` would put it.\n  - --mixed\n  -",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 2,
+      "url": "https://ituonline.com/blogs/how-to-revert-multiple-commits-in-git-and-manage-changes-effectively",
+      "title": "How To Revert Multiple Commits In Git And Manage Changes Effectively",
+      "site_name": "ITU Online Editorial Team",
+      "domain": "ituonline.com",
+      "published_at": "2026-05-28",
+      "fetched_at": "2026-10-06T21:29:53.658196+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://ituonline.com/blogs/how-to-revert-multiple-commits-in-git-and-manage-changes-effectively",
+          "heading": "CompTIA Pentest+ Course (PTO-003) | Online Penetration Testing Certification Training",
+          "ord": 2,
+          "text": "1. Inspect history with `git log --oneline --graph` .\n2. Identify the commits you want to remove.\n3. Run `git revert <commit-hash>` for each commit or use a range.\n4. Resolve any conflicts, then continue the revert.\n5. Review the result with `git diff` and`git log` .\n6. Test the branch before pushing.\n7. Use `--no-commit` if you want one combined revert commit.\n\n| Primary Topic | How to revert multiple commits in Git |\n|---|---|\n| Best Safe Method | `git revert` for shared branches as of May 2026 |\n| Riskier Method | `git reset --hard` for private work only as of May 2026 |\n| Useful Commands | `git log` ,`git show` ,`git revert --no-commit` as of May 2026 |\n| Merge Commit Handling | `git revert -m` as of May 2026 |\n| Typical Use Case | Undoing bad commits after push without rewriting shared history as of May 2026 |",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://ituonline.com/blogs/how-to-revert-multiple-commits-in-git-and-manage-changes-effectively",
+          "heading": "CompTIA Pentest+ Course (PTO-003) | Online Penetration Testing Certification Training",
+          "ord": 3,
+          "text": "For teams practicing source code control with Git, this is a practical skill, not an academic one. It matters in release branches, hotfixes, security rollbacks, and any situation where you need to reverse a bad change without disrupting everyone else’s work.\n\nIt also connects well to the kind of disciplined change control covered in the CompTIA Pentest+ Course (PTO-003) | Online Penetration Testing Certification Training, because real assessments often produce code, config, or documentation changes that need to be rolled back cleanly and documented clearly.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://ituonline.com/blogs/how-to-revert-multiple-commits-in-git-and-manage-changes-effectively",
+          "heading": "Revert Vs Reset: Choosing The Right Undo Method",
+          "ord": 7,
+          "text": "**git revert** is the command that creates a new commit reversing the changes introduced by an earlier commit. **git reset** is the command that moves the branch pointer, which can rewrite history and make shared branches harder to manage.\n\nThat difference is the core decision. If the commits are already pushed to a shared repository, revert is usually the correct choice because it preserves auditability. If the commits exist only on your local feature branch and no one else has pulled them, reset may be acceptable because you are not disrupting anyone else’s history.\n\nHere is the practical comparison:\n\n| git revert | Safe for shared branches, preserves history, creates a new undo commit, and is easier to coordinate in teams. |\n|---|---|\n| git reset | Fast for private work, but risky on public branches because it rewrites commit history and can break collaboration. |",
+          "selection_applied": false
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 3,
+      "url": "https://learn.programmingline.com/learn/git/git-reset",
+      "title": "git reset Explained: Soft, Mixed, and Hard Modes",
+      "site_name": "Programming Line",
+      "domain": "learn.programmingline.com",
+      "published_at": "2026-08-03",
+      "fetched_at": "2026-10-06T21:30:00.889857+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://learn.programmingline.com/learn/git/git-reset",
+          "heading": "Overview: How git reset Works",
+          "ord": 2,
+          "text": "- **`--soft`** : Only the branch pointer moves. The index and working directory are left completely untouched. Anything that was committed in the commits you just \\”undid\\” now shows up as already staged, ready to be committed again (possibly reshaped).\n- **`--mixed`** (the default when you omit a flag): The branch pointer moves, and the index is reset to match the target commit’s tree. The working directory is left untouched. This effectively un-stages everything from the commits you undid; your edits are still on disk, but Git now sees them as unstaged modifications.\n- **`--hard`** : The branch pointer moves, the index is reset,*and* the working directory is forcibly overwritten to match the target commit exactly. Any staged or unstaged local changes to tracked files are gone. This is destructive and should be used with real caution.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://learn.programmingline.com/learn/git/git-reset",
+          "heading": "reset vs. revert vs. restore",
+          "ord": 4,
+          "text": "`git reset` rewrites which commit your branch points at, which is only safe for commits that exist solely on your local, unshared branch. `git revert` instead creates a brand-new commit that undoes the changes of an earlier one, leaving history intact and moving forward, which makes it the correct tool once a commit has been pushed and others may have it. `git restore` is the modern, narrower command for discarding working-tree edits or unstaging files, without any of `reset`‘s branch-pointer-moving behavior.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://learn.programmingline.com/learn/git/git-reset",
+          "heading": "Syntax",
+          "ord": 5,
+          "text": "```\ngit reset [--soft | --mixed | --hard] \\\"<commit>\\\"\ngit reset \\\"<commit>\\\" -- \\\"<pathspec>\\\"\n```\n\n| Flag | Branch / HEAD pointer | Index (staging area) | Working directory |\n|---|---|---|---|\n| `--soft` | Moved | Unchanged | Unchanged |\n| `--mixed` (default) | Moved | Reset to match target commit | Unchanged |\n| `--hard` | Moved | Reset to match target commit | Reset to match target commit (destructive) |",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 4,
+      "url": "https://mirrors.edge.kernel.org/pub/software/scm/git/docs/git-revert.html",
+      "title": "git-revert(1) Manual Page",
+      "site_name": "mirrors.edge.kernel.org",
+      "domain": "mirrors.edge.kernel.org",
+      "published_at": "2025-06-20",
+      "fetched_at": "2026-10-06T21:30:05.435302+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://mirrors.edge.kernel.org/pub/software/scm/git/docs/git-revert.html",
+          "heading": "SYNOPSIS",
+          "ord": 0,
+          "text": "*git revert* [--[no-]edit] [-n] [-m <parent-number>] [-s] [-S[<keyid>]] <commit>…\n*git revert* (--continue | --skip | --abort | --quit)",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://mirrors.edge.kernel.org/pub/software/scm/git/docs/git-revert.html",
+          "heading": "DESCRIPTION",
+          "ord": 1,
+          "text": "Given one or more existing commits, revert the changes that the related patches introduce, and record some new commits that record them. This requires your working tree to be clean (no modifications from the HEAD commit).\n\nNote: *git revert* is used to record some new commits to reverse the\neffect of some earlier commits (often only a faulty one).  If you want to\nthrow away all uncommitted changes in your working directory, you\nshould see git-reset(1), particularly the `--hard` option.  If\nyou want to extract specific files as they were in another commit, you\nshould see git-restore(1), specifically the `--source`\noption. Take care with these alternatives as\nboth will discard uncommitted changes in your working directory.\n\nSee \"Reset, restore and revert\" in git(1) for the differences between the three commands.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://mirrors.edge.kernel.org/pub/software/scm/git/docs/git-revert.html",
+          "heading": "OPTIONS",
+          "ord": 3,
+          "text": "Usually the command automatically creates some commits with commit log messages stating which commits were reverted. This flag applies the changes necessary to revert the named commits to your working tree and the index, but does not make the commits. In addition, when this option is used, your index does not have to match the HEAD commit. The revert is done against the beginning state of your index. This is useful when reverting more than one commits' effect to your index in a row.\n- -S[<keyid>]\n- --gpg-sign[=<keyid>]\n- --no-gpg-sign\n- \nGPG-sign commits. The `keyid` argument is optional and\ndefaults to the committer identity; if specified, it must be\nstuck to the option without a space.`--no-gpg-sign` is useful to\ncountermand both`commit.gpgSign` configuration variable, and\nearlier`--gpg-sign` .\n- -s\n- --signoff\n- \nAdd a `Signed-off-by` trailer at the end of the commit message.\nSee the signoff option in git-commit(1) for more information.\n- --strategy=<strategy>\n- \nUse the given merge strategy. Should only be used once. See the MERGE STRATEGIES section in git-merge(1) for details.\n- -X<option>\n- --strategy-option=<option>\n- \nPass the merge strategy-specific option through to the merge strategy. See git-merge(1) for details.\n- `--rerere-autoupdate`\n- `--no-rerere-autoupdate`\n- \nAfter the rerere mechanism reuses a recorded resolution on the current conflict to update the files in the working tree, allow it to also update the index with the result of resolution. `--no-rerere-autoupdate` is a good way to\ndouble-check what git-rerere(1) did and catch potential",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 5,
+      "url": "https://git-scm.com/docs/git-revert.html",
+      "title": "Git",
+      "site_name": "git-scm.com",
+      "domain": "git-scm.com",
+      "published_at": "2026-04-20",
+      "fetched_at": "2026-10-06T21:29:53.658172+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://git-scm.com/docs/git-revert.html",
+          "heading": "",
+          "ord": 0,
+          "text": "**git-revert**manual",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://git-scm.com/docs/git-revert.html",
+          "heading": "SYNOPSIS",
+          "ord": 3,
+          "text": "*git revert* [--[no-]edit] [-n] [-m <parent-number>] [-s] [-S[<keyid>]] <commit>…\n*git revert* (--continue | --skip | --abort | --quit)",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://git-scm.com/docs/git-revert.html",
+          "heading": "DESCRIPTION",
+          "ord": 4,
+          "text": "Given one or more existing commits, revert the changes that the related patches introduce, and record some new commits that record them. This requires your working tree to be clean (no modifications from the HEAD commit).\n\nNote: *git revert* is used to record some new commits to reverse the\neffect of some earlier commits (often only a faulty one).  If you want to\nthrow away all uncommitted changes in your working directory, you\nshould see git-reset[1], particularly the `--hard` option.  If\nyou want to extract specific files as they were in another commit, you\nshould see git-restore[1], specifically the `--source`\noption. Take care with these alternatives as\nboth will discard uncommitted changes in your working directory.\n\nSee \"Reset, restore and revert\" in git[1] for the differences between the three commands.",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 6,
+      "url": "https://tortoisegit.org/docs/tortoisegit/tgit-dug-reset.html",
+      "title": "TortoiseGit Manual",
+      "site_name": "TortoiseGit team and contributors",
+      "domain": "tortoisegit.org",
+      "published_at": null,
+      "fetched_at": "2026-10-06T21:29:53.658203+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://tortoisegit.org/docs/tortoisegit/tgit-dug-reset.html",
+          "heading": "TortoiseGit Manual",
+          "ord": 0,
+          "text": "The reset dialog can be used to reset the current HEAD to the specified state and optionally also the index and the working tree. This can also be used to abort a merge.\n\nOn the Reset dialog, you can click ... to browse the log and choose a specific version. In Abort merge dialog, you can only reset to HEAD.\n\nSoft: Leave working tree and index untouched Does not touch the index file nor the working tree at all (but resets the head to the selected commit, just like all modes do). This leaves all your changed files \"Changes to be committed\" as before. This option is not available in Abort Merge dialog.\n\nMixed: Leave working tree untouched, reset index Resets the index but not the working tree (i.e., the changed files are preserved but not marked for commit) and reports what has not been updated. This is the git default action. This option can abort a merge.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://tortoisegit.org/docs/tortoisegit/tgit-dug-reset.html",
+          "heading": "TortoiseGit Manual",
+          "ord": 1,
+          "text": "Hard: Reset working tree and index (discard all local changes) Resets the index and working tree. Any changes to tracked files in the working tree since the selected commit are discarded. This option can abort a merge, and it is the default action in Abort Merge dialog.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://tortoisegit.org/docs/tortoisegit/tgit-dug-reset.html",
+          "heading": "Git hard reset does not use the Windows recycle bin",
+          "ord": 2,
+          "text": "Unlike the revert or clean functions of TortoiseGit, the hard reset does not make use of the Windows recycle bin, i.e., uncommitted changes might get lost!\n\nYou can find more information at git-reset(1) man-page.",
+          "selection_applied": false
+        }
+      ],
+      "cited": false
+    }
+  ],
+  "reads": [
+    {
+      "url": "https://geeksforgeeks.org/git/how-to-reset-to-head-in-git",
+      "title": "Git Reset - GeeksforGeeks",
+      "site_name": "geeksforgeeks.org",
+      "status": "failed",
+      "reason": "[Errno 65] No route to host"
+    },
+    {
+      "url": "https://geeksforgeeks.org/git/overturning-changes-in-git",
+      "title": "Reverting a Git Commit - GeeksforGeeks",
+      "site_name": "geeksforgeeks.org",
+      "status": "failed",
+      "reason": "[Errno 65] No route to host"
+    },
+    {
+      "url": "https://git-scm.com/docs/git-reset/2.21.0",
+      "title": "Git",
+      "site_name": "git-scm.com",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://git-scm.com/docs/git-revert.html",
+      "title": "Git",
+      "site_name": "git-scm.com",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://ituonline.com/blogs/how-to-revert-multiple-commits-in-git-and-manage-changes-effectively",
+      "title": "How To Revert Multiple Commits In Git And Manage Changes Effectively",
+      "site_name": "ITU Online Editorial Team",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://learn.programmingline.com/learn/git/git-reset",
+      "title": "git reset Explained: Soft, Mixed, and Hard Modes",
+      "site_name": "Programming Line",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://mirrors.edge.kernel.org/pub/software/scm/git/docs/git-revert.html",
+      "title": "git-revert(1) Manual Page",
+      "site_name": "mirrors.edge.kernel.org",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://stackoverflow.com/questions/5203535/practical-uses-of-git-reset-soft",
+      "title": "Practical uses of git reset --soft? - Stack Overflow",
+      "site_name": "stackoverflow.com",
+      "status": "failed",
+      "reason": "HTTP 403"
+    },
+    {
+      "url": "https://stackoverflow.com/questions/5381945/how-do-i-reverse-a-commit-in-git",
+      "title": "github - How do I reverse a commit in git? - Stack Overflow",
+      "site_name": "stackoverflow.com",
+      "status": "failed",
+      "reason": "HTTP 403"
+    },
+    {
+      "url": "https://tortoisegit.org/docs/tortoisegit/tgit-dug-reset.html",
+      "title": "TortoiseGit Manual",
+      "site_name": "TortoiseGit team and contributors",
+      "status": "used",
+      "reason": null
+    }
+  ],
+  "elapsed_ms": 17055.359125020914,
+  "web": {
+    "status": "used",
+    "freshness": "any",
+    "notice": null,
+    "queries": [
+      "Git reset --soft behavior index working tree",
+      "Git revert behavior new commits reverse changes"
+    ],
+    "timings": {
+      "plan": 740.0918339844793,
+      "search": 680.3144169971347,
+      "fetch": 11980.841166980099,
+      "rank": 5.582291982136667
+    },
+    "source_count": 6,
+    "plan_fallback": false,
+    "providers": [
+      "SearXNG"
+    ],
+    "ranking": "keyword",
+    "selection_condition": null
+  }
+}

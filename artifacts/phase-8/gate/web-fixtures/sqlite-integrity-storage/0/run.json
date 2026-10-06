@@ -1,0 +1,418 @@
+{
+  "question": "Using SQLite’s documentation, explain how to enable foreign-key enforcement for each connection and whether WAL permits a reader alongside a writer or supports a database on a network filesystem.",
+  "numeric_selection_trial": null,
+  "planner_property_words": [
+    "Using",
+    "SQLite",
+    "s",
+    "documentation",
+    "explain",
+    "how",
+    "to",
+    "enable",
+    "foreign",
+    "key",
+    "enforcement",
+    "for",
+    "each",
+    "connection",
+    "and",
+    "whether",
+    "WAL",
+    "permits",
+    "a",
+    "reader",
+    "alongside",
+    "writer",
+    "or",
+    "supports",
+    "database",
+    "on",
+    "network",
+    "filesystem"
+  ],
+  "raw_answer": "To enable foreign-key enforcement for each connection in SQLite, the `PRAGMA foreign_keys = ON;` command must be executed immediately after opening a connection [3]. This setting is per-connection and not stored in the database file, meaning every application, CLI session, or test fixture must explicitly set it [3]. Without this pragma, foreign key constraints are parsed but not enforced, allowing invalid data such as orphaned rows to be inserted [3].\n\nRegarding WAL mode, it permits a reader and a writer to access the database concurrently. In WAL mode, readers never block writers, and writers never block readers, enabling high concurrency [1]. However, WAL mode does not support databases on a network filesystem. This is because WAL requires shared memory access among processes, which is not possible across separate host machines [5]. The shared memory file (`.db-shm`) and the WAL file (`.db-wal`) must be accessible to all processes on the same host, making network filesystems incompatible [1][5].",
+  "message": {
+    "id": "7d624b3486204d20a93c102dc499ea35",
+    "chat_id": "f906e699f03d4ba181e417552eff2e57",
+    "parent_id": "d7f90487cb6e44c58c4f29ec51883090",
+    "role": "assistant",
+    "content": "To enable foreign-key enforcement for each connection in SQLite, the `PRAGMA foreign_keys = ON;` command must be executed immediately after opening a connection [3]. This setting is per-connection and not stored in the database file, meaning every application, CLI session, or test fixture must explicitly set it [3]. Without this pragma, foreign key constraints are parsed but not enforced, allowing invalid data such as orphaned rows to be inserted [3].\n\nRegarding WAL mode, it permits a reader and a writer to access the database concurrently. In WAL mode, readers never block writers, and writers never block readers, enabling high concurrency [1]. However, WAL mode does not support databases on a network filesystem. This is because WAL requires shared memory access among processes, which is not possible across separate host machines [5]. The shared memory file (`.db-shm`) and the WAL file (`.db-wal`) must be accessible to all processes on the same host, making network filesystems incompatible [1][5].",
+    "reasoning": null,
+    "status": "complete",
+    "error": null,
+    "model": {
+      "connection_id": "7ec04182cbc2434abb2b3c7d8edcea7c",
+      "model_id": "qwen3:30b-a3b-workbench-32k",
+      "display_name": "qwen3:30b-a3b-workbench-32k"
+    },
+    "attachments": [],
+    "stats": {
+      "reasoning_ms": null,
+      "ttft_ms": 6107.118082989473,
+      "total_ms": 8887.001666007563,
+      "prompt_tokens": 3582,
+      "completion_tokens": 206,
+      "tokens_per_sec": 74.1418975143029,
+      "tokens_estimated": false,
+      "load_ms": 7.270083,
+      "finish_reason": "stop",
+      "context_length": 32768,
+      "dropped_message_count": 0,
+      "params": {}
+    },
+    "web": {
+      "status": "used",
+      "freshness": "any",
+      "notice": null,
+      "queries": [
+        "SQLite enable foreign-key enforcement per connection",
+        "SQLite WAL mode reader and writer concurrent access",
+        "SQLite WAL mode network filesystem support"
+      ],
+      "timings": {
+        "plan": 1171.533582964912,
+        "search": 1426.9572920165956,
+        "fetch": 351.16374999051914,
+        "rank": 7.108707970473915
+      },
+      "source_count": 6,
+      "plan_fallback": false,
+      "providers": [
+        "SearXNG"
+      ],
+      "ranking": "keyword",
+      "selection_condition": null
+    },
+    "library": null,
+    "created_at": "2026-10-06T21:29:32.754954+00:00"
+  },
+  "sources": [
+    {
+      "n": 1,
+      "url": "https://dev.to/syed_anzar/how-sqlite-wal-mode-actually-works-the-3-files-shared-memory-and-lock-free-reads-1j2l",
+      "title": "How SQLite WAL Mode Actually Works: The 3 Files, Shared Memory, and Lock-Free Reads",
+      "site_name": "DEV Community",
+      "domain": "dev.to",
+      "published_at": "2026-10-06",
+      "fetched_at": "2026-10-06T21:29:35.357002+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://dev.to/syed_anzar/how-sqlite-wal-mode-actually-works-the-3-files-shared-memory-and-lock-free-reads-1j2l",
+          "heading": "",
+          "ord": 0,
+          "text": "Every developer knows SQLite's default pitch: it is a lightweight, zero-configuration, single-file database engine embedded directly inside your application process.\n\nFor years, developers also repeated a persistent criticism: *SQLite cannot handle concurrent access because any write locks the entire database.*\n\nIf you use SQLite in its default configuration, that criticism is accurate. Under the legacy rollback journal mode, writing a single row acquires an exclusive lock on the database file, blocking every concurrent reader and writer until the transaction commits.\n\nEnable Write-Ahead Logging (`PRAGMA journal_mode = WAL;`), and that locking behavior changes completely. Readers no longer block writers. Writers no longer block readers. A high-throughput web server can process thousands of concurrent read queries while a background worker continuously appends new records.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://dev.to/syed_anzar/how-sqlite-wal-mode-actually-works-the-3-files-shared-memory-and-lock-free-reads-1j2l",
+          "heading": "6. Checkpointing: Moving Frames Back to the Main Database",
+          "ord": 20,
+          "text": "| Mode | Behavior | Blocks Writers? | Blocks Readers? |\n|---|---|---|---|\n| **`PASSIVE`** | Backfills as many frames as possible up to the oldest active `readMark` . If an active reader is reading an old frame, it stops without waiting. Default mode used by auto-checkpoints. | No | No |\n| **`FULL`** | Blocks new writers and waits for existing readers to finish, then backfills all frames to the main `.db` file. | Yes | No |\n| **`RESTART`** | Like `FULL` , but also waits for all readers to clear so it can reset the WAL index to frame 1. Subsequent writes overwrite the WAL file from the beginning. | Yes | Yes (briefly) |\n| **`TRUNCATE`** | Like `RESTART` , but additionally truncates the`app.db-wal` file on disk to 0 bytes. | Yes | Yes (briefly) |",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://dev.to/syed_anzar/how-sqlite-wal-mode-actually-works-the-3-files-shared-memory-and-lock-free-reads-1j2l",
+          "heading": "Summary Mental Model",
+          "ord": 27,
+          "text": "| Feature | Rollback Journal ( `DELETE` ) | Write-Ahead Log ( `WAL` ) |\n|---|---|---|\n| **Write Strategy** | Overwrite main `.db` in-place after journal copy | Append new frames to `.db-wal` |\n| **Readers vs Writers** | Writers block readers; Readers block writers | **Readers never block writers; Writers never block readers** |\n| **Commit Overhead** | 2 disk writes + multiple fsyncs per commit | 1 append write + 1 fsync per commit |\n| **Companion Files** | Temporary `app.db-journal` during writes | Persistent `app.db-wal` and`app.db-shm` |\n| **Network FS Support** | Supported with network locks | **Unsupported** (requires shared OS memory) |\n| **Concurrency Ceiling** | 1 active operation (Read OR Write) | **N concurrent Readers + 1 serialized Writer** |",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 2,
+      "url": "https://sqlitetutorial.net/sqlite-foreign-key",
+      "title": "SQLite Foreign Key: Enforce Relationships Between Tables",
+      "site_name": "SQLite Tutorial",
+      "domain": "sqlitetutorial.net",
+      "published_at": "2022-04-03",
+      "fetched_at": "2026-10-06T21:29:35.357034+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://sqlitetutorial.net/sqlite-foreign-key",
+          "heading": "",
+          "ord": 0,
+          "text": "**Summary**: in this tutorial, you will learn how to use the SQLite foreign key constraint to enforce the relationships between related tables.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://sqlitetutorial.net/sqlite-foreign-key",
+          "heading": "SQLite foreign key constraint support #",
+          "ord": 1,
+          "text": "SQLite has supported foreign key constraint since version 3.6.19. The SQLite library must also be compiled with neither SQLITE_OMIT_FOREIGN_KEY nor SQLITE_OMIT_TRIGGER.\n\nTo check whether your current version of SQLite supports foreign key constraints or not, you use the following command.\n\n`PRAGMA foreign_keys;`\nThe command returns an integer value: 1: enable, 0: disabled. If the command returns nothing, it means that your SQLite version doesn’t support foreign key constraints.\n\nIf the SQLite library is compiled with foreign key constraint support, the application can use the `PRAGMA foreign_keys` command to enable or disable foreign key constraints at runtime.\n\nTo disable foreign key constraint:\n\n`PRAGMA foreign_keys = OFF;`\nTo enable foreign key constraint:\n\n`PRAGMA foreign_keys = ON;`",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://sqlitetutorial.net/sqlite-foreign-key",
+          "heading": "Introduction to the SQLite foreign key constraints #",
+          "ord": 2,
+          "text": "Let’s start with two tables: `suppliers` and `supplier_groups` :\n\n```\nCREATE TABLE suppliers (\n\tsupplier_id integer PRIMARY KEY,\n\tsupplier_name text NOT NULL,\n\tgroup_id integer NOT NULL\n);\nCREATE TABLE supplier_groups (\n\tgroup_id integer PRIMARY KEY,\n\tgroup_name text NOT NULL\n);\n```\nAssuming that each supplier belongs to one and only one supplier group. And each supplier group may have zero or many suppliers. The relationship between `supplier_groups` and `suppliers` tables is one-to-many. In other words, for each row in the `suppliers` table, there is a corresponding row in the `supplier_groups` table.\n\nCurrently, there is no way to prevent you from adding a row to the `suppliers` table without a corresponding row in the `supplier_groups` table.",
+          "selection_applied": false
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 3,
+      "url": "https://coddy.tech/docs/sqlite/foreign-keys",
+      "title": "Runnable SQLite Docs: Foreign Keys | Coddy",
+      "site_name": "Coddy",
+      "domain": "coddy.tech",
+      "published_at": "2026-05-03",
+      "fetched_at": "2026-10-06T21:29:35.357039+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://coddy.tech/docs/sqlite/foreign-keys",
+          "heading": "A Foreign Key Is a Pointer Between Tables",
+          "ord": 0,
+          "text": "A foreign key is a column in one table whose value must match a row in another table. It's how relational databases say \"this `posts` row belongs to that `authors` row\" without copying the author's name and email into every post.\n\nHere's the smallest possible example - a parent table and a child table linked by an FK:\n\n`author_id INTEGER REFERENCES authors(id)` is the whole foreign key declaration. It says: this column holds an `id` from the `authors` table. The database now knows the two tables are related, and - if enforcement is on - will refuse inserts that point at non-existent authors.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://coddy.tech/docs/sqlite/foreign-keys",
+          "heading": "Foreign Keys Are Off by Default",
+          "ord": 1,
+          "text": "This is the single most important fact about SQLite foreign keys, and it surprises everyone: SQLite parses `REFERENCES` clauses but doesn't enforce them unless you ask. The reason is historical compatibility - older databases were built before the feature existed.\n\nWatch what happens without enforcement:\n\nThe orphan row went straight in. To get the protection you actually want, run `PRAGMA foreign_keys = ON;` at the start of every connection:\n\nNow the insert fails with `FOREIGN KEY constraint failed`. The pragma is per-connection, not per-database - the setting isn't stored in the file. Every application, every CLI session, every test fixture has to set it. Most production code runs `PRAGMA foreign_keys = ON;` immediately after opening a connection.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://coddy.tech/docs/sqlite/foreign-keys",
+          "heading": "Adding Foreign Keys to Existing Tables",
+          "ord": 5,
+          "text": "SQLite's `ALTER TABLE` is limited - you can add a column with a foreign key, but you can't tack a foreign key onto a column that already exists. The standard workaround is the rename-and-rebuild dance:\n\nThe pattern: turn enforcement off, create the new table with the constraints you want, copy the data, drop the old table, rename. The `BEGIN`/`COMMIT` keeps it atomic. Turn enforcement back on at the end and SQLite will validate all existing rows against the new constraints - if any data is invalid, the transaction has already committed, so check first if you're worried.\n\nRun `PRAGMA foreign_key_check;` after the migration to confirm there are no orphaned rows.",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 4,
+      "url": "https://coddy.tech/docs/sqlite/wal-mode-and-concurrency",
+      "title": "Runnable SQLite Docs: WAL & Concurrency | Coddy",
+      "site_name": "Coddy",
+      "domain": "coddy.tech",
+      "published_at": "2026-05-03",
+      "fetched_at": "2026-10-06T21:29:35.357024+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://coddy.tech/docs/sqlite/wal-mode-and-concurrency",
+          "heading": "The Default Mode and Its Limits",
+          "ord": 0,
+          "text": "By default, SQLite uses a *rollback journal*. When you write, SQLite copies the original pages into a `-journal` file, modifies the main database, and deletes the journal on commit. If the process crashes mid-write, the journal is replayed in reverse to undo the partial change.\n\nIt's simple and safe, but it has one painful property: writers and readers fight for the same file. While a writer holds the database lock, no reader can start a new transaction. While readers are active, the writer waits. On a busy app - a web server with a few concurrent requests, say - you'll see `SQLITE_BUSY` errors faster than you'd like.\n\nWAL mode changes that.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://coddy.tech/docs/sqlite/wal-mode-and-concurrency",
+          "heading": "What WAL Actually Does",
+          "ord": 1,
+          "text": "Write-ahead logging flips the model around. Instead of modifying the main database file in place, the writer *appends* committed pages to a separate file with a `-wal` suffix. Readers keep reading the main file, but they also peek at the WAL to see any newer versions of pages they need.\n\nThe result: a writer and any number of readers can be active at the same moment. Each reader sees a consistent snapshot from when its transaction began, and the writer is busy adding to the WAL without touching what the readers are looking at.\n\nThat single pragma switches the database. The mode is persistent - it's stored in the file header, so every future connection picks up WAL automatically. You don't need to run this on every connection, just once when you provision the database (or in your migration runner).",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://coddy.tech/docs/sqlite/wal-mode-and-concurrency",
+          "heading": "Enabling and Verifying",
+          "ord": 3,
+          "text": "You can confirm the current mode any time:\n\nThe first call enables WAL and returns the new mode. The second call (with no `=`) just queries it. After this, your `messages.db` directory will contain three files when there's activity: `messages.db`, `messages.db-wal`, and `messages.db-shm`. The last two appear and disappear depending on whether connections are open.",
+          "selection_applied": false
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 5,
+      "url": "https://sqlite.org/wal.html",
+      "title": "Write-Ahead Logging",
+      "site_name": "sqlite.org",
+      "domain": "sqlite.org",
+      "published_at": "2026-08-25",
+      "fetched_at": "2026-10-06T21:29:35.357017+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://sqlite.org/wal.html",
+          "heading": "",
+          "ord": 0,
+          "text": "The default method by which SQLite implements atomic commit and rollback is a rollback journal. Beginning with version 3.7.0 (2010-07-21), a new \"Write-Ahead Log\" option (hereafter referred to as \"WAL\") is available.\n\nThere are advantages and disadvantages to using WAL instead of a rollback journal. Advantages include:\n\n1. WAL is significantly faster in most scenarios.\n2. WAL provides more concurrency as readers do not block writers and a writer does not block readers. Reading and writing can proceed concurrently.\n3. Disk I/O operations tends to be more sequential using WAL.\n4. WAL uses many fewer fsync() operations and is thus less vulnerable to problems on systems where the fsync() system call is broken.\n\nBut there are also disadvantages:",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://sqlite.org/wal.html",
+          "heading": "",
+          "ord": 1,
+          "text": "1. All processes using a database must be on the same host computer; WAL does not work over a network filesystem. This is because WAL requires all processes to share a small amount of memory and processes on separate host machines obviously cannot share memory with each other.\n2. Transactions that involve changes against multiple ATTACHed databases are atomic for each individual database, but are not atomic across all databases as a set.\n3. It is not possible to change the page_size after entering WAL mode, either on an empty database or by using VACUUM or by restoring from a backup using the backup API. You must be in a rollback journal mode to change the page size.\n4. ~~It is not possible to open read-only WAL databases.\n    The opening process must have write privileges for \"`-shm`\"\n    wal-index shared memory file associated with the database, if that\n    file exists, or else write access on the directory containing\n    the database file if the \"`-shm`\" file does not exist.~~ Beginning with version 3.22.0 (2018-01-22), a read-only \n    WAL-mode database file can be opened if\n    the`-shm` and`-wal` files\n    already exist or those files can be created or the\n    database is immutable.\n5. WAL might be very slightly slower (perhaps 1% or 2% slower) than the traditional rollback-journal approach in applications that do mostly reads and seldom write.\n6. There is an additional quasi-persistent \"`-wal` \" file and\n    \"`-shm` \" shared memory file associated with each\n    database, which can make SQLite less appealing for use as an \n    application file-format.\n7.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://sqlite.org/wal.html",
+          "heading": "",
+          "ord": 7,
+          "text": "When a reader needs a page of content, it first checks the WAL to see if that page appears there, and if so it pulls in the last copy of the page that occurs in the WAL prior to the reader's end mark. If no copy of the page exists in the WAL prior to the reader's end mark, then the page is read from the original database file. Readers can exist in separate processes, so to avoid forcing every reader to scan the entire WAL looking for pages (the WAL file can grow to multiple megabytes, depending on how often checkpoints are run), a data structure called the \"wal-index\" is maintained in shared memory which helps readers locate pages in the WAL quickly and with a minimum of I/O. The wal-index greatly improves the performance of readers, but the use of shared memory means that all readers must exist on the same machine. This is why the write-ahead log implementation will not work on a network filesystem.",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 6,
+      "url": "https://sqlite.org/lockingv3.html",
+      "title": "File Locking And Concurrency In SQLite Version 3",
+      "site_name": "sqlite.org",
+      "domain": "sqlite.org",
+      "published_at": "2025-05-31",
+      "fetched_at": "2026-10-06T21:29:35.357030+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://sqlite.org/lockingv3.html",
+          "heading": "",
+          "ord": 0,
+          "text": "This document was originally created in early 2004 when SQLite version 2 was still in widespread use and was written to introduce the new concepts of SQLite version 3 to readers who were already familiar with SQLite version 2. But these days, most readers of this document have probably never seen SQLite version 2 and are only familiar with SQLite version 3. Nevertheless, this document continues to serve as an authoritative reference to how database file locking works in SQLite version 3.\n\nThe document only describes locking for the older rollback-mode transaction mechanism. Locking for the newer write-ahead log or WAL mode is described separately.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://sqlite.org/lockingv3.html",
+          "heading": "",
+          "ord": 1,
+          "text": "SQLite Version 3.0.0 introduced a new locking and journaling mechanism designed to improve concurrency over SQLite version 2 and to reduce the writer starvation problem. The new mechanism also allows atomic commits of transactions involving multiple database files. This document describes the new locking mechanism. The intended audience is programmers who want to understand and/or modify the pager code and reviewers working to verify the design of SQLite version 3.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://sqlite.org/lockingv3.html",
+          "heading": "",
+          "ord": 2,
+          "text": "Locking and concurrency control are handled by the pager module. The pager module is responsible for making SQLite \"ACID\" (Atomic, Consistent, Isolated, and Durable). The pager module makes sure changes happen all at once, that either all changes occur or none of them do, that two or more processes do not try to access the database in incompatible ways at the same time, and that once changes have been written they persist until explicitly deleted. The pager also provides a memory cache of some of the contents of the disk file.",
+          "selection_applied": false
+        }
+      ],
+      "cited": false
+    }
+  ],
+  "reads": [
+    {
+      "url": "https://coddy.tech/docs/sqlite/foreign-keys",
+      "title": "Runnable SQLite Docs: Foreign Keys | Coddy",
+      "site_name": "Coddy",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://coddy.tech/docs/sqlite/wal-mode-and-concurrency",
+      "title": "Runnable SQLite Docs: WAL & Concurrency | Coddy",
+      "site_name": "Coddy",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://dev.to/syed_anzar/how-sqlite-wal-mode-actually-works-the-3-files-shared-memory-and-lock-free-reads-1j2l",
+      "title": "How SQLite WAL Mode Actually Works: The 3 Files, Shared Memory, and Lock-Free Reads",
+      "site_name": "DEV Community",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://sqlite.org/lockingv3.html",
+      "title": "File Locking And Concurrency In SQLite Version 3",
+      "site_name": "sqlite.org",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://sqlite.org/wal.html",
+      "title": "Write-Ahead Logging",
+      "site_name": "sqlite.org",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://sqlitetutorial.net/sqlite-foreign-key",
+      "title": "SQLite Foreign Key: Enforce Relationships Between Tables",
+      "site_name": "SQLite Tutorial",
+      "status": "used",
+      "reason": null
+    }
+  ],
+  "elapsed_ms": 8898.401958053,
+  "web": {
+    "status": "used",
+    "freshness": "any",
+    "notice": null,
+    "queries": [
+      "SQLite enable foreign-key enforcement per connection",
+      "SQLite WAL mode reader and writer concurrent access",
+      "SQLite WAL mode network filesystem support"
+    ],
+    "timings": {
+      "plan": 1171.533582964912,
+      "search": 1426.9572920165956,
+      "fetch": 351.16374999051914,
+      "rank": 7.108707970473915
+    },
+    "source_count": 6,
+    "plan_fallback": false,
+    "providers": [
+      "SearXNG"
+    ],
+    "ranking": "keyword",
+    "selection_condition": null
+  }
+}

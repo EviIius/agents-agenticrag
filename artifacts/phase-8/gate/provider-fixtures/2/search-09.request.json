@@ -1,0 +1,85 @@
+{
+  "model": "gpt-oss:20b",
+  "stream": true,
+  "messages": [
+    {
+      "role": "system",
+      "content": "Use the supplied native tools when requested. Do not simulate calls in text. This is an isolated protocol test with synthetic inputs."
+    },
+    {
+      "role": "user",
+      "content": "Call web_search to find public data licensing. Use the query \"public data licensing\" and freshness \"year\"."
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "web_search",
+        "description": "Search the public web.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "freshness": {
+              "type": "string",
+              "enum": [
+                "any",
+                "day",
+                "week",
+                "month",
+                "year"
+              ]
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "read_page",
+        "description": "Read a public page from the supplied allowlist.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "focus": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "url",
+            "focus"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "finish",
+        "description": "End research after sufficient evidence is gathered.",
+        "parameters": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        }
+      }
+    }
+  ],
+  "options": {
+    "num_ctx": 16384
+  }
+}

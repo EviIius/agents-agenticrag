@@ -1,0 +1,414 @@
+{
+  "question": "Using MDN’s If-Match and If-None-Match references, compare their ETag matching rules. What status follows a failed If-Match precondition, and what status does a matching If-None-Match produce for GET or HEAD?",
+  "numeric_selection_trial": null,
+  "planner_property_words": [
+    "Using",
+    "MDN",
+    "s",
+    "If",
+    "Match",
+    "and",
+    "None",
+    "references",
+    "compare",
+    "their",
+    "ETag",
+    "matching",
+    "rules",
+    "What",
+    "status",
+    "follows",
+    "a",
+    "failed",
+    "precondition",
+    "what",
+    "does",
+    "produce",
+    "for",
+    "GET",
+    "or",
+    "HEAD"
+  ],
+  "raw_answer": "According to the provided sources, the status code that follows a failed If-Match precondition is 412 Precondition Failed [4]. This occurs when the condition defined by the If-Match header is not fulfilled, such as when the resource's ETag does not match the one specified in the header [4].\n\nFor an If-None-Match header, a matching ETag during a GET or HEAD request results in the status code 304 Not Modified [3]. This indicates that the client's cached copy is still current, and the server does not need to send the resource body again [3].",
+  "message": {
+    "id": "e00e42a9c0c24dfba541ab0cc62f3ded",
+    "chat_id": "cc7cce959bec414a952b81428954ae8d",
+    "parent_id": "02905cf4f17546f7a8760fa5d6819192",
+    "role": "assistant",
+    "content": "According to the provided sources, the status code that follows a failed If-Match precondition is 412 Precondition Failed [4]. This occurs when the condition defined by the If-Match header is not fulfilled, such as when the resource's ETag does not match the one specified in the header [4].\n\nFor an If-None-Match header, a matching ETag during a GET or HEAD request results in the status code 304 Not Modified [3]. This indicates that the client's cached copy is still current, and the server does not need to send the resource body again [3].",
+    "reasoning": null,
+    "status": "complete",
+    "error": null,
+    "model": {
+      "connection_id": "7ec04182cbc2434abb2b3c7d8edcea7c",
+      "model_id": "qwen3:30b-a3b-workbench-32k",
+      "display_name": "qwen3:30b-a3b-workbench-32k"
+    },
+    "attachments": [],
+    "stats": {
+      "reasoning_ms": null,
+      "ttft_ms": 6413.180458010174,
+      "total_ms": 8068.801874993369,
+      "prompt_tokens": 3695,
+      "completion_tokens": 125,
+      "tokens_per_sec": 75.55166313387089,
+      "tokens_estimated": false,
+      "load_ms": 6.873834,
+      "finish_reason": "stop",
+      "context_length": 32768,
+      "dropped_message_count": 0,
+      "params": {}
+    },
+    "web": {
+      "status": "used",
+      "freshness": "any",
+      "notice": null,
+      "queries": [
+        "MDN If-Match ETag matching rules status code for failed precondition",
+        "MDN If-None-Match ETag matching rules status code for GET HEAD when match occurs"
+      ],
+      "timings": {
+        "plan": 962.0047499774955,
+        "search": 668.5880000004545,
+        "fetch": 1350.486459035892,
+        "rank": 7.805000001098961
+      },
+      "source_count": 6,
+      "plan_fallback": false,
+      "providers": [
+        "SearXNG"
+      ],
+      "ranking": "keyword",
+      "selection_condition": null
+    },
+    "library": null,
+    "created_at": "2026-10-06T21:30:29.788164+00:00"
+  },
+  "sources": [
+    {
+      "n": 1,
+      "url": "https://refontelearning.com/blog/http-if-match-atomic-lost-update-prevention",
+      "title": "HTTP If-Match: Prevent Lost Updates With Atomic Checks",
+      "site_name": "Refonte Learning",
+      "domain": "refontelearning.com",
+      "published_at": "2026-09-19",
+      "fetched_at": "2026-10-06T21:30:31.422042+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://refontelearning.com/blog/http-if-match-atomic-lost-update-prevention",
+          "heading": "Bind each read response to a trustworthy validator",
+          "ord": 5,
+          "text": "Each GET response must deliver a body and its matching ETag from the same resource state. In practice this means using a single read operation or transaction to fetch data and compute the ETag together. For example, in PostgreSQL we might do:\n\nSELECT data_column AS body, version\n\nFROM notes\n\nWHERE id = $id;\n\nand then set ETag = '\"' || md5(body || version) || '\"' (for instance). The SQL query (or JSON-assembly) is atomic: the same snapshot yields both the JSON and the fields used to build the ETag. This avoids a race where one query reads the JSON, and another reads a version or hash afterward; a concurrent write in between could make them inconsistent.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://refontelearning.com/blog/http-if-match-atomic-lost-update-prevention",
+          "heading": "Recover a conflict without silently overwriting work",
+          "ord": 16,
+          "text": "When an update fails with 412, the client (or user) needs guidance to reconcile changes. Simply retrying with the new tag would silently overwrite the conflict we detected. Instead, we must preserve both versions. A typical flow is:\n\n| **Recovery stage** | **Required action** | **Evidence retained** |\n| --- | --- | --- |\n| 1. Hold | Keep the rejected request and unsaved user intent; do not replay it automatically. | Original ETag, attempted fields, correlation ID |\n| 2. Reread | Perform an authorized GET for the current representation and validator. | Current body and current strong ETag |\n| 3. Reconcile | Let the editor compare, merge, discard, or replace intentionally. | Explicit user or workflow decision |\n| 4. Resubmit | Send a new conditional request using the fresh tag only after reconciliation. | New request body and new precondition |",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://refontelearning.com/blog/http-if-match-atomic-lost-update-prevention",
+          "heading": "Observe conflicts without leaking resource content",
+          "ord": 31,
+          "text": "Conflict events should generate sanitized logs or metrics. For each 412 or 428, log the event with just identifiers and status. For example:\n\n| **Timestamp** | **Status** | **Resource surrogate** | **If-Match** | **Accepted/current tag** | **Outcome** |\n| --- | --- | --- | --- | --- | --- |\n| 2026-09-18T12:34:56Z | 412 | note:8f2c | \"v2\" | \"v3\" | Stale update held |\n| 2026-09-18T12:35:10Z | 428 | note:b114 | (missing) | (not disclosed) | Required header absent |",
+          "selection_applied": false
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 2,
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/If-Match",
+      "title": "If-Match header",
+      "site_name": "developer.mozilla.org",
+      "domain": "developer.mozilla.org",
+      "published_at": "2025-07-04",
+      "fetched_at": "2026-10-06T21:30:31.421993+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/If-Match",
+          "heading": "If-Match header",
+          "ord": 0,
+          "text": "## \n\n          Baseline\n\n        Widely available\n\n      This feature is well established and works across many devices and browser versions. It’s been available across browsers since July 2015.\n\nThe HTTP **`If-Match`** request header makes a request conditional.\nA server will return resources for `GET` and `HEAD` methods, or upload resource for `PUT` and other non-safe methods, only if the resource matches one of the `ETag` values in the `If-Match` request header.\nIf the conditional does not match, the `412 Precondition Failed` response is returned instead.\n\nThe comparison with the stored `ETag` uses the *strong comparison algorithm*, meaning two files are considered identical byte-by-byte.\nIf a listed `ETag` has the `W/` prefix indicating a weak entity tag, this comparison algorithm will never match it.\n\nThere are two common use cases:",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/If-Match",
+          "heading": "If-Match header",
+          "ord": 1,
+          "text": "- For `GET` and`HEAD` methods, used in combination with a`Range` header, it can guarantee that the new ranges requested\ncome from the same resource as the previous one.\n- For other methods, and in particular for `PUT` ,`If-Match` can be used to prevent the lost update problem.\nIt can check if the modification of a resource that the user wants to upload will not override another change that has been done since the original resource was fetched.\n\n| Header type | Request header |\n|---|---|\n| Forbidden request header | No |",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/If-Match",
+          "heading": "Specifications",
+          "ord": 5,
+          "text": "| Specification |\n|---|\n| HTTP Semantics # field.if-match |",
+          "selection_applied": false
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 3,
+      "url": "https://restfulapi.net/http-status-200-ok",
+      "title": "HTTP Status Code 200 (OK)",
+      "site_name": "REST API Tutorial",
+      "domain": "restfulapi.net",
+      "published_at": "2018-04-06",
+      "fetched_at": "2026-10-06T21:30:31.422054+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://restfulapi.net/http-status-200-ok",
+          "heading": "2. When Not to Send HTTP 200",
+          "ord": 3,
+          "text": "HTTP 200 is the default in most frameworks, so it is often sent where another code would tell the client more. The figure shows how to pick the right success code, and the table adds the error cases.\n\n| Situation | Better status | Reason |\n|---|---|---|\n| A *POST* created something new | *HTTP 201 Created* with a*Location* header | RFC 9110 recommends it for creation (section 9.3.3). |\n| The work was accepted but is not finished | *HTTP 202 Accepted* | The client must check back later. |\n| The action worked and there is nothing to return | *HTTP 204 No Content* | An empty HTTP 200 makes clients guess. |\n| The client’s stored copy is still current | *HTTP 304 Not Modified* | No need to send the body again. |\n| The record does not exist | *HTTP 404 Not Found* | Nothing was found. |\n| Something failed | A 4xx or 5xx code, such as *HTTP 400* or*HTTP 500* | See section 4. |",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://restfulapi.net/http-status-200-ok",
+          "heading": "5. Using an HTTP 200 on the Client",
+          "ord": 8,
+          "text": "HTTP 200 is a success, so there is nothing to retry. These steps help the client use it well:\n\n1. Check the *Content-Type* header before reading the body, and read JSON only when it says*application/json* .\n2. Store the *ETag* if the data may be needed again, and send it in*If-None-Match* next time.\n3. Treat an empty list as a normal result, not as an error.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://restfulapi.net/http-status-200-ok",
+          "heading": "7. Checking HTTP 200 Responses",
+          "ord": 12,
+          "text": "```\n# Show the status line and headers\ncurl -i https://api.example.com/projects/42\n# Repeat the request with the ETag and expect 304\ncurl -i https://api.example.com/projects/42 -H 'If-None-Match: \"v7\"'\n```\n```\n// Spring MockMvc\nmockMvc.perform(get(\"/projects/42\").accept(MediaType.APPLICATION_JSON))\n    .andExpect(status().isOk())\n    .andExpect(header().exists(\"ETag\"))\n    .andExpect(jsonPath(\"$.id\").value(42));\n```",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 4,
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/412",
+      "title": "412 Precondition Failed",
+      "site_name": "developer.mozilla.org",
+      "domain": "developer.mozilla.org",
+      "published_at": "2026-06-22",
+      "fetched_at": "2026-10-06T21:30:31.422026+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/412",
+          "heading": "412 Precondition Failed",
+          "ord": 0,
+          "text": "The HTTP **`412 Precondition Failed`** client error response status code indicates that access to the target resource was denied.\nThis happens with conditional requests on methods other than `GET` or `HEAD` when the condition defined by the `If-Unmodified-Since` or `If-Match` headers is not fulfilled.\nIn that case, the request (usually an upload or a modification of a resource) cannot be made and this error response is sent back.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/412",
+          "heading": "Avoiding mid-air collisions",
+          "ord": 3,
+          "text": "With the help of the `ETag` and the `If-Match` headers, you can prevent conflicts or mid-air collisions.\nFor example, when editing some wiki pages, content is hashed and put into an `ETag` in successful responses:\n\n```\nETag: \"33a64df551425fcc55e4d42a148795d9f25f89d4\"\n```\nWhen saving changes to a wiki page (posting data), the `POST` request will contain the `If-Match` header containing the `ETag` values that the client stored from the last edit to check freshness of the resource on the server:\n\n```\nIf-Match: \"33a64df551425fcc55e4d42a148795d9f25f89d4\"\n```\nIf the hashes don't match, the document has been edited in-between and a `412 Precondition Failed` error is thrown.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/412",
+          "heading": "Specifications",
+          "ord": 4,
+          "text": "| Specification |\n|---|\n| HTTP Semantics # status.412 |",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 5,
+      "url": "https://rfc-editor.org/info/rfc2616",
+      "title": "RFC 2616: Hypertext Transfer Protocol -- HTTP/1.1 | RFC Editor",
+      "site_name": "RFC 2616: Hypertext Transfer Protocol -- HTTP/1.1",
+      "domain": "rfc-editor.org",
+      "published_at": "1999-06-01",
+      "fetched_at": "2026-10-06T21:30:31.422064+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://rfc-editor.org/info/rfc2616",
+          "heading": "RFC 2616:      Hypertext Transfer Protocol -- HTTP/1.1",
+          "ord": 34,
+          "text": "Elements enclosed in parentheses are treated as a single element.\n      Thus, \"(elem (foo | bar) elem)\" allows the token sequences \"elem\n      foo elem\" and \"elem bar elem\".\n   *rule\n      The character \"*\" preceding an element indicates repetition. The\n      full form is \"<n>*<m>element\" indicating at least <n> and at most\n      <m> occurrences of element. Default values are 0 and infinity so\n      that \"*(element)\" allows any number, including zero; \"1*element\"\n      requires at least one; and \"1*2element\" allows one or two.\n   [rule]\n      Square brackets enclose optional elements; \"[foo bar]\" is\n      equivalent to \"*1(foo bar)\".\nFielding, et al.            Standards Track                    [Page 14]",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://rfc-editor.org/info/rfc2616",
+          "heading": "RFC 2616:      Hypertext Transfer Protocol -- HTTP/1.1",
+          "ord": 38,
+          "text": "that are not intended to be interpreted by the message parser. Words\n   of *TEXT MAY contain characters from character sets other than ISO-\n   8859-1 [22] only when encoded according to the rules of RFC 2047\n   [14].\n       TEXT           = <any OCTET except CTLs,\n                        but including LWS>\n   A CRLF is allowed in the definition of TEXT only as part of a header\n   field continuation. It is expected that the folding LWS will be\n   replaced with a single SP before interpretation of the TEXT value.\n   Hexadecimal numeric characters are used in several protocol elements.\n       HEX            = \"A\" | \"B\" | \"C\" | \"D\" | \"E\" | \"F\"\n\n| \"a\" | \"b\" | \"c\" | \"d\" | \"e\" | \"f\" | DIGIT\n| --- | --- | --- | --- | --- | --- |",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://rfc-editor.org/info/rfc2616",
+          "heading": "RFC 2616:      Hypertext Transfer Protocol -- HTTP/1.1",
+          "ord": 71,
+          "text": "requests on different URIs does not imply the equivalence of those\n   entities.\n3.12 Range Units\n   HTTP/1.1 allows a client to request that only part (a range of) the\n   response entity be included within the response. HTTP/1.1 uses range\n   units in the Range (section 14.35) and Content-Range (section 14.16)\n   header fields. An entity can be broken down into subranges according\n   to various structural units.\n      range-unit       = bytes-unit | other-range-unit\n      bytes-unit       = \"bytes\"\n      other-range-unit = token\n   The only range unit defined by HTTP/1.1 is \"bytes\". HTTP/1.1\n   implementations MAY ignore ranges specified using other units.\nFielding, et al.            Standards Track                    [Page 30]",
+          "selection_applied": false
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 6,
+      "url": "https://http.dev/if-match",
+      "title": "If-Match",
+      "site_name": "http.dev",
+      "domain": "http.dev",
+      "published_at": "2022-06-18",
+      "fetched_at": "2026-10-06T21:30:31.422073+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://http.dev/if-match",
+          "heading": "Usage",
+          "ord": 1,
+          "text": "The If-Match header enables conditional requests by comparing ETag values. A client includes this header to ensure the server processes the request only when the resource's current entity tag matches one of the listed values.\n\nFor safe methods like GET and HEAD, the If-Match header restricts the response to resources with a matching entity tag. This selects a specific representation rather than validating a cache (cache validation uses If-None-Match instead).\n\nFor state-changing methods like PUT and DELETE, the If-Match header prevents the lost update problem. When two clients fetch the same resource, modify their copies independently, and attempt to write back, the If-Match header ensures only the first write succeeds. The second write fails with 412 Precondition Failed because the ETag changed after the first write.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://http.dev/if-match",
+          "heading": "Example",
+          "ord": 5,
+          "text": "A client sends a PUT request to update a resource. The If-Match header carries the ETag from the original GET response. The server applies the update only when the ETag still matches.\n\n```\nPUT /document/42 HTTP/1.1\nHost: api.example.re\nContent-Type: application/json\nIf-Match: \"a1b2c3d4\"\n{\"title\": \"Updated Document\"}\n```\nWhen the resource has been modified by another client, the ETag no longer matches. The server responds with 412 Precondition Failed and rejects the update.\n\n```\nHTTP/1.1 412 Precondition Failed\nContent-Type: application/json\nETag: \"e5f6g7h8\"\n```\nMultiple entity tags are listed as comma-separated values. The condition succeeds when any one of the listed values matches the resource's current ETag.\n\n```\nIf-Match: \"a1b2c3d4\", \"x9y8z7w6\"\n```\nThe wildcard form succeeds when the resource exists. This prevents a PUT from accidentally creating a new resource.\n\n```\nIf-Match: *\n```",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://http.dev/if-match",
+          "heading": "Why If-Match fails in production",
+          "ord": 6,
+          "text": "Strong comparison makes If-Match sensitive to any layer rewriting the ETag between the read and the write, and several common layers do.\n\nCompression is the most frequent cause. Servers applying gzip or Brotli often rewrite or weaken the entity tag for the encoded representation, and a weak tag never satisfies If-Match. A client reading an uncompressed representation and writing back through a compressing proxy sends a tag the origin no longer recognizes, producing 412 Precondition Failed on a resource nobody else touched.\n\nCDNs and reverse proxies introduce the same problem when they generate their own entity tags. Load balancing across origins generating tags independently produces a different value per node, so the failure appears intermittent and tracks whichever backend served the read.",
+          "selection_applied": false
+        }
+      ],
+      "cited": false
+    }
+  ],
+  "reads": [
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/If-Match",
+      "title": "If-Match header",
+      "site_name": "developer.mozilla.org",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/412",
+      "title": "412 Precondition Failed",
+      "site_name": "developer.mozilla.org",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://http.dev/if-match",
+      "title": "If-Match",
+      "site_name": "http.dev",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://refontelearning.com/blog/http-if-match-atomic-lost-update-prevention",
+      "title": "HTTP If-Match: Prevent Lost Updates With Atomic Checks",
+      "site_name": "Refonte Learning",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://restfulapi.net/http-status-200-ok",
+      "title": "HTTP Status Code 200 (OK)",
+      "site_name": "REST API Tutorial",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://rfc-editor.org/info/rfc2616",
+      "title": "RFC 2616: Hypertext Transfer Protocol -- HTTP/1.1 | RFC Editor",
+      "site_name": "RFC 2616: Hypertext Transfer Protocol -- HTTP/1.1",
+      "status": "used",
+      "reason": null
+    }
+  ],
+  "elapsed_ms": 8083.899915975053,
+  "web": {
+    "status": "used",
+    "freshness": "any",
+    "notice": null,
+    "queries": [
+      "MDN If-Match ETag matching rules status code for failed precondition",
+      "MDN If-None-Match ETag matching rules status code for GET HEAD when match occurs"
+    ],
+    "timings": {
+      "plan": 962.0047499774955,
+      "search": 668.5880000004545,
+      "fetch": 1350.486459035892,
+      "rank": 7.805000001098961
+    },
+    "source_count": 6,
+    "plan_fallback": false,
+    "providers": [
+      "SearXNG"
+    ],
+    "ranking": "keyword",
+    "selection_condition": null
+  }
+}

@@ -1,0 +1,446 @@
+{
+  "question": "Consult PostgreSQL’s transaction-isolation and continuous-archiving documentation. Contrast snapshot timing under Read Committed and Repeatable Read, then identify the two backup components needed for point-in-time recovery.",
+  "numeric_selection_trial": null,
+  "planner_property_words": [
+    "Consult",
+    "PostgreSQL",
+    "s",
+    "transaction",
+    "isolation",
+    "and",
+    "continuous",
+    "archiving",
+    "documentation",
+    "Contrast",
+    "snapshot",
+    "timing",
+    "under",
+    "Read",
+    "Committed",
+    "Repeatable",
+    "then",
+    "identify",
+    "the",
+    "two",
+    "backup",
+    "components",
+    "needed",
+    "for",
+    "point",
+    "in",
+    "time",
+    "recovery"
+  ],
+  "raw_answer": "Under the Read Committed isolation level, a transaction sees changes committed by other transactions after the statement begins but before it completes [4]. Within a single SQL statement, the data is consistent and \"frozen\" [4]. This means that if the same SELECT statement is executed multiple times within the same transaction, it may return different results due to changes committed by other transactions between executions.\n\nUnder the Repeatable Read isolation level, a transaction sees a consistent snapshot of the data for the entire duration of the transaction [4]. It will never see the effects of concurrently committing transactions, ensuring that all queries within the transaction return the same data [4].\n\nFor point-in-time recovery (PITR), the two required components are a base backup and continuous WAL archiving [1][3][6]. The base backup provides a consistent starting point, and the archived WAL segments allow the database to be replayed forward to any specific moment in time [6].",
+  "message": {
+    "id": "9dcb3300cb2e4747968429b58bb99482",
+    "chat_id": "6e0baeb9bf704722816b9a5b8a217105",
+    "parent_id": "ca1803eafbf94467aa6c43213c4cc500",
+    "role": "assistant",
+    "content": "Under the Read Committed isolation level, a transaction sees changes committed by other transactions after the statement begins but before it completes [4]. Within a single SQL statement, the data is consistent and \"frozen\" [4]. This means that if the same SELECT statement is executed multiple times within the same transaction, it may return different results due to changes committed by other transactions between executions.\n\nUnder the Repeatable Read isolation level, a transaction sees a consistent snapshot of the data for the entire duration of the transaction [4]. It will never see the effects of concurrently committing transactions, ensuring that all queries within the transaction return the same data [4].\n\nFor point-in-time recovery (PITR), the two required components are a base backup and continuous WAL archiving [1][3][6]. The base backup provides a consistent starting point, and the archived WAL segments allow the database to be replayed forward to any specific moment in time [6].",
+    "reasoning": null,
+    "status": "complete",
+    "error": null,
+    "model": {
+      "connection_id": "7ec04182cbc2434abb2b3c7d8edcea7c",
+      "model_id": "qwen3:30b-a3b-workbench-32k",
+      "display_name": "qwen3:30b-a3b-workbench-32k"
+    },
+    "attachments": [],
+    "stats": {
+      "reasoning_ms": null,
+      "ttft_ms": 7465.1058340095915,
+      "total_ms": 10012.204334023409,
+      "prompt_tokens": 3698,
+      "completion_tokens": 191,
+      "tokens_per_sec": 75.0244123938758,
+      "tokens_estimated": false,
+      "load_ms": 6.757042,
+      "finish_reason": "stop",
+      "context_length": 32768,
+      "dropped_message_count": 0,
+      "params": {}
+    },
+    "web": {
+      "status": "used",
+      "freshness": "any",
+      "notice": null,
+      "queries": [
+        "PostgreSQL Read Committed vs Repeatable Read snapshot timing behavior",
+        "PostgreSQL continuous archiving point-in-time recovery components",
+        "PostgreSQL WAL archiving and base backup requirements for PITR"
+      ],
+      "timings": {
+        "plan": 982.0155419874936,
+        "search": 760.7746249996126,
+        "fetch": 2292.1183750149794,
+        "rank": 5.470708012580872
+      },
+      "source_count": 6,
+      "plan_fallback": false,
+      "providers": [
+        "SearXNG"
+      ],
+      "ranking": "keyword",
+      "selection_condition": null
+    },
+    "library": null,
+    "created_at": "2026-10-06T21:30:37.873213+00:00"
+  },
+  "sources": [
+    {
+      "n": 1,
+      "url": "https://dev.to/mohhddhassan/postgresql-backups-and-point-in-time-recovery-with-pgbackrest-13gp",
+      "title": "PostgreSQL Backups and Point-in-Time Recovery with pgBackRest",
+      "site_name": "DEV Community",
+      "domain": "dev.to",
+      "published_at": "2026-03-13",
+      "fetched_at": "2026-10-06T21:30:39.619720+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://dev.to/mohhddhassan/postgresql-backups-and-point-in-time-recovery-with-pgbackrest-13gp",
+          "heading": "",
+          "ord": 0,
+          "text": "This article is part of a series on PostgreSQL WAL.\n\nPart 1 - How PostgreSQL WAL Actually Works\n\nPart 2 - How Debezium Uses PostgreSQL WAL for CDC\n\nPart 3 - PostgreSQL Backups with pgBackRest and PITR\n\nIn the previous articles, we've explored how PostgreSQL records every change inside the database using **Write-Ahead Logging (WAL)**.\n\nWe also saw how tools like Debezium can read WAL to stream database changes in real time.\n\nBut WAL has another very important role.\n\nIt enables **database backups and recovery**.\n\nBy combining a base backup with archived WAL segments, PostgreSQL can restore a database to **any specific moment in time**. This capability is known as **Point-in-Time Recovery (PITR)**.\n\nIn this article, we’ll explore how this works and how to implement it using pgBackRest.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://dev.to/mohhddhassan/postgresql-backups-and-point-in-time-recovery-with-pgbackrest-13gp",
+          "heading": "How WAL Enables Point-in-Time Recovery",
+          "ord": 2,
+          "text": "Point-in-Time Recovery works by combining two components:\n\n```\n                              Base Backup\n                                   +\n                        Continuous WAL Archiving\n                                   =\n                         Point-in-Time Recovery\n```\nThe recovery flow looks like this:\n\n```\n                               Base Backup\n                                    │\n                                    ▼\n                              Restore Backup\n                                    │\n                                    ▼\n                           Replay WAL Segments\n                                    │\n                                    ▼\n                            Reach Target Time\n```\nBecause WAL contains every change in chronological order, PostgreSQL can replay those changes to reconstruct the database state at any moment.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://dev.to/mohhddhassan/postgresql-backups-and-point-in-time-recovery-with-pgbackrest-13gp",
+          "heading": "Running a Base Backup",
+          "ord": 6,
+          "text": "Once pgBackRest is configured, a base backup can be taken using:\n\n```\npgbackrest --stanza=demo backup --type=full\n```\npgBackRest supports multiple backup types.\n\n| Type | Description |\n|---|---|\n| Full | Complete backup of the database |\n| Differential | Backup of changes since last full backup |\n| Incremental | Backup of changes since last backup |",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 2,
+      "url": "https://oneuptime.com/blog/post/2026-02-09-pitr-postgresql-cloudnativepg/view",
+      "title": "How to Use Point-in-Time Recovery for PostgreSQL",
+      "site_name": "OneUptime | One Complete Observability platform.",
+      "domain": "oneuptime.com",
+      "published_at": "2026-02-09",
+      "fetched_at": "2026-10-06T21:30:41.663405+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://oneuptime.com/blog/post/2026-02-09-pitr-postgresql-cloudnativepg/view",
+          "heading": "Verifying WAL Archiving",
+          "ord": 8,
+          "text": "Check that WAL files are being archived continuously:\n\n```\n# View cluster status\nkubectl get cluster postgres-cluster -n postgresql -o yaml\n# Look for continuous archiving status\nkubectl get cluster postgres-cluster -n postgresql \\\n  -o jsonpath='{.status.currentPrimary}' && echo\n# Check WAL archive status\nkubectl get cluster postgres-cluster -n postgresql \\\n  -o jsonpath='{.status.instancesReportedState}' | jq\n```\nConnect to the primary pod and verify archiving:\n\n```\n# Get primary pod name\nPRIMARY_POD=$(kubectl get pod -n postgresql \\\n  -l cnpg.io/instanceRole=primary,cnpg.io/cluster=postgres-cluster \\\n  -o jsonpath='{.items[0].metadata.name}')\n# Check archiving status\nkubectl exec -n postgresql $PRIMARY_POD -- \\\n  psql -U postgres -c \"SELECT * FROM pg_stat_archiver;\"\n```\nSuccessful archiving shows `last_archived_wal` with recent timestamps and `last_failed_wal` as empty.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://oneuptime.com/blog/post/2026-02-09-pitr-postgresql-cloudnativepg/view",
+          "heading": "Monitoring Backup Health",
+          "ord": 17,
+          "text": "```\n# backup-alerts.yaml\napiVersion: monitoring.coreos.com/v1\nkind: PrometheusRule\nmetadata:\n  name: postgresql-backup-alerts\n  namespace: postgresql\nspec:\n  groups:\n  - name: postgresql.backups\n    interval: 60s\n    rules:\n    - alert: BackupFailed\n      expr: |\n        cnpg_collector_last_failed_backup_timestamp > cnpg_collector_last_available_backup_timestamp\n      for: 5m\n      annotations:\n        summary: \"PostgreSQL backup failed\"\n        description: \"The latest CloudNativePG backup failure is newer than the latest available backup\"\n    - alert: NoRecentBackup\n      expr: |\n        time() - cnpg_collector_last_available_backup_timestamp > 86400\n      for: 1h\n      annotations:\n        summary: \"No successful backup in 24 hours\"\n```",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://oneuptime.com/blog/post/2026-02-09-pitr-postgresql-cloudnativepg/view",
+          "heading": "Recovery Testing Best Practices",
+          "ord": 18,
+          "text": "Test your recovery process regularly. Create a dedicated namespace for recovery testing:\n\n```\n# Create test namespace\nkubectl create namespace postgresql-recovery-test\n# Copy credentials\nkubectl get secret backup-credentials -n postgresql -o yaml | \\\n  sed 's/namespace: postgresql/namespace: postgresql-recovery-test/' | \\\n  kubectl apply -f -\n```\nPerform a test recovery quarterly to verify your PITR setup works correctly. Document the recovery time objective (RTO) you achieve during tests.",
+          "selection_applied": false
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 3,
+      "url": "https://simplyblock.io/blog/point-in-time-recovery-for-postgresql-on-kubernetes",
+      "title": "PostgreSQL PITR on Kubernetes | simplyblock",
+      "site_name": "Simplyblock",
+      "domain": "simplyblock.io",
+      "published_at": "2026-03-11",
+      "fetched_at": "2026-10-06T21:30:39.619700+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://simplyblock.io/blog/point-in-time-recovery-for-postgresql-on-kubernetes",
+          "heading": "",
+          "ord": 0,
+          "text": "Plenty of Kubernetes backup content treats point-in-time recovery like a fancy snapshot feature. That is not how PostgreSQL works.\n\nPostgreSQL point-in-time recovery, or PITR, is a recovery model built from two things together:\n\n- a physical base backup\n- a continuous archive of write-ahead log, or WAL, files\n\nThe current PostgreSQL documentation is explicit about this. PITR combines a file-system-level backup with archived WAL, then replays WAL until the target time you want to restore to. In other words, snapshots can help, but snapshots alone are not PITR.\n\nThat distinction matters even more on Kubernetes, where teams often have:\n\n- CSI snapshots\n- operator-managed backups\n- object-store retention\n- multiple PVCs\n- automation that looks reassuring until the first real restore",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://simplyblock.io/blog/point-in-time-recovery-for-postgresql-on-kubernetes",
+          "heading": "What PITR Actually Requires",
+          "ord": 2,
+          "text": "The minimum ingredients are not mysterious:\n\n1. A base backup you can restore\n2. WAL archiving that has been working continuously\n3. A restore process that can replay WAL to a recovery target\n\nThe PostgreSQL docs describe the mechanics clearly. To enable WAL archiving, you need `wal_level` set to `replica` or higher, `archive_mode` enabled, and a working `archive_command` or `archive_library`. If archiving stops working, PostgreSQL will keep retrying, and WAL files will accumulate in `pg_wal`.\n\nThis is the first misconception to remove: a successful snapshot schedule does not guarantee recoverability to an arbitrary time. Without the WAL archive, you have a restore point, not point-in-time recovery.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://simplyblock.io/blog/point-in-time-recovery-for-postgresql-on-kubernetes",
+          "heading": "Why Kubernetes Changes the Shape of the Problem",
+          "ord": 3,
+          "text": "Kubernetes does not change PostgreSQL’s rules. It changes how you operationalize them.\n\nInstead of thinking only in terms of a server and a mounted disk, you now need to think about:\n\n- PVCs and `StorageClass` behavior\n- CSI `VolumeSnapshot` support\n- operator backup flows\n- object-store credentials and retention\n- recovery into a new cluster, namespace, or PVC set\n\nThe upstream Kubernetes snapshot documentation is deliberately narrow here. A `VolumeSnapshot` gives you a standardized way to copy a volume’s contents at a point in time. That is useful, but it is a storage primitive, not a complete PostgreSQL recovery strategy.",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 4,
+      "url": "https://cybertec-postgresql.com/en/transactions-in-postgresql-read-committed-vs-repeatable-read",
+      "title": "Transactions in PostgreSQL: READ COMMITTED vs. REPEATABLE READ",
+      "site_name": "CYBERTEC PostgreSQL | Services & Support",
+      "domain": "cybertec-postgresql.com",
+      "published_at": "2018-11-28",
+      "fetched_at": "2026-10-06T21:30:39.619710+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://cybertec-postgresql.com/en/transactions-in-postgresql-read-committed-vs-repeatable-read",
+          "heading": "",
+          "ord": 1,
+          "text": "One important aspect of transactions in PostgreSQL, and therefore in all other modern relational databases, is the ability to control when a row is visible to a user and when it is not. The ANSI SQL standard proposes 4 transaction isolation levels (READ UNCOMMITTED, READ COMMITTED, REPEATABLE READ and SERIALIZABLE) to allow users to explicitly control the behavior of the database engine. Unfortunately, the existence of transaction isolation levels is still not as widely known as it should be. Therefore I decided to blog about this topic, to give more PostgreSQL users the chance to apply this very important, yet under-appreciated feature.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://cybertec-postgresql.com/en/transactions-in-postgresql-read-committed-vs-repeatable-read",
+          "heading": "",
+          "ord": 2,
+          "text": "The two most commonly used transaction isolation levels are READ COMMITTED and REPEATABLE READ. In PostgreSQL READ COMMITTED is the default isolation level and should be used for normal OLTP operations. In contrast to other systems, such as DB2 or Informix, PostgreSQL does not provide support for READ UNCOMMITTED, which I personally consider to be a thing of the past anyway.\n\nIn READ COMMITTED mode, every SQL statement will see changes which have already been committed (e.g. new rows added to the database) by some other transactions. In other words: If you run the same SELECT statement multiple times within the same transaction, you might see different results. This is something you have to consider when writing an application.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://cybertec-postgresql.com/en/transactions-in-postgresql-read-committed-vs-repeatable-read",
+          "heading": "",
+          "ord": 3,
+          "text": "However, within a statement the data you see is constant – it does not change. A SELECT statement (or any other statement) will not see changes committed WHILE the statement is running. Within an SQL statement, data and time are basically “frozen”.\n\nIn the case of REPEATABLE READ the situation is quite different: A transaction running in REPEATABLE READ mode will never see the effects of transactions committing concurrently – it will keep seeing the same data and offer you a consistent snapshot throughout the entire transaction. If your goal is to do reporting or if you are running some kind of data warehousing workload, REPEATABLE READ is exactly what you need, because it provides consistency. All pages of your report will see exactly the same set of data. There is no need to worry about concurrent transactions.",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 5,
+      "url": "https://linkedin.com/pulse/point-in-time-recovery-pitr-guide-using-physical-backup-mahto-f2qvf",
+      "title": "Point-in-Time Recovery (PITR) guide using Physical Backup and WAL archiving in PostgreSQL 17 across two Windows Servers",
+      "site_name": "LinkedInEditors",
+      "domain": "linkedin.com",
+      "published_at": "2025-05-20",
+      "fetched_at": "2026-10-06T21:30:39.619685+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://linkedin.com/pulse/point-in-time-recovery-pitr-guide-using-physical-backup-mahto-f2qvf",
+          "heading": "Point-in-Time Recovery (PITR) guide using Physical Backup and WAL archiving in PostgreSQL 17 across two Windows Servers",
+          "ord": 0,
+          "text": "inchirags@gmail.com Chirag's PostgreSQL DBA Tutorial https://www.chirags.in\n\n*************************************************************************************\n\nPoint-in-Time Recovery (PITR) guide using Physical Backup and WAL archiving in PostgreSQL 17 across two Windows Servers\n\n*************************************************************************************\n\nHere's the step-by-step Point-in-Time Recovery (PITR) guide using Physical Backup and WAL archiving in PostgreSQL 17 across two Windows Servers. This is a conversion of your Linux-based guide tailored for Windows Server environment.\n\n✅ Environment Setup\n\n```\nRole\t\tIP Address\tDescription\n-------------------------------------------------------------------------\nPrimary\t\t192.168.224.133\tActive PostgreSQL Server before crash\nRecovery\t192.168.224.134\tServer used to perform PITR        \n```",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://linkedin.com/pulse/point-in-time-recovery-pitr-guide-using-physical-backup-mahto-f2qvf",
+          "heading": "Point-in-Time Recovery (PITR) guide using Physical Backup and WAL archiving in PostgreSQL 17 across two Windows Servers",
+          "ord": 1,
+          "text": "          ```\n    PostgreSQL Version: 17 (64-bit)\n    PostgreSQL Service User: postgres\n    Password: admin@123\n    Installation Directory: C:\\Program Files\\PostgreSQL\\17\n    Data Directory: C:\\PostgreSQL\\data\n    Backup Dir: C:\\PostgreSQL\\database_backup\n    Archive Dir: C:\\PostgreSQL\\database_archive        \n```\n\n          🔧 Step-by-Step Guide\n\n✅ Step 1: Install PostgreSQL 17 on Both Servers\n\nDownload from:\n\n    `https://www.enterprisedb.com/downloads/postgres-postgresql-downloads`        \n\n          Run the installer:\n\n```\n        Choose components: PostgreSQL Server + Command Line Tools\n        Set password for postgres: admin@123\n        Install to: C:\\Program Files\\PostgreSQL\\17\n        Data directory: C:\\PostgreSQL\\data        \n```\n\n          After install, ensure PostgreSQL service is running (services.msc > PostgreSQL 17)\n\n✅ Step 2: Set postgres User Password",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://linkedin.com/pulse/point-in-time-recovery-pitr-guide-using-physical-backup-mahto-f2qvf",
+          "heading": "Point-in-Time Recovery (PITR) guide using Physical Backup and WAL archiving in PostgreSQL 17 across two Windows Servers",
+          "ord": 3,
+          "text": "```\nCREATE DATABASE chirags_db1;\n\\c chirags_db1\nCREATE TABLE users (id SERIAL PRIMARY KEY, name VARCHAR(100), age INT);\nINSERT INTO users (name, age) VALUES ('Chirag Mahto', 35);\nINSERT INTO users (name, age) VALUES ('Sanju Mehta', 32);\nSELECT * FROM users;\nSELECT now();\nSELECT pg_switch_wal();        \n```\n\n          ✅ Step 5: Take Physical Base Backup\n\nCreate backup folder:\n\n`mkdir C:\\PostgreSQL\\database_backup`        \n\n          Run base backup:\n\n`cd \"C:\\Program Files\\PostgreSQL\\17\\bin\"`        \n\n          `pg_basebackup -D \"C:\\PostgreSQL\\database_backup\" -U postgres -Fp -Xs -P`        \n\n          When prompted, enter password: admin@123\n\n✅ Step 6: Add More Data After Backup",
+          "selection_applied": false
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 6,
+      "url": "https://stackharbor.com/en/knowledge-base/postgres-pitr-wal-archiving",
+      "title": "PostgreSQL Point-in-Time Recovery with WAL Archiving | Stack Harbor",
+      "site_name": "Stack Harbor",
+      "domain": "stackharbor.com",
+      "published_at": "2026-07-21",
+      "fetched_at": "2026-10-06T21:30:40.910734+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://stackharbor.com/en/knowledge-base/postgres-pitr-wal-archiving",
+          "heading": "",
+          "ord": 0,
+          "text": "Point-in-time recovery (PITR) lets you restore a self-managed PostgreSQL cluster to any exact moment — the instant before a bad `DELETE`, not just last night’s snapshot. It rests on two pieces: a physical base backup taken with `pg_basebackup`, and a continuous stream of write-ahead log (WAL) segments shipped off the server by `archive_command`. To recover, you lay down the base backup, point `restore_command` at the WAL archive, set `recovery_target_time` to the moment you want, drop a `recovery.signal` file, and start the server. It replays WAL forward from the backup until it reaches your target, then stops. On PostgreSQL 15, 16, and 17 the old `recovery.conf` is gone — recovery settings live in `postgresql.auto.conf` and the presence of `recovery.signal` is what puts the server into recovery mode. The configuration is a few lines; the part that actually saves you is rehearsing the restore before you need it.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://stackharbor.com/en/knowledge-base/postgres-pitr-wal-archiving",
+          "heading": "What you’ll accomplish",
+          "ord": 1,
+          "text": "- Turn on continuous WAL archiving with `archive_mode` and a safe, non-overwriting`archive_command` .\n- Confirm segments are really landing in the archive before you trust it.\n- Take a self-contained base backup with `pg_basebackup -Fp -Xs -P` .\n- Restore that base backup and replay WAL to a chosen `recovery_target_time` , then promote.\n- Validate that the target moment is present and everything after it is gone.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://stackharbor.com/en/knowledge-base/postgres-pitr-wal-archiving",
+          "heading": "How it works",
+          "ord": 3,
+          "text": "A **base backup** is a physical, block-level copy of the whole cluster as of one checkpoint — the consistent floor you start replay from. On its own it recovers you to roughly the time the backup finished.\n\n**WAL** is PostgreSQL’s change log. Every insert, update, delete, and DDL is written to WAL before the data files change. Once a 16 MB WAL segment fills, `archive_command` copies it to your archive destination. Recovery is just the reverse: PostgreSQL takes the base backup and replays those archived segments forward, transaction by transaction, until it reaches `recovery_target_time`.",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    }
+  ],
+  "reads": [
+    {
+      "url": "https://cybertec-postgresql.com/en/transactions-in-postgresql-read-committed-vs-repeatable-read",
+      "title": "Transactions in PostgreSQL: READ COMMITTED vs. REPEATABLE READ",
+      "site_name": "CYBERTEC PostgreSQL | Services & Support",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://dev.to/mohhddhassan/postgresql-backups-and-point-in-time-recovery-with-pgbackrest-13gp",
+      "title": "PostgreSQL Backups and Point-in-Time Recovery with pgBackRest",
+      "site_name": "DEV Community",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://linkedin.com/pulse/point-in-time-recovery-pitr-guide-using-physical-backup-mahto-f2qvf",
+      "title": "Point-in-Time Recovery (PITR) guide using Physical Backup and WAL archiving in PostgreSQL 17 across two Windows Servers",
+      "site_name": "LinkedInEditors",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://medium.com/@ngza5tqf/postgresql-wal-archiving-explained-understanding-write-ahead-logs-for-backup-and-recovery-29f512781c50",
+      "title": "PostgreSQL WAL archiving explained — Understanding Write ...",
+      "site_name": "medium.com",
+      "status": "failed",
+      "reason": "HTTP 403"
+    },
+    {
+      "url": "https://muhnurdayat.medium.com/postgresql-continuous-archiving-and-automatic-backup-part-0-fb940433dc43",
+      "title": "PostgreSQL Continuous Archiving and Automatic Backup — Part 0",
+      "site_name": "muhnurdayat.medium.com",
+      "status": "failed",
+      "reason": "HTTP 403"
+    },
+    {
+      "url": "https://oneuptime.com/blog/post/2026-02-09-pitr-postgresql-cloudnativepg/view",
+      "title": "How to Use Point-in-Time Recovery for PostgreSQL",
+      "site_name": "OneUptime | One Complete Observability platform.",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://postgresql.org/docs/current/continuous-archiving.html",
+      "title": "25.3. Continuous Archiving and Point-in-Time Recovery (PITR)",
+      "site_name": "postgresql.org",
+      "status": "failed",
+      "reason": "[Errno 65] No route to host"
+    },
+    {
+      "url": "https://postgresql.org/docs/current/transaction-iso.html",
+      "title": "Documentation: 18: 13.2. Transaction Isolation - PostgreSQL",
+      "site_name": "postgresql.org",
+      "status": "failed",
+      "reason": "[Errno 65] No route to host"
+    },
+    {
+      "url": "https://simplyblock.io/blog/point-in-time-recovery-for-postgresql-on-kubernetes",
+      "title": "PostgreSQL PITR on Kubernetes | simplyblock",
+      "site_name": "Simplyblock",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://stackharbor.com/en/knowledge-base/postgres-pitr-wal-archiving",
+      "title": "PostgreSQL Point-in-Time Recovery with WAL Archiving | Stack Harbor",
+      "site_name": "Stack Harbor",
+      "status": "used",
+      "reason": null
+    }
+  ],
+  "elapsed_ms": 10027.262583025731,
+  "web": {
+    "status": "used",
+    "freshness": "any",
+    "notice": null,
+    "queries": [
+      "PostgreSQL Read Committed vs Repeatable Read snapshot timing behavior",
+      "PostgreSQL continuous archiving point-in-time recovery components",
+      "PostgreSQL WAL archiving and base backup requirements for PITR"
+    ],
+    "timings": {
+      "plan": 982.0155419874936,
+      "search": 760.7746249996126,
+      "fetch": 2292.1183750149794,
+      "rank": 5.470708012580872
+    },
+    "source_count": 6,
+    "plan_fallback": false,
+    "providers": [
+      "SearXNG"
+    ],
+    "ranking": "keyword",
+    "selection_condition": null
+  }
+}

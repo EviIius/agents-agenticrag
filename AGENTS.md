@@ -149,3 +149,15 @@ and close the 7B review stop without inventing other phone checklist results.
 Defer the recording attachment dropdown layout issue for later, as requested;
 track it in `docs/DEFERRED-FIXES.md`. Keep private filenames/text and the supplied
 phone screenshots out of repo evidence. Research remains unauthorized.
+
+**User authorization — 6 October 2026 (8-0 evaluation only):** After Codex
+recommended starting only the isolated Research evaluation early, Jake said
+“Then go ahead and start”. Waive the two-week / 17 October calendar hold for
+checkpoint 8-0 only. Prepare 15 multi-part cases and recorded public web fixtures,
+measure the existing single-shot Search baseline and fresh live web release
+eval, and run the 40-prompt native-tool probe on installed runtime-reported
+tool-capable models. These isolated evaluation calls are authorized; production
+model-call rules, code, data and deployment remain unchanged. Retain all failures
+and stop with the gate report before 8A. Do not claim two weeks of daily use.
+The Research product spec and proposed release targets still need Jake’s review
+after the gate results; no agent loop, new dependency or product UI is authorized.

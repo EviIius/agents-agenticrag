@@ -1,0 +1,436 @@
+{
+  "question": "Consult Python’s venv and sqlite3 documentation. Why should a virtual environment be recreated after moving it, and what happens when another thread uses a sqlite3 connection with the default check_same_thread setting?",
+  "numeric_selection_trial": null,
+  "planner_property_words": [
+    "Consult",
+    "Python",
+    "s",
+    "venv",
+    "and",
+    "documentation",
+    "Why",
+    "should",
+    "a",
+    "virtual",
+    "environment",
+    "be",
+    "recreated",
+    "after",
+    "moving",
+    "it",
+    "what",
+    "happens",
+    "when",
+    "another",
+    "thread",
+    "uses",
+    "connection",
+    "with",
+    "the",
+    "default",
+    "setting"
+  ],
+  "raw_answer": "A virtual environment should be recreated after moving it because the environment’s configuration, including the hardcoded path to the virtual environment directory, is embedded in the activation scripts and other files within the `venv/bin` directory [1]. When the environment is moved, the path stored in these files no longer matches the new location, rendering the environment non-functional until the path is manually updated or the environment is recreated [1]. The Python documentation explicitly states that virtual environments are not considered movable or copyable and should be simple to delete and recreate from scratch [2].\n\nWhen another thread uses a sqlite3 connection with the default `check_same_thread=True` setting, a `ProgrammingError` is raised. This is because the connection is created in one thread, and the default setting enforces that only the thread that created the connection can use it [5]. The error message indicates that the object was created in a different thread than the one attempting to use it [5]. This behavior is enforced by the `check_same_thread` check in the `pysqlite_check_thread` function within the Python `sqlite3` module [5].",
+  "message": {
+    "id": "aee95d5ccc0e40d39f45435f5f926519",
+    "chat_id": "4612d95c1d3e4860b59b1da54e47bc35",
+    "parent_id": "ba3c221314bd465281a0c42b34d4e991",
+    "role": "assistant",
+    "content": "A virtual environment should be recreated after moving it because the environment’s configuration, including the hardcoded path to the virtual environment directory, is embedded in the activation scripts and other files within the `venv/bin` directory [1]. When the environment is moved, the path stored in these files no longer matches the new location, rendering the environment non-functional until the path is manually updated or the environment is recreated [1]. The Python documentation explicitly states that virtual environments are not considered movable or copyable and should be simple to delete and recreate from scratch [2].\n\nWhen another thread uses a sqlite3 connection with the default `check_same_thread=True` setting, a `ProgrammingError` is raised. This is because the connection is created in one thread, and the default setting enforces that only the thread that created the connection can use it [5]. The error message indicates that the object was created in a different thread than the one attempting to use it [5]. This behavior is enforced by the `check_same_thread` check in the `pysqlite_check_thread` function within the Python `sqlite3` module [5].",
+    "reasoning": null,
+    "status": "complete",
+    "error": null,
+    "model": {
+      "connection_id": "7ec04182cbc2434abb2b3c7d8edcea7c",
+      "model_id": "qwen3:30b-a3b-workbench-32k",
+      "display_name": "qwen3:30b-a3b-workbench-32k"
+    },
+    "attachments": [],
+    "stats": {
+      "reasoning_ms": null,
+      "ttft_ms": 7487.660625018179,
+      "total_ms": 10557.908957998734,
+      "prompt_tokens": 3810,
+      "completion_tokens": 226,
+      "tokens_per_sec": 73.6429334391706,
+      "tokens_estimated": false,
+      "load_ms": 4.100292,
+      "finish_reason": "stop",
+      "context_length": 32768,
+      "dropped_message_count": 0,
+      "params": {}
+    },
+    "web": {
+      "status": "used",
+      "freshness": "any",
+      "notice": null,
+      "queries": [
+        "why recreate virtual environment after moving it Python venv",
+        "what happens when another thread uses sqlite3 connection with check_same_thread=True default"
+      ],
+      "timings": {
+        "plan": 851.9279169850051,
+        "search": 811.018249951303,
+        "fetch": 2391.7669170186855,
+        "rank": 7.850916997995228
+      },
+      "source_count": 6,
+      "plan_fallback": false,
+      "providers": [
+        "SearXNG"
+      ],
+      "ranking": "keyword",
+      "selection_condition": null
+    },
+    "library": null,
+    "created_at": "2026-10-06T21:29:41.660245+00:00"
+  },
+  "sources": [
+    {
+      "n": 1,
+      "url": "https://dev.to/geekypandey/copy-venv-from-one-folder-to-another-and-still-be-able-to-use-it-3m49",
+      "title": "Copy venv from one folder to another and still be able to use it?",
+      "site_name": "DEV Community",
+      "domain": "dev.to",
+      "published_at": "2021-05-02",
+      "fetched_at": "2026-10-06T21:29:44.449687+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://dev.to/geekypandey/copy-venv-from-one-folder-to-another-and-still-be-able-to-use-it-3m49",
+          "heading": "",
+          "ord": 0,
+          "text": "If you have ever copied the python virtual environment folder from one location to another and faced problem using it, this article will help you understand how you can solve this problem.\n\nLet us first create a folder, named example and then create a virtual environment and install `flask` using `pip`\n\n```\n$ mkdir example\n$ cd example\n$ python -m venv venv\n$ source venv/bin/activate\n$ pip install Flask\n```\nNow you have a virtual env with flask installed.\n\nAfter doing this python sets an environment variable `VIRTUAL_ENV`, let us check its value.\n\n```\n$ echo $VIRTUAL_ENV\n/home/username/example/venv\n```\nWe will now move this `venv` folder to some other folder.\n\n```\n$ mkdir example2\n$ mv venv/ example2/\n$ cd example2\n$ source venv/bin/activate\n```\nNow let us check the value of `VIRTUAL_ENV` variable",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://dev.to/geekypandey/copy-venv-from-one-folder-to-another-and-still-be-able-to-use-it-3m49",
+          "heading": "",
+          "ord": 1,
+          "text": "```\n$ echo $VIRTUAL_ENV\n/home/username/example/venv\n```\nWow, this is strange. *I have moved the folder but still the value of `VIRTUAL_ENV` variable is the same?*\n\nThis is because when you create the virtual environment, the location is hardcoded based on current directory.\n\nYou can check this inside `activate` file we have previously used to activate the virtual environment.\n\nYou will find something like VIRTUAL_ENV='/home/username/example/venv'.\n\nThe solution for using the virtual environment at the new location is simple. Just change this path in all program inside `venv/bin` directory to the new path :-)\n\nPlease don't do it manually!!!\n\nUse tools like `sed` on unix or similar tools for the same.\n\nExample using sed:",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://dev.to/geekypandey/copy-venv-from-one-folder-to-another-and-still-be-able-to-use-it-3m49",
+          "heading": "",
+          "ord": 2,
+          "text": "```\n$ old_path='/home/username/example/venv'\n$ new_path='/home/username/example/example2/venv'\n$ cd venv/bin/\n$ sed -i \"s|$old_path|$new_path|g\" *\n```\nThe last command is replace in-place the value of old_path with new_path. `*` signifies all files in current directory(not exactly, but for this example consider it). Make sure you run this command while present in `venv/bin` folder.\n\nAfter doing this reactivate the virtual env.\n\n```\n$ source venv/bin/activate\n```\nAnd voila!\n\nReference:\n\n1. For `sed` command used: https://stackoverflow.com/questions/10309968/sed-search-and-replace-strings-containing",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 2,
+      "url": "https://docs.python.org/3/library/venv.html",
+      "title": "venv — Creation of virtual environments",
+      "site_name": "Python documentation",
+      "domain": "docs.python.org",
+      "published_at": "2026-10-06",
+      "fetched_at": "2026-10-06T21:29:43.326196+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://docs.python.org/3/library/venv.html",
+          "heading": "`venv` — Creation of virtual environments¶",
+          "ord": 0,
+          "text": "Added in version 3.3.\n\n**Source code:** Lib/venv/\n\nThe `venv` module supports creating lightweight “virtual environments”,\neach with their own independent set of Python packages installed in\ntheir `site` directories.\nA virtual environment is created on top of an existing\nPython installation, known as the virtual environment’s “base” Python, and by\ndefault is isolated from the packages in the base environment,\nso that only those explicitly installed in the virtual environment are\navailable. See Virtual Environments and `site`’s\nvirtual environments documentation\nfor more information.\n\nWhen used from within a virtual environment, common installation tools such as pip will install Python packages into a virtual environment without needing to be told to do so explicitly.\n\nA virtual environment is (amongst other things):",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://docs.python.org/3/library/venv.html",
+          "heading": "`venv` — Creation of virtual environments¶",
+          "ord": 1,
+          "text": "- Used to contain a specific Python interpreter and software libraries and binaries which are needed to support a project (library or application). These are by default isolated from software in other virtual environments and Python interpreters and libraries installed in the operating system.\n- Contained in a directory, conventionally named `.venv` or`venv` in\nthe project directory, or under a container directory for lots of virtual\nenvironments, such as`~/.virtualenvs` .\n- Not checked into source control systems such as Git.\n- Considered as disposable – it should be simple to delete and recreate it from scratch. You don’t place any project code in the environment.\n- Not considered as movable or copyable – you just recreate the same environment in the target location.\n\nSee **PEP 405** for more background on Python virtual environments.\n\nAvailability: not Android, not iOS, not WASI.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://docs.python.org/3/library/venv.html",
+          "heading": "Creating virtual environments¶",
+          "ord": 4,
+          "text": "Deprecated since version 3.6, removed in version 3.8: **pyvenv** was the recommended tool for creating virtual environments\nfor Python 3.3 and 3.4, and replaced in 3.5 by executing `venv` directly.\n\nOn Windows, invoke the `venv` command as follows:\n\n```\nPS> python -m venv C:\\path\\to\\new\\virtual\\environment\n```\nThe command, if run with `-h`, will show the available options:\n\n```\nusage: venv [-h] [--system-site-packages] [--symlinks | --copies] [--clear]\n            [--upgrade] [--without-pip] [--prompt PROMPT] [--upgrade-deps]\n            [--without-scm-ignore-files]\n            ENV_DIR [ENV_DIR ...]\nCreates virtual Python environments in one or more target directories.\nOnce an environment has been created, you may wish to activate it, e.g. by\nsourcing an activate script in its bin directory.\n```\n- ENV_DIR¶\n- A required argument specifying the directory to create the environment in.",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 3,
+      "url": "https://ricardoanderegg.com/posts/python-sqlite-thread-safety",
+      "title": "Python, SQLite, and thread safety",
+      "site_name": "Rand[Om]",
+      "domain": "ricardoanderegg.com",
+      "published_at": "2022-04-04",
+      "fetched_at": "2026-10-06T21:29:43.326208+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://ricardoanderegg.com/posts/python-sqlite-thread-safety",
+          "heading": "The Python docs",
+          "ord": 1,
+          "text": "After seeing those errors, I checked the Python docs. The sqlite3.connect method accepts a `check_same_thread` parameter, which can be set to `False` and the error will disappear.\n\n```\nfrom threading import Thread\nimport sqlite3\nconn = sqlite3.connect(\":memory:\", check_same_thread=False)\ndef f():\n    conn.execute(\"select 1\").fetchall()\nThread(target=f).start()\n```\nBut this may leave you with the impression that you’re doing something dangerous.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://ricardoanderegg.com/posts/python-sqlite-thread-safety",
+          "heading": "Real safety",
+          "ord": 4,
+          "text": "Searching for other sources, I found the Python discussion 45613 and the commit c273986.\n\nFrom the linked commit:\n\n| SQLite threading mode | `threadsafety` attribute | `SQLITE_THREADSAFE` value | DB-API 2.0 meaning |\n|---|---|---|---|\n| single-thread | 0 | 0 | Threads may not share the module. |\n| multi-thread | 1 | 2 | Threads may share the module, but no connections. |\n| serialized | 3 | 1 | Threads may share the module, connections, and cursors. |",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://ricardoanderegg.com/posts/python-sqlite-thread-safety",
+          "heading": "Conclusion",
+          "ord": 6,
+          "text": "Is it safe to share an sqlite3 connection between threads?\n\nYes, unless you change the default THREADSAFE option.\n\nOnce Python 3.11 is released, and based on the commit linked above, you will be able to use the sqlite3 module with code similar to:\n\n```\nimport sqlite3\nif sqlite3.threadsafety == 3:\n    check_same_thread = False\nelse:\n    check_same_thread = True\nconn = sqlite3.connect(\":memory:\", check_same_thread=check_same_thread)\n```\nIf you are using a lower Python version but still want to make sure that you’re not going to corrupt your database, you can check the `THREADSAFE` option before creating a connection:",
+          "selection_applied": false
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 4,
+      "url": "https://docs.python.org/3/library/sqlite3.html",
+      "title": "sqlite3 — DB-API 2.0 interface for SQLite databases",
+      "site_name": "Python documentation",
+      "domain": "docs.python.org",
+      "published_at": "2026-10-06",
+      "fetched_at": "2026-10-06T21:29:44.449663+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://docs.python.org/3/library/sqlite3.html",
+          "heading": "Module constants¶",
+          "ord": 16,
+          "text": "- sqlite3.PARSE_DECLTYPES¶\n- Pass this flag value to the *detect_types* parameter of`connect()` to look up a converter function using\nthe declared types for each column.\nThe types are declared when the database table is created.`sqlite3` will look up a converter function using the first word of the\ndeclared type as the converter dictionary key.\nFor example:CREATE TABLE test( i integer primary key, ! will look up a converter named \"integer\" p point, ! will look up a converter named \"point\" n number(10) ! will look up a converter named \"number\" ) This flag may be combined with `PARSE_COLNAMES` using the`|` (bitwise or) operator.Note Generated fields (for example `MAX(p)` ) are returned as`str` .\nUse`PARSE_COLNAMES` to enforce types for such queries.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://docs.python.org/3/library/sqlite3.html",
+          "heading": "Module constants¶",
+          "ord": 17,
+          "text": "- sqlite3.PARSE_COLNAMES¶\n- Pass this flag value to the *detect_types* parameter of`connect()` to look up a converter function by\nusing the type name, parsed from the query column name,\nas the converter dictionary key.\nThe query column name must be wrapped in double quotes (`\"` )\nand the type name must be wrapped in square brackets (`[]` ).SELECT MAX(p) as \"p [point]\" FROM test; ! will look up converter \"point\" This flag may be combined with `PARSE_DECLTYPES` using the`|` (bitwise or) operator.\n\n- sqlite3.SQLITE_OK¶\n- sqlite3.SQLITE_DENY¶\n- sqlite3.SQLITE_IGNORE¶\n- Flags that should be returned by the *authorizer_callback* callable\npassed to`Connection.set_authorizer()` , to indicate whether:\n  - Access is allowed ( `SQLITE_OK` ),\n  - The SQL statement should be aborted with an error ( `SQLITE_DENY` )\n  - The column should be treated as a `NULL` value (`SQLITE_IGNORE` )",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://docs.python.org/3/library/sqlite3.html",
+          "heading": "Connection objects¶",
+          "ord": 38,
+          "text": "  - \niterdump(*** ,*filter=None* )¶\n  - Return an iterator to dump the database as SQL source code. Useful when saving an in-memory database for later restoration. Similar to the `.dump` command in the**sqlite3** shell.\n    - Parameters:\n    - **filter** (*str* *|* *None* ) – An optional`LIKE` pattern for database objects to dump, e.g.`prefix_%` .\nIf`None` (the default), all database objects will be included.\n Example: # Convert file example.db to SQL dump file dump.sql con = sqlite3.connect('example.db') with open('dump.sql', 'w') as f: for line in con.iterdump(): f.write('%s\\n' % line) con.close() Changed in version 3.13: Added the *filter* parameter.",
+          "selection_applied": false
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 5,
+      "url": "https://github.com/python/cpython/issues/128697",
+      "title": "`sqlite3`, `check_same_thread` should be `true`? · Issue #128697 · python/cpython",
+      "site_name": "GitHub",
+      "domain": "github.com",
+      "published_at": "2025-01-10",
+      "fetched_at": "2026-10-06T21:29:43.326149+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://github.com/python/cpython/issues/128697",
+          "heading": "Repository navigation / `sqlite3`, `check_same_thread` should be `true`? #128697 / Description / Documentation",
+          "ord": 0,
+          "text": "https://docs.python.org/3/library/sqlite3.html#module-functions:\n\ncheck_same_thread (bool) – If True (default), ProgrammingError will be raised if the database connection is used by a thread other than the one that created it. If False, the connection may be accessed in multiple threads; write operations may need to be serialized by the user to avoid data corruption. See threadsafety for more information.\n\nand\n\nSerialized: In serialized mode, SQLite can be safely used by multiple threads with no restriction.\n\n... The serialized mode is default on both Mac and Windows so we can probably skip validating that. I did like mentioning the user needs to serialize the writes. They could use one thread for writing only or use locking. So, I just said to serialize.\n\nthe code:\n\ncpython/Modules/_sqlite/connection.c\n\nLines 1698 to 1714 in c141748\n\n|  | int pysqlite_check_thread(pysqlite_Connection* self) |\n| --- | --- |\n|  | { |\n|  | if (self->check_same_thread) { |\n|  | if (PyThread_get_thread_ident() != self->thread_ident) { |\n|  | PyErr_Format(self->ProgrammingError, |\n|  | \"SQLite objects created in a thread can only be used in that same thread. \" |\n|  | \"The object was created in thread id %lu and this is thread id %lu.\", |\n|  | self->thread_ident, PyThread_get_thread_ident()); |\n|  | return 0; |\n|  | } |\n|  | } |\n|  | return 1; |\n|  | } |\n|  | static PyObject* pysqlite_connection_get_isolation_level(pysqlite_Connection* self, void* unused) |",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://github.com/python/cpython/issues/128697",
+          "heading": "Repository navigation / `sqlite3`, `check_same_thread` should be `true`? #128697 / Description / Documentation",
+          "ord": 1,
+          "text": "the issue:\n\nthe `sqlite` originally itself does not have this `check_same_thread` option, and\n\nhttps://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigserialized:\n\nSQLITE_CONFIG_SERIALIZED",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://github.com/python/cpython/issues/128697",
+          "heading": "Repository navigation / `sqlite3`, `check_same_thread` should be `true`? #128697 / Description / Documentation",
+          "ord": 3,
+          "text": "according `sqlite` itself said `the SQLite library will itself serialize access to database connections and prepared statements so that the application is free to use the same database connection or the same prepared statement in different threads at the same time.`, why does python sqlite3 need this check_same_thread option? and the `sqlite3.threadsafety` returned also is 3\n\nthe document may statement clear it",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 6,
+      "url": "https://snarky.ca/how-virtual-environments-work",
+      "title": "How virtual environments work",
+      "site_name": "Tall, Snarky Canadian",
+      "domain": "snarky.ca",
+      "published_at": "2023-03-12",
+      "fetched_at": "2026-10-06T21:29:44.449680+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://snarky.ca/how-virtual-environments-work",
+          "heading": "How virtual environments work",
+          "ord": 0,
+          "text": "After needing to do a deep dive on the `venv` module (which I will explain later in this blog post as to why), I thought I would explain how virtual environments work to help demystify them.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://snarky.ca/how-virtual-environments-work",
+          "heading": "Why do virtual environments exist?",
+          "ord": 1,
+          "text": "Back in ~~my~~ the day, there was no concept of *environments* in Python: all you had was your Python installation and the current directory. That meant when you installed something you either installed it globally into your Python interpreter or you just dumped it into the current directory. Both of these approaches had their drawbacks.\n\nInstalling globally meant you didn't have any isolation between your projects. This led to issues like version conflicts between what one of your projects might need compared to another one. It also meant you had no idea what requirements your project actually had since you had no way of actually testing your assumptions of what you needed. This was an issue if you needed to share you code with someone else as you didn't have a way to test that you weren't accidentally wrong about what your dependencies were.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://snarky.ca/how-virtual-environments-work",
+          "heading": "Why do virtual environments exist?",
+          "ord": 3,
+          "text": "Enter *virtual environments*. Suddenly you had a way to install projects as a group that was tied to a specific Python interpreter. That got us the isolation/separation of only installing things you depend on (and being able to verify that through your testing), as well has having as many environments as you want to go with your projects (e.g. an environment for each version of Python that you support). So all sorts of wins! It's an important feature to have while doing development (which is why it can be rather frustrating for users when Python distributors leave `venv` out).",
+          "selection_applied": false
+        }
+      ],
+      "cited": false
+    }
+  ],
+  "reads": [
+    {
+      "url": "https://dev.to/geekypandey/copy-venv-from-one-folder-to-another-and-still-be-able-to-use-it-3m49",
+      "title": "Copy venv from one folder to another and still be able to use it?",
+      "site_name": "DEV Community",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://docs.python.org/3/library/sqlite3.html",
+      "title": "sqlite3 — DB-API 2.0 interface for SQLite databases",
+      "site_name": "Python documentation",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://docs.python.org/3/library/venv.html",
+      "title": "venv — Creation of virtual environments",
+      "site_name": "Python documentation",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://github.com/python/cpython/issues/128697",
+      "title": "`sqlite3`, `check_same_thread` should be `true`? · Issue #128697 · python/cpython",
+      "site_name": "GitHub",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://ricardoanderegg.com/posts/python-sqlite-thread-safety",
+      "title": "Python, SQLite, and thread safety",
+      "site_name": "Rand[Om]",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://snarky.ca/how-virtual-environments-work",
+      "title": "How virtual environments work",
+      "site_name": "Tall, Snarky Canadian",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://stackoverflow.com/questions/22739590/how-to-share-single-sqlite-connection-in-multi-threaded-python-application",
+      "title": "How to share single SQLite connection in multi-threaded Python ...",
+      "site_name": "stackoverflow.com",
+      "status": "failed",
+      "reason": "HTTP 403"
+    },
+    {
+      "url": "https://stackoverflow.com/questions/32407365/can-i-move-a-virtualenv",
+      "title": "python - Can I move a virtualenv? - Stack Overflow",
+      "site_name": "stackoverflow.com",
+      "status": "failed",
+      "reason": "HTTP 403"
+    },
+    {
+      "url": "https://towardsdatascience.com/python-virtual-environments-why-and-when-should-you-use-them-be57b0c0323d",
+      "title": "Python Virtual Environments: Why and When Should You Use Them?",
+      "site_name": "towardsdatascience.com",
+      "status": "failed",
+      "reason": "[Errno 65] No route to host"
+    }
+  ],
+  "elapsed_ms": 10573.121750028804,
+  "web": {
+    "status": "used",
+    "freshness": "any",
+    "notice": null,
+    "queries": [
+      "why recreate virtual environment after moving it Python venv",
+      "what happens when another thread uses sqlite3 connection with check_same_thread=True default"
+    ],
+    "timings": {
+      "plan": 851.9279169850051,
+      "search": 811.018249951303,
+      "fetch": 2391.7669170186855,
+      "rank": 7.850916997995228
+    },
+    "source_count": 6,
+    "plan_fallback": false,
+    "providers": [
+      "SearXNG"
+    ],
+    "ranking": "keyword",
+    "selection_condition": null
+  }
+}
