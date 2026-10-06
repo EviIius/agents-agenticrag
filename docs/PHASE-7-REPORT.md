@@ -1,127 +1,203 @@
-# Phase 7 report
+# Phase 7 report — checkpoint 7-0
 
-## Checkpoint 7-0 — blocked at the extension prerequisite
+## Summary
 
-### Summary
+The Library probe passes in the development and actual installed server interpreters.
+The approved uv-managed Python 3.14.7 build supplies SQLite extension loading;
+`sqlite-vec` is pinned at 0.1.9 and the selected embedding model is already installed.
+The full existing suite passes, and Atelier is live with its original environments
+and a private database backup preserved. No Library product code or migration
+was added. Stop here for the planned 7-0 review before 7A.
 
-Jake approved `sqlite-vec` and the installed `qwen3-embedding:0.6b` by saying
-“go ahead” after the explicit dependency/model question. Optional 6B is skipped;
-Ollama remains the only runtime. Installed the pinned stable package
-`sqlite-vec==0.1.9` in both existing server environments without changing any
-other dependency. The first probe fails in both: Python 3.14.7's `sqlite3`
-connection has no `enable_load_extension` method. Phase 7 §2 requires stopping
-here. No Library product code, migration, embedding call or model download ran.
-
-### Done-when checklist
+## Done-when checklist
 
 | Item | Status | Evidence |
 |---|---|---|
-| J3 dependency approval | Approved | Jake: “go ahead” to the explicit `sqlite-vec` / installed embedding model question; `AGENTS.md` |
-| J8 embedding model | Selected | `qwen3-embedding:0.6b`; Ollama `/api/show` reports `embedding`; `artifacts/phase-7/probe.json` |
-| Step 1, development SQLite extension | **Blocked** | `probe-development.json`, exit 1, `AttributeError` |
-| Step 1, installed interpreter SQLite extension | **Blocked** | `probe-installed.json`, exit 1, same `AttributeError` |
-| Step 2, aiosqlite through `db/core.connect()` | Not run | Mandatory stop after step 1 |
-| Step 3, 20,000 × 768 vectors / 50 queries | Not run | Mandatory stop after step 1 |
-| Step 4, 3,000-character embedding without truncation | Not run | Mandatory stop after step 1 |
-| Live app availability | Pass health only | Local and TLS-verified Tailscale HTTP 200 in `probe.json` |
-| 7-0 complete | **No** | Requires an approved interpreter remedy and rerun |
+| J3 dependency approval | Approved | Jake: “go ahead” to the explicit package/model question; `AGENTS.md` |
+| J8 model selection | Approved | `qwen3-embedding:0.6b`, Ollama reports `embedding`; no model download |
+| Interpreter remedy | Verified and active | Jake: “go ahead” to isolated Python preparation/testing with the original runtime preserved for rollback; `candidate/promotion.json` |
+| Step 1: SQLite loads extension | Pass, both actual environments | `probe.json`, `candidate/probe-active-{development,installed}.json`, version `v0.1.9` |
+| Step 2: aiosqlite through `db/core.connect()` | Pass, both | Same files; isolated temporary data, schema 7; loading disabled after load |
+| Step 3: 20,000 × 768 / 50 queries / k40 | Pass, both | Actual p95 under 17 ms, sorted finite distinct results; raw timings retained |
+| Step 4: full 3,000-character passage | Pass, both | `truncate: false`, HTTP 200; 557 evaluated tokens; reported context 32,768; 1,024 returned dimensions |
+| Core regression gates | Pass automated | `candidate/check.txt`, `candidate/e2e.txt` |
+| Live service and engine | Pass metadata checks | Local/TLS Tailscale HTTP 200; engine ready; `candidate/promotion.json` |
+| User checkpoint review | Pending | This report; 7A has not started |
 
-### Changed files
+All evidence paths below are relative to `artifacts/phase-7/` unless noted.
+
+## Changed files
 
 - Server metadata: `server/pyproject.toml`, `server/uv.lock` add only
-  `sqlite-vec==0.1.9`; existing package versions unchanged.
-- Scripts: `scripts/probe_library_extension.py` performs step 1 against a synthetic
-  in-memory database and prints only environment metadata; nonzero exit on failure.
-- Privacy guard: `scripts/privacy_audit.py` extends existing artifact scanning and
-  synthetic screenshot filename checks to Phase 7.
-- Docs: `AGENTS.md` records the explicit approval; this report.
-- Evidence: `artifacts/phase-7/probe.json`, individual interpreter results,
-  `check.txt`, `privacy-audit.json`.
-- No files under `server/app`, `server/tests`, `web`, `shared`, production
-  migrations, transcription source, or existing phase evidence changed.
+  `sqlite-vec==0.1.9`; no other dependency version changed.
+- Scripts: `scripts/probe_library_extension.py` records the original prerequisite;
+  `scripts/probe_library.py` runs the four steps against temporary synthetic data.
+  `scripts/privacy_audit.py` extends the existing artifact/image guard to Phase 7.
+- Docs: `AGENTS.md` records approval and the interpreter remedy; this report.
+- Evidence: `probe.json`, original blocked results, candidate installation/probe/
+  checks, the single full browser run, performance, screenshots and promotion metadata.
+- Local deployment: development/installed virtual environments now use the
+  verified managed Python; installed manifests match the approved frozen lock.
+  Old environments remain in a private fallback folder. No engine interpreter change.
+- No tracked application, frontend, shared payload, test or migration file changed.
 
-### Deviations from SPEC.md
+Source checkpoints: initial blocker `7a25137`; probe/remedy preparation `5fcbe1f`.
+Accepted 6A fallback: source `533418b`, evidence `19c25a1`, acceptance `4ada059`.
 
-No storage fallback or alternate SQLite package was introduced. The mandatory
-stop in Phase 7 §2 applies. No later Library checkpoint is started. The roadmap's
-suggested authorization text points to §6.3; the actual Library answer prompt
-is §5.3, and `AGENTS.md` records the correct section. No prompt was created or edited.
+## Deviations from SPEC.md
 
-### Runtime observations
+The original framework Python 3.14.7 lacked `enable_load_extension`. The required
+stop was honored, evidence committed, and Jake authorized the isolated remedy.
+The managed distribution retains Python 3.14.7 and all Python package versions;
+its bundled SQLite is 3.53.1 rather than 3.50.4. No alternate SQLite package,
+storage design, second model runtime, migration or new chat model call was added.
 
-Both virtual environments resolve to the same existing framework Python 3.14.7;
-both report SQLite 3.50.4. Both can import `sqlite_vec` 0.1.9 and locate its ARM64
-extension; both extension binaries hash to
-`193e480c50b59a55977d166f4aaf0e1bc8832d6963516e5950f39e4d2ce0b793`.
-The failure precedes extension loading: the Python connection lacks the enabling
-method. This is a Python build capability issue; the installed embedding model
-has not yet been exercised.
+The roadmap authorization example points to §6.3; the actual Library answer
+prompt is §5.3. `AGENTS.md` records the correct section. No prompt was edited.
+The 768-dimension benchmark is separate from the chosen model's measured 1,024
+output dimensions. Future storage must use the actual model shape.
 
-Package version and wheel hashes come from the [PyPI release](https://pypi.org/project/sqlite-vec/0.1.9/).
-The required loading sequence follows the [author's Python documentation](https://alexgarcia.xyz/sqlite-vec/python.html).
-A read-only `uv python list 3.14 --only-downloads` confirms a managed 3.14.7 build
-is available. It has not been installed or probed. [uv supports separate managed
-Python installations](https://docs.astral.sh/uv/concepts/python-versions/); whether
-that build loads this extension must be verified before switching environments.
+## Runtime observations
 
-An initial health-evidence helper using framework `urllib` encountered its
-missing default CA certificate store. The helper was rerun using the app's
-existing `httpx` with certificate verification enabled; both health checks
-returned 200. No SSL verification bypass or application change was made.
+The original failure is preserved in `probe-initial-blocked.json` and the
+individual initial interpreter JSON files. Both environments could import the
+same extension binary but their framework Python could not enable loading.
+The managed candidates, then both actual active environments, passed all four
+steps. Context and capability came from Ollama metadata, not model-name inference.
+No truncation, vector or passage text is logged. Four embedding requests total
+(two candidate, two active verification), all invented text to loopback Ollama.
+No answer, planner, title or clean-up model call was made by this probe.
 
-### Test output and gates
+The first runtime activation hit a nonzero launchd bootstrap result. Its script
+restored both environments and manifests; the initial recovery bootstrap did not
+recover health. A manual bootstrap restored the original service with local and
+TLS health 200. Initial stderr was not captured, so the exact cause is unproven.
+`candidate/promotion-attempt-1.json` preserves this operational failure.
+The second activation waited for the old listener to exit and captured/retried
+bootstrap registration; bootstrap succeeded on its first attempt and active
+probes, health and engine-ready checks passed. No test was rerun or weakened to
+hide the operational failure. Text logs have only trailing whitespace and blank
+EOF normalization for Git; outcomes and line contents are retained. `candidate/promotion.json` records the successful
+switch, preserved environments and pre-switch database backup.
 
-`make check` passed (exit 0): **257 Python tests**, **36 frontend tests**, **74
-contrast pairs**; lint, types, API generation/additive guard, frozen prompt and
-row guards, motion and privacy checks passed. Coverage remains providers 85.8%,
-runs 89.2%, search 88.9%, transcribe 93.1%, documents 96.6%, backup 96.8%.
-Output is in `artifacts/phase-7/check.txt`, coverage in `coverage.json`. Probe
-script lint/format and `git diff --check` also passed. Existing application and
-test code is unchanged.
+An initial blocked-attempt health helper using framework `urllib` also encountered
+its missing default CA store. Existing `httpx` was used with certificate
+verification enabled; no SSL bypass or application change occurred.
 
-No full E2E run, benchmark, new screenshots or phone check is claimed for this
-blocked attempt. G-2 and the remaining completion gates are not discharged;
-7-0 is **not done**. No UI state exists yet, so there are no new design states
-or accessibility captures. No changes under search/runs/providers or model-facing
-prompts, so no new web eval is triggered. No migration or production rollout
-occurred; migration rollback is not triggered. Earlier 6A test results are the
-fallback evidence, not presented as a new checkpoint pass.
+Reference documentation: [sqlite-vec Python loading](https://alexgarcia.xyz/sqlite-vec/python.html),
+[stable package release](https://pypi.org/project/sqlite-vec/0.1.9/),
+[Ollama embedding truncation behavior](https://docs.ollama.com/api/embed),
+[uv managed Python installations](https://docs.astral.sh/uv/concepts/python-versions/).
 
-### Test-diff ledger / core unchanged
+## Test output
 
-No test file, assertion, timeout or skip changed. The sole existing guard edit
-adds Phase 7 artifact coverage to `privacy_audit.py`; prior checks remain intact.
-All C1–C16 product implementations remain byte-unchanged. Live health confirms
-availability only, not a new pass of every user flow.
+- `make check` on the managed development candidate: **257 Python**, **36 frontend**,
+  **74 contrast pairs**, exit 0. Lint, types, API types/additive guard, frozen prompt,
+  projected-row/payload guards, motion and privacy pass. Coverage: providers 85.8%,
+  runs 89.2%, search 88.9%, transcribe 93.1%, documents 96.6%, backup 96.8%.
+- One complete `make e2e`: **403 passed, 3 existing documented skips, 0 failures**,
+  **33.8 minutes**, Chromium and WebKit. No partial-run assembly. All 369 source
+  hashes remained unchanged through that invocation, at source `5fcbe1f`.
+- Existing skips: real-time long-stream gate runs once on Chromium; foundation
+  review captures once on Chromium; Playwright WebKit offline service-worker
+  navigation limitation. No new skip, assertion edit or timeout change.
+- Probe script lint/format and `git diff --check` pass; no new product package
+  needs a coverage target. New probe scripts execute against real approved dependencies.
 
-### Privacy, deployment and fallback
+### Performance
 
-The probe opens only an in-memory synthetic database. It reads no production
-chats, attachments, transcripts, document filenames or glossary entries.
-Ollama `show` is a metadata request, not an embedding/model inference request.
-No embedding vectors or document text were generated, logged or stored.
+Initial JS remains **237,675 bytes gzip**, **0-byte delta** from 6A, below 256,000.
+Streaming render p95 is **2.6 ms Chromium / 3.0 ms WebKit**; first-token overhead
+**62.13 / 57.69 ms**. The 300-message scroll median is **16.7 / 17 ms**.
+`candidate/bundle.json` and `candidate/regenerated/phase-{1,3}/` contain results.
+The vector benchmark timings do not establish retrieval quality or answer latency;
+J7 eval-target approval remains required before 7B.
 
-No app code, interpreter, launchd plist, port, Tailscale route or production
-schema changed. The installed environment now has the one approved extra
-package, unused by the unchanged running app; installed manifests still describe
-6A. This was a package-only probe installation, not a production release.
-A future frozen sync to the unchanged installed 6A lock removes that unused
-package. The 6A source `533418b`, evidence `19c25a1`, and acceptance `4ada059`
-remain the last accepted fallback. Sidebar motion and VoiceOver limitations
-remain deferred; no physical device pass is invented.
+### QA gates and core unchanged
 
-### Screenshots
+| Gate | Evidence / disposition |
+|---|---|
+| G-1 check/coverage | `candidate/check.txt`, regenerated coverage JSON |
+| G-2 one green full run | `candidate/e2e.txt` |
+| G-3 test ledger | No test file changed; existing privacy guard only gains Phase 7 coverage |
+| G-4 budgets | Bundle/performance figures above; passing existing performance specs |
+| G-5 axe/contrast/keyboard | Existing design/review/keyboard suites green at both widths/themes; no new UI state; physical VoiceOver remains deferred |
+| G-6 API additive | Guard passes; app schemas/routes unchanged |
+| G-7 rows/migrations | Existing synthetic fixture upgrade guard passes; no migration; active schema 7 |
+| G-8 frozen prompts | Existing hashes pass; none changed |
+| G-9 web eval | Not triggered: search, runs, providers and prompts unchanged |
+| G-10 runtime payloads | Existing golden/parameter assertions pass |
+| G-11 privacy | `candidate/privacy-audit.json`; synthetic capture discipline and all eight saved images visually reviewed |
+| G-12 deployment | Production code unchanged; plist hash/one worker/bind/port unchanged; TLS health; pre-switch backup; production design route checked |
+| G-13 reduced motion | Existing motion suite passes; reported physical motion issue remains deferred |
+| G-14 design states | No new product/UI state; existing production design states re-tested |
+| G-15 migration rollback | Not triggered: no migration; environment restoration occurred after first activation failure |
+| G-16 user review | Pending 7-0 review; no new physical phone observation attributed to Jake |
 
-None: no product UI was changed, and the mandatory prerequisite failed.
+| Core | Passing suite / guard in the single run or check output |
+|---|---|
+| C1 send/stream/stats | `chat.spec.ts` |
+| C2 stop/partial | `chat.spec.ts`, `phase3-accessibility.spec.ts` |
+| C3 reopen/reconnect | `chat.spec.ts`, `web.spec.ts` |
+| C4 long answer/idle timeout | `chat.spec.ts` |
+| C5 actions/export | `actions.spec.ts`, `chat-export.spec.ts` |
+| C6 model/context | `load-selection.spec.ts`, `ui-regressions.spec.ts` |
+| C7 parameters | `parameters.spec.ts`, server request/preset tests |
+| C8 web/citations/failure | `web.spec.ts`, unchanged web/search unit guards |
+| C9 recording/retention/clean-up | `transcription.spec.ts`, `recording-download.spec.ts`, `audio-storage.spec.ts`, `cleanup.spec.ts`, server tests |
+| C10 mobile layouts/composer | `mobile-layout.spec.ts`, `mobile-composer.spec.ts` |
+| C11 shortcuts/PWA | `polish.spec.ts`, `pwa.spec.ts` |
+| C12 legacy import | `test_legacy_import.py` |
+| C13 deployment | `test_deployment.py`, actual promotion checks |
+| C14 untrusted content | `foundation.spec.ts`, SSRF tests |
+| C15 budgets | `performance.spec.ts`, chat timing tests |
+| C16 axe/keyboard | Foundation, review, Phase 3 accessibility and existing design suites |
 
-### Open question for Jake
+## Privacy, deployment and fallback
 
-Phase 7 §2 and SPEC's observed-runtime stop rule require a decision before a
-remedy. Recommended: prepare an isolated uv-managed Python **3.14.7** build,
-verify extension loading first, then recreate server environments from the same
-frozen dependency lock. Preserve the existing framework Python and current
-virtual environments for rollback. Run the required checks and full browser
-suite before any installed-app interpreter switch. Keep the live app on the
-accepted 6A runtime while preparing this candidate. No change to the transcription
-engine interpreter is proposed. No other SQLite dependency or storage design
-is proposed. Authorization is pending.
+Probe databases are private temporary directories and are removed. No real
+recording, filename, transcript, glossary term or document was read for the probe
+or captured in evidence. Promotion opened the current Workbench database only
+for a private backup and schema/integrity checks; no production rows were emitted.
+Legacy data was not opened. The backup itself and runtime environments remain
+outside Git. The real transcription interpreter selection hash is unchanged.
+
+The full browser run requires exclusive port 8787: the accepted live service was
+temporarily stopped, then restored automatically by the shell wrapper before
+runtime activation. Health restoration is recorded in `candidate/service-restored.json`.
+The final promotion preserves 71 installed application source files, the plist,
+Tailscale forwarding configuration and all existing engine assets. The active
+service and actual probes pass after the switch. Installed dependency manifests
+now match the approved lock; production has 47 packages, equal in name/version to
+the preceding installed environment including the previously approved extension.
+Development has the same 60 package versions as the preceding checkout environment.
+
+`candidate/promotion.json` contains the exact backup/fallback paths and environment
+moves. To revert this schema-7 runtime remedy: stop the existing launchd job, remove
+only the candidate aliases recorded there, move each active environment back to
+its recorded candidate location, restore each preserved `.venv` to its original
+target, restore installed `pyproject.toml`/`uv.lock` from the fallback folder, then
+bootstrap the unchanged plist and verify local/TLS health. Keep the managed Python
+and data backup available. Original environments must be restored to their target
+paths for their existing entry-point paths. No database restore is needed for
+this environment-only change; there is no migration.
+
+Earlier phase evidence was restored after capturing current metrics separately.
+`candidate/archive.json` records 298 historical files restored, 22 metric files
+archived, and 40 newly generated historical outputs moved to a private temporary
+folder. The old phase fallback evidence remains intact.
+
+## Screenshots
+
+Eight synthetic regression screenshots are saved under `candidate/screenshots/`:
+partial-clean-up at 390 and cleaned-chip at 1440, light/dark, Chromium/WebKit.
+All were visually inspected. They are existing production components, not new
+Library UI. No live iPhone screenshot or physical review was performed here.
+
+## Open questions for Jake
+
+Review checkpoint 7-0 and confirm continuation to **7A: Library storage, ingestion
+and Settings UI**. Library UI/retrieval has not started. No embedding-model pull
+is needed. Eval targets J7 still require approval before 7B, and Research remains
+gated. VoiceOver, the earlier unexplained iOS keyboard incident and the reported
+sidebar/other physical motion issue retain their prior unresolved/deferred status.

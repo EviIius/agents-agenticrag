@@ -98,3 +98,13 @@ the current live runtime. Verify the approved extension and embedding probe
 and existing app tests against the candidate. Keep the framework interpreter
 and existing environments intact; do not alter the transcription interpreter.
 An installed-app runtime switch is presented after candidate verification.
+
+**7-0 environment closeout — 5 October 2026:** Both server environments now
+use the verified uv-managed Python 3.14.7 build with extension-capable SQLite.
+Their previous framework environments and installed manifests are preserved
+under the private fallback path recorded in `artifacts/phase-7/candidate/promotion.json`.
+The system/framework Python and transcription interpreter remain unchanged.
+The full check/browser suites and actual installed/development probes passed.
+Stop for 7-0 review before 7A. J7 eval targets remain unapproved until a later
+explicit decision before 7B. Record the initial launchd activation failure and
+successful recovery without claiming its cause was proven.
