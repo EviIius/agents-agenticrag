@@ -80,3 +80,13 @@ Move on.” Close the 6A review stop, retaining source/evidence and the deferred
 motion/accessibility limitations. The next phase's explicit gates remain: 6B
 needs a named second runtime; 7-0 needs `sqlite-vec` approval and an embedding
 model selection before installation or probe execution.
+
+**User authorization — 5 October 2026 (7-0):** After Codex requested explicit
+approval for `sqlite-vec` and the installed, runtime-reported embedding model
+`qwen3-embedding:0.6b`, Jake said “go ahead.” Proceed with the Library probe
+in `docs/next/PHASE-7-LIBRARY.md` §2 and stop for review after 7-0. Library
+retrieval is in scope; this lifts the earlier RAG non-goal. Library text and
+filenames follow the recording privacy rule. The future library answer prompt
+in §5.3 requires frozen hashes and before/after evals for edits. Embedding calls
+are distinct from chat model calls. Optional 6B is skipped; Ollama remains the
+only runtime. Research is not authorized.
