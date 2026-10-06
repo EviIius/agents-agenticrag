@@ -44,7 +44,7 @@ export function LibraryControl({
             onFocus={() => {
               if (reason) setTipOpen(true);
             }}
-            className={`h-11 gap-2 rounded-full px-2 ${enabled ? "bg-brand-soft text-brand" : ""}`}
+            className={`h-11 min-w-11 gap-2 rounded-full px-2 ${enabled ? "bg-brand-soft text-brand" : ""}`}
             onClick={() => {
               if (enabled || !reason) onToggle(!enabled);
               else setTipOpen(true);
@@ -65,7 +65,7 @@ export function LibraryControl({
             size="icon"
             variant="ghost"
             aria-label="Choose Library collections"
-            className="h-11 w-6"
+            className="h-11 w-11"
           >
             <ChevronDown className="size-3" />
           </Button>

@@ -161,6 +161,41 @@ for (const width of [390, 1440])
       );
     });
 
+test("7B Library touch targets and reasoning toolbar fit at 320 pixels", async ({
+  page,
+  request,
+}) => {
+  await setup(request);
+  await request.patch("/api/settings", {
+    data: { default_model_id: "fake-reasoning" },
+  });
+  await page.setViewportSize({ width: 320, height: 900 });
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: /^Think:/ })).toBeVisible();
+  for (const name of ["Library", "Choose Library collections"]) {
+    const button = page.getByRole("button", { name, exact: true });
+    await expect(button).toBeVisible();
+    const box = await button.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.width).toBeGreaterThanOrEqual(44);
+    expect(box!.height).toBeGreaterThanOrEqual(44);
+    expect(box!.x).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(320);
+  }
+  await page.getByRole("button", { name: "Library", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Library", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  const send = await page
+    .getByRole("button", { name: "Send message", exact: true })
+    .boundingBox();
+  expect(send).not.toBeNull();
+  expect(send!.x + send!.width).toBeLessThanOrEqual(320);
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth),
+  ).toBeLessThanOrEqual(320);
+});
+
 test("7B disabled Library can be turned off; missing files and failure notices", async ({
   page,
   request,
