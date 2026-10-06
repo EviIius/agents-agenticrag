@@ -4,12 +4,19 @@ import { mkdir } from "node:fs/promises";
 import { settle } from "./helpers";
 
 const dir = "../artifacts/phase-7/7b";
-async function setup(request: APIRequestContext) {
+async function setup(
+  request: APIRequestContext,
+  theme: "light" | "dark" = "light",
+) {
   await request.delete("/api/library", { data: { confirmation: "DELETE" } });
   const conn = (await (await request.get("/api/connections")).json())[0];
   await request.patch("/api/settings", {
     data: {
       auto_title: false,
+      "appearance.theme": theme,
+      "appearance.font": "serif",
+      "appearance.size": "M",
+      "appearance.reduce_motion": "system",
       default_connection_id: conn.id,
       default_model_id: "fake-chat",
       "web.default_on": false,
@@ -57,7 +64,7 @@ for (const width of [390, 1440])
       page,
       request,
     }, testInfo) => {
-      await setup(request);
+      await setup(request, theme);
       await page.setViewportSize({ width, height: 900 });
       await page.addInitScript(
         (theme) => localStorage.setItem("workbench-theme", theme),
