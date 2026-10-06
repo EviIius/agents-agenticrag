@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { LibraryControl, type Scope } from "@/components/chat/LibraryControl";
 import { SearchActivity } from "@/components/chat/SearchActivity";
 import { SourcesSheet } from "@/components/chat/SourcesSheet";
-import { CitationPill } from "@/components/chat/CitationPill";
 import type { Message, Source } from "@/lib/api";
 const Markdown = lazy(() => import("@/components/chat/Markdown"));
 export const libraryAnswerStates = [
@@ -34,7 +33,7 @@ export default function LibraryAnswersPreview() {
     document_id: state === "Removed file" ? null : "fake",
     page_start: 2,
     page_end: 3,
-    cited: true,
+    cited: state !== "Uncited",
     passages: [
       {
         selection_applied: false,
@@ -45,37 +44,6 @@ export default function LibraryAnswersPreview() {
       },
     ],
   };
-  const message: Message = {
-    id: "fake",
-    chat_id: "fake",
-    role: "assistant",
-    status: state === "Searching" ? "streaming" : "complete",
-    content: "The daily meal limit is 35 dollars [1].",
-    created_at: "2026-10-06",
-    library: {
-      status:
-        state === "Empty scope"
-          ? "skipped"
-          : state === "Failed"
-            ? "failed"
-            : "used",
-      source_count: 1,
-      passage_count: 1,
-      timings: { total: 400 },
-      queries: ["Invented meal reimbursement"],
-      notice:
-        state === "Empty scope"
-          ? { code: "library_empty", message: "" }
-          : state === "Failed"
-            ? {
-                code: "library_failed",
-                message: "The Library retrieval was unavailable.",
-              }
-            : state === "Uncited"
-              ? { code: "uncited", message: "" }
-              : null,
-    },
-  };
   const reason =
     state === "No embedding"
       ? "Choose an embedding model in Settings › Library"
@@ -84,6 +52,49 @@ export default function LibraryAnswersPreview() {
         : state === "Remote model"
           ? "Library text can only go to a local model"
           : undefined;
+  const hasPassages =
+    !reason && !["Searching", "Empty scope", "Failed"].includes(state);
+  const sources = hasPassages ? [source] : [];
+  const message: Message = {
+    id: "fake",
+    chat_id: "fake",
+    role: "assistant",
+    status: state === "Searching" ? "streaming" : "complete",
+    content:
+      reason || state === "Searching"
+        ? ""
+        : state === "Empty scope" || state === "Failed"
+          ? "This is an ordinary model answer."
+          : state === "Uncited"
+            ? "The daily meal limit is 35 dollars."
+            : "The daily meal limit is 35 dollars [1].",
+    created_at: "2026-10-06",
+    library: reason
+      ? null
+      : {
+          status:
+            state === "Empty scope"
+              ? "skipped"
+              : state === "Failed"
+                ? "failed"
+                : "used",
+          source_count: sources.length,
+          passage_count: sources.length,
+          timings: hasPassages ? { total: 400 } : {},
+          queries: hasPassages ? ["Invented meal reimbursement"] : [],
+          notice:
+            state === "Empty scope"
+              ? { code: "library_empty", message: "" }
+              : state === "Failed"
+                ? {
+                    code: "library_failed",
+                    message: "The Library retrieval was unavailable.",
+                  }
+                : state === "Uncited"
+                  ? { code: "uncited", message: "" }
+                  : null,
+        },
+  };
   return (
     <main className="mx-auto max-w-2xl space-y-5 p-6">
       <h1 className="text-xl font-medium">
@@ -95,7 +106,13 @@ export default function LibraryAnswersPreview() {
             key={s}
             variant="outline"
             aria-pressed={state === s}
-            onClick={() => setState(s)}
+            onClick={() => {
+              setState(s);
+              toggle(
+                !["No embedding", "No ready files", "Remote model"].includes(s),
+              );
+              setScope(s === "Empty scope" ? { collection_ids: [] } : null);
+            }}
           >
             {s}
           </Button>
@@ -118,7 +135,7 @@ export default function LibraryAnswersPreview() {
       />
       <SearchActivity
         message={message}
-        sources={[source]}
+        sources={sources}
         steps={
           state === "Searching"
             ? [{ label: "searching", detail: "", status: "ok" }]
@@ -127,13 +144,11 @@ export default function LibraryAnswersPreview() {
         onRetry={() => setState("Searching")}
       />
       <Suspense fallback={<p>Loading preview…</p>}>
-        <Markdown text={message.content} sources={[source]} />
+        <Markdown text={message.content} sources={sources} />
       </Suspense>
-      <CitationPill
-        sources={[source]}
-        sentence="The daily meal limit is 35 dollars."
-      />
-      <SourcesSheet message={message} sources={[source]} reads={[]} />
+      {sources.length > 0 && (
+        <SourcesSheet message={message} sources={sources} reads={[]} />
+      )}
     </main>
   );
 }

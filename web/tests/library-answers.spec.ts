@@ -234,6 +234,47 @@ test("7B all synthetic answer states axe and keyboard", async ({
       ]) {
         await page.getByRole("button", { name: state, exact: true }).click();
         await settle(page);
+        const citations = page.getByRole("button", {
+          name: "View source: Invented-handbook.pdf",
+          exact: true,
+        });
+        if (
+          [
+            "Searching",
+            "Empty scope",
+            "Failed",
+            "Uncited",
+            "No embedding",
+            "No ready files",
+            "Remote model",
+          ].includes(state)
+        ) {
+          await expect(citations).toHaveCount(0);
+        } else {
+          await expect(citations).toHaveCount(1);
+        }
+        if (
+          ["No embedding", "No ready files", "Remote model"].includes(state)
+        ) {
+          await expect(
+            page.getByRole("button", { name: "Library", exact: true }),
+          ).toHaveAttribute("aria-disabled", "true");
+          await expect(page.getByTestId("library-activity")).toHaveCount(0);
+        }
+        if (
+          [
+            "Searching",
+            "Empty scope",
+            "Failed",
+            "No embedding",
+            "No ready files",
+            "Remote model",
+          ].includes(state)
+        ) {
+          await expect(
+            page.getByRole("button", { name: /1 sources/ }),
+          ).toHaveCount(0);
+        }
         expect(
           (await new AxeBuilder({ page }).analyze()).violations.filter((v) =>
             ["serious", "critical"].includes(v.impact ?? ""),
