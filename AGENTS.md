@@ -90,3 +90,11 @@ filenames follow the recording privacy rule. The future library answer prompt
 in §5.3 requires frozen hashes and before/after evals for edits. Embedding calls
 are distinct from chat model calls. Optional 6B is skipped; Ollama remains the
 only runtime. Research is not authorized.
+
+**User authorization — 5 October 2026 (7-0 interpreter remedy):** After the
+extension-loading prerequisite failed, Jake said “go ahead” to preparing and
+verifying an isolated uv-managed Python 3.14.7 environment while preserving
+the current live runtime. Verify the approved extension and embedding probe
+and existing app tests against the candidate. Keep the framework interpreter
+and existing environments intact; do not alter the transcription interpreter.
+An installed-app runtime switch is presented after candidate verification.
