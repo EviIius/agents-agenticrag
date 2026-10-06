@@ -1,3 +1,221 @@
+# Phase 7 report — checkpoint 7A
+
+## Summary
+
+Jake accepted the technical 7-0 probe with “Not sure how to verify it, so I guess
+continue on”; no individual phone results are inferred. Library storage, ingestion
+and Settings are implemented. Files can be indexed, organized, opened, re-indexed
+and deleted. This checkpoint stops for review; answering from Library files and
+its citation UI belong to 7B. The prior 7-0 report is retained below.
+
+## Done-when checklist
+
+| Item | Status | Evidence |
+|---|---|---|
+| P7-AC1 probe | Pass, retained | `candidate/probe-active-{development,installed}.json`; approved sqlite-vec 0.1.9 |
+| P7-AC2 existing rows/citations | Pass | Existing projected-row fixture tests; `7a/rollback.json`, private current-data copy, schema 7→8→7 |
+| P7-AC3 five formats/page ranges | Pass | `test_library.py` synthetic PDF, Word, Markdown, text, HTML; exact per-page PDF ranges |
+| P7-AC4 restart recovery | Pass | Queued recovery and atomic chunk/vector replacement tests |
+| P7-AC5 concurrent chat | Pass | Shared-semaphore test: existing chat starts streaming between embedding batches |
+| P7-AC6 delete storage/history | Storage pass; historical UI deferred to 7B | Original/chunk/FTS/vector deletion and preserved source snapshots tested; no Library answer UI exists at 7A |
+| P7-AC7 model change/re-index | Pass | Dimension changes, stale documents, stored-chunk re-index with no re-extraction |
+| Library Settings | Pass automated | `library.spec.ts`, both engines/widths/themes, all 24 preview states |
+| No chat behavior/prompt change | Pass automated | Full existing core suite and frozen prompt/API/payload guards |
+| User checkpoint review | Pending 7A | This report; no new physical iPhone check claimed |
+
+Evidence paths are relative to `artifacts/phase-7/`.
+
+## Changed files
+
+- Server: additive migration `008_library.sql`; new `library/` extraction worker,
+  supervised extraction and durable ingestion manager; `api/library.py`; additive
+  settings/bootstrap/router/schema wiring; upload-space guard reused for Library.
+- Web: lazy `Settings › Library`, pure production view/feedback components and
+  `/design?library` preview; Settings tab registration and generated API types.
+- Tests: 22 new Library server cases, 14 new browser cases across both engines;
+  explicit embedding-only fake-runtime models. Three existing migration tests
+  retain their exact checks with schema version 8. `7a/test-diff-ledger.md` lists
+  each edit; no existing browser test changed.
+- Checks/docs: Library coverage target 80%; approval/acceptance recorded in
+  `AGENTS.md`; this report; synthetic screenshots and metadata-only evidence.
+
+Source checkpoint: `5f43800` on `codex/phase-7a-library`. Accepted 7-0 fallback:
+`c1ecc2b`. Source files are frozen through the complete browser invocation.
+
+## Deviations from SPEC.md
+
+- Durable progress columns/events support resumable SSE, with no progress polling.
+  A nullable full extracted-text column preserves complete text for “Open”; the
+  existing chunker may omit paragraphs unsuitable for retrieval. No old column
+  or table is rebuilt; the existing web citation table is untouched.
+- An additive `POST /api/library/embedding` validates registry capability and
+  probes the actual vector dimension before changing selection. Generic settings
+  cannot accept a caller-invented dimension. No capability is inferred from names.
+- PDF pages are chunked individually with the unchanged search chunker, giving
+  exact page-start/page-end metadata. Markers are removed from passage text.
+- The selected extension has no need for a separate `library/store.py`; the
+  manager uses the existing transaction/Store abstraction and loads only the
+  approved extension, then disables extension loading.
+- First embedding selection preserves queued uploads. Subsequent model changes
+  mark documents stale; re-index uses retained chunks. Query-prefix changes do
+  not force document re-index; document-prefix changes do.
+- P7-AC6’s “What the model saw” UI is structurally a 7B acceptance item. Its 7A
+  durability contract is tested, and the UI portion is explicitly outstanding.
+
+## Runtime observations
+
+`7a/real-ingestion-fake-document.json`: the complete application ingested a
+committed synthetic two-page PDF through real loopback Ollama using approved
+`qwen3-embedding:0.6b`, measured 1,024 dimensions, two passages and `ready` in
+1.547 seconds. Two embedding requests (selection probe and ingestion), no chat
+call; deletion removed the original/index and the isolated temporary data was
+cleaned. This is not a throughput promise for large or private documents.
+
+The extraction subprocess suppresses stdout/stderr and parser logging. Safe error
+codes convey failures; private document text/names are not emitted. Library
+originals remain in the private data directory to support future citations.
+The earlier temporary-audio retention policy is unchanged. Existing automatic
+backups remain SQLite-only: they include extracted Library text, chunks and
+metadata, but original files need a separate backup of the private Library folder.
+
+An optional web-eval attempt was mistakenly invoked in its real-model default
+mode and terminated before completion. It used only committed synthetic/public
+eval fixtures and existing local planner/answer calls; no report or score was
+produced, and no web-eval pass is claimed. Its log contains 48 successful
+chat HTTP response lines before termination. The G-9 change trigger does not apply:
+search, run, provider and prompt sources are unchanged. P7-AC13’s complete replay
+requirement remains a later full-Library gate before phase closure.
+
+## Test output
+
+`make check`: 279 Python and 36 frontend tests passed; 74 contrast pairs;
+lint, types, formatting, coverage, API additive guard, row/payload guards, motion,
+privacy and frozen prompts passed. Library coverage: 458/470 = 97.4% (80% gate).
+
+Second complete `make e2e`: **417 passed, 3 existing documented skips, 0 failures**,
+**35.4 minutes**, both engines. All 379 frozen source hashes stayed unchanged
+through both full invocations. No partial-run assembly. The existing skips cover
+the once-on-Chromium real-time timeout and foundation review checks, and
+Playwright WebKit’s offline service-worker navigation limitation. The previously
+failed WebKit copy test passed all original assertions in 5.3 seconds; its prior
+intermittent failure remains listed, with root cause unresolved.
+
+### Development failures and corrections
+
+Tests found initial queued-upload handling, a fake embedding endpoint that changed
+the existing search-fallback fixture, and a full-text SQL binding error. These
+were corrected before the frozen full suite. Two interrupted focused browser
+attempts exposed wrong invocation cwd, same-model selection setup and generic
+duplicate-error copy; normal web cwd, explicit isolated reset and safe Library
+ApiError feedback fixed them. No assertion/threshold/timeout was weakened and no
+new skip was added. A private rollback rehearsal initially retained SQLite
+handles during directory cleanup; explicit closes corrected the operations
+script. Actual production data was not modified by that failed rehearsal.
+
+The focused Library run passed 14 cases, but only a complete frozen run is
+the regression gate. Its log is retained separately. The first complete run
+finished with 416 passed, three existing skips and one existing WebKit copy test
+failure (36.6 minutes). Its locator remained outside the viewport; a separate
+debug click succeeded, but the root cause is unresolved. The failed log, safe
+error context and synthetic trace frame remain under `7a/`. This intermittent
+copy-check failure is explicitly listed for Jake; no assertion or timeout changed.
+
+### Performance
+
+Initial JavaScript: 237,762 bytes gzip, +87 from the accepted 237,675-byte baseline,
+below 256,000. Library Settings remains lazy-loaded.
+Streaming render p95: **3.1 ms Chromium / 3.0 ms WebKit**. First-token
+overhead: **73.61 / 58.92 ms**. The 300-message scroll median: **16.7 / 16 ms**.
+Only the streaming row rendered. See `7a/regenerated-metrics/phase-{1,3}/`.
+The existing sidebar candidate test rejected width animation on WebKit (25 ms
+p95); its fallback remains active. This does not close the reported physical
+sidebar motion issue.
+
+The final 100 MiB browser-upload RSS observations were +81,920 bytes Chromium
+and +0 bytes WebKit, sampled every 50 ms (10 and 5 samples); both are below the
+20 MiB gate. These samples exclude the extraction subprocess and are not a claim
+of zero allocation. `7a/upload-memory-{chromium,webkit}-fake.json`.
+
+### QA gates
+
+| Gate | Evidence / disposition |
+|---|---|
+| G-1 check/coverage | `7a/check.txt`, `7a/coverage.json` |
+| G-2 one complete green run | `7a/e2e.txt`; prior copy-test failure explicitly retained/listed |
+| G-3 ledger | `7a/test-diff-ledger.md`; no existing browser edits/new skips |
+| G-4 budgets | `7a/bundle.json`, complete performance suite, streamed 100 MB upload RSS check |
+| G-5 axe/contrast/keyboard | 24 Library states × two engines × two widths × two themes; existing core keyboard suite; VoiceOver deferred |
+| G-6 API additive | `make check`; new routes/types only; old contracts retained |
+| G-7 rows/migrations | Existing synthetic fixture hash guards; current-data private-copy migration/rollback; web citations unchanged |
+| G-8 frozen prompts | Hash guard passed; no prompt source change |
+| G-9 web eval | Change trigger not applicable; interrupted optional attempt ungraded; full-phase replay still outstanding |
+| G-10 runtime payloads | Existing golden/parameter/preset assertions; Library uses embed, no product chat calls added |
+| G-11 privacy | `7a/privacy-audit.json`, `7a/committed-source-privacy.json`, `7a/screenshot-review.json`; synthetic-only captures, no real document names/text in evidence |
+| G-12 deployment | `7a/deployment.json`: local/TLS 200, engine ready, production design 404, invariant hashes unchanged |
+| G-13 reduced motion | Existing motion tests pass; reported physical sidebar/other regression remains deferred |
+| G-14 design states | All 24 Library states represented by production view/feedback on `/design?library` |
+| G-15 rollback | `7a/rollback.json`: private current-data copy, online backup, 7→8→7, old/new ASGI health 200, 0.962 seconds |
+| G-16 review | 7-0 accepted by Jake; 7A review pending; no individual new phone test attributed to Jake |
+
+Core C1–C16 remain covered by the existing chat, actions/export, model/context,
+parameters, web, transcription/cleanup/storage, mobile/composer, shortcuts/PWA,
+legacy import, deployment, untrusted-content, performance and keyboard/axe suites.
+No legacy data is modified. No additional package, runtime or chat model call is
+part of 7A; the approved sqlite-vec and embedding model are retained.
+
+## Screenshots
+
+`7a/screenshots/library-{change-model,delete-all,embedding,ready}-{390,1440}-
+{light,dark}-{chromium,webkit}-fake.png`, plus eight `library-*-files-*-fake.png`
+views: 40 synthetic preview captures inspected
+by Codex. These are browser observations, not physical iPhone observations.
+The axe JSON files cover all 24 states in each engine/width/theme combination.
+Screenshots preserve the viewport and may require scrolling to see lower rows;
+the DOM accessibility/overflow checks cover the complete state. One additional
+synthetic frame from the failed copy test was inspected and retained under
+`7a/failures/`; it contains no private document or recording.
+
+## Deployment and fallback
+
+`7a/deployment.json`: the exact frozen application files are installed, schema
+8 is active, Library’s approved extension is available, and embedding selection
+starts unset so the user chooses it in Settings. No production file was uploaded
+or used as a fixture. Local and verified TLS health are 200; transcription is
+ready; production `/design` is 404. Bootstrap succeeded on its first attempt.
+Before migration, the service was stopped and an online schema-7 database backup
+and private copy of the previous public source were preserved. No interpreter,
+package, engine asset, plist or Tailscale change was made. Public operation scripts
+are retained under `7a/`; dependency manifests match the already approved lock.
+302 historical tracked artifacts were restored; 21 current metric JSON files are
+preserved under `7a/regenerated-metrics/`; 40 newly generated outputs outside 7A
+were moved to private quarantine. Text normalization removes trailing whitespace
+and blank EOF lines only; test outcomes are unchanged.
+
+The accepted installed interpreter, transcription interpreter selection, launchd
+label, one worker, loopback port and Tailscale route are retained. The service
+operates independently of Codex usage limits. Tests temporarily owned port 8787;
+their wrapper restores the accepted installed service on exit, including failure.
+
+Rollback: stop the existing launchd job; restore the private source copies recorded
+in `7a/deployment.json` into installed `server/app` and `shared`; with all database
+handles closed, restore its online schema-7 backup to `data/workbench.db`, removing
+only its WAL/SHM sidecars; bootstrap the unchanged plist and verify local/TLS health.
+The source/DB backup is private and stays outside Git. Reverting only code is
+insufficient because the schema changed. See successful rehearsal evidence.
+
+## Open questions for Jake
+
+Review 7A in Settings → Library: choose the approved embedding model, add a test
+file and confirm it reaches Ready; try collections and removal. No model answer
+from Library files is offered yet. Stop here per the 7A plan. J7 retrieval/answer
+eval targets need approval before 7B; optional 6B remains skipped and Research is
+not authorized. Existing VoiceOver and deferred motion limitations remain open.
+
+---
+
+The following report preserves the historical 7-0 review state; its acceptance
+and 7A authorization are recorded above and in `AGENTS.md`.
+
 # Phase 7 report — checkpoint 7-0
 
 ## Summary
