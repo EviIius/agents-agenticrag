@@ -191,6 +191,27 @@ def create_fake_runtime() -> FastAPI:
             text = json.dumps(
                 {**decision, "queries": [latest[:120]] if search else [], "freshness": "any"}
             )
+            if "rows" in body["format"].get("properties", {}):
+                definitions = body["format"]["$defs"]
+                key = definitions["evidence"]["items"]["enum"][0]
+                # Synthetic output follows the advertised evidence IDs. Ordinary
+                # planner/title JSON behavior above stays unchanged.
+                text = json.dumps(
+                    {
+                        "rows": [
+                            {
+                                "label": label,
+                                "kind": "excerpt",
+                                "value": "",
+                                "evidence": [key],
+                            }
+                            for label in definitions["label"]["enum"]
+                        ]
+                    }
+                )
+                scripted_answer = getattr(app.state, "evidence_answer", None)
+                if scripted_answer is not None:
+                    text = json.dumps(scripted_answer)
         elif "<library_results>" in prompt:
             numbers = re.findall(r'<source id="(\d+)"', prompt)
             first = re.search(

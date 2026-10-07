@@ -1258,3 +1258,38 @@ async def test_official_index_discovery_keeps_page_freshness(
     assert run.message.status == "complete" and run.message.web.status == "used"
     assert searches == [(query, engine_freshness)]
     assert reads == ["week"] and run.message.web.freshness == "week"
+
+
+async def test_extended_research_read_preserves_ordinary_extraction_and_cache(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app, _, _ = chat_app
+    url = "https://example.org/long-reference"
+    prefix = "Authored public reference background. " * 2400
+    marker = "Late requested relationship: source item is valid unless the signal is essential."
+    raw = RawPage(url, (prefix + marker).encode(), "text/plain")
+    recording = Fixtures(recording=tmp_path)
+    recording.save_page(url, raw)
+    replay = Fixtures(tmp_path)
+    normal = await cache.read(app.state.store, url, 7, replay)
+    assert len(normal.text) == 80000 and marker not in normal.text
+    before = dict(await app.state.store.one("SELECT * FROM page_cache WHERE url=?", (url,)))
+    calls = []
+
+    async def guarded_read(requested: str) -> RawPage:
+        calls.append(requested)
+        return raw
+
+    monkeypatch.setattr(cache, "read_network", guarded_read)
+    extended = await cache.read(app.state.store, url, 7, Fixtures(), max_chars=500000)
+    assert marker in extended.text and calls == [url]
+    assert len(extended.text) <= 500000
+    after = dict(await app.state.store.one("SELECT * FROM page_cache WHERE url=?", (url,)))
+    assert after == before
+    again = await cache.read(app.state.store, url, 7, Fixtures())
+    assert again == normal and calls == [url]
+    with pytest.raises(ValueError, match="Invalid extraction limit"):
+        await cache.read(app.state.store, url, 7, Fixtures(), max_chars=500001)
+    assert calls == [url]

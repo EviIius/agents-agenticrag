@@ -1,0 +1,66 @@
+{
+  "scope": "One unscored final-answer diagnostic, not a benchmark or confirmation. No tools or additional production calls.",
+  "recorded_at": "2026-10-07T22:55:43.501858+00:00",
+  "original_case": "sqlite-integrity-storage",
+  "request_sha256": "90349df68d07e3053d3329450b138dfa70cb678f1c9d8d0d8d31b2bbfe318a0e",
+  "native_calls": 1,
+  "parse_error": null,
+  "rows": [
+    {
+      "row": {
+        "evidence": [
+          "s4.p2.u5",
+          "s4.p5.u2",
+          "s5.p3.u8"
+        ],
+        "kind": "excerpt",
+        "label": "Enable foreign-key enforcement for each connection",
+        "value": "Run `PRAGMA foreign_keys = ON;` at the start of every connection. The setting is per-connection, not stored in the database, so libraries and the CLI need itset"
+      },
+      "valid": false,
+      "exception_type": "AppError",
+      "label_literal": true,
+      "value_literal": false,
+      "dates_in_selected_evidence": []
+    },
+    {
+      "row": {
+        "evidence": [
+          "s1.p2.u2",
+          "s5.p1.u4",
+          "s5.p6.u3"
+        ],
+        "kind": "excerpt",
+        "label": "WAL permits a reader alongside a writer",
+        "value": "Writers and readers can run at the same time. What WAL does change is that readers no longer block the writer, and the writer no longer blocks readers."
+      },
+      "valid": false,
+      "exception_type": "AppError",
+      "label_literal": true,
+      "value_literal": false,
+      "dates_in_selected_evidence": []
+    },
+    {
+      "row": {
+        "evidence": [
+          "s1.p1.u5",
+          "s5.p4.u2",
+          "s5.p4.u3"
+        ],
+        "kind": "excerpt",
+        "label": "WAL supports a database on a network filesystem",
+        "value": "This is why the write-ahead log implementation will not work on a network filesystem. WAL relies on shared memory (mmap) between processes accessing thedatabase"
+      },
+      "valid": false,
+      "exception_type": "AppError",
+      "label_literal": false,
+      "value_literal": false,
+      "dates_in_selected_evidence": []
+    }
+  ],
+  "runtime_version": "0.35.0",
+  "model_digest": "f8a791a5edd0075fb64ff3bd94a3140bfa791992db1bdda0daac587f2b6afbcb",
+  "raw_answer": "{\"rows\": [{\"evidence\": [\"s4.p2.u5\", \"s4.p5.u2\", \"s5.p3.u8\"], \"kind\": \"excerpt\", \"label\": \"Enable foreign-key enforcement for each connection\", \"value\": \"Run `PRAGMA foreign_keys = ON;` at the start of every connection. The setting is per-connection, not stored in the database, so libraries and the CLI need itset\" }, {\"evidence\": [\"s1.p2.u2\", \"s5.p1.u4\", \"s5.p6.u3\"], \"kind\": \"excerpt\", \"label\": \"WAL permits a reader alongside a writer\", \"value\": \"Writers and readers can run at the same time. What WAL does change is that readers no longer block the writer, and the writer no longer blocks readers.\" }, {\"evidence\": [\"s1.p1.u5\", \"s5.p4.u2\", \"s5.p4.u3\"], \"kind\": \"excerpt\", \"label\": \"WAL supports a database on a network filesystem\", \"value\": \"This is why the write-ahead log implementation will not work on a network filesystem. WAL relies on shared memory (mmap) between processes accessing thedatabase\" }]}",
+  "completed": true,
+  "limitation": "New stochastic output under the same retained request; not a recovery of the lost original final stream."
+}

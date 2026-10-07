@@ -9,6 +9,7 @@ from pathlib import Path
 from app.db.settings import DEFAULTS
 from app.library.prompt import PROMPT as LIBRARY
 from app.runs.research import ANSWER_PROMPT as RESEARCH_ANSWER
+from app.runs.research import FINAL_COVERAGE_PROMPT
 from app.runs.research import PROMPT as RESEARCH
 from app.runs.research import PROMPT_V1 as RESEARCH_V1
 from app.runs.research import PROMPT_V2 as RESEARCH_V2
@@ -94,8 +95,49 @@ def test_research_prompt_v2_hash() -> None:
 
 def test_research_refinement_prompt_hashes() -> None:
     assert hashlib.sha256(RESEARCH.encode()).hexdigest() == (
-        "1c4c14794cb1cf522907030903b8f6052ac0e8889ef1eb697ca63d77c3b8e7c7"
+        "36406f5ee5e73eee6b00140335e9e0de6582999a2d66f9fa5bcf910a08d9609a"
     )
     assert hashlib.sha256(RESEARCH_ANSWER.encode()).hexdigest() == (
+        "5005e60a7c5b8a00739cd7ab9ccab410197ecfac178fa031a65f0ae71e3a5568"
+    )
+    assert hashlib.sha256(FINAL_COVERAGE_PROMPT.encode()).hexdigest() == (
+        "a4471b1a59d9cef64d45e2dfb8db6557cbf4d796d6e15db0dafa540999f015ab"
+    )
+
+
+def test_research_historical_refinement_prompts_retained() -> None:
+    from app.runs.research import ANSWER_PROMPT_V1, FINAL_COVERAGE_PROMPT_V1, PROMPT_V3
+
+    assert hashlib.sha256(PROMPT_V3.encode()).hexdigest() == (
+        "1c4c14794cb1cf522907030903b8f6052ac0e8889ef1eb697ca63d77c3b8e7c7"
+    )
+    assert hashlib.sha256(ANSWER_PROMPT_V1.encode()).hexdigest() == (
         "d6a58dc8b356a5edfe75ab65e7af4f987cc1b671746bc5558c31395b61d193f1"
+    )
+    assert hashlib.sha256(FINAL_COVERAGE_PROMPT_V1.encode()).hexdigest() == (
+        "897d16e8a29c55714e94638a146daa75f52e303a3e9924c2c54ac6f67c1a372d"
+    )
+
+
+def test_research_quote_only_prompt_retained() -> None:
+    from app.runs.research import FINAL_COVERAGE_PROMPT_V2
+
+    assert hashlib.sha256(FINAL_COVERAGE_PROMPT_V2.encode()).hexdigest() == (
+        "22b197d746447fa9c90a1bb0a49e0ae3095dae3dd2d6dd25082c41201c248714"
+    )
+
+
+def test_research_structured_selector_v1_retained() -> None:
+    from app.runs.research_output import PROMPT_V1
+
+    assert hashlib.sha256(PROMPT_V1.encode()).hexdigest() == (
+        "08d380e0ee9cd8689466f6ed288f7f60e9eef07abb0046f7141d5a2b95c8e23b"
+    )
+
+
+def test_research_structured_selector_v2_retained() -> None:
+    from app.runs.research_output import PROMPT_V2
+
+    assert hashlib.sha256(PROMPT_V2.encode()).hexdigest() == (
+        "0b738ecff624086f50a3d1e90671fe8fd92e1dcccf61aad2bf6b0a6a978d312c"
     )

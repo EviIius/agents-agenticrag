@@ -188,3 +188,19 @@ validity, injection and budget targets. No topic-specific rules, new packages,
 extra calls, models or tools. Keep live 7B installed. Retain every trial; assess
 semantic support separately from regex matches. Stop with the feasibility/8A
 review before 8B UI or deployment; the request does not waive failed gates.
+
+**User authorization — 6 October 2026 (8A consistency):** Jake asked to do what
+is required to make 13/15 or 15/15 consistent. Continue isolated generic coverage
+and support experiments, preserving all trials, the original benchmark, baseline
+and thresholds. Predeclare repeated full runs of a frozen candidate and review
+claim support separately; one favorable run does not qualify. Any additional
+query-aware corpus must be separate and evaluate Search and Research on identical
+evidence. No new dependencies, tools, models or calls; live 7B and the 8A review
+stop remain unchanged.
+
+**User clarification — 7 October 2026 (model research):** Jake requested more
+model options and clearer picker categorization, then said to document Qwen 3.8
+for now, research other candidates and continue the existing 8A scope. Model
+research and a picker proposal are authorized; new model downloads, runtime
+upgrades, default switches and picker deployment are not. Preserve the isolated
+8A limits, accepted live 7B and the review stop before 8B.

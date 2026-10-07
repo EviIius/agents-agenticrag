@@ -68,3 +68,11 @@ Deep research jobs, the library inside Research, automatic model routing, MCP, v
 ## 6. Limits of this review
 
 Everything here comes from reading the repository at one commit and viewing its committed, synthetic screenshots. Nothing was run. The live app and the phone were not examined. Line numbers are correct for `66a8c6b` and will drift. Name collision checks were one web search each. Eval targets for Phases 7 and 8 are proposals, not measurements.
+
+## Current Research checkpoint — 7 October 2026
+
+The calendar hold was waived for isolated 8-0/8A only. Accepted 7B remains live.
+The [8A consistency report](../PHASE-8A-CONSISTENCY-REPORT.md) retains all failed
+experiments and the unmet 13/15 repeatability/support gates; 8B is not authorized
+by a failed gate. The [model and picker proposal](../MODEL-OPTIONS-AND-PICKER.md)
+is documentation only: Jake deferred downloads and requested continued 8A work.
