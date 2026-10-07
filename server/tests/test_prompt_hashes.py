@@ -8,7 +8,10 @@ from pathlib import Path
 
 from app.db.settings import DEFAULTS
 from app.library.prompt import PROMPT as LIBRARY
+from app.runs.research import ANSWER_PROMPT as RESEARCH_ANSWER
 from app.runs.research import PROMPT as RESEARCH
+from app.runs.research import PROMPT_V1 as RESEARCH_V1
+from app.runs.research import PROMPT_V2 as RESEARCH_V2
 from app.search.planner import PROMPT as PLANNER
 from app.search.prompt import PROMPT as ANSWER
 
@@ -77,6 +80,22 @@ def test_phase3_prompt_hashes() -> None:
 def test_research_prompt_v1_hash() -> None:
     # 8A uses the approved plan's exact v1 prompt. Prototype reports are retained.
     assert (
-        hashlib.sha256(RESEARCH.encode()).hexdigest()
+        hashlib.sha256(RESEARCH_V1.encode()).hexdigest()
         == "3219a0a3564f120f404a28c6bc4eef6be1ff3e569521684ae4eade454da5b48f"
+    )
+
+
+def test_research_prompt_v2_hash() -> None:
+    assert (
+        hashlib.sha256(RESEARCH_V2.encode()).hexdigest()
+        == "a6120a09fe98bcbb96beefd4e3d47a56157038bab7f350aeb8c001e8ce06a164"
+    )
+
+
+def test_research_refinement_prompt_hashes() -> None:
+    assert hashlib.sha256(RESEARCH.encode()).hexdigest() == (
+        "1c4c14794cb1cf522907030903b8f6052ac0e8889ef1eb697ca63d77c3b8e7c7"
+    )
+    assert hashlib.sha256(RESEARCH_ANSWER.encode()).hexdigest() == (
+        "d6a58dc8b356a5edfe75ab65e7af4f987cc1b671746bc5558c31395b61d193f1"
     )

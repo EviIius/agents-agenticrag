@@ -1,0 +1,1657 @@
+[
+  {
+    "id": "sqlite-integrity-storage",
+    "required_facts": false,
+    "calls": [
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "SQLite enable foreign-key enforcement for each connection documentation"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://sqlite.org/foreignkeys.html",
+          "focus": "how to enable foreign-key enforcement for each connection"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "SQLite PRAGMA foreign_keys enable for each connection documentation"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://sqlitetutorial.net/sqlite-foreign-key",
+          "focus": "how to enable foreign-key enforcement for each connection"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "SQLite WAL mode reader alongside writer documentation"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://coddy.tech/docs/sqlite/wal-mode-and-concurrency",
+          "focus": "WAL permits a reader alongside a writer and supports a database on a network filesystem"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://sqlite.org/wal.html",
+          "focus": "WAL mode supports a database on a network filesystem"
+        }
+      }
+    ],
+    "sources": [
+      {
+        "n": 1,
+        "url": "https://sqlitetutorial.net/sqlite-foreign-key",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://sqlitetutorial.net/sqlite-foreign-key",
+            "heading": "",
+            "ord": 0,
+            "text": "**Summary**: in this tutorial, you will learn how to use the SQLite foreign key constraint to enforce the relationships between related tables.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://sqlitetutorial.net/sqlite-foreign-key",
+            "heading": "SQLite foreign key constraint support #",
+            "ord": 1,
+            "text": "SQLite has supported foreign key constraint since version 3.6.19. The SQLite library must also be compiled with neither SQLITE_OMIT_FOREIGN_KEY nor SQLITE_OMIT_TRIGGER.\n\nTo check whether your current version of SQLite supports foreign key constraints or not, you use the following command.\n\n`PRAGMA foreign_keys;`\nThe command returns an integer value: 1: enable, 0: disabled. If the command returns nothing, it means that your SQLite version doesn\u2019t support foreign key constraints.\n\nIf the SQLite library is compiled with foreign key constraint support, the application can use the `PRAGMA foreign_keys` command to enable or disable foreign key constraints at runtime.\n\nTo disable foreign key constraint:\n\n`PRAGMA foreign_keys = OFF;`\nTo enable foreign key constraint:\n\n`PRAGMA foreign_keys = ON;`",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://sqlitetutorial.net/sqlite-foreign-key",
+            "heading": "Introduction to the SQLite foreign key constraints #",
+            "ord": 2,
+            "text": "Let\u2019s start with two tables: `suppliers` and `supplier_groups` :\n\n```\nCREATE TABLE suppliers (\n\tsupplier_id integer PRIMARY KEY,\n\tsupplier_name text NOT NULL,\n\tgroup_id integer NOT NULL\n);\nCREATE TABLE supplier_groups (\n\tgroup_id integer PRIMARY KEY,\n\tgroup_name text NOT NULL\n);\n```\nAssuming that each supplier belongs to one and only one supplier group. And each supplier group may have zero or many suppliers. The relationship between `supplier_groups` and `suppliers` tables is one-to-many. In other words, for each row in the `suppliers` table, there is a corresponding row in the `supplier_groups` table.\n\nCurrently, there is no way to prevent you from adding a row to the `suppliers` table without a corresponding row in the `supplier_groups` table.",
+            "selection_applied": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "url": "https://coddy.tech/docs/sqlite/wal-mode-and-concurrency",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://coddy.tech/docs/sqlite/wal-mode-and-concurrency",
+            "heading": "The Default Mode and Its Limits",
+            "ord": 0,
+            "text": "By default, SQLite uses a *rollback journal*. When you write, SQLite copies the original pages into a `-journal` file, modifies the main database, and deletes the journal on commit. If the process crashes mid-write, the journal is replayed in reverse to undo the partial change.\n\nIt's simple and safe, but it has one painful property: writers and readers fight for the same file. While a writer holds the database lock, no reader can start a new transaction. While readers are active, the writer waits. On a busy app - a web server with a few concurrent requests, say - you'll see `SQLITE_BUSY` errors faster than you'd like.\n\nWAL mode changes that.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://coddy.tech/docs/sqlite/wal-mode-and-concurrency",
+            "heading": "What WAL Actually Does",
+            "ord": 1,
+            "text": "Write-ahead logging flips the model around. Instead of modifying the main database file in place, the writer *appends* committed pages to a separate file with a `-wal` suffix. Readers keep reading the main file, but they also peek at the WAL to see any newer versions of pages they need.\n\nThe result: a writer and any number of readers can be active at the same moment. Each reader sees a consistent snapshot from when its transaction began, and the writer is busy adding to the WAL without touching what the readers are looking at.\n\nThat single pragma switches the database. The mode is persistent - it's stored in the file header, so every future connection picks up WAL automatically. You don't need to run this on every connection, just once when you provision the database (or in your migration runner).",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://coddy.tech/docs/sqlite/wal-mode-and-concurrency",
+            "heading": "Enabling and Verifying",
+            "ord": 3,
+            "text": "You can confirm the current mode any time:\n\nThe first call enables WAL and returns the new mode. The second call (with no `=`) just queries it. After this, your `messages.db` directory will contain three files when there's activity: `messages.db`, `messages.db-wal`, and `messages.db-shm`. The last two appear and disappear depending on whether connections are open.",
+            "selection_applied": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "url": "https://sqlite.org/wal.html",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://sqlite.org/wal.html",
+            "heading": "",
+            "ord": 0,
+            "text": "The default method by which SQLite implements atomic commit and rollback is a rollback journal. Beginning with version 3.7.0 (2010-07-21), a new \"Write-Ahead Log\" option (hereafter referred to as \"WAL\") is available.\n\nThere are advantages and disadvantages to using WAL instead of a rollback journal. Advantages include:\n\n1. WAL is significantly faster in most scenarios.\n2. WAL provides more concurrency as readers do not block writers and a writer does not block readers. Reading and writing can proceed concurrently.\n3. Disk I/O operations tends to be more sequential using WAL.\n4. WAL uses many fewer fsync() operations and is thus less vulnerable to problems on systems where the fsync() system call is broken.\n\nBut there are also disadvantages:",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://sqlite.org/wal.html",
+            "heading": "",
+            "ord": 1,
+            "text": "1. All processes using a database must be on the same host computer; WAL does not work over a network filesystem. This is because WAL requires all processes to share a small amount of memory and processes on separate host machines obviously cannot share memory with each other.\n2. Transactions that involve changes against multiple ATTACHed databases are atomic for each individual database, but are not atomic across all databases as a set.\n3. It is not possible to change the page_size after entering WAL mode, either on an empty database or by using VACUUM or by restoring from a backup using the backup API. You must be in a rollback journal mode to change the page size.\n4. ~~It is not possible to open read-only WAL databases.\n    The opening process must have write privileges for \"`-shm`\"\n    wal-index shared memory file associated with the database, if that\n    file exists, or else write access on the directory containing\n    the database file if the \"`-shm`\" file does not exist.~~ Beginning with version 3.22.0 (2018-01-22), a read-only \n    WAL-mode database file can be opened if\n    the`-shm` and`-wal` files\n    already exist or those files can be created or the\n    database is immutable.\n5. WAL might be very slightly slower (perhaps 1% or 2% slower) than the traditional rollback-journal approach in applications that do mostly reads and seldom write.\n6. There is an additional quasi-persistent \"`-wal` \" file and\n    \"`-shm` \" shared memory file associated with each\n    database, which can make SQLite less appealing for use as an \n    application file-format.\n7.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://sqlite.org/wal.html",
+            "heading": "",
+            "ord": 7,
+            "text": "When a reader needs a page of content, it first checks the WAL to see if that page appears there, and if so it pulls in the last copy of the page that occurs in the WAL prior to the reader's end mark. If no copy of the page exists in the WAL prior to the reader's end mark, then the page is read from the original database file. Readers can exist in separate processes, so to avoid forcing every reader to scan the entire WAL looking for pages (the WAL file can grow to multiple megabytes, depending on how often checkpoints are run), a data structure called the \"wal-index\" is maintained in shared memory which helps readers locate pages in the WAL quickly and with a minimum of I/O. The wal-index greatly improves the performance of readers, but the use of shared memory means that all readers must exist on the same machine. This is why the write-ahead log implementation will not work on a network filesystem.",
+            "selection_applied": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "python-environment-threads",
+    "required_facts": false,
+    "calls": [
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "why recreate virtual environment after moving Python venv"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://docs.python.org/3/library/venv.html",
+          "focus": "reason to recreate venv after moving"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "sqlite3 check_same_thread default behavior multiple threads"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://docs.python.org/3/library/sqlite3.html",
+          "focus": "check_same_thread default behavior with multiple threads"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "sqlite3 check_same_thread default behavior multiple threads documentation"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://docs.python.org/3/library/sqlite3.html",
+          "focus": "check_same_thread default behavior multiple threads"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://docs.python.org/3/library/sqlite3.html",
+          "focus": "check_same_thread default behavior multiple threads"
+        }
+      }
+    ],
+    "sources": [
+      {
+        "n": 1,
+        "url": "https://docs.python.org/3/library/venv.html",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://docs.python.org/3/library/venv.html",
+            "heading": "`venv` \u2014 Creation of virtual environments\u00b6",
+            "ord": 0,
+            "text": "Added in version 3.3.\n\n**Source code:** Lib/venv/\n\nThe `venv` module supports creating lightweight \u201cvirtual environments\u201d,\neach with their own independent set of Python packages installed in\ntheir `site` directories.\nA virtual environment is created on top of an existing\nPython installation, known as the virtual environment\u2019s \u201cbase\u201d Python, and by\ndefault is isolated from the packages in the base environment,\nso that only those explicitly installed in the virtual environment are\navailable. See Virtual Environments and `site`\u2019s\nvirtual environments documentation\nfor more information.\n\nWhen used from within a virtual environment, common installation tools such as pip will install Python packages into a virtual environment without needing to be told to do so explicitly.\n\nA virtual environment is (amongst other things):",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://docs.python.org/3/library/venv.html",
+            "heading": "`venv` \u2014 Creation of virtual environments\u00b6",
+            "ord": 1,
+            "text": "- Used to contain a specific Python interpreter and software libraries and binaries which are needed to support a project (library or application). These are by default isolated from software in other virtual environments and Python interpreters and libraries installed in the operating system.\n- Contained in a directory, conventionally named `.venv` or`venv` in\nthe project directory, or under a container directory for lots of virtual\nenvironments, such as`~/.virtualenvs` .\n- Not checked into source control systems such as Git.\n- Considered as disposable \u2013 it should be simple to delete and recreate it from scratch. You don\u2019t place any project code in the environment.\n- Not considered as movable or copyable \u2013 you just recreate the same environment in the target location.\n\nSee **PEP 405** for more background on Python virtual environments.\n\nAvailability: not Android, not iOS, not WASI.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://docs.python.org/3/library/venv.html",
+            "heading": "Creating virtual environments\u00b6",
+            "ord": 4,
+            "text": "Deprecated since version 3.6, removed in version 3.8: **pyvenv** was the recommended tool for creating virtual environments\nfor Python 3.3 and 3.4, and replaced in 3.5 by executing `venv` directly.\n\nOn Windows, invoke the `venv` command as follows:\n\n```\nPS> python -m venv C:\\path\\to\\new\\virtual\\environment\n```\nThe command, if run with `-h`, will show the available options:\n\n```\nusage: venv [-h] [--system-site-packages] [--symlinks | --copies] [--clear]\n            [--upgrade] [--without-pip] [--prompt PROMPT] [--upgrade-deps]\n            [--without-scm-ignore-files]\n            ENV_DIR [ENV_DIR ...]\nCreates virtual Python environments in one or more target directories.\nOnce an environment has been created, you may wish to activate it, e.g. by\nsourcing an activate script in its bin directory.\n```\n- ENV_DIR\u00b6\n- A required argument specifying the directory to create the environment in.",
+            "selection_applied": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "url": "https://docs.python.org/3/library/sqlite3.html",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://docs.python.org/3/library/sqlite3.html",
+            "heading": "Module constants\u00b6",
+            "ord": 16,
+            "text": "- sqlite3.PARSE_DECLTYPES\u00b6\n- Pass this flag value to the *detect_types* parameter of`connect()` to look up a converter function using\nthe declared types for each column.\nThe types are declared when the database table is created.`sqlite3` will look up a converter function using the first word of the\ndeclared type as the converter dictionary key.\nFor example:CREATE TABLE test( i integer primary key, ! will look up a converter named \"integer\" p point, ! will look up a converter named \"point\" n number(10) ! will look up a converter named \"number\" ) This flag may be combined with `PARSE_COLNAMES` using the`|` (bitwise or) operator.Note Generated fields (for example `MAX(p)` ) are returned as`str` .\nUse`PARSE_COLNAMES` to enforce types for such queries.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://docs.python.org/3/library/sqlite3.html",
+            "heading": "Module constants\u00b6",
+            "ord": 17,
+            "text": "- sqlite3.PARSE_COLNAMES\u00b6\n- Pass this flag value to the *detect_types* parameter of`connect()` to look up a converter function by\nusing the type name, parsed from the query column name,\nas the converter dictionary key.\nThe query column name must be wrapped in double quotes (`\"` )\nand the type name must be wrapped in square brackets (`[]` ).SELECT MAX(p) as \"p [point]\" FROM test; ! will look up converter \"point\" This flag may be combined with `PARSE_DECLTYPES` using the`|` (bitwise or) operator.\n\n- sqlite3.SQLITE_OK\u00b6\n- sqlite3.SQLITE_DENY\u00b6\n- sqlite3.SQLITE_IGNORE\u00b6\n- Flags that should be returned by the *authorizer_callback* callable\npassed to`Connection.set_authorizer()` , to indicate whether:\n  - Access is allowed ( `SQLITE_OK` ),\n  - The SQL statement should be aborted with an error ( `SQLITE_DENY` )\n  - The column should be treated as a `NULL` value (`SQLITE_IGNORE` )",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://docs.python.org/3/library/sqlite3.html",
+            "heading": "Connection objects\u00b6",
+            "ord": 38,
+            "text": "  - \niterdump(*** ,*filter=None* )\u00b6\n  - Return an iterator to dump the database as SQL source code. Useful when saving an in-memory database for later restoration. Similar to the `.dump` command in the**sqlite3** shell.\n    - Parameters:\n    - **filter** (*str* *|* *None* ) \u2013 An optional`LIKE` pattern for database objects to dump, e.g.`prefix_%` .\nIf`None` (the default), all database objects will be included.\n Example: # Convert file example.db to SQL dump file dump.sql con = sqlite3.connect('example.db') with open('dump.sql', 'w') as f: for line in con.iterdump(): f.write('%s\\n' % line) con.close() Changed in version 3.13: Added the *filter* parameter.",
+            "selection_applied": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "git-undo-strategies",
+    "required_facts": true,
+    "calls": [
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "Git reset --soft vs revert difference HEAD index working tree"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://git-scm.com/docs/git-reset/2.21.0",
+          "focus": "description of --soft option and its effect on HEAD, index, and working tree"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://git-scm.com/docs/git-revert.html",
+          "focus": "description of what git revert does and its effect on the repository"
+        }
+      }
+    ],
+    "sources": [
+      {
+        "n": 1,
+        "url": "https://git-scm.com/docs/git-reset/2.21.0",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://git-scm.com/docs/git-reset/2.21.0",
+            "heading": "",
+            "ord": 0,
+            "text": "**git-reset**manual",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://git-scm.com/docs/git-reset/2.21.0",
+            "heading": "SYNOPSIS",
+            "ord": 3,
+            "text": "*git reset* [-q] [<tree-ish>] [--] <paths>\u2026\n*git reset* (--patch | -p) [<tree-ish>] [--] [<paths>\u2026]\n*git reset* [--soft | --mixed [-N] | --hard | --merge | --keep] [-q] [<commit>]",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://git-scm.com/docs/git-reset/2.21.0",
+            "heading": "DESCRIPTION",
+            "ord": 5,
+            "text": "- *git reset* [-q] [<tree-ish>] [--] <paths>\u2026\n- \nThis form resets the index entries for all *<paths>* to their\nstate at*<tree-ish>* .  (It does not affect the working tree or\nthe current branch.)This means that `git``reset`*<paths>* is the opposite of`git``add`*<paths>* .After running `git``reset`*<paths>* to update the index entry, you can\nuse git-checkout[1] to check the contents out of the index to\nthe working tree.\nAlternatively, using git-checkout[1] and specifying a commit, you\ncan copy the contents of a path out of a commit to the index and to the\nworking tree in one go.\n- *git reset* (--patch | -p) [<tree-ish>] [--] [<paths>\u2026]\n- \nInteractively select hunks in the difference between the index and *<tree-ish>* (defaults to`HEAD` ).  The chosen hunks are applied\nin reverse to the index.This means that `git``reset``-p` is the opposite of`git``add``-p` , i.e.\nyou can use it to selectively reset hunks. See the \u201cInteractive Mode\u201d\nsection of git-add[1] to learn how to operate the`--patch` mode.\n- *git reset* [<mode>] [<commit>]\n- \nThis form resets the current branch head to *<commit>* and\npossibly updates the index (resetting it to the tree of*<commit>* ) and\nthe working tree depending on*<mode>* . If*<mode>* is omitted,\ndefaults to`--mixed` . The*<mode>* must be one of the following:\n  - --soft\n  - \nDoes not touch the index file or the working tree at all (but resets the head to *<commit>* , just like all modes do). This leaves\nall your changed files \"Changes to be committed\", as`git``status` would put it.\n  - --mixed\n  -",
+            "selection_applied": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "url": "https://git-scm.com/docs/git-revert.html",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://git-scm.com/docs/git-revert.html",
+            "heading": "",
+            "ord": 0,
+            "text": "**git-revert**manual",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://git-scm.com/docs/git-revert.html",
+            "heading": "SYNOPSIS",
+            "ord": 3,
+            "text": "*git revert* [--[no-]edit] [-n] [-m <parent-number>] [-s] [-S[<keyid>]] <commit>\u2026\n*git revert* (--continue | --skip | --abort | --quit)",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://git-scm.com/docs/git-revert.html",
+            "heading": "DESCRIPTION",
+            "ord": 4,
+            "text": "Given one or more existing commits, revert the changes that the related patches introduce, and record some new commits that record them. This requires your working tree to be clean (no modifications from the HEAD commit).\n\nNote: *git revert* is used to record some new commits to reverse the\neffect of some earlier commits (often only a faulty one).  If you want to\nthrow away all uncommitted changes in your working directory, you\nshould see git-reset[1], particularly the `--hard` option.  If\nyou want to extract specific files as they were in another commit, you\nshould see git-restore[1], specifically the `--source`\noption. Take care with these alternatives as\nboth will discard uncommitted changes in your working directory.\n\nSee \"Reset, restore and revert\" in git[1] for the differences between the three commands.",
+            "selection_applied": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "browser-worker-cache",
+    "required_facts": true,
+    "calls": [
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "MDN Service Worker API secure-context requirement"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "MDN Service Worker API localhost exception development"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "MDN Cache API entries automatic expiration"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers",
+          "focus": "secure-context requirement"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers",
+          "focus": "localhost exception development"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Cache",
+          "focus": "automatic expiration"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "MDN Cache API entries automatic expiration"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Cache",
+          "focus": "automatic expiration"
+        }
+      }
+    ],
+    "sources": [
+      {
+        "n": 1,
+        "url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers",
+            "heading": "Using Service Workers",
+            "ord": 0,
+            "text": "This article provides information on getting started with service workers, including basic architecture, registering a service worker, the installation and activation process for a new service worker, updating your service worker, cache control and custom responses, all in the context of an app with offline functionality.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers",
+            "heading": "The premise of service workers",
+            "ord": 1,
+            "text": "One overriding problem that web users have suffered with for years is loss of connectivity. The best web app in the world will provide a terrible user experience if you can't download it. There have been various attempts to create technologies to solve this problem, and some of the issues have been solved. But the overriding problem is that there wasn't a good overall control mechanism for asset caching and custom network requests.\n\nService workers fix these issues. Using a service worker you can set an app up to use cached assets first, thus providing a default experience even when offline, before then getting more data from the network (commonly known as \"offline first\"). This is already available with native apps, which is one of the main reasons native apps are often chosen over web apps.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers",
+            "heading": "Setting up to play with service workers",
+            "ord": 3,
+            "text": "Service workers are enabled by default in all modern browsers. To run code using service workers, you'll need to serve your code via HTTPS \u2014 Service workers are restricted to running across HTTPS for security reasons. A server supporting HTTPS is necessary. To host experiments, you can use a service such as GitHub, Netlify, Vercel, etc. In order to facilitate local development, `localhost` is considered a secure origin by browsers as well.",
+            "selection_applied": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "wcag-keyboard-motion",
+    "required_facts": false,
+    "calls": [
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "W3C Understanding WCAG 2.1 Keyboard accessibility success criterion number and conformance level"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "W3C Understanding WCAG 2.1 Animation from Interactions success criterion number and conformance level"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://w3c.github.io/wcag21/understanding/keyboard.html",
+          "focus": "success criterion number and conformance level for Keyboard"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://w3c.github.io/wcag21/understanding/animation-from-interactions.html",
+          "focus": "success criterion number and conformance level for Animation from Interactions"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "W3C Understanding Animation from Interactions success criterion number and conformance level"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://w3c.github.io/wcag21/understanding/animation-from-interactions.html",
+          "focus": "success criterion number and conformance level for Animation from Interactions"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "WCAG 2.1 Animation from Interactions success criterion number and conformance level official W3C"
+        }
+      }
+    ],
+    "sources": [
+      {
+        "n": 1,
+        "url": "https://w3c.github.io/wcag21/understanding/keyboard.html",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://w3c.github.io/wcag21/understanding/keyboard.html",
+            "heading": "Intent",
+            "ord": 0,
+            "text": "The intent of this Success Criterion is to ensure that, wherever possible, content can be operated through a keyboard or keyboard interface (so an alternate keyboard can be used). When content can be operated through a keyboard or alternate keyboard, it is operable by people with no vision (who cannot use devices such as mice that require eye-hand coordination) as well as by people who must use alternate keyboards or input devices that act as keyboard emulators. Keyboard emulators include speech input software, sip-and-puff software, on-screen keyboards, scanning software and a variety of assistive technologies and alternate keyboards. Individuals with low vision also may have trouble tracking a pointer and find the use of software much easier (or only possible) if they can control it from the keyboard.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://w3c.github.io/wcag21/understanding/keyboard.html",
+            "heading": "Intent",
+            "ord": 1,
+            "text": "Examples of \"specific timings for individual keystrokes\" include situations where a user would be required to repeat or execute multiple keystrokes within a short period of time or where a key must be held down for an extended period before the keystroke is registered.\n\nThe phrase \"except where the underlying function requires input that depends on the path of the user's movement and not just the endpoints\" is included to separate those things that cannot reasonably be controlled from a keyboard.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://w3c.github.io/wcag21/understanding/keyboard.html",
+            "heading": "Intent",
+            "ord": 2,
+            "text": "Most actions carried out by a pointing device can also be done from the keyboard (for example, clicking, selecting, moving, sizing). However, there is a small class of input that is done with a pointing device that cannot be done from the keyboard in any known fashion without requiring an inordinate number of keystrokes. Free hand drawing, watercolor painting, and flying a helicopter through an obstacle course are all examples of functions that require path dependent input. Drawing straight lines, regular geometric shapes, re-sizing windows and dragging objects to a location (when the path to that location is not relevant) do not require path dependent input.\n\nThe use of MouseKeys would not satisfy this Success Criterion because it is not a keyboard equivalent to the application; it is a mouse equivalent (i.e., it looks like a mouse to the application).",
+            "selection_applied": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "http-precondition-comparison",
+    "required_facts": false,
+    "calls": [
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "MDN If-Match ETag matching rules"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "MDN If-None-Match ETag matching rules"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/If-Match",
+          "focus": "If the conditional does not match, the 412 Precondition Failed response is returned instead."
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/If-None-Match",
+          "focus": "If the condition is met, the server returns the resource with status 200 OK. If not, it returns 304 Not Modified"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "MDN If-None-Match ETag matching rules status 200 OK 304 Not Modified"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-None-Match",
+          "focus": "If the condition is met, the server returns the resource with status 200 OK. If not, it returns 304 Not Modified"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "If-None-Match ETag matching rules status 200 OK 304 Not Modified MDN"
+        }
+      },
+      {
+        "name": "finish",
+        "arguments": {}
+      }
+    ],
+    "sources": [
+      {
+        "n": 1,
+        "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/If-Match",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/If-Match",
+            "heading": "If-Match header",
+            "ord": 0,
+            "text": "## \n\n          Baseline\n\n        Widely available\n\n      This feature is well established and works across many devices and browser versions. It\u2019s been available across browsers since July 2015.\n\nThe HTTP **`If-Match`** request header makes a request conditional.\nA server will return resources for `GET` and `HEAD` methods, or upload resource for `PUT` and other non-safe methods, only if the resource matches one of the `ETag` values in the `If-Match` request header.\nIf the conditional does not match, the `412 Precondition Failed` response is returned instead.\n\nThe comparison with the stored `ETag` uses the *strong comparison algorithm*, meaning two files are considered identical byte-by-byte.\nIf a listed `ETag` has the `W/` prefix indicating a weak entity tag, this comparison algorithm will never match it.\n\nThere are two common use cases:",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/If-Match",
+            "heading": "If-Match header",
+            "ord": 1,
+            "text": "- For `GET` and`HEAD` methods, used in combination with a`Range` header, it can guarantee that the new ranges requested\ncome from the same resource as the previous one.\n- For other methods, and in particular for `PUT` ,`If-Match` can be used to prevent the lost update problem.\nIt can check if the modification of a resource that the user wants to upload will not override another change that has been done since the original resource was fetched.\n\n| Header type | Request header |\n|---|---|\n| Forbidden request header | No |",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/If-Match",
+            "heading": "Specifications",
+            "ord": 5,
+            "text": "| Specification |\n|---|\n| HTTP Semantics # field.if-match |",
+            "selection_applied": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "postgres-snapshot-recovery",
+    "required_facts": true,
+    "calls": [
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "PostgreSQL transaction isolation levels Read Committed Repeatable Read snapshot timing"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://postgresql.org/docs/current/transaction-iso.html",
+          "focus": "snapshot timing under Read Committed and Repeatable Read"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "PostgreSQL Read Committed vs Repeatable Read snapshot timing details"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://cybertec-postgresql.com/en/transactions-in-postgresql-read-committed-vs-repeatable-read",
+          "focus": "snapshot timing under Read Committed and Repeatable Read"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "PostgreSQL point-in-time recovery backup components archived WAL base backup"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://postgresql.org/docs/current/continuous-archiving.html",
+          "focus": "components for point-in-time recovery"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://simplyblock.io/blog/point-in-time-recovery-for-postgresql-on-kubernetes",
+          "focus": "components for point-in-time recovery"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://dev.to/mohhddhassan/postgresql-backups-and-point-in-time-recovery-with-pgbackrest-13gp",
+          "focus": "components for point-in-time recovery"
+        }
+      }
+    ],
+    "sources": [
+      {
+        "n": 1,
+        "url": "https://dev.to/mohhddhassan/postgresql-backups-and-point-in-time-recovery-with-pgbackrest-13gp",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://dev.to/mohhddhassan/postgresql-backups-and-point-in-time-recovery-with-pgbackrest-13gp",
+            "heading": "",
+            "ord": 0,
+            "text": "This article is part of a series on PostgreSQL WAL.\n\nPart 1 - How PostgreSQL WAL Actually Works\n\nPart 2 - How Debezium Uses PostgreSQL WAL for CDC\n\nPart 3 - PostgreSQL Backups with pgBackRest and PITR\n\nIn the previous articles, we've explored how PostgreSQL records every change inside the database using **Write-Ahead Logging (WAL)**.\n\nWe also saw how tools like Debezium can read WAL to stream database changes in real time.\n\nBut WAL has another very important role.\n\nIt enables **database backups and recovery**.\n\nBy combining a base backup with archived WAL segments, PostgreSQL can restore a database to **any specific moment in time**. This capability is known as **Point-in-Time Recovery (PITR)**.\n\nIn this article, we\u2019ll explore how this works and how to implement it using pgBackRest.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://dev.to/mohhddhassan/postgresql-backups-and-point-in-time-recovery-with-pgbackrest-13gp",
+            "heading": "How WAL Enables Point-in-Time Recovery",
+            "ord": 2,
+            "text": "Point-in-Time Recovery works by combining two components:\n\n```\n                              Base Backup\n                                   +\n                        Continuous WAL Archiving\n                                   =\n                         Point-in-Time Recovery\n```\nThe recovery flow looks like this:\n\n```\n                               Base Backup\n                                    \u2502\n                                    \u25bc\n                              Restore Backup\n                                    \u2502\n                                    \u25bc\n                           Replay WAL Segments\n                                    \u2502\n                                    \u25bc\n                            Reach Target Time\n```\nBecause WAL contains every change in chronological order, PostgreSQL can replay those changes to reconstruct the database state at any moment.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://dev.to/mohhddhassan/postgresql-backups-and-point-in-time-recovery-with-pgbackrest-13gp",
+            "heading": "Running a Base Backup",
+            "ord": 6,
+            "text": "Once pgBackRest is configured, a base backup can be taken using:\n\n```\npgbackrest --stanza=demo backup --type=full\n```\npgBackRest supports multiple backup types.\n\n| Type | Description |\n|---|---|\n| Full | Complete backup of the database |\n| Differential | Backup of changes since last full backup |\n| Incremental | Backup of changes since last backup |",
+            "selection_applied": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "url": "https://simplyblock.io/blog/point-in-time-recovery-for-postgresql-on-kubernetes",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://simplyblock.io/blog/point-in-time-recovery-for-postgresql-on-kubernetes",
+            "heading": "",
+            "ord": 0,
+            "text": "Plenty of Kubernetes backup content treats point-in-time recovery like a fancy snapshot feature. That is not how PostgreSQL works.\n\nPostgreSQL point-in-time recovery, or PITR, is a recovery model built from two things together:\n\n- a physical base backup\n- a continuous archive of write-ahead log, or WAL, files\n\nThe current PostgreSQL documentation is explicit about this. PITR combines a file-system-level backup with archived WAL, then replays WAL until the target time you want to restore to. In other words, snapshots can help, but snapshots alone are not PITR.\n\nThat distinction matters even more on Kubernetes, where teams often have:\n\n- CSI snapshots\n- operator-managed backups\n- object-store retention\n- multiple PVCs\n- automation that looks reassuring until the first real restore",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://simplyblock.io/blog/point-in-time-recovery-for-postgresql-on-kubernetes",
+            "heading": "",
+            "ord": 1,
+            "text": "If you want PostgreSQL PITR on Kubernetes to work under pressure, you need a design that respects PostgreSQL\u2019s recovery model first, then maps it cleanly onto Kubernetes storage and operators.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://simplyblock.io/blog/point-in-time-recovery-for-postgresql-on-kubernetes",
+            "heading": "What PITR Actually Requires",
+            "ord": 2,
+            "text": "The minimum ingredients are not mysterious:\n\n1. A base backup you can restore\n2. WAL archiving that has been working continuously\n3. A restore process that can replay WAL to a recovery target\n\nThe PostgreSQL docs describe the mechanics clearly. To enable WAL archiving, you need `wal_level` set to `replica` or higher, `archive_mode` enabled, and a working `archive_command` or `archive_library`. If archiving stops working, PostgreSQL will keep retrying, and WAL files will accumulate in `pg_wal`.\n\nThis is the first misconception to remove: a successful snapshot schedule does not guarantee recoverability to an arbitrary time. Without the WAL archive, you have a restore point, not point-in-time recovery.",
+            "selection_applied": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "url": "https://cybertec-postgresql.com/en/transactions-in-postgresql-read-committed-vs-repeatable-read",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://cybertec-postgresql.com/en/transactions-in-postgresql-read-committed-vs-repeatable-read",
+            "heading": "",
+            "ord": 1,
+            "text": "One important aspect of transactions in PostgreSQL, and therefore in all other modern relational databases, is the ability to control when a row is visible to a user and when it is not. The ANSI SQL standard proposes 4 transaction isolation levels (READ UNCOMMITTED, READ COMMITTED, REPEATABLE READ and SERIALIZABLE) to allow users to explicitly control the behavior of the database engine. Unfortunately, the existence of transaction isolation levels is still not as widely known as it should be. Therefore I decided to blog about this topic, to give more PostgreSQL users the chance to apply this very important, yet under-appreciated feature.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://cybertec-postgresql.com/en/transactions-in-postgresql-read-committed-vs-repeatable-read",
+            "heading": "",
+            "ord": 2,
+            "text": "The two most commonly used transaction isolation levels are READ COMMITTED and REPEATABLE READ. In PostgreSQL READ COMMITTED is the default isolation level and should be used for normal OLTP operations. In contrast to other systems, such as DB2 or Informix, PostgreSQL does not provide support for READ UNCOMMITTED, which I personally consider to be a thing of the past anyway.\n\nIn READ COMMITTED mode, every SQL statement will see changes which have already been committed (e.g. new rows added to the database) by some other transactions. In other words: If you run the same SELECT statement multiple times within the same transaction, you might see different results. This is something you have to consider when writing an application.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://cybertec-postgresql.com/en/transactions-in-postgresql-read-committed-vs-repeatable-read",
+            "heading": "",
+            "ord": 3,
+            "text": "However, within a statement the data you see is constant \u2013 it does not change. A SELECT statement (or any other statement) will not see changes committed WHILE the statement is running. Within an SQL statement, data and time are basically \u201cfrozen\u201d.\n\nIn the case of REPEATABLE READ the situation is quite different: A transaction running in REPEATABLE READ mode will never see the effects of transactions committing concurrently \u2013 it will keep seeing the same data and offer you a consistent snapshot throughout the entire transaction. If your goal is to do reporting or if you are running some kind of data warehousing workload, REPEATABLE READ is exactly what you need, because it provides consistency. All pages of your report will see exactly the same set of data. There is no need to worry about concurrent transactions.",
+            "selection_applied": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "linux-link-lifetime",
+    "required_facts": true,
+    "calls": [
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "Linux unlink(2) manual last filename unlinked process still has file open"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "Linux symlink(2) manual relative symbolic-link target directory anchor"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://baeldung.com/linux/open-file-handle-after-move-delete",
+          "focus": "What happens to a file when its last filename is unlinked but a process still has it open?"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://man7.org/linux/man-pages/man2/symlink.2.html",
+          "focus": "Which directory anchors a relative symbolic-link target?"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "symlink(2) manual relative symbolic-link target directory anchor"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://man7.org/linux/man-pages/man2/unlink.2.html",
+          "focus": "What happens when the last filename is unlinked while a process still has the file open?"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "man unlink(2) last filename unlinked process still has file open"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://man7.org/linux/man-pages/man2/symlink.2.html",
+          "focus": "Which directory anchors a relative symbolic-link target?"
+        }
+      }
+    ],
+    "sources": [
+      {
+        "n": 1,
+        "url": "https://baeldung.com/linux/open-file-handle-after-move-delete",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://baeldung.com/linux/open-file-handle-after-move-delete",
+            "heading": "",
+            "ord": 0,
+            "text": "Learn through the super-clean Baeldung Pro experience:\n\n>> Membership and Baeldung Pro.\n\nNo ads, dark-mode and 6 months free of IntelliJ Idea Ultimate to start with.\n\nLast updated: March 18, 2024\n\nIn this tutorial, we\u2019ll see how the system behaves when we delete, move, or replace a file that has open file handles.\n\nFirst of all, we\u2019ll briefly discuss files and inodes. Then, we\u2019ll go through the different scenarios and see what happens in each of them.\n\nWhen we work on a Linux file system, it uses inodes to store information about the files.\n\nWhen we list the files in a folder, we see links to inodes. **An inode can have more than one link, and those can be symbolic or hard links**.\n\nWe can use *stat* on a file and see which inode it refers to:",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://baeldung.com/linux/open-file-handle-after-move-delete",
+            "heading": "",
+            "ord": 1,
+            "text": "```\n$ touch inode_example\n$ stat inode_example \n  File: inode_example\n  Size: 0               Blocks: 0          IO Block: 4096   regular empty file\nDevice: fd03h/64771d    Inode: 20448632    Links: 1\n```\nThis file refers to inode 20448632, and *stat* also says it has one link. Let\u2019s add a new hard link and re-run *stat* on *inode_example*:\n\n```\n$ ln inode_example hardlink_inode_example\n$ stat inode_example \n  File: inode_example\n  Size: 0               Blocks: 0          IO Block: 4096   regular empty file\nDevice: fd03h/64771d    Inode: 20448632    Links: 2\n```\nWe can see that the *links* value is incremented by one. Now, we can use *stat* on *hardlink_inode_example*, too:",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://baeldung.com/linux/open-file-handle-after-move-delete",
+            "heading": "",
+            "ord": 2,
+            "text": "```\n$ stat hardlink_inode_example \n  File: hardlink_inode_example\n  Size: 0               Blocks: 0          IO Block: 4096   regular empty file\nDevice: fd03h/64771d    Inode: 20448632    Links: 2\n```\nNotice that **the hard link also points to the same inode 20448632**. Both files, *hardlink_inode_example* and *inode_example*, are hard links to the same inode.\n\nUnlike hard links, symbolic links have their own inode numbers.\n\nWith all this in mind, **we can think of a file name as an alias for an inode, and we can have more than one file linked to the same inode**.\n\nWhen we open a file, we get a *file descriptor* pointing to it, also called *file handle*. We can use the opened file handle of a deleted file. We can write to and read from it as if the file exists. **The file name won\u2019t be visible in the file system, but our file handle will point to the inode, which still exists**.",
+            "selection_applied": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "nasa-voyager-webb",
+    "required_facts": false,
+    "calls": [
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "Voyager 1 interstellar space entry date NASA"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "James Webb Space Telescope launch date NASA"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://jpl.nasa.gov/missions/voyager-1",
+          "focus": "Voyager 1 entry into interstellar space date"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://science.nasa.gov/mission/voyager/voyager-1",
+          "focus": "Voyager 1 entry into interstellar space date"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://science.gsfc.nasa.gov/sci/projects/131",
+          "focus": "James Webb Space Telescope launch date and operating location"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://spaceplace.nasa.gov/james-webb-space-telescope/en",
+          "focus": "James Webb Space Telescope launch date and operating location"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://orbitalradar.com/jwst-tracker",
+          "focus": "James Webb Space Telescope operating location relative to Earth"
+        }
+      }
+    ],
+    "sources": [
+      {
+        "n": 1,
+        "url": "https://orbitalradar.com/jwst-tracker",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://orbitalradar.com/jwst-tracker",
+            "heading": "James Webb Space Telescope Tracker",
+            "ord": 0,
+            "text": "Real-time tracking of the most powerful space telescope ever built \u2014 orbiting the Sun at the L2 Lagrange point, 1.5 million km from Earth. Live position from JPL Horizons, current observation target, auto-updating image gallery and deep mission data.\n\nPowered by JPL Horizons \u00b7 STScI MAST \u00b7 NASA \u00b7 Live",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://orbitalradar.com/jwst-tracker",
+            "heading": "JWST vs Hubble",
+            "ord": 7,
+            "text": "Side by side\n**6.5 m**\u2014 18 hexagonal gold-coated beryllium segments\n\n**2.4 m**\u2014 single monolithic glass mirror\n\n**0.6 \u2013 28.8 \u00b5m**(near- to mid-infrared)\n\n**0.1 \u2013 2.5 \u00b5m**(UV / visible / near-IR)\n\n**L2 halo orbit**\u2014 1.5 million km from Earth\n\n**LEO**\u2014 ~480 km altitude, track live \u2192\n\n**6,161 kg**\n\n**11,110 kg**\n\n**21.2 \u00d7 14.2 m**\u2014 5-layer Kapton, tennis-court-sized\n\n**~40 K**(\u2212233 \u00b0C) \u2014 MIRI at\n\n**6.4 K**\n\n**~288 K**(15 \u00b0C) inside optical tube\n\n**25 Dec 2021**\u2014 Ariane 5 from Kourou\n\n**24 Apr 1990**\u2014 Space Shuttle Discovery\n\n**~20 years**(fuel limited)\n\n**35+ years**and counting \u2014 orbital decay issue\n\nA third flagship is on its way: NASA's Roman Space Telescope launched on 30 August 2026 and is cruising to L2 right now. Follow Roman's journey live, and see how all three compare \u2192",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://orbitalradar.com/jwst-tracker",
+            "heading": "About the James Webb Space Telescope",
+            "ord": 9,
+            "text": "The James Webb Space Telescope (JWST) is the most ambitious and powerful space observatory ever constructed. A joint project between NASA, the European Space Agency (ESA) and the Canadian Space Agency (CSA), it was launched on 25 December 2021 aboard an Ariane 5 rocket from the Guiana Space Centre in Kourou, French Guiana. After a month-long journey, JWST reached its operational position at the Sun\u2013Earth L2 Lagrange point, approximately 1.5 million kilometres from Earth \u2014 nearly four times farther than the Moon.",
+            "selection_applied": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "url": "https://science.nasa.gov/mission/voyager/voyager-1",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://science.nasa.gov/mission/voyager/voyager-1",
+            "heading": "What is Voyager 1?",
+            "ord": 1,
+            "text": "Voyager 1 has been exploring our solar system since 1977. The probe is now in interstellar space, the region outside the heliopause, or the bubble of energetic particles and magnetic fields from the Sun. Voyager 1 was launched after Voyager 2, but because of a faster route it exited the asteroid belt earlier than its twin, and it overtook Voyager 2 on Dec. 15, 1977.\n\n- Voyager 1 discovered a thin ring around Jupiter and two new Jovian moons: Thebe and Metis.\n- At Saturn, Voyager 1 found five new moons and a new ring called the G-ring.\n- Voyager 1 was the first spacecraft to cross the heliosphere, the boundary where the influences from outside our solar system are stronger than those from our Sun.\n- Voyager 1 is the first human-made object to venture into interstellar space.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://science.nasa.gov/mission/voyager/voyager-1",
+            "heading": "NASA Shuts Off Instrument on Voyager 1 to Keep Spacecraft Operating",
+            "ord": 2,
+            "text": "On April 17, engineers at NASA\u2019s Jet Propulsion Laboratory (JPL) in Southern California shut down an instrument aboard Voyager 1, to save power and keep humanity\u2019s first interstellar explorer going. Voyager 1 still has two science instruments operating, nearly 50 years into its mission; years ago Voyager scientists and engineers agreed on the order to shut off parts of the spacecraft, to preserve power while ensuring the mission can continue to conduct its unique science.\n\nRead the Latest on Voyager 1",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://science.nasa.gov/mission/voyager/voyager-1",
+            "heading": "In Depth: Voyager 1",
+            "ord": 3,
+            "text": "| **Nation** | United States of America (USA) |\n| --- | --- |\n| **Objective(s)** | Jupiter Flyby, Saturn Flyby |\n| **Spacecraft** | Voyager 1 |\n| **Spacecraft Mass** | 1,592 pounds (721.9 kilograms) |\n| **Spacecraft Power** | 3 Multi-Hundred Watt Radioisotope Thermoelectric Generators (MHW-RTGs) stacked in a series on a boom, producing about 158 W <sub>e</sub> each, at launch. |\n| **Mission Design and Management** | NASA / JPL |\n| **Launch Vehicle** | Titan IIIE-Centaur (TC-6 / Titan no. 23E-6 / Centaur D-1T) |\n| **Launch Date and Time** | Sept. 5, 1977 / 12:56:01 UT |\n| **Key Dates** | March 5, 1979: Jupiter flyby - closest approach Nov. 12, 1980: Saturn flyby - closest approach Feb.17, 1998: Became the most distant human-made object after overtaking NASA's Pioneer 10 Jan. 1, 1990: Voyager Interstellar Mission (VIM) officially began Aug. 16, 2006: 100 astronomical units reached August 2012: Voyager 1 enters interstellar space |\n| **Launch Site** | Cape Canaveral, Florida / Launch Complex 41 |\n| **Scientific Instruments** | 1. Imaging Science System (ISS) 2. Ultraviolet Spectrometer (UVS) 3. Infrared Interferometer Spectrometer (IRIS) 4. Planetary Radio Astronomy Experiment (PRA) 5. Photopolarimeter (PPS) 6. Triaxial Fluxgate Magnetometer (MAG) 7. Plasma Spectrometer (PLS) 8. Low-Energy Charged Particles Experiment (LECP) 9. Plasma Waves Experiment (PWS) 10. Cosmic Ray Telescope (CRS) 11. Radio Science System (RSS) |",
+            "selection_applied": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "url": "https://spaceplace.nasa.gov/james-webb-space-telescope/en",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://spaceplace.nasa.gov/james-webb-space-telescope/en",
+            "heading": "",
+            "ord": 0,
+            "text": "The James Webb Space Telescope is the largest, most powerful space telescope ever built. It will allow scientists to look at what our universe was like about 200 million years after the Big Bang. The telescope will be able to capture images of some of the first galaxies ever formed. It will also be able to observe objects in our solar system from Mars outward, look inside dust clouds to see where new stars and planets are forming and examine the atmospheres of planets orbiting other stars.\n\nHere are some fun facts about the James Webb Space Telescope:",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://spaceplace.nasa.gov/james-webb-space-telescope/en",
+            "heading": "It is very, very big.",
+            "ord": 1,
+            "text": "The Webb telescope is as tall as a 3-story building and as long as a tennis court! It is so big that it has to fold origami-style to fit inside the rocket to launch. The telescope will unfold, sunshield first, once in space.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://spaceplace.nasa.gov/james-webb-space-telescope/en",
+            "heading": "It can see through dust clouds.",
+            "ord": 2,
+            "text": "The James Webb Space Telescope sees the universe in light that is invisible to human eyes. This light is called **infrared radiation**, and we can feel it as heat. Firefighters use infrared cameras to see and rescue people through the smoke in a fire. The James Webb Space Telescope will use its infrared cameras to see through dust in our universe. Stars and planets form inside those dust clouds, so peeking inside could lead to exciting new discoveries! It will also be able to see objects (like the first galaxies) that are so far away that the expansion of the universe has made their light shift from visible to infrared!",
+            "selection_applied": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "nasa-mars-landings",
+    "required_facts": true,
+    "calls": [
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "NASA Perseverance rover landing date UTC landing crater"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "NASA Curiosity rover landing date UTC landing crater"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://en.wikipedia.org/wiki/Curiosity_(rover)",
+          "focus": "landing date UTC and landing crater"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://en.wikipedia.org/wiki/Perseverance_(rover)",
+          "focus": "landing date UTC and landing crater"
+        }
+      }
+    ],
+    "sources": [
+      {
+        "n": 1,
+        "url": "https://en.wikipedia.org/wiki/Curiosity_(rover)",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://en.wikipedia.org/wiki/Curiosity_(rover)",
+            "heading": "*Curiosity* (rover)",
+            "ord": 0,
+            "text": "| *Curiosity* |  |\n|---|---|\n| Part of Mars Science Laboratory |  |\n| Type | Mars rover |\n| Owner | NASA |\n| Manufacturer | Jet Propulsion Laboratory |\n| Specifications |  |\n| Dimensions | 2.9 m \u00d7 2.7 m \u00d7 2.2 m (9 ft 6 in \u00d7 8 ft 10 in \u00d7 7 ft 3 in) |\n| Dry mass | 899 kilograms (1,982 lb) |\n| Communication |  |\n| Power | MMRTG: ~100 W (0.13 hp) |\n| Rocket | Atlas V 541 |\n| Instruments |  |\n| History |  |\n| Launched | November 26, 2011, 15:02 UTC from Cape Canaveral SLC-41 |\n| Deployed | August 6, 2012, 05:17 UTC from the MSL EDLS |\n| Location | Gale crater, Mars |\n| Traveled | 37.43\u00a0km (23.26\u00a0mi) on Mars as of 14\u00a0July\u00a02026 <sup>[update]</sup><sup>[1]</sup> |\n| NASA Mars rovers |  |",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://en.wikipedia.org/wiki/Curiosity_(rover)",
+            "heading": "*Curiosity* (rover)",
+            "ord": 1,
+            "text": "***Curiosity*** is a Mars rover that is exploring Gale crater and Mount Sharp on Mars as part of NASA's Mars Science Laboratory (MSL) mission.<sup>[2]</sup> Launched in 2011 and landed the following year, the car-sized rover continues to operate more than a decade after its original two-year mission.\n\n*Curiosity* was launched from Cape Canaveral, Florida, on November 26, 2011, at 15:02:00 UTC and landed on Aeolis Palus inside Gale crater on Mars on August 6, 2012, 05:17:57 UTC.<sup>[3]</sup><sup>[4]</sup><sup>[5]</sup> The Bradbury Landing site was less than 2.4\u00a0km (1.5\u00a0mi) from the center of the rover's touchdown target after a 560\u00a0million\u00a0km (350\u00a0million\u00a0mi) journey.<sup>[6]</sup><sup>[7]</sup>",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://en.wikipedia.org/wiki/Curiosity_(rover)",
+            "heading": "*Curiosity* (rover)",
+            "ord": 3,
+            "text": "The NASA/JPL Mars Science Laboratory/*Curiosity* Project Team was awarded the 2012 Robert J. Collier Trophy by the National Aeronautic Association \"In recognition of the extraordinary achievements of successfully landing *Curiosity* on Mars, advancing the nation's technological and engineering capabilities, and significantly improving humanity's understanding of ancient Martian habitable environments.\"<sup>[14]</sup> *Curiosity*'s rover design served as the basis for NASA's 2021 *Perseverance* mission, which carries different scientific instruments.",
+            "selection_applied": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "url": "https://en.wikipedia.org/wiki/Perseverance_(rover)",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://en.wikipedia.org/wiki/Perseverance_(rover)",
+            "heading": "*Perseverance* (rover)",
+            "ord": 0,
+            "text": "| *Perseverance* |  |\n|---|---|\n| Part of Mars 2020 |  |\n| Type | Mars rover |\n| Owner | NASA |\n| Manufacturer | Jet Propulsion Laboratory |\n| Specifications |  |\n| Dimensions | 2.9\u00a0m \u00d7\u00a02.7\u00a0m \u00d7\u00a02.2\u00a0m (9 ft 6 in \u00d7 8 ft 10 in \u00d7 7 ft 3 in) |\n| Dry mass | 1,025 kilograms (2,260 lb) |\n| Communication |  |\n| Power | MMRTG; 110 watt |\n| Rocket | Atlas V 541 |\n| Instruments |  |\n| History |  |\n| Launched | July 30, 2020, 11:50 UTC from Cape Canaveral SLC-41 |\n| Deployed | February 18, 2021, 20:55 UTC from the Mars 2020 EDLS |\n| Location | 18\u00b026\u203249\u2033N 77\u00b024\u203207\u2033E / 18.447\u00b0N 77.402\u00b0E Jezero crater, Mars |\n| Travelled | 45.13\u00a0km (28.04\u00a0mi) as of 24\u00a0August\u00a02026 <sup>[update]</sup><sup>[1]</sup> |\n| NASA Mars rovers |  |",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://en.wikipedia.org/wiki/Perseverance_(rover)",
+            "heading": "*Perseverance* (rover)",
+            "ord": 1,
+            "text": "**Perseverance**<sup>[2]</sup> is a NASA rover that has been exploring Mars since February 18, 2021,<sup>[3]</sup><sup>[4]</sup> as part of the Mars 2020 mission. Built and managed by the Jet Propulsion Laboratory, the car-sized rover was launched on July 30, 2020,<sup>[5]</sup> from Cape Canaveral aboard an Atlas V rocket and landed in Jezero Crater, a site chosen for its ancient river delta that may preserve evidence of past microbial life.\n\nThe rover's main goals are to search for signs of ancient life, study the planet's geology and climate, and collect rock and regolith samples for possible return to Earth by a future mission. *Perseverance* also tests technologies intended to support later human exploration, including an experiment that successfully produced oxygen from the thin carbon-dioxide atmosphere.<sup>[6]</sup>",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://en.wikipedia.org/wiki/Perseverance_(rover)",
+            "heading": "*Perseverance* (rover)",
+            "ord": 3,
+            "text": "Powered by a radioisotope thermoelectric generator, *Perseverance* has an expected mission duration of over a decade.<sup>[11]</sup> It has provided high-resolution panoramas, drilled and cached samples for later retrieval, and identified rocks which may have been habitable for ancient microbial life in Jezero Crater. In July 2024, it discovered the Cheyava Falls rock containing \"possible biosignature.\" As of 6 October 2026, *Perseverance* has been active on Mars for 2001 sols (2056 total days; *5\u00a0years, 230\u00a0days*) since its landing.",
+            "selection_applied": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "esa-observatory-comparison",
+    "required_facts": true,
+    "calls": [
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "Euclid spacecraft launch date launch vehicle"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "Gaia spacecraft launch date launch vehicle"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "Euclid Gaia Lagrange point mission"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://sci.esa.int/web/euclid/-/fact-sheet",
+          "focus": "launch date and launch vehicle"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://euclid-italia.org/en/mission",
+          "focus": "launch date and launch vehicle"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://science.esa.int/gaia",
+          "focus": "launch date and launch vehicle"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://en.wikipedia.org/wiki/Gaia_(spacecraft)",
+          "focus": "launch date and launch vehicle"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://en.wikipedia.org/wiki/Lagrange_point",
+          "focus": "common Lagrange-point region used by Euclid and Gaia science missions"
+        }
+      }
+    ],
+    "sources": [
+      {
+        "n": 1,
+        "url": "https://en.wikipedia.org/wiki/Lagrange_point",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://en.wikipedia.org/wiki/Lagrange_point",
+            "heading": "Lagrange point",
+            "ord": 0,
+            "text": "| Part of a series on |\n| --- |\n| Astrodynamics |\n|---|",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://en.wikipedia.org/wiki/Lagrange_point",
+            "heading": "Lagrange point",
+            "ord": 1,
+            "text": "In celestial mechanics, the **Lagrange points** (/l\u0259\u02c8\u0261r\u0251\u02d0nd\u0292/), also called the **Lagrangian points** or **libration points**, are points of equilibrium for small-mass objects under the gravitational influence of two massive orbiting bodies. Mathematically, this involves the solution of the restricted three-body problem.<sup>[1]</sup>\n\nNormally, the two massive bodies exert an unbalanced gravitational force at a point, altering the orbit of any other celestial body at that point. At the Lagrange points, the gravitational forces of the two large bodies and the centrifugal pseudo-force balance each other.<sup>[2]</sup> This can make Lagrange points an excellent location for satellites, as orbit corrections, and hence fuel requirements, needed to maintain the desired orbit are kept at a minimum. ",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://en.wikipedia.org/wiki/Lagrange_point",
+            "heading": "Lagrange point",
+            "ord": 5,
+            "text": "The European Space Agency's earlier Gaia telescope, and its newly launched Euclid, also occupy orbits around L<sub>2</sub>. Gaia keeps a tighter Lissajous orbit around L<sub>2</sub>, while Euclid follows a halo orbit similar to JWST. Each of the space observatories benefits from being far enough from Earth's shadow to utilize solar panels for power, from not needing much power or propellant for station-keeping, from not being subjected to the Earth's magnetospheric effects, and from having direct line-of-sight to Earth for data transfer.",
+            "selection_applied": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "url": "https://en.wikipedia.org/wiki/Gaia_(spacecraft)",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://en.wikipedia.org/wiki/Gaia_(spacecraft)",
+            "heading": "*Gaia* (spacecraft)",
+            "ord": 0,
+            "text": "| Gaia |  |\n|---|---|\n| Names | 2015 HP <sub>116</sub><sup>[1]</sup><sup>[a]</sup> |\n|---|---|\n| Mission type | Astrometric observatory |\n| Operator | ESA |\n| COSPAR ID | 2013-074A |\n| SATCAT no. | 39479 |\n| Website | www |\n| Mission duration | 11 years, 3 months and 8 days |\n| Spacecraft properties |  |\n| Manufacturer |  |\n| Launch mass | 2,029\u00a0kg (4,473\u00a0lb) <sup>[3]</sup> |\n| Dry mass | 1,392 kg (3,069 lb) |\n| Payload mass | 710\u00a0kg (1,570\u00a0lb) <sup>[4]</sup> |\n| Dimensions | 4.6 m \u00d7 2.3 m (15.1 ft \u00d7 7.5 ft) |\n| Power | 1,910 watts |\n| Start of mission |  |\n| Launch date | 19 December 2013, 09:12:14 UTC <sup>[5]</sup> |\n| Rocket | Soyuz ST-B/Fregat-MT |\n| Launch site | Kourou ELS |\n| Contractor | Arianespace |\n| End of mission |  |\n| Disposal | Decommissioned |\n| Deactivated | 27 March 2025 |\n| Orbital parameters |  |\n| Reference system | Sun\u2013Earth L <sub>2</sub> |\n| Regime | Lissajous orbit |\n| Periapsis altitude | 263,000\u00a0km (163,000\u00a0mi) <sup>[6]</sup> |\n| Apoapsis altitude | 707,000\u00a0km (439,000\u00a0mi) <sup>[6]</sup> |\n| Period | 180 days |\n| Epoch | 2014 |\n| Main telescope |  |\n| Type | Three-mirror anastigmat <sup>[3]</sup> |\n| Diameter | 1.45 m \u00d7 0.5 m (4 ft 9 in \u00d7 1 ft 8 in) |\n| Collecting area | 0.7\u00a0m <sup>2</sup> |\n| Wavelengths | Visible |\n| Transponders |  |\n| Band |  |\n| Bandwidth | a few kbit/s down & up (S band) 3\u20138 Mbit/s download (X band) |\n| Instruments |  |\n| **ASTRO** : Astrometric instrument **BP/RP** : Photometric instrument **RVS** : Radial velocity spectrometer |  |\n| Contemporary ESA insignia (2010s) |  |",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://en.wikipedia.org/wiki/Gaia_(spacecraft)",
+            "heading": "*Gaia* (spacecraft)",
+            "ord": 2,
+            "text": "To study the precise position and motion of its target objects, the spacecraft monitored each of them about 70 times<sup>[11]</sup> over the five years of the nominal mission (2014\u20132019), and about as many during its extension.<sup>[12]</sup><sup>[13]</sup> Due to its detectors degrading more slowly than initially expected, the data acquisition phase of the mission was given an extension,<sup>[14]</sup> lasting until March 27, 2025, when scientists at the ESA switched off *Gaia* after more than a decade of service.<sup>[15]</sup> *Gaia* targeted objects brighter than magnitude 20 in a broad photometric band that covered the extended visual range between near-UV and near infrared;<sup>[16]</sup> such objects represent approximately 1% of the Milky Way population.<sup>[11]</sup> Additionally, *Gaia* was expected to detect thousands to tens of thousands of Jupiter-sized exoplanets beyond the Solar System using astrometry,<sup>[17]</sup><sup>[18]</sup><sup>[19]</sup><sup>[20]</sup> 500,000 quasars outside this galaxy and tens of thousands of known and new asteroids and comets within the Solar System.<sup>[21]</sup><sup>[22]</sup><sup>[23]</sup>",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://en.wikipedia.org/wiki/Gaia_(spacecraft)",
+            "heading": "*Gaia* (spacecraft)",
+            "ord": 4,
+            "text": "The successor to the *Hipparcos* mission (1989\u20131993), *Gaia* is part of ESA's Horizon 2000+ long-term scientific program. *Gaia* was launched on 19 December 2013 by Arianespace using a Soyuz ST-B/Fregat-MT rocket flying from Kourou in French Guiana.<sup>[24]</sup><sup>[25]</sup> The spacecraft operated in a Lissajous orbit around the Sun\u2013Earth L<sub>2</sub> Lagrangian point. The science observation officially ended on 15 January 2025.<sup>[26]</sup>",
+            "selection_applied": false
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "url": "https://euclid-italia.org/en/mission",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://euclid-italia.org/en/mission",
+            "heading": "MISSION / A JOURNEY TO THE DARK UNIVERSE",
+            "ord": 1,
+            "text": "ESA\u2019s Euclid mission is designed to map the large-scale structure of the Universe and help understand its two biggest mysteries: dark matter and dark energy.\n\nOnly 5% of the Universe is made up of visible matter.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://euclid-italia.org/en/mission",
+            "heading": "Milestone / (Clicca sui pallini a sinistra per far scorrere il testo) / ROADMAP",
+            "ord": 5,
+            "text": "Do you see that ship? On board is Euclid, the ESA satellite that will investigate the dark side of the Universe. It departed on April 17, 2023, from the port of Savona bound for Cape Canaveral, where its launch into space awaits it in July.\n\nTesting simulations for Euclid have begun at ESA's Mission Control Center.\n\nImmediately following launch, the satellite and its scientific instruments will undergo a series of tests for approximately 30 days to ensure everything is functioning correctly.\n\nDuring this 30-day period, Euclid will reach L2: a point 1.5 million kilometers from Earth, from which it will observe the deep universe for six years.\n\nESA's Mission Control Center will take charge of Euclid just seconds after launch and will be responsible for its operation and monitoring its health throughout its operational life.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://euclid-italia.org/en/mission",
+            "heading": "Milestone / (Clicca sui pallini a sinistra per far scorrere il testo) / ROADMAP",
+            "ord": 6,
+            "text": "The exciting countdown, a tradition that accompanies the start of space missions, will commence from the main control room.\n\nOn June 27, 2023, ESA's Euclid space telescope was encapsulated within a SpaceX Falcon 9 fairing, which will keep Euclid safe and clean during the final days before liftoff and protect the spacecraft from Earth's atmosphere during launch.\n\nEuclid Takes Flight! Excitement Grips the Consortium!\n\nEuclid has finally embarked on its journey! The excitement across the entire Consortium is palpable!\n\nOn July 1, 2023, Euclid soared into space atop a SpaceX Falcon 9 rocket from Cape Canaveral, Florida. Within four weeks, the satellite traversed 1.5 million kilometers, reaching its designated location at the Lagrange L2 point.",
+            "selection_applied": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "national-park-origins",
+    "required_facts": true,
+    "calls": [
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "Yellowstone National Park establishment date and states it's in"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "Yosemite National Park establishment date and states it's in"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://nps.gov/yell/learn/historyculture/yellowstoneestablishment.htm",
+          "focus": "establishment date and states"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://nps.gov/yose/learn/news/yose120.htm",
+          "focus": "establishment date and states"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://nps.gov/yell/learn/historyculture/yellowstoneestablishment.htm",
+          "focus": "establishment date and states"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://nps.gov/yose/learn/historyculture/yosemite.htm",
+          "focus": "establishment date and states"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "Yellowstone National Park states it's in official NPS site"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "Yosemite National Park states it's in official NPS site"
+        }
+      }
+    ],
+    "sources": []
+  },
+  {
+    "id": "unesco-first-sites",
+    "required_facts": true,
+    "calls": [
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "UNESCO World Heritage Gal\u00e1pagos Islands country inscription year classification"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "UNESCO World Heritage Yellowstone National Park country inscription year classification"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://galapagos.org/newsroom/45-years-natural-world-heritage-site",
+          "focus": "country, inscription year, and classification of Gal\u00e1pagos Islands"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://home.nps.gov/yell/learn/management/unesco-designations.htm",
+          "focus": "country, inscription year, and classification of Yellowstone National Park"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://whc.unesco.org/en/list/28",
+          "focus": "country, inscription year, and classification of Yellowstone National Park"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://whc.unesco.org/en/list/28",
+          "focus": "country, inscription year, and classification of Yellowstone National Park"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://whc.unesco.org/en/list/28",
+          "focus": "country, inscription year, and classification of Yellowstone National Park"
+        }
+      }
+    ],
+    "sources": [
+      {
+        "n": 1,
+        "url": "https://home.nps.gov/yell/learn/management/unesco-designations.htm",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://home.nps.gov/yell/learn/management/unesco-designations.htm",
+            "heading": "",
+            "ord": 0,
+            "text": "| The United Nations designated Yellowstone National Park as a World Heritage Site and Biosphere Reserve in recognition of the worldwide significance of its natural and cultural resources. These designations do not affect how Yellowstone is managed\u2014the United States retains full jurisdiction over the World Heritage and Biosphere Reserve sites and any related management decisions. World Heritage Site Yellowstone National Park was designated as a World Heritage Site in 1978\u2014the United States' first World Heritage location. This designation is part of the World Heritage Convention international treaty, through which member nations agree to cooperate in the conservation and protection of their cultural and natural heritage sites, and particularly those that have been determined to possess outstanding universal value. The United States was the first nation to sign the World Heritage Convention Treaty; since, 190 other countries have also become members to the agreement. Learn more about the World Heritage Convention. Yellowstone National Park must report regularly to the World Heritage Committee on the status of the park's cultural and natural resources, threats to these resources, and progress made to reduce or eliminate threats. In 1995, the Committee, with the agreement of the United States, placed Yellowstone on its List of World Heritage in Danger. This action was taken in response to specific threats identified to the outstanding universal value of the park. In July 2003, the Committee decided to remove the park from the Danger List. Biosphere Reserve Yellowstone is designated as a biosphere reserve. Biosphere reserves are internationally recognized areas where management seeks to achieve sustainable use of natural resources while ensuring conservation of the biological diversity of the areas. The first biosphere reserves were designated in 1976. On October 26, 1976, United Nations designation of Yellowstone as a biosphere reserve stated:   Yellowstone National Park also reports regularly to United Nations\u2019 Man and the Biosphere Program on the status of the Biosphere Reserve. |\n| --- |",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://home.nps.gov/yell/learn/management/unesco-designations.htm",
+            "heading": "",
+            "ord": 1,
+            "text": "Last updated: April 18, 2025",
+            "selection_applied": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "archives-founding-documents",
+    "required_facts": true,
+    "calls": [
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "Declaration of Independence adoption date and city"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "Constitution signing date and city"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://archives.gov/founding-docs/timeline",
+          "focus": "Declaration of Independence adoption date and city"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://history.state.gov/milestones/1776-1783/declaration",
+          "focus": "Declaration of Independence adoption date and city"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://history.com/this-day-in-history/september-17/u-s-constitution-signed",
+          "focus": "Constitution signing date and city"
+        }
+      }
+    ],
+    "sources": [
+      {
+        "n": 1,
+        "url": "https://history.com/this-day-in-history/september-17/u-s-constitution-signed",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://history.com/this-day-in-history/september-17/u-s-constitution-signed",
+            "heading": "",
+            "ord": 0,
+            "text": "During an intensive debate, the delegates devised a brilliant federal organization characterized by an intricate system of checks and balances. The convention was divided over the issue of state representation in Congress, as more-populated states sought proportional legislation, and smaller states wanted equal representation. The problem was resolved by the Connecticut Compromise, which proposed a bicameral legislature with proportional representation in the lower house (House of Representatives) and equal representation of the states in the upper house (Senate).",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://history.com/this-day-in-history/september-17/u-s-constitution-signed",
+            "heading": "",
+            "ord": 1,
+            "text": "On September 17, 1787, the Constitution was signed. As dictated by Article VII, the document would not become binding until it was ratified by nine of the 13 states. Beginning on December 7, five states\u2014Delaware, Pennsylvania, New Jersey, Georgia\u00a0and Connecticut\u2014ratified it in quick succession. However, other states, especially Massachusetts, opposed the document, as it failed to reserve un-delegated powers to the states and lacked constitutional protection of basic political rights, such as freedom of speech, religion, and the press. In February 1788, a compromise was reached under which Massachusetts and other states would agree to ratify the document with the assurance that amendments would be immediately proposed. The Constitution was thus narrowly ratified in Massachusetts, followed by Maryland and South Carolina. On June 21, 1788, New Hampshire became the ninth state to ratify the document, and it was subsequently agreed that government under the U.S. Constitution would begin on March 4, 1789. In June, Virginia ratified the Constitution, followed by New York in July.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://history.com/this-day-in-history/september-17/u-s-constitution-signed",
+            "heading": "",
+            "ord": 2,
+            "text": "On September 25, 1789, the first Congress of the United States adopted 12 amendments to the U.S. Constitution\u2013the Bill of Rights\u2013and sent them to the states for ratification. Ten of these amendments were ratified in 1791. In November 1789, North Carolina became the 12th state to ratify the U.S. Constitution. Rhode Island, which opposed federal control of currency and was critical of compromise on the issue of slavery, resisted ratifying the Constitution until the U.S. government threatened to sever commercial relations with the state. On May 29, 1790, Rhode Island voted by two votes to ratify the document, and the last of the original 13 colonies joined the United States. Today, the U.S. Constitution is the oldest written constitution in operation in the world.",
+            "selection_applied": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "url": "https://history.state.gov/milestones/1776-1783/declaration",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://history.state.gov/milestones/1776-1783/declaration",
+            "heading": "",
+            "ord": 0,
+            "text": "**NOTE TO READERS**\n\n\u201cMilestones in the History of U.S. Foreign Relations\u201d has been retired and is no longer maintained. For more information, please see the full notice.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://history.state.gov/milestones/1776-1783/declaration",
+            "heading": "The Declaration of Independence, 1776",
+            "ord": 1,
+            "text": "By issuing the Declaration of Independence, adopted by the Continental Congress on July 4, 1776, the 13 American colonies severed their political connections to Great Britain. The Declaration summarized the colonists\u2019 motivations for seeking independence. By declaring themselves an independent nation, the American colonists were able to confirm an official alliance with the Government of France and obtain French assistance in the war against Great Britain.",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://history.state.gov/milestones/1776-1783/declaration",
+            "heading": "The Declaration of Independence, 1776",
+            "ord": 2,
+            "text": "Throughout the 1760s and early 1770s, the North American colonists found themselves increasingly at odds with British imperial policies regarding taxation and frontier policy. When repeated protests failed to influence British policies, and instead resulted in the closing of the port of Boston and the declaration of martial law in Massachusetts, the colonial governments sent delegates to a Continental Congress to coordinate a colonial boycott of British goods. When fighting broke out between American colonists and British forces in Massachusetts, the Continental Congress worked with local groups, originally intended to enforce the boycott, to coordinate resistance against the British. British officials throughout the colonies increasingly found their authority challenged by informal local governments, although loyalist sentiment remained strong in some areas.",
+            "selection_applied": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ietf-http-transports",
+    "required_facts": false,
+    "calls": [
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "RFC 9113 HTTP/2 transport"
+        }
+      },
+      {
+        "name": "web_search",
+        "arguments": {
+          "query": "RFC 9114 HTTP/3 transport TLS version"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://datatracker.ietf.org/doc/html/rfc9114",
+          "focus": "HTTP/3 transport and TLS version"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://datatracker.ietf.org/doc/html/rfc9113",
+          "focus": "HTTP/2 transport"
+        }
+      },
+      {
+        "name": "read_page",
+        "arguments": {
+          "url": "https://rfc-editor.org/rfc/rfc9113.html",
+          "focus": "HTTP/2 transport"
+        }
+      }
+    ],
+    "sources": [
+      {
+        "n": 1,
+        "url": "https://rfc-editor.org/rfc/rfc9113.html",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://rfc-editor.org/rfc/rfc9113.html",
+            "heading": "",
+            "ord": 0,
+            "text": "| RFC 9113 | HTTP/2 | June 2022 |\n| --- | --- | --- |\n| Thomson & Benfield | Standards Track | [Page] |",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://rfc-editor.org/rfc/rfc9113.html",
+            "heading": "",
+            "ord": 1,
+            "text": "This specification describes an optimized expression of the semantics of the Hypertext Transfer Protocol (HTTP), referred to as HTTP version 2 (HTTP/2). HTTP/2 enables a more efficient use of network resources and a reduced latency by introducing field compression and allowing multiple concurrent exchanges on the same connection.\u00b6\n\nThis document obsoletes RFCs 7540 and 8740.\u00b6\n\nThis is an Internet Standards Track document.\u00b6\n\nThis document is a product of the Internet Engineering Task Force (IETF). It represents the consensus of the IETF community. It has received public review and has been approved for publication by the Internet Engineering Steering Group (IESG). Further information on Internet Standards is available in Section 2 of RFC 7841.\u00b6",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://rfc-editor.org/rfc/rfc9113.html",
+            "heading": "",
+            "ord": 3,
+            "text": "The performance of applications using the Hypertext Transfer Protocol (HTTP, [HTTP]) is linked to how each version of HTTP uses the underlying transport, and the conditions under which the transport operates.\u00b6\n\nMaking multiple concurrent requests can reduce latency and improve application performance. HTTP/1.0 allowed only one request to be outstanding at a time on a given TCP [TCP] connection. HTTP/1.1 [HTTP/1.1] added request pipelining, but this only partially addressed request concurrency and still suffers from application-layer head-of-line blocking. Therefore, HTTP/1.0 and HTTP/1.1 clients use multiple connections to a server to make concurrent requests.\u00b6",
+            "selection_applied": false
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "url": "https://datatracker.ietf.org/doc/html/rfc9114",
+        "passages": [
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://datatracker.ietf.org/doc/html/rfc9114",
+            "heading": "",
+            "ord": 0,
+            "text": "| RFC 9114 | HTTP/3 | June 2022 |\n| --- | --- | --- |\n| Bishop | Standards Track | [Page] |",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://datatracker.ietf.org/doc/html/rfc9114",
+            "heading": "",
+            "ord": 1,
+            "text": "- Stream:\n- Internet Engineering Task Force (IETF)\n- RFC:\n- 9114\n- Category:\n- Standards Track\n- Published:\n- ISSN:\n- 2070-1721",
+            "selection_applied": false
+          },
+          {
+            "page_start": null,
+            "page_end": null,
+            "source_url": "https://datatracker.ietf.org/doc/html/rfc9114",
+            "heading": "RFC 9114 / HTTP/3 / Abstract",
+            "ord": 2,
+            "text": "The QUIC transport protocol has several features that are desirable in a transport for HTTP, such as stream multiplexing, per-stream flow control, and low-latency connection establishment. This document describes a mapping of HTTP semantics over QUIC. This document also identifies HTTP/2 features that are subsumed by QUIC and describes how HTTP/2 extensions can be ported to HTTP/3.\u00b6",
+            "selection_applied": false
+          }
+        ]
+      }
+    ]
+  }
+]

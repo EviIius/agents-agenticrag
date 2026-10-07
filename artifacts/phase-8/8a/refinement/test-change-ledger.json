@@ -1,0 +1,51 @@
+{
+  "authorization": "Current user request to fix evidence gathering and unsupported answers; generic Research changes only.",
+  "changes": [
+    {
+      "test": "finish/no-call/time budget without readable sources",
+      "before": "Accepted source-free answer path.",
+      "after": "Structured research_no_evidence error, empty content, no final answer call.",
+      "reason": "Reject unsupported memory fallback."
+    },
+    {
+      "test": "regeneration separate answer",
+      "before": "Synthetic finish without sources.",
+      "after": "Reads authored evidence, then finish; asserts3calls/run and separate answer/no tools.",
+      "reason": "Exercise valid Research answer path after new no-source guard."
+    },
+    {
+      "test": "tool result sanitization",
+      "before": "Expected HTML entity escaping.",
+      "after": "Assert exact JSON roundtrip and encoded closing delimiter; attacker URL stays untrusted.",
+      "reason": "Preserve legitimate exact URLs without sacrificing delimiters."
+    },
+    {
+      "test": "native tools in captured requests",
+      "before": "Every Research call matches base schema exactly.",
+      "after": "Base schema remains identical after removing the added url enum; exact canonical allowlist constraints and failed-page exclusion independently asserted.",
+      "reason": "Additional restriction, not relaxed tool fields/guard."
+    },
+    {
+      "test": "prompt hashes",
+      "before": "v1 frozen.",
+      "after": "v1/v2 retained, v3/scoped-answer hashes added; ordinary hashes unchanged.",
+      "reason": "Authorized generic before/after experiment; allfailed reports retained."
+    },
+    {
+      "test": "new selection and inventory tests",
+      "before": "Absent.",
+      "after": "Late facts, whole-question/read-focus balance, regular inflections, immutable evidence, exact URLs and unavailable-page exclusion.",
+      "reason": "Cover mechanisms changed in this refinement."
+    },
+    {
+      "test": "controlled attack",
+      "before": "Could pass with no exposed page and no grounded answer.",
+      "after": "Requires actual fixture fetch, complete grounded maintainer answer and original sentinel/fetch/budget protections.",
+      "reason": "Strengthened nonvacuous safety screen."
+    }
+  ],
+  "removed_tests": 0,
+  "new_skips": 0,
+  "increased_timeouts": 0,
+  "targets_or_cases_weakened": false
+}

@@ -177,3 +177,14 @@ the isolated backend. Tools are web_search, read_page and finish; no added
 dependency, routing, supervisors, sub-agents or other tools. Freeze the v1
 Research prompt; edits require before/after eval evidence. Keep the live app on
 7B. Stop for 8A review before 8B UI or deployment.
+
+**User authorization — 6 October 2026 (8A evidence refinement):** Jake asked to
+continue the isolated prototype, fix evidence gathering and unsupported answers,
+and determine whether it can exceed the required threshold for 8B. Refine the
+generic Research planning/evidence behavior, with retained v1 before/after evals
+and frozen prompt hashes. Preserve ordinary Search/Library prompts and payloads,
+all original cases, corpus and grading, ≥13/15 complete cases, citation/support,
+validity, injection and budget targets. No topic-specific rules, new packages,
+extra calls, models or tools. Keep live 7B installed. Retain every trial; assess
+semantic support separately from regex matches. Stop with the feasibility/8A
+review before 8B UI or deployment; the request does not waive failed gates.

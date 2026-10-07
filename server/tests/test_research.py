@@ -15,8 +15,8 @@ from app.db import messages
 from app.errors import AppError
 from app.providers.base import ChatRequest, Finish, ProviderMessage, ToolCall
 from app.providers.ollama import Ollama
-from app.runs.research import PROMPT, TOOLS, Budgets, arguments
-from app.schemas import SearchResult
+from app.runs.research import PROMPT, TOOLS, Budgets, arguments, balanced_rank, focus_rank
+from app.schemas import Passage, SearchResult
 from app.search import cache
 from app.search.extract import Page
 from app.search.providers import Providers
@@ -85,7 +85,7 @@ def test_prompt_and_tool_schema_frozen() -> None:
     assert TOOLS == json.loads((ROOT / "server/evals/research/tools.json").read_text())
     assert (
         hashlib.sha256(PROMPT.encode()).hexdigest()
-        == "3219a0a3564f120f404a28c6bc4eef6be1ff3e569521684ae4eade454da5b48f"
+        == "1c4c14794cb1cf522907030903b8f6052ac0e8889ef1eb697ca63d77c3b8e7c7"
     )
 
 
@@ -178,11 +178,26 @@ async def test_research_sources_answer_is_separate_reload_and_sse(
     run = await finish(app, response)
     assert run.message.status == "complete", run.message.error
     assert "Fake loop note" not in run.message.content
+    assert not any("Fake loop note" in step.detail for step in run.message.activity)
+    assert all(
+        m["content"] == ""
+        for c in runtime.state.captures
+        for m in c.get("messages", [])
+        if m.get("tool_calls") is not None
+    )
     assert run.message.research and run.message.research.steps == 3
     assert run.message.research.searches == run.message.research.pages == 1
     captures = [c for c in runtime.state.captures if c.get("messages")]
     assert len(captures) == 4  # No auto-title beyond the nine-call budget.
-    assert all(c["tools"] == TOOLS for c in captures[:-1]) and "tools" not in captures[-1]
+    assert captures[0]["tools"] == TOOLS and "tools" not in captures[-1]
+    for capture in captures[1:-1]:
+        assert capture["tools"][1]["function"]["parameters"]["properties"]["url"] == {
+            "type": "string",
+            "enum": ["https://example.org/public"],
+        }
+        original = json.loads(json.dumps(capture["tools"]))
+        del original[1]["function"]["parameters"]["properties"]["url"]["enum"]
+        assert original == TOOLS
     assert all(set(c["options"]) == {"num_ctx"} for c in captures)
     assert "<search_results" in captures[-1]["messages"][-1]["content"]
     assert "tool_result" not in captures[-1]["messages"][-1]["content"]
@@ -216,8 +231,10 @@ async def test_finish_and_no_call_end_without_memory_fallback(
     run = await finish(app, await research_start(client))
     assert run.message.research and run.message.research.steps == 1
     assert run.message.web and run.message.web.source_count == 0
-    answer = [c for c in runtime.state.captures if c.get("messages")][-1]
-    assert "tools" not in answer and "<search_results" in answer["messages"][-1]["content"]
+    captures = [c for c in runtime.state.captures if c.get("messages")]
+    assert len(captures) == 1 and "tools" in captures[0]
+    assert run.message.status == "error" and run.message.content == ""
+    assert run.message.error and run.message.error.code == "research_no_evidence"
 
 
 @pytest.mark.parametrize(
@@ -260,7 +277,8 @@ async def test_time_budget_and_cancel_model(
     app.state.research.budgets = Budgets(seconds=0.02)
     run = await finish(app, await research_start(client))
     assert run.message.research and run.message.research.limit_reached == "time"
-    assert run.message.status == "complete"
+    assert run.message.status == "error"
+    assert run.message.error and run.message.error.code == "research_no_evidence"
     app.state.research.budgets = Budgets()
     response = await research_start(client)
     await asyncio.sleep(0.02)
@@ -301,7 +319,7 @@ async def test_invalid_calls_injection_and_disallowed_urls(
     read_result = next(
         m["content"] for m in tools[2]["messages"] if m.get("tool_name") == "read_page"
     )
-    assert "&lt;/tool_result&gt;" in read_result
+    assert r"\u003c/tool_result\u003e" in read_result
     assert "https://attacker.example/steal" in read_result
 
 
@@ -423,16 +441,25 @@ async def test_tool_script_and_runtime_version_refusal(
 
 async def test_regeneration_keeps_research_guard_and_separate_answer(
     chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     app, client, runtime = chat_app
-    enable(app, runtime, [[call("finish")]])
-    first = await finish(app, await research_start(client))
+    await fake_pages(monkeypatch)
+    enable(
+        app,
+        runtime,
+        [
+            [call("read_page", url="https://example.org/public", focus="synthetic")],
+            [call("finish")],
+        ],
+    )
+    first = await finish(app, await research_start(client, "Synthetic https://example.org/public"))
     reply = await client.post("/api/messages/" + first.message.id + "/regenerate", json={})
     run = await finish(app, dict(reply.json()))
-    assert run.message.research and run.message.research.steps == 1
+    assert run.message.research and run.message.research.steps == 2
     assert run.message.parent_id == first.message.parent_id
     captures = [c for c in runtime.state.captures if c.get("messages")]
-    assert len(captures) == 4 and "tools" not in captures[-1]
+    assert len(captures) == 6 and "tools" not in captures[-1]
 
 
 async def test_freshness_and_exact_sanitized_source_snapshot(
@@ -531,3 +558,126 @@ async def test_time_limit_preserves_inflight_query_and_marks_activity_failed(
     assert saved.web and saved.web.queries == ["synthetic slow query"]
     step = next(step for step in saved.activity if step.kind == "search")
     assert step.status == "failed" and step.detail == "synthetic slow query — Timed out"
+
+
+def test_research_focus_rank_preserves_late_requested_evidence() -> None:
+    # Broad document leads must not outrank a late exact match for the requested detail.
+    passages = [
+        Passage(
+            source_url="https://example.org/public",
+            ord=i,
+            text="Synthetic documentation overview of many settings.",
+        )
+        for i in range(40)
+    ]
+    evidence = Passage(
+        source_url="https://example.org/public",
+        ord=40,
+        text="The x_enabled setting defaults to True; missing initialization raises FakeError.",
+    )
+    assert (
+        focus_rank(passages + [evidence], "x_enabled default missing initialization error")[0][0]
+        == evidence
+    )
+
+
+async def test_tool_result_preserves_exact_url_without_html_entity_repair(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    app, client, runtime = chat_app
+    url = "https://example.org/public?a=1&b=2"
+
+    async def search(self: Providers, queries: list[str], freshness: str) -> Any:
+        return [[SearchResult(url=url, title="Synthetic <hostile> title", snippet="Untrusted")]], []
+
+    monkeypatch.setattr(Providers, "search", search)
+    enable(app, runtime, [[call("web_search", query="synthetic")], [call("finish")]])
+    await finish(app, await research_start(client))
+    captures = [c for c in runtime.state.captures if c.get("tools")]
+    result = captures[1]["messages"][-1]["content"]
+    data = json.loads(result.split("\n", 1)[1].split("\n</tool_result>", 1)[0])
+    assert data[0]["url"] == url
+    assert data[0]["title"] == "Synthetic <hostile> title"
+    assert "<hostile>" not in result and "&quot;" not in result and "&amp;" not in result
+
+
+def test_research_balances_full_question_with_read_focus() -> None:
+    url = "https://example.org/public"
+    passages = [
+        Passage(source_url=url, ord=0, text="Synthetic widget transport uses QueueWire."),
+        Passage(source_url=url, ord=1, text="QueueWire transport supports many widget messages."),
+        Passage(source_url=url, ord=2, text="Widget transport has connections and delivery."),
+        Passage(source_url=url, ord=3, text="The handshake requires SecureWire version 7."),
+    ]
+    from app.search.rank import select
+
+    chosen = select(
+        balanced_rank(passages, "widget transport and handshake version", {url: ["transport"]}),
+        1200,
+        1,
+    )[0]
+    assert passages[3] in chosen
+    assert passages[0] in chosen
+    assert len(chosen) == 3
+
+
+def test_research_ranks_inflected_request_without_changing_evidence() -> None:
+    url = "https://example.org/public"
+    background = Passage(source_url=url, ord=0, text="The environment includes many programs.")
+    evidence = Passage(
+        source_url=url,
+        ord=1,
+        text="When you move the environment, recreate it. Requirements remain unchanged.",
+    )
+    text = evidence.text
+    assert (
+        focus_rank([background, evidence], "environment recreated after moving requirements")[0][0]
+        == evidence
+    )
+    assert evidence.text == text
+
+
+async def test_failed_read_is_excluded_from_next_inventory(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    app, client, runtime = chat_app
+    bad, good = "https://example.org/unavailable", "https://example.org/public"
+
+    async def search(self: Providers, queries: list[str], freshness: str) -> Any:
+        return [
+            [
+                SearchResult(url=bad, title="Synthetic unavailable"),
+                SearchResult(url=good, title="Synthetic public"),
+            ]
+        ], []
+
+    async def read(*args: Any, **kwargs: Any) -> Page:
+        if args[1] == bad:
+            raise ValueError("synthetic unavailable")
+        return Page(good, "Synthetic public", "example.org", None, "Synthetic evidence.")
+
+    monkeypatch.setattr(Providers, "search", search)
+    monkeypatch.setattr(cache, "read", read)
+    enable(
+        app,
+        runtime,
+        [
+            [call("web_search", query="synthetic")],
+            [call("read_page", url=bad, focus="evidence")],
+            [call("read_page", url=good, focus="evidence")],
+            [call("finish")],
+        ],
+    )
+    run = await finish(app, await research_start(client))
+    assert run.message.status == "complete"
+    assert run.message.research and run.message.research.invalid_calls == 0
+    captures = [c for c in runtime.state.captures if c.get("tools")]
+    assert captures[1]["tools"][1]["function"]["parameters"]["properties"]["url"]["enum"] == [
+        good,
+        bad,
+    ]
+    assert captures[2]["tools"][1]["function"]["parameters"]["properties"]["url"]["enum"] == [good]
+    assert (
+        'Available read URLs (copy exactly): ["https://example.org/public"]'
+        in captures[2]["messages"][-1]["content"]
+    )

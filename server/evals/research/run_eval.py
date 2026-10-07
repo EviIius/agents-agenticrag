@@ -33,6 +33,16 @@ CORPUS = ROOT / "artifacts/phase-8/gate/web-fixtures"
 
 
 async def evaluate(args):
+    global OUT
+    OUT = (
+        args.output.expanduser().resolve()
+        if args.output
+        else (
+            ROOT / "artifacts/phase-8/8a/refinement" / datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
+        )
+    )
+    if OUT.exists() and any(OUT.iterdir()):
+        raise ValueError("Evaluation output must be empty; retain prior trials.")
     OUT.mkdir(parents=True, exist_ok=True)
     hashes = {
         str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
@@ -229,6 +239,7 @@ if __name__ == "__main__":
         "--live", action="store_true", help="Live Research eval is an 8B release gate."
     )
     parser.add_argument("--model", default="qwen3:30b-a3b-workbench-32k")
+    parser.add_argument("--output", type=Path, help="New, empty evidence directory.")
     config = parser.parse_args()
     if config.live:
         parser.error("8A uses the frozen 8-0 corpus; live qualification is separately gated at 8B.")

@@ -265,3 +265,8 @@ refinement (read coverage, explicit abstention, safe activity) and evaluate it
 against the unchanged corpus and targets. Any prompt change needs an approved
 before/after eval; none is made in this checkpoint. G-9's new variance also needs
 review, not an inherited waiver. Do not begin 8B or publish this prototype.
+
+## Later isolated refinement
+
+The 6 October follow-up is recorded in [PHASE-8A-REFINEMENT-REPORT.md](PHASE-8A-REFINEMENT-REPORT.md). Three new full trials score 11/15, 13/15 and 10/15; support gates still fail.
+Original results above remain historical evidence. No 8B/UI/deployment promotion.

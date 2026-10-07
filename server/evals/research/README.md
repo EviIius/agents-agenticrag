@@ -149,3 +149,13 @@ Read `docs/PHASE-8A-REPORT.md` and `artifacts/phase-8/8a/` for original failures
 comparison caveats, source hashes, regression checks and rollback. No target was
 lowered, no prompt was refined, and no favorable rerun was selected. Do not ship
 or begin 8B based on native-probe success.
+
+## 8A refinement follow-up
+
+See `docs/PHASE-8A-REFINEMENT-REPORT.md` and
+`artifacts/phase-8/8a/refinement/`. Trials 1/2/3 score 11/15, 13/15 and 10/15.
+Trial 2 crosses fact/host-validity targets but fails support; no run qualifies 8B.
+Original evidence above is retained as the initial checkpoint.
+Use `run_eval.py --output <new-empty-directory>` and `attack.py --output <new-file>`
+to preserve every attempt; default paths are timestamped and existing outputs
+are refused. All cases/corpus/grading/targets remain unchanged.
