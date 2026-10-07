@@ -52,6 +52,13 @@ async def patch(store: Store, identifier: str, body: ChatPatch) -> Chat:
     values = body.model_dump(exclude_unset=True)
     if values.get("library_enabled") and values.get("web_enabled"):
         raise AppError("validation_error", "Choose Library or web search for this message.", 422)
+    modes = ("library_enabled", "web_enabled", "research_enabled")
+    if sum(bool(values.get(k)) for k in modes) > 1:
+        raise AppError("validation_error", "Choose one retrieval option for this message.", 422)
+    if values.get("research_enabled"):
+        values["web_enabled"] = values["library_enabled"] = False
+    elif values.get("web_enabled") or values.get("library_enabled"):
+        values["research_enabled"] = False
     if values.get("library_enabled"):
         values["web_enabled"] = False
     elif values.get("web_enabled"):

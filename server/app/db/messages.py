@@ -8,6 +8,8 @@ from ..schemas import (
     Message,
     MessageModel,
     Passage,
+    ResearchInfo,
+    ResearchStep,
     Source,
     Stats,
     WebInfo,
@@ -42,6 +44,12 @@ async def message(store: Store, identifier: str) -> Message:
         **{
             **row,
             "model": model,
+            "research": ResearchInfo.model_validate_json(row["research_json"])
+            if row["research_json"]
+            else None,
+            "activity": [
+                ResearchStep.model_validate(s) for s in json.loads(row["activity_json"] or "[]")
+            ],
             "attachments": attachments,
             "error": ErrorDetail(**json.loads(str(row["error_json"])))
             if row["error_json"]
@@ -130,7 +138,8 @@ async def save(store: Store, msg: Message, final: bool = False) -> None:
     statements: list[tuple[str, tuple[object, ...]]] = [
         (
             "UPDATE messages SET content=?,reasoning=?,status=?,error_json=?,stats_js"
-            "on=?,web_json=?,library_json=?,updated_at=? WHERE id=?",
+            "on=?,web_json=?,library_json=?,research_json=?,activity_json=?,updated_at=? "
+            "WHERE id=?",
             (
                 msg.content,
                 msg.reasoning,
@@ -139,6 +148,8 @@ async def save(store: Store, msg: Message, final: bool = False) -> None:
                 msg.stats.model_dump_json() if msg.stats else None,
                 msg.web.model_dump_json() if msg.web else None,
                 msg.library.model_dump_json() if msg.library else None,
+                msg.research.model_dump_json() if msg.research else None,
+                json.dumps([s.model_dump() for s in msg.activity]),
                 now(),
                 msg.id,
             ),

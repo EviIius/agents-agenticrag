@@ -161,3 +161,19 @@ model-call rules, code, data and deployment remain unchanged. Retain all failure
 and stop with the gate report before 8A. Do not claim two weeks of daily use.
 The Research product spec and proposed release targets still need Jake’s review
 after the gate results; no agent loop, new dependency or product UI is authorized.
+
+**User authorization — 6 October 2026 (8A isolated backend):** After reviewing
+8-0 and Codex's recommendation, Jake said “Then do so”. Approve the Research
+product specification and §9 targets with these qualifications: deterministically
+regrade equivalent baseline wording using retained answers before freezing the
+comparison; preserve genuine omissions and contradictions, original reports and
+corpus. Keep ≥80% factual completeness, ≥15 percentage-point gain, native validity
+≥95%, manual citation/claim review and all host budgets. Waive the remaining
+calendar hold for isolated 8A development only; this does not assert two weeks of
+daily use. Start with the tested daily 32K Qwen, qualifying by measured metadata
+rather than model-name inference; GPT-OSS's failed probe is not qualified.
+Research-only native steps (maximum eight) plus one answer are authorized in
+the isolated backend. Tools are web_search, read_page and finish; no added
+dependency, routing, supervisors, sub-agents or other tools. Freeze the v1
+Research prompt; edits require before/after eval evidence. Keep the live app on
+7B. Stop for 8A review before 8B UI or deployment.

@@ -44,6 +44,14 @@ async def start_regeneration(identifier: str, body: Regenerate, request: Request
         params,
         await settings.get(store),
     )
+    research_on = chat.research_enabled and not body.force_web
+    if research_on:
+        history = await messages.list_messages(store, chat.id)
+        await request.app.state.research.guard(
+            model,
+            assembled.has_recording
+            or any(a.kind == "audio" for m in history for a in m.attachments),
+        )
     new_id, date = uid(), now()
     await store.batch(
         [
@@ -70,5 +78,7 @@ async def start_regeneration(identifier: str, body: Regenerate, request: Request
         ]
     )
     assistant = await messages.message(store, new_id)
-    run = request.app.state.runs.start(assistant, model, assembled, params, body.force_web)
+    run = request.app.state.runs.start(
+        assistant, model, assembled, params, body.force_web, research=research_on
+    )
     return RunResponse(run_id=run.id, assistant_message=assistant)

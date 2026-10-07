@@ -1095,6 +1095,11 @@ export interface components {
         /** Chat */
         Chat: {
             /**
+             * Research Enabled
+             * @default false
+             */
+            research_enabled: boolean;
+            /**
              * Library Enabled
              * @default false
              */
@@ -1176,6 +1181,8 @@ export interface components {
         };
         /** ChatPatch */
         ChatPatch: {
+            /** Research Enabled */
+            research_enabled?: boolean | null;
             /** Library Enabled */
             library_enabled?: boolean | null;
             library_scope?: components["schemas"]["LibraryScope"] | null;
@@ -1687,6 +1694,9 @@ export interface components {
         };
         /** Message */
         Message: {
+            research?: components["schemas"]["ResearchInfo"] | null;
+            /** Activity */
+            activity?: components["schemas"]["ResearchStep"][];
             /** Id */
             id: string;
             /** Chat Id */
@@ -1745,6 +1755,8 @@ export interface components {
         };
         /** ModelInfo */
         ModelInfo: {
+            /** Digest */
+            digest?: string | null;
             /** Connection Id */
             connection_id: string;
             /** Model Id */
@@ -1918,6 +1930,68 @@ export interface components {
              */
             force_web: boolean;
         };
+        /** ResearchInfo */
+        ResearchInfo: {
+            /**
+             * Effort
+             * @default standard
+             * @constant
+             */
+            effort: "standard";
+            /**
+             * Steps
+             * @default 0
+             */
+            steps: number;
+            /**
+             * Searches
+             * @default 0
+             */
+            searches: number;
+            /**
+             * Pages
+             * @default 0
+             */
+            pages: number;
+            /**
+             * Invalid Calls
+             * @default 0
+             */
+            invalid_calls: number;
+            /** Limit Reached */
+            limit_reached?: string | null;
+            /**
+             * Loop Ms
+             * @default 0
+             */
+            loop_ms: number;
+        };
+        /** ResearchStep */
+        ResearchStep: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "search" | "read" | "note" | "invalid" | "limit";
+            /** Label */
+            label: string;
+            /**
+             * Detail
+             * @default
+             */
+            detail: string;
+            /**
+             * Status
+             * @default done
+             * @enum {string}
+             */
+            status: "running" | "done" | "failed";
+            /**
+             * Ms
+             * @default 0
+             */
+            ms: number;
+        };
         /** RunEvent */
         RunEvent: components["schemas"]["QueuedEvent"] | components["schemas"]["StartedEvent"] | components["schemas"]["DeltaEvent"] | components["schemas"]["DoneEvent"] | components["schemas"]["ErrorEvent"] | components["schemas"]["TitleEvent"] | components["schemas"]["ClosedEvent"] | components["schemas"]["ToolEvent"] | components["schemas"]["SearchEvent"];
         /** RunResponse */
@@ -1933,7 +2007,7 @@ export interface components {
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            type: "library.done" | "library.failed" | "library.results" | "library.searching" | "search.done" | "search.failed" | "search.planning" | "search.queries" | "search.read" | "search.reading" | "search.results" | "search.skipped";
+            type: "library.done" | "library.failed" | "library.results" | "library.searching" | "research.answering" | "search.done" | "search.failed" | "search.planning" | "search.queries" | "search.read" | "search.reading" | "search.results" | "search.skipped";
             /** Data */
             data: {
                 [key: string]: unknown;
@@ -2012,6 +2086,8 @@ export interface components {
             web?: boolean | null;
             /** Library */
             library?: boolean | null;
+            /** Research */
+            research?: boolean | null;
         };
         /** Source */
         Source: {

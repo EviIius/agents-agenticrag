@@ -305,7 +305,7 @@ async def test_phase5a_rows_and_meta_nullable_survive_migration(tmp_path: Path) 
     async with aiosqlite.connect(target) as db:
         await migrate(db)
         version = await (await db.execute("PRAGMA user_version")).fetchone()
-        assert version and version[0] == 8
+        assert version and version[0] == 9
         assert all(
             row[0] is None
             for row in await (await db.execute("SELECT meta_json FROM attachments")).fetchall()

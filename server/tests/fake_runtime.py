@@ -22,6 +22,9 @@ MARKDOWN = (
 def create_fake_runtime() -> FastAPI:
     app = FastAPI(title="Fake runtime")
     app.state.captures = []
+    app.state.tool_support = False
+    app.state.tool_script = None
+    app.state.tool_delay = 0.0
     app.state.disconnected = 0
     app.state.first_tokens = []
     app.state.loaded = {"fake-chat": 16384}
@@ -34,6 +37,7 @@ def create_fake_runtime() -> FastAPI:
                     "name": model,
                     "model": model,
                     "size": 1024,
+                    "digest": "synthetic-fake-digest",
                     "details": {"parameter_size": "1B", "quantization_level": "F16"},
                 }
                 for model in MODELS
@@ -52,6 +56,7 @@ def create_fake_runtime() -> FastAPI:
                 if model in ("fake-embedding", "fake-embedding-alt")
                 else ["completion"]
             )
+            + (["tools"] if app.state.tool_support else [])
             + (["thinking"] if model == "fake-reasoning" else [])
             + (["vision"] if model == "fake-vision" else []),
             "model_info": {"general.architecture": "fake", "fake.context_length": context},
@@ -72,6 +77,10 @@ def create_fake_runtime() -> FastAPI:
                 for text in body["input"]
             ]
         }
+
+    @app.get("/api/version")
+    async def version() -> dict[str, str]:
+        return {"version": "synthetic-fake-version"}
 
     @app.get("/api/ps")
     async def ps() -> dict[str, Any]:
@@ -125,6 +134,41 @@ def create_fake_runtime() -> FastAPI:
             return JSONResponse({"error": "model not found"}, status_code=404)
         if ollama:
             app.state.loaded[body.get("model")] = body.get("options", {}).get("num_ctx", 16384)
+        if ollama and body.get("tools"):
+            lines = [line for line in prompt.splitlines() if line.startswith("#tool:")]
+            script = app.state.tool_script
+            if script is None:
+                script = []
+                for line in lines:
+                    name, _, args = line.removeprefix("#tool:").partition(":")
+                    script.append([{"function": {"name": name, "arguments": json.loads(args)}}])
+            step = sum(message.get("tool_calls") is not None for message in messages)
+            calls = script[step] if step < len(script) else []
+
+            async def tools_stream() -> AsyncIterator[str]:
+                try:
+                    await asyncio.sleep(app.state.tool_delay)
+                    yield (
+                        json.dumps(
+                            {
+                                "message": {
+                                    "role": "assistant",
+                                    "content": "Fake loop note.",
+                                    "tool_calls": calls,
+                                },
+                                "done": False,
+                            }
+                        )
+                        + "\n"
+                    )
+                    yield (
+                        json.dumps({"message": {"role": "assistant", "content": ""}, "done": True})
+                        + "\n"
+                    )
+                finally:
+                    app.state.disconnected += 1
+
+            return StreamingResponse(tools_stream(), media_type="application/x-ndjson")
         text = MARKDOWN
         cleanup_call = prompt.startswith("You are formatting a speech transcript.")
         if cleanup_call:

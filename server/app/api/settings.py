@@ -26,6 +26,7 @@ async def bootstrap(request: Request) -> Bootstrap:
         connections=await listing(request),
         features={
             "library": bool(request.app.state.library.available),
+            "research": bool(request.app.state.research.enabled),
             "web_search": any(service.configured(p) for p in values["web.provider_order"]),
             "transcription": (await request.app.state.transcription.engine.status()).ready,
         },

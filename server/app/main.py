@@ -33,6 +33,7 @@ from .library.ingest import Library
 from .library.pipeline import Pipeline as LibraryPipeline
 from .providers.registry import Registry
 from .runs.manager import RunManager
+from .runs.research import Research
 from .search.pipeline import Pipeline
 from .security import SecurityMiddleware
 from .transcribe.cleanup import Cleanups
@@ -57,6 +58,13 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
             app.state.search = Pipeline(app.state.runs, config.web_fixtures)
             app.state.runs.web_hook = app.state.search
             app.state.runs.web_finalize = app.state.search.finalize
+            app.state.research = Research(
+                app.state.runs,
+                app.state.search.fixtures,
+                config.research,
+                config.research_qualifications,
+            )
+            app.state.runs.research_hook = app.state.research
             app.state.transcription = TranscriptionManager(
                 app.state.store, config.transcribe_home, config.data_dir
             )

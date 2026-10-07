@@ -479,6 +479,7 @@ const reviewChat: Chat = {
   params: {},
   web_enabled: false,
   library_enabled: false,
+  research_enabled: false,
 };
 const reviewModel: Model = {
   connection_id: "design",

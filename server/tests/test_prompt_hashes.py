@@ -8,6 +8,7 @@ from pathlib import Path
 
 from app.db.settings import DEFAULTS
 from app.library.prompt import PROMPT as LIBRARY
+from app.runs.research import PROMPT as RESEARCH
 from app.search.planner import PROMPT as PLANNER
 from app.search.prompt import PROMPT as ANSWER
 
@@ -70,4 +71,12 @@ def test_phase3_prompt_hashes() -> None:
     assert actual == expected, (
         "Prompt changes require linked before/after eval evidence, "
         "then an intentional baseline update."
+    )
+
+
+def test_research_prompt_v1_hash() -> None:
+    # 8A uses the approved plan's exact v1 prompt. Prototype reports are retained.
+    assert (
+        hashlib.sha256(RESEARCH.encode()).hexdigest()
+        == "3219a0a3564f120f404a28c6bc4eef6be1ff3e569521684ae4eade454da5b48f"
     )

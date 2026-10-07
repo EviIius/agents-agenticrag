@@ -220,3 +220,11 @@ is unchanged. Supplied private phone images and filenames are not copied here.
 The recording-dropdown, physical motion and VoiceOver issues remain in
 `docs/DEFERRED-FIXES.md` as requested. The installed 7B app and fallback remain
 available; localhost and Tailscale health both return 200 at closeout.
+
+## Subsequent 8A checkpoint
+
+Jake subsequently authorized an isolated 8A backend prototype and the original
+quality targets, with a stop before UI/deployment. See `PHASE-8A-REPORT.md`.
+The original 8-0 scores above remain historical evidence; a labeled deterministic
+wording regrade yields 10/15 in both saved baselines. The prototype fails to
+improve on that baseline and remains unavailable in the installed 7B product.

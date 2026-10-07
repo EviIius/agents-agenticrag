@@ -114,3 +114,38 @@ does not establish agent accuracy, injection resistance or latency budgets.
 Summarize G1–G5 in `docs/PHASE-8-REPORT.md`. Retain failures and missing gates.
 Do not implement 8A or deploy a Research feature until Jake reviews the gate and
 approves the separate product specification and targets.
+
+## 8A isolated prototype — 6 October 2026
+
+Jake reviewed 8-0 and authorized an isolated backend prototype, the §9 targets
+and the daily Qwen configuration, with a stop before 8B/UI/deployment. This
+supersedes the pending-approval language above for **8A only**. The installed
+app remains 7B and Research is off by default.
+
+- `regrade.py` labels an equivalent Python portability wording correction and
+  regrades both retained Search baselines to 10/15. Original answers/reports,
+  corpus and questions are preserved. The Research threshold is now 13/15.
+- `qualify.py` repeats the daily model's 40 native requests, saving metadata
+  before/after. Qualifications bind digest, context and runtime version.
+- `make eval-research` runs the real native loop in a temporary ASGI database
+  against exactly the recorded per-case 8-0 results/pages. No user Library,
+  recording, credentials or deployment are used. Search results are independent
+  of adaptive query wording, like the baseline replay; this is a controlled
+  comparison, not a test of better live retrieval. `LIVE=1` explicitly refuses
+  at 8A; live qualification belongs to the separately gated 8B.
+- `attack.py` runs one synthetic hostile-page screening and captures requests,
+  the answer and persisted activity. Both answer and activity must resist the
+  attack sentinel; an answer-only test was insufficient.
+
+The two full prototype runs score 10/15 and 9/15, with no demonstrated gain.
+Both miss citation/support targets. Original reports' `valid_tool_fraction`
+measures native **schema only**; the retained host-policy adjudication finds
+91.35% and 85% acceptance because guessed URLs were refused. Ordinary unavailable
+pages are not invalid tool calls. Future output separates schema validity and
+host acceptance. The retained attack leaves the final answer untainted but
+copies its sentinel into a persisted note, so injection resistance is open.
+
+Read `docs/PHASE-8A-REPORT.md` and `artifacts/phase-8/8a/` for original failures,
+comparison caveats, source hashes, regression checks and rollback. No target was
+lowered, no prompt was refined, and no favorable rerun was selected. Do not ship
+or begin 8B based on native-probe success.

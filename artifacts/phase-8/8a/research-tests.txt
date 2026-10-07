@@ -1,0 +1,38 @@
+....................F                                                    [100%]
+=================================== FAILURES ===================================
+_______________________ test_guard_and_mode_exclusivity ________________________
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10cb3f4d0>, <httpx.AsyncClient object at 0x10d122150>, <fastapi.applications.FastAPI object at 0x10cb3c440>)
+
+    async def test_guard_and_mode_exclusivity(
+        chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+    ) -> None:
+        app, client, runtime = chat_app
+        ordinary = await start(client, "Synthetic", "fake-chat")
+        run = await finish(app, ordinary)
+        endpoint = "/api/chats/" + run.message.chat_id
+        response = await client.post(
+            endpoint + "/messages", json={"content": "Synthetic", "research": True}
+        )
+        assert (
+            response.status_code == 422 and response.json()["error"]["code"] == "research_unavailable"
+        )
+        enable(app, runtime, [[call("finish")]])
+        model = await app.state.registry.resolve(app.state.test_connection, "fake-chat")
+        for update, code in [
+            ({"tools": False}, "research_unsupported"),
+            ({"digest": "changed"}, "research_unqualified"),
+            ({"context_length": 8192}, "research_unqualified"),
+        ]:
+            with pytest.raises(AppError) as exc:
+                await app.state.research.guard(model.model_copy(update=update), False)
+>           assert exc.value.code == code
+E           AssertionError: assert 'research_unsupported' == 'research_unqualified'
+E             
+E             - research_unqualified
+E             + research_unsupported
+
+tests/test_research.py:355: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_research.py::test_guard_and_mode_exclusivity - AssertionErr...
+1 failed, 20 passed in 2.54s

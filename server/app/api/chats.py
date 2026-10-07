@@ -265,8 +265,13 @@ async def start_message(identifier: str, body: Send, request: Request) -> RunRes
     parent = next((m for m in data.messages if m.id == body.parent_id), None)
     if body.library is True and body.web is True:
         raise AppError("validation_error", "Choose Library or web search for this message.", 422)
+    if sum(v is True for v in (body.library, body.web, body.research)) > 1:
+        raise AppError("validation_error", "Choose one retrieval option for this message.", 422)
+    research_on = body.research if body.research is not None else data.chat.research_enabled
+    if body.web is True or body.library is True:
+        research_on = False
     library_on = body.library if body.library is not None else data.chat.library_enabled
-    if body.web is True:
+    if body.web is True or research_on:
         library_on = False
     if library_on:
         from ..library.privacy import guard
@@ -314,6 +319,12 @@ async def start_message(identifier: str, body: Send, request: Request) -> RunRes
         params,
         await settings.get(store),
     )
+    if research_on:
+        await request.app.state.research.guard(
+            model,
+            assembled.has_recording
+            or any(a.kind == "audio" for m in data.messages for a in m.attachments),
+        )
     # Attachment content is assembled from unclaimed files before the transaction below.
     statements: list[tuple[str, tuple[object, ...]]] = [
         (
@@ -357,11 +368,21 @@ async def start_message(identifier: str, body: Send, request: Request) -> RunRes
         statements.append(
             ("UPDATE chats SET library_enabled=? WHERE id=?", (body.library, identifier))
         )
+    if body.research is not None:
+        statements.append(
+            ("UPDATE chats SET research_enabled=? WHERE id=?", (body.research, identifier))
+        )
+    if research_on:
+        statements.append(
+            ("UPDATE chats SET web_enabled=0,library_enabled=0 WHERE id=?", (identifier,))
+        )
+    elif library_on or body.web is True:
+        statements.append(("UPDATE chats SET research_enabled=0 WHERE id=?", (identifier,)))
     if library_on:
         statements.append(("UPDATE chats SET web_enabled=0 WHERE id=?", (identifier,)))
     elif body.web is True:
         statements.append(("UPDATE chats SET library_enabled=0 WHERE id=?", (identifier,)))
     await store.batch(statements)
     assistant = await messages.message(store, assistant_id)
-    run = request.app.state.runs.start(assistant, model, assembled, params)
+    run = request.app.state.runs.start(assistant, model, assembled, params, research=research_on)
     return RunResponse(run_id=run.id, user_message=user, assistant_message=assistant)

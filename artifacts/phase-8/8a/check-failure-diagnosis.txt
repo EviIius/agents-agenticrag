@@ -1,0 +1,30 @@
+.........................................................F
+=================================== FAILURES ===================================
+____________ test_phase5a_rows_and_meta_nullable_survive_migration _____________
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-228/test_phase5a_rows_and_meta_nul0')
+
+    async def test_phase5a_rows_and_meta_nullable_survive_migration(tmp_path: Path) -> None:
+        target = tmp_path / "phase5a.db"
+        shutil.copyfile(Path(__file__).parent / "fixtures/db/phase3.db", target)
+        async with aiosqlite.connect(target) as db:
+            await db.executescript(
+                (MIGRATIONS / "005_presets.sql").read_text() + "PRAGMA user_version=5;"
+            )
+            await db.execute(
+                "INSERT INTO presets VALUES ('fake','Invented preset',NULL,'{}',0,"
+                "'2026-10-05','2026-10-05')"
+            )
+            await db.commit()
+        columns, before = snapshot(target)
+        async with aiosqlite.connect(target) as db:
+            await migrate(db)
+            version = await (await db.execute("PRAGMA user_version")).fetchone()
+>           assert version and version[0] == 8
+E           assert ((9,) and 9 == 8)
+
+tests/test_documents.py:308: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_documents.py::test_phase5a_rows_and_meta_nullable_survive_migration
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 57 passed in 8.94s

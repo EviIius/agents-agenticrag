@@ -76,6 +76,7 @@ class ReasoningCaps(BaseModel):
 
 
 class ModelInfo(BaseModel):
+    digest: str | None = None
     connection_id: str
     model_id: str
     display_name: str
@@ -170,6 +171,7 @@ class ChatCreate(Input):
 
 
 class ChatPatch(Input):
+    research_enabled: bool | None = None
     library_enabled: bool | None = None
     library_scope: LibraryScope | None = None
     folder_id: str | None = None
@@ -184,6 +186,7 @@ class ChatPatch(Input):
 
 
 class Chat(BaseModel):
+    research_enabled: bool = False
     library_enabled: bool = False
     library_scope: LibraryScope | None = None
     folder_id: str | None = None
@@ -474,7 +477,27 @@ class LibraryInfo(BaseModel):
     passage_count: int = 0
 
 
+class ResearchStep(BaseModel):
+    kind: Literal["search", "read", "note", "invalid", "limit"]
+    label: str
+    detail: str = ""
+    status: Literal["running", "done", "failed"] = "done"
+    ms: float = 0
+
+
+class ResearchInfo(BaseModel):
+    effort: Literal["standard"] = "standard"
+    steps: int = 0
+    searches: int = 0
+    pages: int = 0
+    invalid_calls: int = 0
+    limit_reached: str | None = None
+    loop_ms: float = 0
+
+
 class Message(BaseModel):
+    research: ResearchInfo | None = None
+    activity: list[ResearchStep] = Field(default_factory=list)
     id: str
     chat_id: str
     parent_id: str | None = None
@@ -504,6 +527,7 @@ class Send(Input):
     attachment_ids: list[str] = Field(default_factory=list, max_length=8)
     web: bool | None = None
     library: bool | None = None
+    research: bool | None = None
 
 
 class Regenerate(Input):
@@ -626,6 +650,7 @@ class SearchEvent(BaseModel):
         "library.results",
         "library.done",
         "library.failed",
+        "research.answering",
     ]
     data: dict[str, Any]
 

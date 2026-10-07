@@ -1,0 +1,157 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+All checks passed!
+. scripts/tool-env.sh; uv run --directory server ruff format --check app tests
+100 files already formatted
+. scripts/tool-env.sh; uv run --directory server mypy app tests
+Success: no issues found in 98 source files
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_coverage.py
+.........................................................F.....F.......F [ 22%]
+........................................................................ [ 45%]
+........................................................................ [ 67%]
+..............................................F......................... [ 90%]
+...............................                                          [100%]
+=================================== FAILURES ===================================
+____________ test_phase5a_rows_and_meta_nullable_survive_migration _____________
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-227/test_phase5a_rows_and_meta_nul0')
+
+    async def test_phase5a_rows_and_meta_nullable_survive_migration(tmp_path: Path) -> None:
+        target = tmp_path / "phase5a.db"
+        shutil.copyfile(Path(__file__).parent / "fixtures/db/phase3.db", target)
+        async with aiosqlite.connect(target) as db:
+            await db.executescript(
+                (MIGRATIONS / "005_presets.sql").read_text() + "PRAGMA user_version=5;"
+            )
+            await db.execute(
+                "INSERT INTO presets VALUES ('fake','Invented preset',NULL,'{}',0,"
+                "'2026-10-05','2026-10-05')"
+            )
+            await db.commit()
+        columns, before = snapshot(target)
+        async with aiosqlite.connect(target) as db:
+            await migrate(db)
+            version = await (await db.execute("PRAGMA user_version")).fetchone()
+>           assert version and version[0] == 8
+E           assert ((9,) and 9 == 8)
+
+tests/test_documents.py:308: AssertionError
+____________ test_phase5b_migration_preserves_every_existing_column ____________
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-227/test_phase5b_migration_preserv0')
+
+    async def test_phase5b_migration_preserves_every_existing_column(tmp_path: Path) -> None:
+        dbpath = tmp_path / "phase5b.db"
+        shutil.copy2(Path(__file__).parent / "fixtures/db/phase3.db", dbpath)
+        async with aiosqlite.connect(dbpath) as db:
+            for p in sorted(MIGRATIONS.glob("*.sql")):
+                n = int(p.name.split("_")[0])
+                if 4 < n <= 6:
+                    await db.executescript(p.read_text() + f"\nPRAGMA user_version={n};")
+            await db.commit()
+            columns, before = snapshot(dbpath)
+            await migrate(db)
+        assert snapshot(dbpath, columns)[1] == before
+        with sqlite3.connect(dbpath) as db:
+>           assert db.execute("PRAGMA user_version").fetchone()[0] == 8
+E           assert 9 == 8
+
+tests/test_folders_backups.py:133: AssertionError
+___________________ test_migration_is_idempotent_and_private ___________________
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-227/test_migration_is_idempotent_a0')
+
+    @pytest.mark.asyncio
+    async def test_migration_is_idempotent_and_private(tmp_path: Path) -> None:
+        for _ in range(2):
+            async with connect(tmp_path) as db:
+                async with db.execute("PRAGMA user_version") as cursor:
+>                   assert await cursor.fetchone() == (8,)
+E                   assert (9,) == (8,)
+E                     
+E                     At index 0 diff: 9 != 8
+E                     Use -v to get more diff
+
+tests/test_foundation.py:18: AssertionError
+_________ test_pipeline_cites_exact_sources_and_skips_without_traffic __________
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10f7146e0>, <httpx.AsyncClient object at 0x10fdcb890>, <fastapi.applications.FastAPI object at 0x10f7163c0>)
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10fb399b0>
+
+    async def test_pipeline_cites_exact_sources_and_skips_without_traffic(
+        chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI], monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        app, client, runtime = chat_app
+        calls: list[str] = []
+    
+        async def complete(self: Ollama, req: ChatRequest) -> dict[str, Any]:
+            latest = req.messages[-1].content.split("Latest user message:\n")[-1]
+            return {
+                "task": "lookup" if latest != "thanks!" else "conversation",
+                "queries": ["NBA Finals 2021"] if latest != "thanks!" else [],
+                "freshness": "month",
+            }
+    
+        monkeypatch.setattr(Ollama, "complete_json", complete)
+    
+        async def search(self: Providers, provider: str, q: str, f: str) -> list[SearchResult]:
+            assert f == "month"
+            calls.append(q)
+            return [
+                SearchResult(
+                    url="https://example.org/2021",
+                    title="NBA Finals",
+                    snippet="Bucks beat Suns.",
+                    provider="DuckDuckGo",
+                )
+            ]
+    
+        monkeypatch.setattr(Providers, "request", search)
+        from app.search.extract import Page
+    
+        async def read(*a: Any, **k: Any) -> Page:
+            return Page(
+                "https://example.org/2021",
+                "NBA Finals",
+                "NBA",
+                None,
+                "Milwaukee Bucks defeated Phoenix Suns 4–2 in the 2021 NBA Finals. " * 20,
+            )
+    
+        monkeypatch.setattr(cache, "read", read)
+        conn = (await client.get("/api/connections")).json()[0]["id"]
+        chat = (
+            await client.post(
+                "/api/chats", json={"connection_id": conn, "model_id": "fake-chat", "web_enabled": True}
+            )
+        ).json()
+        response = (
+            await client.post(
+                f"/api/chats/{chat['id']}/messages",
+                json={"content": "#cite Who lost the 2021 NBA Finals?"},
+            )
+        ).json()
+        run = await finish(app, response)
+        assert run.message.status == "complete", run.message.error
+        detail = (await client.get("/api/chats/" + chat["id"])).json()
+        assert detail["messages"][-1]["web"]["freshness"] == "month"
+        assert run.message.id in detail["sources"], run.message.web
+        source = detail["sources"][run.message.id][0]
+>       assert source["cited"] and "Phoenix Suns" in source["passages"][0]["text"]
+E       assert (False)
+
+tests/test_search.py:506: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_documents.py::test_phase5a_rows_and_meta_nullable_survive_migration
+FAILED tests/test_folders_backups.py::test_phase5b_migration_preserves_every_existing_column
+FAILED tests/test_foundation.py::test_migration_is_idempotent_and_private - a...
+FAILED tests/test_search.py::test_pipeline_cites_exact_sources_and_skips_without_traffic
+4 failed, 315 passed in 114.97s (0:01:54)
+providers line coverage: 367/421 = 87.2%
+runs line coverage: 764/864 = 88.4%
+search line coverage: 1542/1741 = 88.6%
+transcribe line coverage: 683/734 = 93.1%
+documents line coverage: 196/203 = 96.6%
+library line coverage: 762/823 = 92.6%
+backup.py line coverage: 90/93 = 96.8%
+research.py line coverage: 365/417 = 87.5%
+make: *** [check] Error 1

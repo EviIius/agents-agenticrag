@@ -1,6 +1,6 @@
 # Phase 8: Research (the first agent)
 
-**Status: draft for Jake's approval. Do not start until gate 8-0 passes.**
+**Status: 8-0 reviewed; isolated 8A authorized 6 October 2026. Stop before 8B.**
 
 **For:** Codex · **Depends on:** Phase 4 accepted; gate 8-0 · **Reads with:** `docs/SPEC.md` Part F and Part E, `QA-REQUIREMENTS.md`
 

@@ -21,6 +21,7 @@ class Run:
     changed: asyncio.Condition = field(default_factory=asyncio.Condition)
     closed: bool = False
     task: asyncio.Task[None] | None = None
+    research_enabled: bool = False
 
     async def emit(self, kind: Any, data: dict[str, Any]) -> None:
         async with self.changed:
@@ -58,6 +59,9 @@ class RunManager:
         self.web_finalize: Callable[[Run], Awaitable[None]] | None = None
         self.library_hook: Callable[[Run, ChatRequest, Context], Awaitable[None]] | None = None
         self.library_finalize: Callable[[Run], Awaitable[None]] | None = None
+        self.research_hook: (
+            Callable[[Run, ChatRequest, Context, asyncio.Semaphore], Awaitable[None]] | None
+        ) = None
         self.chat_locks: dict[str, asyncio.Lock] = {}
 
     def chat_lock(self, chat_id: str) -> asyncio.Lock:
@@ -77,8 +81,9 @@ class RunManager:
         context: Context,
         params: dict[str, Any],
         force_web: bool = False,
+        research: bool = False,
     ) -> Run:
-        run = Run(uid(), message)
+        run = Run(uid(), message, research_enabled=research)
         self.runs[run.id] = run
         run.task = asyncio.create_task(
             self.generate(run, model, context, params, force_web), name="answer-" + run.id
