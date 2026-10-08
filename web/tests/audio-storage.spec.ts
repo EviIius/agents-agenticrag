@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir } from "node:fs/promises";
@@ -73,10 +74,12 @@ for (const width of [390, 1440])
           .getByRole("button", { name: "Clear stored audio", exact: true })
           .click();
         await mkdir("../artifacts/phase-3", { recursive: true });
+        await settle(page);
         await page.screenshot({
           animations: "disabled",
           path: `../artifacts/phase-3/audio-clear-${width}-${theme}-fake.png`,
         });
+        await settle(page);
         expect(
           (await new AxeBuilder({ page }).analyze()).violations.filter((v) =>
             ["serious", "critical"].includes(v.impact ?? ""),

@@ -21,6 +21,9 @@ check:
 	. scripts/tool-env.sh; uv run --directory server python ../scripts/check_coverage.py
 	. scripts/tool-env.sh; uv run --directory server python ../scripts/check_contrast.py
 	. scripts/tool-env.sh; uv run --directory server python ../scripts/generate_api_types.py --check
+	. scripts/tool-env.sh; uv run --directory server python ../scripts/check_api_additive.py
+	. scripts/tool-env.sh; uv run --directory server python ../scripts/check_motion.py
+	. scripts/tool-env.sh; uv run --directory server python ../scripts/privacy_audit.py
 	. scripts/tool-env.sh; npm run check --prefix web
 e2e:
 	. scripts/tool-env.sh; npm run e2e --prefix web
@@ -33,5 +36,9 @@ eval-web:
 	. scripts/tool-env.sh; uv run --directory server python evals/web/run_eval.py $(if $(CASE),--case $(CASE),) $(if $(MODEL),--model $(MODEL),) $(if $(LIVE),--live,) $(if $(RANKING),--ranking $(RANKING),)
 eval-web-record:
 	. scripts/tool-env.sh; uv run --directory server python evals/web/run_eval.py --record $(if $(CASE),--case $(CASE),) $(if $(MODEL),--model $(MODEL),)
+eval-research:
+	. scripts/tool-env.sh; uv run --directory server python evals/research/run_eval.py $(if $(MODEL),--model $(MODEL),) $(if $(LIVE),--live,)
+eval-library:
+	. scripts/tool-env.sh; uv run --directory server python evals/library/run_eval.py $(if $(RETRIEVAL_ONLY),--retrieval-only,) $(if $(FAKE_EMBEDDING),--fake-embedding,) $(if $(MODEL),--model $(MODEL),)
 deploy:
 	./scripts/deploy.sh --apply $(DEPLOY_ARGS)

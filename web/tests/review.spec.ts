@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir } from "node:fs/promises";
@@ -24,11 +25,13 @@ for (const width of [390, 1440])
       ).toContainText("fake-chat");
       const dir = "../artifacts/phase-1";
       await mkdir(dir, { recursive: true });
-      const shot = (name: string) =>
-        page.screenshot({
+      const shot = async (name: string) => {
+        await settle(page);
+        return page.screenshot({
           animations: "disabled",
           path: `${dir}/${name}-${width}-${theme}-fake-runtime.png`,
         });
+      };
       await shot("new-chat");
       await page.getByRole("button", { name: "Choose model" }).click();
       await expect(
@@ -51,15 +54,15 @@ for (const width of [390, 1440])
       ).not.toBeVisible();
       await shot("reasoning-chat");
       await page
-        .getByRole("button", { name: "Chat settings", exact: true })
+        .getByRole("button", { name: "Chat controls", exact: true })
         .click();
       await expect(
         page.getByRole("spinbutton", { name: "Context length" }),
       ).toBeVisible();
       await shot("chat-settings");
-      await page.getByRole("button", { name: "Close chat settings" }).click();
+      await page.getByRole("button", { name: "Close chat controls" }).click();
       await expect(
-        page.getByRole("dialog", { name: "Chat settings" }),
+        page.getByRole("dialog", { name: "Chat controls" }),
       ).not.toBeVisible();
       if (width < 640) {
         await page.getByRole("button", { name: "Open sidebar" }).click();
@@ -111,6 +114,7 @@ for (const width of [390, 1440])
           .locator('section[aria-label="Models"]')
           .evaluate((el) => el.scrollWidth <= el.clientWidth),
       ).toBeTruthy();
+      await settle(page);
       const result = await new AxeBuilder({ page }).analyze();
       expect(
         result.violations.filter((item) =>
@@ -177,6 +181,7 @@ for (const width of [390, 1440])
       await expect(
         page.getByText("ollama serve", { exact: true }),
       ).toBeVisible();
+      await settle(page);
       await page.screenshot({
         path: `../artifacts/phase-1/welcome-offline-${width}-${theme}-fake-runtime.png`,
       });
@@ -187,9 +192,11 @@ for (const width of [390, 1440])
       await expect(
         page.getByRole("button", { name: "Add all", exact: true }),
       ).toBeVisible();
+      await settle(page);
       await page.screenshot({
         path: `../artifacts/phase-1/welcome-detected-${width}-${theme}-fake-runtime.png`,
       });
+      await settle(page);
       const audit = await new AxeBuilder({ page }).analyze();
       expect(
         audit.violations.filter((v) =>
@@ -198,7 +205,7 @@ for (const width of [390, 1440])
       ).toEqual([]);
       await page.getByRole("button", { name: "Add all", exact: true }).click();
       await expect(
-        page.getByRole("heading", { name: "Welcome to Workbench" }),
+        page.getByRole("heading", { name: "Welcome to Atelier" }),
       ).not.toBeVisible();
       await page.getByRole("button", { name: "Explain", exact: true }).click();
       await expect(page.locator(".composer textarea")).toHaveValue("Explain ");
@@ -207,8 +214,8 @@ for (const width of [390, 1440])
         .getByRole("button", { name: "Search the web", exact: true })
         .click();
       await expect(
-        page.getByRole("button", { name: "Search on", exact: true }),
-      ).toBeVisible();
+        page.getByRole("button", { name: "Web search", exact: true }),
+      ).toHaveAttribute("aria-pressed", "true");
       await expect(page.locator(".composer textarea")).toHaveValue(
         "Search the web for ",
       );

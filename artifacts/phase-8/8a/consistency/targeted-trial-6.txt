@@ -1,0 +1,43 @@
+................F....................................................... [ 52%]
+.................................................................        [100%]
+=================================== FAILURES ===================================
+_______________________ test_host_budgets[pages-script2] _______________________
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10f3d74d0>, <httpx.AsyncClient object at 0x10f149cd0>, <fastapi.applications.FastAPI object at 0x10f3d7380>)
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10eec3cf0>
+kind = 'pages'
+script = [[{'id': 'synthetic-call', 'function': {'name': 'read_page', 'arguments': {'url': 'https://example.org/public', 'focus...all', 'function': {'name': 'read_page', 'arguments': {'url': 'https://example.org/public', 'focus': 'planets'}}}], ...]
+
+    @pytest.mark.parametrize(
+        "kind,script",
+        [
+            ("steps", [[call("web_search", query="planets")]] * 10),
+            ("searches", [[call("web_search", query="planets")]] * 6 + [[call("finish")]]),
+            ("pages", [[call("read_page", url="https://example.org/public", focus="planets")]] * 10),
+        ],
+    )
+    async def test_host_budgets(
+        chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+        monkeypatch: pytest.MonkeyPatch,
+        kind: str,
+        script: list[list[dict[str, Any]]],
+    ) -> None:
+        app, client, runtime = chat_app
+        await fake_pages(monkeypatch)
+        enable(app, runtime, script)
+        if kind == "steps":
+            app.state.research.budgets = Budgets(steps=3)
+        elif kind == "pages":
+            app.state.research.budgets = Budgets(pages=2)
+        run = await finish(app, await research_start(client, "#cite Use https://example.org/public"))
+        info = run.message.research
+>       assert info and info.limit_reached == kind
+E       AssertionError: assert (ResearchInfo(effort='standard', steps=8, searches=0, pages=1, invalid_calls=7, limit_reached='steps', loop_ms=7.227041991427541) and 'steps' == 'pages'
+E         
+E         - pages
+E         + steps)
+
+tests/test_research.py:260: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_research.py::test_host_budgets[pages-script2] - AssertionEr...
+1 failed, 136 passed in 5.29s

@@ -1,3 +1,4 @@
+import config from "../../../../shared/config.json";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +18,6 @@ import {
 } from "@/components/ui/select";
 import { useUI } from "@/stores/ui";
 import type { ThemePreference } from "@/lib/theme";
-import { toast } from "sonner";
 import { useCallback, useEffect, useRef } from "react";
 function centerActiveTab(nav: HTMLElement) {
   const selected = nav.querySelector<HTMLElement>('[aria-current="page"]');
@@ -33,6 +33,7 @@ function centerActiveTab(nav: HTMLElement) {
 const basePanes = [
   "Connections",
   "Models",
+  "Presets",
   "Appearance",
   "Data",
   "Shortcuts",
@@ -47,12 +48,18 @@ export function SettingsDialog({
 }) {
   const panes: string[] = searchEnabled
     ? [
-        ...basePanes.slice(0, 2),
+        ...basePanes.slice(0, 3),
         "Search",
+        "Library",
         "Transcription",
-        ...basePanes.slice(2),
+        ...basePanes.slice(3),
       ]
-    : [...basePanes.slice(0, 2), "Transcription", ...basePanes.slice(2)];
+    : [
+        ...basePanes.slice(0, 3),
+        "Library",
+        "Transcription",
+        ...basePanes.slice(3),
+      ];
   const ui = useUI();
   const pane = ui.settingsPane;
   const navigation = useRef<HTMLElement>(null);
@@ -82,11 +89,7 @@ export function SettingsDialog({
             </Button>
           </DialogClose>
         </header>
-        <DialogDescription>
-          {renderPane
-            ? "Local models · your preferences"
-            : "Workbench · foundation preview"}
-        </DialogDescription>
+        <DialogDescription>Local models · your preferences</DialogDescription>
         <div className="mt-4 flex min-h-0 flex-1 flex-col gap-6 sm:flex-row">
           <nav
             ref={bindNavigation}
@@ -95,25 +98,25 @@ export function SettingsDialog({
           >
             {panes.map((name) => (
               <Button
-                key={name}
+                key={name === "Search" ? "Web search" : name}
                 variant="ghost"
                 onClick={() => setPane(name)}
                 className={`min-h-11 shrink-0 justify-start ${pane === name ? "bg-brand-soft text-brand" : ""}`}
                 aria-current={pane === name ? "page" : undefined}
               >
-                {name}
+                {name === "Search" ? "Web search" : name}
               </Button>
             ))}
           </nav>
           <section
             key={pane}
-            aria-label={pane}
+            aria-label={pane === "Search" ? "Web search" : pane}
             className="settings-pane min-h-0 min-w-0 flex-1 space-y-5 overflow-y-auto pb-6"
           >
-            <h2 className="text-lg font-medium">{pane}</h2>
-            {pane !== "Appearance" && renderPane ? (
-              renderPane(pane)
-            ) : pane === "Appearance" ? (
+            <h2 className="text-lg font-medium">
+              {pane === "Search" ? "Web search" : pane}
+            </h2>
+            {pane === "Appearance" ? (
               <>
                 <fieldset>
                   <legend className="mb-2 font-medium">Theme</legend>
@@ -123,6 +126,7 @@ export function SettingsDialog({
                         <Button
                           key={theme[0].toUpperCase() + theme.slice(1)}
                           variant={theme === ui.theme ? "default" : "outline"}
+                          data-slot="segmented-choice"
                           className="min-h-11 capitalize"
                           aria-pressed={theme === ui.theme}
                           onClick={() => ui.set({ theme })}
@@ -142,6 +146,7 @@ export function SettingsDialog({
                         variant={
                           answerFont === ui.answerFont ? "secondary" : "outline"
                         }
+                        data-slot="segmented-choice"
                         className="min-h-11 capitalize"
                         aria-pressed={answerFont === ui.answerFont}
                         onClick={() => ui.set({ answerFont })}
@@ -162,6 +167,7 @@ export function SettingsDialog({
                         variant={
                           textSize === ui.textSize ? "secondary" : "outline"
                         }
+                        data-slot="segmented-choice"
                         className="min-h-11 min-w-11"
                         aria-pressed={textSize === ui.textSize}
                         onClick={() => ui.set({ textSize })}
@@ -193,7 +199,7 @@ export function SettingsDialog({
                 </label>
                 <label className="block space-y-2">
                   <span className="font-medium">
-                    What should Workbench call you?
+                    What should {config.APP_NAME} call you?
                   </span>
                   <Input
                     className="h-11"
@@ -203,59 +209,8 @@ export function SettingsDialog({
                   />
                 </label>
               </>
-            ) : pane === "Connections" ? (
-              <>
-                <p className="text-fg-2">Fake runtime · fixture connection</p>
-                <p className="text-fg-2">
-                  Connect Ollama in Settings › Connections.
-                </p>
-              </>
-            ) : pane === "Models" ? (
-              <>
-                <p>fake-chat · fake-reasoning · fake-vision</p>
-                <p className="text-fg-2">
-                  Your real models will appear in Phase 1. The standard Llama
-                  70B variant will be hidden; the 16K variant will be kept.
-                </p>
-              </>
-            ) : pane === "Shortcuts" ? (
-              <dl className="space-y-4">
-                <div>
-                  <dt>New chat</dt>
-                  <dd>⌘ / Ctrl + Shift + O</dd>
-                </div>
-                <div>
-                  <dt>Search chats</dt>
-                  <dd>⌘ / Ctrl + K</dd>
-                </div>
-                <div>
-                  <dt>Settings</dt>
-                  <dd>⌘ / Ctrl + ,</dd>
-                </div>
-              </dl>
-            ) : pane === "Data" ? (
-              <>
-                <p className="text-fg-2">
-                  Import and export arrive in Phase 3. Existing app data is
-                  preserved in the legacy backup.
-                </p>
-                <Button disabled variant="outline">
-                  Import legacy chats · Phase 3
-                </Button>
-              </>
             ) : (
-              <>
-                <p>Workbench 1.0.0-alpha.0</p>
-                <p className="text-fg-2">Foundation preview · Fake runtime</p>
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    toast("Foundation preview · no live model connection")
-                  }
-                >
-                  Connection summary
-                </Button>
-              </>
+              renderPane?.(pane)
             )}
           </section>
         </div>

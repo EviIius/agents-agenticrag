@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 for (const width of [390, 1440]) {
@@ -6,6 +7,16 @@ for (const width of [390, 1440]) {
     request,
     browserName,
   }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, "share", {
+        configurable: true,
+        value: undefined,
+      });
+      Object.defineProperty(navigator, "canShare", {
+        configurable: true,
+        value: undefined,
+      });
+    });
     const original = `Original branch ${width} ${browserName}`;
     const edited = `Edited branch ${width} ${browserName}`;
     const renamed = `Reviewed branches ${width} ${browserName}`;
@@ -63,7 +74,7 @@ for (const width of [390, 1440]) {
     await page
       .getByRole("textbox", { name: "Edit message", exact: true })
       .fill(edited);
-    await page.getByRole("button", { name: "Save & submit" }).click();
+    await page.getByRole("button", { name: "Send", exact: true }).click();
     await expect
       .poll(
         async () =>
@@ -116,6 +127,7 @@ for (const width of [390, 1440]) {
     expect(toastClose!.width).toBeGreaterThanOrEqual(44);
     expect(toastClose!.height).toBeGreaterThanOrEqual(44);
     expect(toastClose!.x).toBeGreaterThanOrEqual(toastBounds!.x);
+    await settle(page);
     await page.screenshot({
       path: `../artifacts/phase-2/review-pin-${width}-${browserName}.png`,
     });
@@ -126,19 +138,18 @@ for (const width of [390, 1440]) {
     await expect(page.locator('[role="menu"]')).toHaveCount(0);
     await expect.poll(async () => (await detail()).chat.pinned).toBe(false);
     await actions.click();
-    let exportsRequested = 0;
-    page.on("request", (request) => {
-      if (request.url().includes("/export?")) exportsRequested++;
-    });
+    let exportsDownloaded = 0;
+    page.on("download", () => exportsDownloaded++);
     await page.getByRole("menuitem", { name: "Export Markdown" }).click();
+    await settle(page);
     await page.screenshot({
       path: `../artifacts/phase-2/review-export-${width}-${browserName}.png`,
     });
     await page.getByRole("button", { name: "Cancel", exact: true }).click();
-    expect(exportsRequested).toBe(0);
-    await expect(
-      page.getByRole("dialog", { name: "Export Markdown" }),
-    ).toHaveCount(0);
+    expect(exportsDownloaded).toBe(0);
+    await expect(page.getByRole("dialog", { name: "Export chat" })).toHaveCount(
+      0,
+    );
     if (width < 640)
       await page.getByRole("button", { name: "Open sidebar" }).click();
     await actions.click();
@@ -151,8 +162,12 @@ for (const width of [390, 1440]) {
       original,
     );
     await expect(
-      page.getByRole("dialog", { name: "Export Markdown" }),
-    ).toHaveCount(0);
+      page.getByRole("dialog", { name: "Export chat" }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Cancel", exact: true }).click();
+    await expect(page.getByRole("dialog", { name: "Export chat" })).toHaveCount(
+      0,
+    );
     if (width < 640)
       await page.getByRole("button", { name: "Open sidebar" }).click();
     await actions.click();
@@ -161,7 +176,11 @@ for (const width of [390, 1440]) {
     await page.getByRole("link", { name: "Download", exact: true }).click();
     const download = await downloadReady;
     expect(download.suggestedFilename()).toBe(original + ".json");
-    await expect(page.getByRole("dialog", { name: "Export JSON" })).toHaveCount(
+    await expect(
+      page.getByRole("dialog", { name: "Export chat" }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Cancel", exact: true }).click();
+    await expect(page.getByRole("dialog", { name: "Export chat" })).toHaveCount(
       0,
     );
     if (width < 640)

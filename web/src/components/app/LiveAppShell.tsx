@@ -1,4 +1,18 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { FoldersGroup } from "./FoldersGroup";
+import type { FolderAction } from "./FolderDialog";
+import { lazy, Suspense } from "react";
+import { OfflineNotice } from "./OfflineNotice";
+import { ChatTitle } from "./ChatTitle";
+import { failureCopy, failureDetail } from "@/lib/errors";
+import { useSend, useSendState } from "@/hooks/useSend";
+import { useUploads } from "@/hooks/useUploads";
+import { useModelOps } from "@/hooks/useModelOps";
+import { useShortcuts } from "@/hooks/useShortcuts";
+import { ChatMenu } from "./ChatMenu";
+import { HistoryList } from "./HistoryList";
+import { EmptyState } from "./EmptyState";
+import { Panels } from "./Panels";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import {
   useQuery,
@@ -6,38 +20,11 @@ import {
   useInfiniteQuery,
   keepPreviousData,
 } from "@tanstack/react-query";
-import {
-  ArrowDown,
-  X,
-  Ellipsis,
-  PanelLeftOpen,
-  SlidersHorizontal,
-} from "lucide-react";
+import { ArrowDown, PanelLeftOpen, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTitle,
-  DrawerHeader,
-  DrawerDescription,
-} from "@/components/ui/drawer";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { CommandPalette } from "./CommandPalette";
 import { resolvedTheme } from "@/lib/theme";
-import { ChatList } from "./ChatList";
 import { ChatActionDialog } from "./ChatActionDialog";
 import { ModelPicker } from "./ModelPicker";
 import { Welcome } from "./Welcome";
@@ -47,103 +34,96 @@ import { Composer } from "@/components/chat/Composer";
 import { LiveThread } from "@/components/chat/LiveThread";
 import { SettingsDialog } from "@/components/settings/SettingsDialog";
 import { LiveSettingsPane } from "@/components/settings/LiveSettings";
-import { LiveChatSettings } from "@/components/settings/LiveChatSettings";
+import {
+  ChatControlsUnavailable,
+  LiveChatSettings,
+} from "@/components/settings/LiveChatSettings";
+import { controlsKey, useControlDrafts } from "@/stores/control-drafts";
 import { useUI } from "@/stores/ui";
 import { useRuns } from "@/stores/runs";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import {
   api,
-  type Attachment,
   type Bootstrap,
   type Chat,
   type Detail,
-  type Message,
   type Model,
   type Params,
-  type RunResponse,
+  type Preset,
+  type Folder,
 } from "@/lib/api";
 import type { components } from "@/lib/api-types";
-import { ApiError } from "@/lib/api";
-import { errorCopy } from "@/lib/errors";
-import { attachTranscription, detachTranscription, attachRun } from "@/lib/sse";
+import { detachTranscription, attachRun } from "@/lib/sse";
 import { latestLeaf, visiblePath } from "@/lib/tree";
 import { useTranscripts } from "@/stores/transcripts";
-import type { AudioUpload } from "@/components/chat/AudioChip";
-import { prepareImage, uploadWithProgress } from "@/lib/attachments";
 import { usePreferenceSync } from "@/hooks/usePreferenceSync";
+import { useAppEntrance } from "@/hooks/useAppEntrance";
+import { useLibraryIndex } from "@/hooks/useLibraryIndex";
+import type { Scope } from "@/components/chat/LibraryControl";
+const FolderDialog = lazy(() => import("./FolderDialog"));
 export function LiveAppShell() {
   const ui = useUI(),
     navigate = useNavigate(),
     { chatId } = useParams();
   const query = useQueryClient();
+  const sendState = useSendState(chatId);
+  const { busy, pending, sendError } = sendState;
   const desktop = useMediaQuery("(min-width:1024px)"),
     wide = useMediaQuery("(min-width:1280px)"),
     phone = useMediaQuery("(max-width:639px)");
   const [selected, setSelected] = useState<Model>(),
     [web, setWeb] = useState(false),
+    [library, setLibrary] = useState(false),
+    [libraryScope, setLibraryScope] = useState<Scope>(null),
     [draftParams, setDraftParams] = useState<Params>({}),
-    [files, setFiles] = useState<Attachment[]>([]),
     [search, setSearch] = useState(""),
     [debounced, setDebounced] = useState(""),
     [above, setAbove] = useState(false),
-    [busy, setBusy] = useState(false),
-    [pending, setPending] = useState("");
-  const [loadingModel, setLoadingModel] = useState<string | null>(null);
-  const [uploads, setUploads] = useState<AudioUpload[]>([]);
-  const uploadControllers = useRef(new Map<string, AbortController>());
-  const [dragging, setDragging] = useState(false);
-  const dragDepth = useRef(0);
-  const transcriptState = useTranscripts((state) => state.attachments);
-  const effectiveFiles = files.map((file) =>
-    file.kind === "audio" ? (transcriptState[file.id] ?? file) : file,
-  );
-  const waitingForTranscript =
-    uploads.some((upload) => !upload.failed) ||
-    effectiveFiles.some(
-      (file) => file.kind === "audio" && file.transcript?.status !== "ready",
-    );
-  const restored = useRef(false);
-  const pendingRecordings = useQuery({
-    queryKey: ["pending-recordings"],
-    queryFn: () => api<Attachment[]>("/attachments/pending"),
-    refetchOnWindowFocus: false,
-  });
+    [scrolled, setScrolled] = useState(false);
   useEffect(() => {
-    if (!pendingRecordings.data || restored.current) return;
-    restored.current = true;
-    setFiles((files) => [
-      ...files,
-      ...pendingRecordings.data.filter(
-        (item) => !files.some((file) => file.id === item.id),
-      ),
-    ]);
-    pendingRecordings.data.forEach(attachTranscription);
-  }, [pendingRecordings.data]);
-  const modelOperation = useRef(false);
-  const [sendError, setSendError] = useState("");
+    setScrolled(false);
+    setAbove(false);
+  }, [chatId]);
+  const { modelOperation, loadingModel, operateModel, changeModel } =
+    useModelOps({ query, chatId, setSelected });
+  const [draftOverridden, setDraftOverridden] = useState(false);
   const [draftPrompt, setDraftPrompt] = useState<string | null>(null);
   const [action, setAction] = useState<{
     chat: Chat;
     kind: "rename" | "delete" | "export-md" | "export-json";
   } | null>(null);
+  const [folderAction, setFolderAction] = useState<FolderAction | null>(null);
+  const folderList = useQuery({
+    queryKey: ["folders"],
+    queryFn: () => api<Folder[]>("/folders"),
+  });
+  const onFolderAction = (action: FolderAction) => {
+    ui.set({ sidebar: false });
+    setFolderAction(action);
+  };
   const scroll = useRef<HTMLDivElement>(null);
   const previousChat = useRef(chatId);
-  const stopRequested = useRef(false);
-  const restoreComposerFocus = useRef(false);
-  useLayoutEffect(() => {
-    if (restoreComposerFocus.current) {
-      restoreComposerFocus.current = false;
-      document
-        .querySelector<HTMLTextAreaElement>(".composer textarea")
-        ?.focus();
-    }
-  }, [chatId]);
   const bootstrap = useQuery({
     queryKey: ["bootstrap"],
     queryFn: () => api<Bootstrap>("/bootstrap"),
     refetchInterval: () => (document.hidden ? false : 30000),
   });
   usePreferenceSync(bootstrap.data?.settings);
+  const libraryIndex = useLibraryIndex(!!bootstrap.data?.features.library);
+  const presets = useQuery({
+    queryKey: ["presets"],
+    queryFn: () => api<Preset[]>("/presets"),
+    enabled: !!bootstrap.data,
+  });
+  const defaultPreset = presets.data?.find(
+    (p) => p.id === bootstrap.data?.settings.default_preset_id,
+  );
+  const effectiveDraftParams = draftOverridden
+    ? draftParams
+    : (defaultPreset?.params ?? draftParams);
+  const effectiveDraftPrompt = draftOverridden
+    ? draftPrompt
+    : (defaultPreset?.system_prompt ?? draftPrompt);
   const models = useQuery({
     queryKey: ["models"],
     queryFn: () => api<Model[]>("/models"),
@@ -168,6 +148,11 @@ export function LiveAppShell() {
     queryFn: () => api<Detail>("/chats/" + chatId),
     enabled: !!chatId,
   });
+  const entering = useAppEntrance(
+    !!bootstrap.data &&
+      (!bootstrap.data.connections.length || models.isSuccess) &&
+      (!chatId || detail.isSuccess),
+  );
   const history = useInfiniteQuery({
     queryKey: ["chats", debounced],
     initialPageParam: "",
@@ -176,6 +161,7 @@ export function LiveAppShell() {
       api<components["schemas"]["ChatList"]>(
         "/chats?q=" +
           encodeURIComponent(debounced) +
+          (debounced.trim() ? "" : "&folder=none") +
           (pageParam ? "&cursor=" + encodeURIComponent(pageParam) : ""),
       ),
     getNextPageParam: (last) => last.next_cursor ?? undefined,
@@ -231,6 +217,19 @@ export function LiveAppShell() {
       : selected
         ? { ...selected, loaded: null }
         : undefined);
+  const {
+    setFiles,
+    effectiveFiles,
+    waitingForTranscript,
+    uploads,
+    setUploads,
+    uploadControllers,
+    dragging,
+    setDragging,
+    dragDepth,
+    audioExtensions,
+    upload,
+  } = useUploads({ query, bootstrap, current });
   useEffect(() => {
     if (models.data?.length) void import("@/components/chat/Markdown");
   }, [models.data]);
@@ -249,6 +248,8 @@ export function LiveAppShell() {
         ) ?? models.data[0],
       );
       setWeb(Boolean(bootstrap.data?.settings["web.default_on"]));
+      setLibrary(false);
+      setLibraryScope(null);
     }
   }, [models.data, selected, bootstrap.data]);
   useEffect(() => {
@@ -260,8 +261,11 @@ export function LiveAppShell() {
             bootstrap.data?.settings.default_connection_id,
       );
       if (choice) setSelected(choice);
+      setDraftOverridden(false);
       setDraftParams({});
       setDraftPrompt(null);
+      setLibrary(false);
+      setLibraryScope(null);
       setWeb(Boolean(bootstrap.data?.settings["web.default_on"]));
     }
     previousChat.current = chatId;
@@ -277,63 +281,12 @@ export function LiveAppShell() {
       }
     }
   }, [active.data, detail.data, chatId, query]);
-  useEffect(() => {
-    setPending("");
-  }, [chatId]);
-  useEffect(() => {
-    const listener = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        ui.set({ command: true });
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === ",") {
-        e.preventDefault();
-        ui.set({
-          settings: true,
-          sidebar: false,
-          panel: false,
-          command: false,
-        });
-      }
-      if (
-        (e.metaKey || e.ctrlKey) &&
-        e.shiftKey &&
-        e.key.toLowerCase() === "o"
-      ) {
-        e.preventDefault();
-        ui.set({
-          command: false,
-          settings: false,
-          panel: false,
-          sidebar: false,
-        });
-        navigate("/");
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b") {
-        e.preventDefault();
-        ui.set(
-          desktop ? { collapsed: !ui.collapsed } : { sidebar: !ui.sidebar },
-        );
-      }
-      if (
-        (e.metaKey || e.ctrlKey) &&
-        e.shiftKey &&
-        (e.key === ">" || e.code === "Period")
-      ) {
-        e.preventDefault();
-        ui.set({ panel: !ui.panel });
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === "/") {
-        e.preventDefault();
-        ui.set({ settings: true, settingsPane: "Shortcuts", command: false });
-      }
-    };
-    window.addEventListener("keydown", listener);
-    return () => window.removeEventListener("keydown", listener);
-  }, [navigate, ui, desktop]);
+  useShortcuts({ navigate, ui, desktop });
   const refresh = () => {
     void query.invalidateQueries({ queryKey: ["chat", chatId] });
     void query.invalidateQueries({ queryKey: ["chats"] });
+    void query.invalidateQueries({ queryKey: ["folders"] });
+    void query.invalidateQueries({ queryKey: ["folder-chats"] });
     void query.invalidateQueries({ queryKey: ["bootstrap"] });
     void query.invalidateQueries({ queryKey: ["models"] });
   };
@@ -343,264 +296,47 @@ export function LiveAppShell() {
       refresh();
       return true;
     } catch (e) {
-      toast.error(String(e));
+      toast.error(failureCopy(e), { description: failureDetail(e) });
       return false;
     }
   };
-  const operateModel = async (model: Model, unload = false) => {
-    if (modelOperation.current) return;
-    modelOperation.current = true;
-    setLoadingModel(model.connection_id + model.model_id);
-    const notice = toast.loading(
-      `${unload ? "Ejecting" : "Loading"} ${model.display_name}…`,
-    );
-    try {
-      await api(unload ? "/models/unload" : "/models/load", {
-        connection_id: model.connection_id,
-        model_id: model.model_id,
-      });
-      query.setQueryData(
-        ["models"],
-        await api<Model[]>("/models?refresh=true"),
-      );
-      void query.invalidateQueries({ queryKey: ["context", chatId] });
-      toast.success(`${model.display_name} ${unload ? "ejected" : "loaded"}`, {
-        id: notice,
-      });
-    } catch (e) {
-      toast.error(
-        `Couldn’t ${unload ? "eject" : "load"} ${model.display_name}`,
-        { id: notice, description: String(e) },
-      );
-    } finally {
-      modelOperation.current = false;
-      setLoadingModel(null);
-    }
-  };
-  const changeModel = async (model: Model) => {
-    if (modelOperation.current) return;
-    try {
-      if (chatId) {
-        const updated = await api<Chat>(
-          "/chats/" + chatId,
-          {
-            connection_id: model.connection_id,
-            model_id: model.model_id,
-          },
-          "PATCH",
-        );
-        query.setQueryData<Detail>(
-          ["chat", chatId],
-          (previous) => previous && { ...previous, chat: updated },
-        );
-        void query.invalidateQueries({ queryKey: ["context", chatId] });
-      }
-      setSelected(model);
-      if (!model.loaded) await operateModel(model);
-    } catch (e) {
-      toast.error("Couldn’t switch models", { description: String(e) });
-    }
-  };
-  const onSend = async (text: string, parent?: string | null) => {
-    if (!current || running || modelOperation.current || waitingForTranscript)
-      return false;
-    setSendError("");
-    stopRequested.current = false;
-    setBusy(true);
-    setPending(text);
-    try {
-      let id = chatId;
-      let chat = detail.data?.chat;
-      if (!id) {
-        chat = await api<Chat>("/chats", {
-          connection_id: current.connection_id,
-          model_id: current.model_id,
-          web_enabled: web,
-        });
-        id = chat.id;
-        if (Object.keys(draftParams).length || draftPrompt !== null)
-          await api(
-            "/chats/" + id,
-            { params: draftParams, system_prompt: draftPrompt },
-            "PATCH",
-          );
-      }
-      const response = await api<RunResponse>("/chats/" + id + "/messages", {
-        content: text,
-        parent_id:
-          parent === undefined ? (chat?.current_leaf_id ?? null) : parent,
-        attachment_ids: effectiveFiles.map((f) => f.id),
-        web: chat?.web_enabled ?? web,
-      });
-      if (!chatId) {
-        restoreComposerFocus.current =
-          document.activeElement?.matches(".composer textarea") ?? false;
-        navigate("/c/" + id);
-      }
-      setFiles([]);
-      void query.invalidateQueries({ queryKey: ["pending-recordings"] });
-      setPending("");
-      attachRun(response.run_id, id, response.assistant_message, query);
-      if (stopRequested.current) {
-        await api(`/runs/${response.run_id}/cancel`, {});
-        stopRequested.current = false;
-      }
-      void query.invalidateQueries({ queryKey: ["chat", id] });
-      void query.invalidateQueries({ queryKey: ["chats"] });
-      if (bootstrap.data?.settings["new_chat_model"] !== "fixed")
-        void api(
-          "/settings",
-          {
-            default_connection_id: current.connection_id,
-            default_model_id: current.model_id,
-          },
-          "PATCH",
-        );
-      return true;
-    } catch (e) {
-      setSendError(
-        errorCopy(
-          e instanceof ApiError ? e.code : "provider_error",
-          e instanceof Error ? e.message : String(e),
-          current,
-          bootstrap.data?.connections.find(
-            (c) => c.id === current.connection_id,
-          ),
-        ),
-      );
-      setPending("");
-      return false;
-    } finally {
-      setBusy(false);
-    }
-  };
-  const regenerate = async (message: Message, force = false, model?: Model) => {
-    if (running) return;
-    stopRequested.current = false;
-    setBusy(true);
-    try {
-      const response = await api<RunResponse>(
-        "/messages/" + message.id + "/regenerate",
-        {
-          force_web: force,
-          ...(model
-            ? { connection_id: model.connection_id, model_id: model.model_id }
-            : {}),
-        },
-      );
-      attachRun(
-        response.run_id,
-        message.chat_id,
-        response.assistant_message,
-        query,
-      );
-      if (stopRequested.current) {
-        await api(`/runs/${response.run_id}/cancel`, {});
-        stopRequested.current = false;
-      }
-      refresh();
-    } catch (e) {
-      toast(String(e));
-    } finally {
-      setBusy(false);
-    }
-  };
-  const upload = async (incoming: File[]) => {
-    for (let file of incoming) {
-      try {
-        const suffix = "." + file.name.split(".").at(-1)?.toLowerCase();
-        const audio = [
-          ".wav",
-          ".mp3",
-          ".m4a",
-          ".flac",
-          ".aif",
-          ".aiff",
-          ".aac",
-          ".amr",
-          ".caf",
-          ".mka",
-          ".mov",
-          ".mp4",
-          ".oga",
-          ".ogg",
-          ".opus",
-          ".webm",
-          ".wma",
-        ].includes(suffix);
-        if (audio) {
-          if (!bootstrap.data?.features.transcription)
-            throw new Error("Recordings need the transcription engine");
-          if (file.size > 4 * 1024 ** 3)
-            throw new Error("Recordings can be up to 4 GB.");
-          const id = crypto.randomUUID(),
-            controller = new AbortController();
-          uploadControllers.current.set(id, controller);
-          setUploads((uploads) => [
-            ...uploads,
-            { id, filename: file.name, percent: 0 },
-          ]);
-          try {
-            const attachment = await uploadWithProgress(
-              file,
-              (percent) =>
-                setUploads((uploads) =>
-                  uploads.map((upload) =>
-                    upload.id === id ? { ...upload, percent } : upload,
-                  ),
-                ),
-              controller.signal,
-            );
-            setFiles((files) => [...files, attachment]);
-            attachTranscription(attachment);
-            setUploads((uploads) =>
-              uploads.filter((upload) => upload.id !== id),
-            );
-          } catch (error) {
-            if (error instanceof DOMException && error.name === "AbortError")
-              setUploads((uploads) =>
-                uploads.filter((upload) => upload.id !== id),
-              );
-            else
-              setUploads((uploads) =>
-                uploads.map((upload) =>
-                  upload.id === id
-                    ? { ...upload, failed: true, reason: String(error) }
-                    : upload,
-                ),
-              );
-          } finally {
-            uploadControllers.current.delete(id);
-          }
-          continue;
-        }
-        if (file.type.startsWith("image/")) {
-          if (current?.vision !== true)
-            throw new Error("Images need a vision model.");
-          if (file.size > 20 * 1024 * 1024)
-            throw new Error("Image limit is 20 MB.");
-          file = await prepareImage(file);
-        }
-        const form = new FormData();
-        form.append("file", file);
-        const a = await api<Attachment>("/attachments", form);
-        setFiles((f) => [...f, a]);
-      } catch (e) {
-        toast(String(e));
-      }
-    }
-  };
-  const chatParams = detail.data?.chat.params ?? draftParams;
-  const saveParams = (prompt: string | null, params: Params) => {
+  const { onSend, regenerate, stop } = useSend({
+    query,
+    navigate,
+    chatId,
+    current,
+    running,
+    modelOperation,
+    waitingForTranscript,
+    detail,
+    web,
+    library: detail.data?.chat.library_enabled ?? library,
+    libraryScope: chatId
+      ? (detail.data?.chat.library_scope ?? null)
+      : libraryScope,
+    draftParams: effectiveDraftParams,
+    draftPrompt: effectiveDraftPrompt,
+    draftOverridden,
+    effectiveFiles,
+    setFiles,
+    bootstrap,
+    runEntry,
+    refresh,
+    ...sendState,
+  });
+  const chatParams = detail.data?.chat.params ?? effectiveDraftParams;
+  const saveParams = async (prompt: string | null, params: Params) => {
     if (chatId)
-      void mutate(
+      return mutate(
         "/chats/" + chatId,
         { system_prompt: prompt, params },
         "PATCH",
       );
     else {
+      setDraftOverridden(true);
       setDraftParams(params);
       setDraftPrompt(prompt);
+      return true;
     }
   };
   const webBlocked =
@@ -613,28 +349,95 @@ export function LiveAppShell() {
       ).some((message) =>
         message.attachments?.some((file) => file.kind === "audio"),
       ));
+  const effectiveLibrary = detail.data?.chat.library_enabled ?? library;
+  const scope = chatId
+    ? (detail.data?.chat.library_scope ?? null)
+    : libraryScope;
+  const libraryReason = (() => {
+    if (!libraryIndex.data?.embedding)
+      return "Choose an embedding model in Settings › Library";
+    if (!libraryIndex.data.available) return "Library is unavailable";
+    if (
+      !libraryIndex.data.documents.some(
+        (d) =>
+          d.status === "ready" &&
+          (!scope ||
+            (d.collection_id &&
+              scope.collection_ids?.includes(d.collection_id))),
+      )
+    )
+      return "No ready files in this scope";
+    if (libraryIndex.data.requires_local) {
+      const connection = bootstrap.data?.connections.find(
+        (c) => c.id === current?.connection_id,
+      );
+      const host = connection ? new URL(connection.base_url).hostname : "";
+      if (!(host === "localhost" || host === "[::1]" || /^127\./.test(host)))
+        return "Library text can only go to a local model";
+    }
+  })();
+  const exclusivityNote = () => {
+    if (!sessionStorage.getItem("workbench-library-note")) {
+      toast("Library and web search can't be combined in one message.");
+      sessionStorage.setItem("workbench-library-note", "1");
+    }
+  };
+  const toggleLibrary = (value: boolean) => {
+    if (value && libraryReason) return;
+    setLibrary(value);
+    if (value) {
+      setWeb(false);
+      exclusivityNote();
+    }
+    if (chatId)
+      void mutate("/chats/" + chatId, { library_enabled: value }, "PATCH");
+  };
+  const toggleWeb = (value: boolean) => {
+    setWeb(value);
+    if (value) {
+      setLibrary(false);
+      if (effectiveLibrary) exclusivityNote();
+    }
+    if (chatId)
+      void mutate("/chats/" + chatId, { web_enabled: value }, "PATCH");
+  };
   const composer = (
     <Composer
+      key={chatId ?? "new"}
+      optimistic={Boolean(chatId)}
       suggestions={!chatId}
+      audioExtensions={audioExtensions}
+      attachmentExtensions={bootstrap.data?.attachment_extensions}
       model={current}
       disabled={!current || busy || !!loadingModel}
       running={running}
-      onStop={() => {
-        document
-          .querySelector<HTMLTextAreaElement>(".composer textarea")
-          ?.focus();
-        if (runEntry && runEntry[1].stage !== "done")
-          void api("/runs/" + runEntry[0] + "/cancel", {}).catch(() =>
-            toast.error("Couldn’t stop the response. Try again."),
-          );
-        else if (busy) stopRequested.current = true;
-      }}
+      onStop={stop}
       onSend={(text) => onSend(text)}
       error={sendError}
       files={effectiveFiles}
       uploads={uploads}
       transcriptionReady={Boolean(bootstrap.data?.features.transcription)}
       webBlocked={webBlocked}
+      libraryControl={
+        bootstrap.data?.features.library
+          ? {
+              enabled: effectiveLibrary,
+              reason: libraryReason,
+              scope,
+              collections: libraryIndex.data?.collections ?? [],
+              onToggle: toggleLibrary,
+              onScope: (next) => {
+                setLibraryScope(next);
+                if (chatId)
+                  void mutate(
+                    "/chats/" + chatId,
+                    { library_scope: next },
+                    "PATCH",
+                  );
+              },
+            }
+          : undefined
+      }
       onCancelUpload={(id) => {
         uploadControllers.current.get(id)?.abort();
         setUploads((uploads) => uploads.filter((upload) => upload.id !== id));
@@ -646,10 +449,16 @@ export function LiveAppShell() {
           detachTranscription(id);
           useTranscripts.getState().remove(id);
         };
-        if (effectiveFiles.find((file) => file.id === id)?.kind === "audio")
+        if (
+          effectiveFiles.find((file) => file.id === id)?.kind === "audio" ||
+          effectiveFiles.find((file) => file.id === id)?.document
+        )
           void api(`/attachments/${id}`, undefined, "DELETE").then(
             remove,
-            (error) => toast.error(String(error)),
+            (error) =>
+              toast.error(failureCopy(error), {
+                description: failureDetail(error),
+              }),
           );
         else remove();
       }}
@@ -665,10 +474,15 @@ export function LiveAppShell() {
                       ? 800
                       : a.kind === "audio"
                         ? (a.transcript?.token_estimate ?? 0)
-                        : Math.round(a.bytes * 0.3)),
+                        : (a.document?.token_estimate ??
+                          Math.round(a.bytes * 0.3))),
                   0,
                 ),
               context_length: current.context_length ?? 8192,
+              reserve:
+                typeof chatParams.max_tokens === "number"
+                  ? chatParams.max_tokens
+                  : undefined,
             }
           : undefined
       }
@@ -676,145 +490,103 @@ export function LiveAppShell() {
       onThinkChange={(value) => {
         const p = { ...chatParams, reasoning: value };
         if (chatId) void mutate("/chats/" + chatId, { params: p }, "PATCH");
-        else setDraftParams(p);
+        else {
+          setDraftOverridden(true);
+          setDraftParams(p);
+        }
       }}
       web={detail.data?.chat.web_enabled ?? web}
-      onWebChange={
-        bootstrap.data?.features.web_search
-          ? (value) => {
-              setWeb(value);
-              if (chatId)
-                void mutate(
-                  "/chats/" + chatId,
-                  { web_enabled: value },
-                  "PATCH",
-                );
-            }
-          : undefined
-      }
+      onWebChange={bootstrap.data?.features.web_search ? toggleWeb : undefined}
     />
   );
-  const panel = (
-    <LiveChatSettings
-      drawer={phone && !wide}
-      key={`${chatId ?? "new"}:${current?.connection_id}:${current?.model_id}`}
-      chat={detail.data?.chat}
-      draftParams={draftParams}
-      draftPrompt={draftPrompt}
-      model={current}
-      onSave={saveParams}
-      onDefaults={(params) => {
-        if (current)
-          void mutate(
-            "/models/prefs",
-            {
-              connection_id: current.connection_id,
-              model_id: current.model_id,
-              params,
-            },
-            "PUT",
-          );
-      }}
-      onContext={(length) => {
-        if (current)
-          void mutate(
-            "/models/prefs",
-            {
-              connection_id: current.connection_id,
-              model_id: current.model_id,
-              context_length: length,
-            },
-            "PUT",
-          );
-      }}
-    />
+  const panel =
+    chatId && !detail.data ? (
+      <ChatControlsUnavailable
+        drawer={phone && !wide}
+        failed={detail.isError}
+        retry={() => void detail.refetch()}
+      />
+    ) : (
+      <LiveChatSettings
+        drawer={phone && !wide}
+        key={`${chatId ?? "new"}:${current?.connection_id}:${current?.model_id}:${defaultPreset?.id}`}
+        chat={detail.data?.chat}
+        initialPreset={
+          !chatId && !draftOverridden ? defaultPreset?.id : undefined
+        }
+        draftParams={effectiveDraftParams}
+        draftPrompt={effectiveDraftPrompt}
+        model={current}
+        onSave={saveParams}
+        onDefaults={(params) => {
+          if (current)
+            return mutate(
+              "/models/prefs",
+              {
+                connection_id: current.connection_id,
+                model_id: current.model_id,
+                params,
+              },
+              "PUT",
+            );
+        }}
+        onContext={(length) => {
+          if (current)
+            return mutate(
+              "/models/prefs",
+              {
+                connection_id: current.connection_id,
+                model_id: current.model_id,
+                context_length: length,
+              },
+              "PUT",
+            );
+        }}
+      />
+    );
+  const controlDraftKey = controlsKey(
+    chatId,
+    current?.connection_id,
+    current?.model_id,
   );
+  const controlsDirty = useControlDrafts((s) => !!s.drafts[controlDraftKey]);
   const menu = (chat: Chat) => (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <IconButton label={`Actions for ${chat.title}`}>
-          <Ellipsis />
-        </IconButton>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem
-          onSelect={() => {
-            ui.set({ sidebar: false });
-            setAction({ chat, kind: "rename" });
-          }}
-        >
-          Rename
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onSelect={async () => {
-            if (
-              await mutate(
-                "/chats/" + chat.id,
-                { pinned: !chat.pinned },
-                "PATCH",
-              )
-            )
-              toast.success(chat.pinned ? "Chat unpinned" : "Chat pinned", {
-                description: chat.title,
-              });
-          }}
-        >
-          {chat.pinned ? "Unpin" : "Pin"}
-        </DropdownMenuItem>
-        {(["md", "json"] as const).map((format) => (
-          <DropdownMenuItem
-            key={format}
-            onSelect={() => {
-              ui.set({ sidebar: false });
-              setAction({
-                chat,
-                kind: format === "md" ? "export-md" : "export-json",
-              });
-            }}
-          >
-            Export {format === "md" ? "Markdown" : "JSON"}
-          </DropdownMenuItem>
-        ))}
-        <DropdownMenuItem
-          onSelect={() => {
-            ui.set({ sidebar: false });
-            setAction({ chat, kind: "delete" });
-          }}
-        >
-          Delete
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <ChatMenu
+      chat={chat}
+      ui={ui}
+      mutate={mutate}
+      setAction={setAction}
+      folders={folderList.data}
+      onFolderAction={onFolderAction}
+    />
   );
   const list = (
-    <>
-      <Input
-        aria-label="Search history"
-        placeholder="Search chats…"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="mb-4"
-      />
-      {history.isLoading ? (
-        <p className="p-3 text-sm text-fg-3">Loading chats…</p>
-      ) : historyItems.length ? (
-        <ChatList
-          chats={historyItems}
-          selected={chatId}
-          search={search}
+    <HistoryList
+      search={search}
+      setSearch={setSearch}
+      history={history}
+      historyItems={
+        search ? historyItems : historyItems.filter((chat) => !chat.folder_id)
+      }
+      folders={
+        <FoldersGroup
+          folders={folderList.data ?? []}
+          loading={folderList.isPending}
+          failed={folderList.isError}
+          retry={() => void folderList.refetch()}
+          onAction={onFolderAction}
           menu={menu}
+          chatId={chatId}
           onOpen={() => ui.set({ sidebar: false })}
-          hasNext={history.hasNextPage}
-          onNext={() => {
-            if (!history.isFetchingNextPage) void history.fetchNextPage();
-          }}
         />
-      ) : (
-        <p className="p-3 text-sm text-fg-3">
-          {search ? "No chats found" : "No chats yet"}
-        </p>
-      )}
-    </>
+      }
+      chatId={chatId}
+      menu={menu}
+      ui={ui}
+      activeChats={Object.values(runs)
+        .filter((run) => run.stage !== "done")
+        .map((run) => run.chatId)}
+    />
   );
   let visible = visiblePath(
     detail.data?.messages ?? [],
@@ -840,10 +612,23 @@ export function LiveAppShell() {
     return rows;
   }, [detail.data?.messages, runId, chatId]);
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-app-entry={entering || undefined}>
       <aside className="sidebar-desktop" data-collapsed={ui.collapsed}>
         <Sidebar collapsed={ui.collapsed} history={list} />
       </aside>
+      {folderAction && (
+        <Suspense fallback={null}>
+          <FolderDialog
+            key={
+              folderAction.kind +
+              folderAction.folder?.id +
+              folderAction.chat?.id
+            }
+            action={folderAction}
+            onClose={() => setFolderAction(null)}
+          />
+        </Suspense>
+      )}
       <main
         className="app-main"
         onDragOver={(e) => e.preventDefault()}
@@ -869,12 +654,12 @@ export function LiveAppShell() {
         {dragging && (
           <div
             role="status"
-            className="pointer-events-none absolute inset-4 z-40 flex items-center justify-center rounded-xl border border-brand bg-surface text-sm"
+            className="pointer-events-none absolute inset-4 z-40 flex items-center justify-center rounded-xl border-2 border-dashed border-brand bg-bg/80 text-sm"
           >
-            Drop images, text files or recordings
+            Drop images, documents, text files or recordings
           </div>
         )}
-        <header className="topbar">
+        <header data-scrolled={scrolled || undefined} className="topbar">
           <div className="flex min-w-0 flex-1 items-center">
             {(!desktop || ui.collapsed) && (
               <IconButton
@@ -900,23 +685,36 @@ export function LiveAppShell() {
               }
             />
           </div>
-          <span className="hidden max-w-64 truncate text-xs text-fg-3 md:block">
-            {detail.data?.chat.title ?? ""}
-          </span>
+          {detail.data && (
+            <ChatTitle
+              key={detail.data.chat.id}
+              title={detail.data.chat.title}
+              onRename={(title) =>
+                mutate("/chats/" + detail.data!.chat.id, { title }, "PATCH")
+              }
+            />
+          )}
           <IconButton
-            label="Chat settings"
+            label="Chat controls"
+            className="relative"
             onClick={() => ui.set({ panel: !ui.panel })}
           >
             <SlidersHorizontal />
+            {controlsDirty && (
+              <span
+                aria-hidden="true"
+                className="absolute right-1 top-1 size-1.5 rounded-full bg-brand"
+              />
+            )}
+            {controlsDirty && <span className="sr-only">Unsaved changes</span>}
           </IconButton>
           {detail.data && menu(detail.data.chat)}
         </header>
         {bootstrap.isError ? (
-          <div role="alert" className="m-auto max-w-md p-6">
-            <h1 className="text-lg font-medium">Can't reach Workbench</h1>
-            <p className="my-4 text-sm text-fg-2">{String(bootstrap.error)}</p>
-            <Button onClick={() => void bootstrap.refetch()}>Try again</Button>
-          </div>
+          <OfflineNotice
+            detail={String(bootstrap.error)}
+            onRetry={() => void bootstrap.refetch()}
+          />
         ) : bootstrap.data?.connections.length === 0 ? (
           <Welcome
             detections={detect.data}
@@ -934,23 +732,13 @@ export function LiveAppShell() {
             }
           />
         ) : !chatId ? (
-          <section className="empty-chat">
-            <h1 className="greeting">
-              {new Date().getHours() < 12
-                ? "Good morning"
-                : new Date().getHours() < 18
-                  ? "Good afternoon"
-                  : "Good evening"}
-              {ui.name ? `, ${ui.name}` : ""}
-            </h1>
-            {composer}
-            <p className="mt-4 text-center text-xs text-fg-3">
-              Your models. Your Mac.
-            </p>
-          </section>
+          <EmptyState ui={ui} composer={composer} />
         ) : (
           <>
             <LiveThread
+              pending={pending?.chat_id === chatId ? pending : null}
+              position={runEntry?.[1].position}
+              onScrollChange={setScrolled}
               selectedModel={current}
               messages={visible}
               all={all}
@@ -991,75 +779,34 @@ export function LiveAppShell() {
               }}
               reads={detail.data?.reads}
             />
-            {pending && <p className="mx-6 text-sm text-fg-2">{pending}</p>}
             <div className="composer-row relative" data-testid="composer-row">
-              {above && (
-                <Button
-                  aria-label="Scroll to bottom"
-                  className="absolute -top-12 right-6 size-11 rounded-full border border-line bg-surface text-fg"
-                  onClick={() =>
-                    scroll.current?.scrollTo({
-                      top: scroll.current.scrollHeight,
-                      behavior: "smooth",
-                    })
-                  }
-                >
-                  <ArrowDown />
-                </Button>
-              )}
+              <Button
+                data-slot="scroll-bottom"
+                data-state={above ? "visible" : "hidden"}
+                inert={!above}
+                tabIndex={above ? 0 : -1}
+                aria-hidden={!above}
+                aria-label="Scroll to bottom"
+                className="absolute -top-12 right-6 size-11 rounded-full border border-line bg-surface text-fg"
+                onClick={() =>
+                  scroll.current?.scrollTo({
+                    top: scroll.current.scrollHeight,
+                    behavior:
+                      matchMedia("(prefers-reduced-motion: reduce)").matches ||
+                      ui.reduceMotion === "always"
+                        ? "instant"
+                        : "smooth",
+                  })
+                }
+              >
+                <ArrowDown />
+              </Button>
               {composer}
             </div>
           </>
         )}
       </main>
-      {ui.panel && wide && <aside className="chat-panel">{panel}</aside>}
-      <Sheet open={ui.sidebar} onOpenChange={(sidebar) => ui.set({ sidebar })}>
-        <SheetContent
-          side="left"
-          className="w-[min(320px,90vw)] p-0"
-          showCloseButton={false}
-        >
-          <SheetTitle className="sr-only">Chat history</SheetTitle>
-          <SheetDescription className="sr-only">
-            Your saved conversations
-          </SheetDescription>
-          <Sidebar history={list} close={() => ui.set({ sidebar: false })} />
-        </SheetContent>
-      </Sheet>
-      {!wide &&
-        (phone ? (
-          <Drawer open={ui.panel} onOpenChange={(panel) => ui.set({ panel })}>
-            <DrawerContent className="overflow-clip">
-              <DrawerHeader className="relative shrink-0 px-14">
-                <IconButton
-                  label="Close chat settings"
-                  className="absolute right-3 top-2"
-                  onClick={() => ui.set({ panel: false })}
-                >
-                  <X />
-                </IconButton>
-                <DrawerTitle>Chat settings</DrawerTitle>
-                <DrawerDescription>
-                  Sampling and context for this conversation
-                </DrawerDescription>
-              </DrawerHeader>
-              <div className="min-h-0 overflow-y-auto">{panel}</div>
-            </DrawerContent>
-          </Drawer>
-        ) : (
-          <Sheet open={ui.panel} onOpenChange={(panel) => ui.set({ panel })}>
-            <SheetContent
-              className="overflow-y-auto p-0"
-              showCloseButton={false}
-            >
-              <SheetTitle className="sr-only">Chat settings</SheetTitle>
-              <SheetDescription className="sr-only">
-                Sampling and context
-              </SheetDescription>
-              {panel}
-            </SheetContent>
-          </Sheet>
-        ))}
+      <Panels ui={ui} wide={wide} phone={phone} panel={panel} list={list} />
       <SettingsDialog
         searchEnabled={Boolean(bootstrap.data?.features.web_search)}
         renderPane={(pane) => (
@@ -1078,6 +825,7 @@ export function LiveAppShell() {
         onOpenChange={(command) => ui.set({ command })}
         onChat={(chat) => navigate("/c/" + chat.id)}
         searchDisabled={webBlocked || !bootstrap.data?.features.web_search}
+        libraryDisabled={!effectiveLibrary && !!libraryReason}
         actions={{
           newChat: () => navigate("/"),
           switchModel: () =>
@@ -1085,11 +833,11 @@ export function LiveAppShell() {
           toggleSearch: () => {
             if (webBlocked || !bootstrap.data?.features.web_search) return;
             const next = !(detail.data?.chat.web_enabled ?? web);
-            setWeb(next);
-            if (chatId)
-              void mutate("/chats/" + chatId, { web_enabled: next }, "PATCH");
+            toggleWeb(next);
           },
+          toggleLibrary: () => toggleLibrary(!effectiveLibrary),
           chatSettings: () => ui.set({ panel: true }),
+          applyPreset: () => ui.set({ panel: true, choosePreset: true }),
           settings: () => ui.set({ settings: true }),
           shortcuts: () =>
             ui.set({ settings: true, settingsPane: "Shortcuts" }),
@@ -1106,7 +854,6 @@ export function LiveAppShell() {
         }}
       />
       <ChatActionDialog
-        key={String(action?.chat.id) + String(action?.kind)}
         action={action}
         onClose={() => setAction(null)}
         onApply={(title) => {

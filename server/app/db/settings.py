@@ -6,6 +6,7 @@ from urllib.parse import urlsplit
 from .core import Store
 
 DEFAULTS: dict[str, Any] = {
+    "default_preset_id": None,
     "default_connection_id": None,
     "default_model_id": None,
     "new_chat_model": "last_used",
@@ -23,6 +24,11 @@ DEFAULTS: dict[str, Any] = {
     "web.default_on": False,
     "web.max_sources": 6,
     "web.embedding": None,
+    "library.embedding": None,
+    "library.max_sources": 6,
+    "library.requires_local": True,
+    "library.query_prefix": "",
+    "library.document_prefix": "",
     "web.page_cache_days": 7,
     "web.blocked_domains": [
         "pinterest.com",
@@ -81,10 +87,17 @@ async def patch(store: Store, values: dict[str, Any]) -> None:
         "web.default_on",
         "transcription.block_web",
         "transcription.keep_audio",
+        "library.requires_local",
     ):
         if key in values and not isinstance(values[key], bool):
             raise ValueError("Expected a boolean setting")
-    for key in ("default_system_prompt", "user_name", "web.searxng_url"):
+    for key in (
+        "default_system_prompt",
+        "user_name",
+        "web.searxng_url",
+        "library.query_prefix",
+        "library.document_prefix",
+    ):
         if key in values and not isinstance(values[key], str):
             raise ValueError("Expected a text setting")
     if "web.provider_order" in values and (
@@ -123,6 +136,19 @@ async def patch(store: Store, values: dict[str, Any]) -> None:
             or any(not isinstance(v, str) or not v for v in values[key].values())
         ):
             raise ValueError("Choose a connection and model")
+    if "default_preset_id" in values and values["default_preset_id"] is not None:
+        identifier = values["default_preset_id"]
+        if not isinstance(identifier, str) or not await store.one(
+            "SELECT id FROM presets WHERE id=?", (identifier,)
+        ):
+            raise ValueError("Choose an existing preset")
+    if "library.max_sources" in values and values["library.max_sources"] not in (4, 6, 8):
+        raise ValueError("Choose 4, 6 or 8 sources")
+    if "library.embedding" in values:
+        raise ValueError("Choose the embedding model in Library")
+    for key in ("library.query_prefix", "library.document_prefix"):
+        if key in values and len(values[key]) > 1000:
+            raise ValueError("Embedding prefixes can be up to 1,000 characters")
     await store.batch(
         [
             (

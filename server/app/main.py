@@ -8,16 +8,35 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
-from .api import attachments, chats, connections, messages, models, runs, search, transcription
+from .api import (
+    attachments,
+    backup,
+    chats,
+    connections,
+    folders,
+    library,
+    messages,
+    models,
+    presets,
+    runs,
+    search,
+    transcription,
+)
 from .api import settings as settings_api
 from .api.health import router as health_router
+from .backup import Backups
 from .config import APP_NAME, VERSION, Settings
 from .db.core import Store, connect
+from .documents.service import Extractor
 from .errors import AppError, register_handlers
+from .library.ingest import Library
+from .library.pipeline import Pipeline as LibraryPipeline
 from .providers.registry import Registry
 from .runs.manager import RunManager
+from .runs.research import Research
 from .search.pipeline import Pipeline
 from .security import SecurityMiddleware
+from .transcribe.cleanup import Cleanups
 from .transcribe.jobs import TranscriptionManager
 
 
@@ -32,19 +51,39 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
             app.state.db = db
             app.state.store = Store(db)
             app.state.config = config
+            app.state.documents = Extractor()
+            app.state.documents.recover(config.data_dir / "attachments")
             app.state.registry = Registry(app.state.store)
             app.state.runs = RunManager(app.state.store, app.state.registry, config.data_dir)
             app.state.search = Pipeline(app.state.runs, config.web_fixtures)
             app.state.runs.web_hook = app.state.search
             app.state.runs.web_finalize = app.state.search.finalize
+            app.state.research = Research(
+                app.state.runs,
+                app.state.search.fixtures,
+                config.research,
+                config.research_qualifications,
+            )
+            app.state.runs.research_hook = app.state.research
             app.state.transcription = TranscriptionManager(
                 app.state.store, config.transcribe_home, config.data_dir
             )
+            app.state.cleanup = Cleanups(app.state.transcription, app.state.runs)
+            app.state.library = Library(app.state.store, app.state.runs, config.data_dir)
+            await app.state.library.start()
+            app.state.library_search = LibraryPipeline(app.state.runs, app.state.library)
+            app.state.runs.library_hook = app.state.library_search
+            app.state.runs.library_finalize = app.state.library_search.finalize
             await app.state.runs.recover()
             await app.state.transcription.recover()
+            app.state.backups = Backups(app.state.store, config.data_dir.expanduser().resolve())
+            await app.state.backups.start()
             try:
                 yield
             finally:
+                await app.state.library.close()
+                await app.state.backups.close()
+                await app.state.documents.close()
                 await app.state.transcription.close()
                 await app.state.runs.close()
                 await app.state.registry.close()
@@ -71,11 +110,15 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
     app.include_router(health_router)
     for router in (
         attachments.router,
+        folders.router,
+        library.router,
+        backup.router,
         transcription.router,
         chats.router,
         connections.router,
         messages.router,
         models.router,
+        presets.router,
         runs.router,
         settings_api.router,
         search.router,

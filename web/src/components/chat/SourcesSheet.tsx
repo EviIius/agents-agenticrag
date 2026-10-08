@@ -1,5 +1,10 @@
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
 import { useState } from "react";
-import { Globe, ChevronDown, X } from "lucide-react";
+import { Globe, ChevronDown, X, BookOpen } from "lucide-react";
 import { IconButton } from "@/components/app/IconButton";
 import { useUI } from "@/stores/ui";
 import { Button } from "@/components/ui/button";
@@ -18,7 +23,7 @@ import {
 } from "@/components/ui/drawer";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import type { Message, Source, WebRead } from "@/lib/api";
-import { Favicon } from "./CitationPill";
+import { SourceIcon, sourcePages } from "./CitationPill";
 export function SourcesSheet({
   message,
   sources,
@@ -34,62 +39,82 @@ export function SourcesSheet({
     <div className="space-y-5 p-5">
       <div className="space-y-2">
         <h3 className="text-sm font-medium">Queries</h3>
-        {message.web?.queries?.map((q) => (
+        {(message.library?.queries ?? message.web?.queries)?.map((q) => (
           <p key={q} className="text-xs text-fg-2 break-words">
             {q}
           </p>
         ))}
         <p className="text-xs text-fg-3">
-          via {message.web?.providers?.join(", ") || "Unknown provider"}
+          {message.library
+            ? "Your Library · Local retrieval"
+            : `via ${message.web?.providers?.join(", ") || "Unknown provider"}`}
+          {Object.entries(message.web?.timings ?? {})
+            .filter(([key]) =>
+              ["plan", "search", "fetch", "read"].includes(key),
+            )
+            .map(
+              ([key, ms]) =>
+                ` · ${key === "fetch" ? "read" : key} ${(ms / 1000).toFixed(1)} s`,
+            )
+            .join("")}
+          {message.web?.plan_fallback ? " · Planner fallback used" : ""}
         </p>
-        <p className="text-xs text-fg-3">Ranking: {message.web?.ranking}</p>
-        {message.web?.plan_fallback && (
-          <p className="text-xs text-fg-3">Planner fallback used</p>
-        )}
-        <dl className="grid grid-cols-2 gap-1 text-xs text-fg-3">
-          {Object.entries(message.web?.timings ?? {}).map(([k, v]) => (
-            <div key={k}>
-              <dt className="inline capitalize">{k}: </dt>
-              <dd className="inline">{(v / 1000).toFixed(2)}s</dd>
-            </div>
-          ))}
-        </dl>
       </div>
       {sources.map((s) => (
         <section key={s.n} className="rounded-lg border border-line p-3">
           <div className="flex items-start gap-2">
-            <Favicon domain={s.domain} />
+            <SourceIcon source={s} />
             <div className="min-w-0 flex-1">
               <p className="text-xs text-fg-3 break-all">
-                {s.n} · {s.domain} · {s.cited ? "Cited" : "Read, not cited"}
+                {s.n} ·{" "}
+                {s.kind === "document" ? sourcePages(s) || "Library" : s.domain}{" "}
+                · {s.cited ? "Cited" : "Read, not cited"}
                 {s.kind === "snippet" ? " · Search snippet" : ""}
               </p>
-              <a
-                href={s.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block min-h-11 py-3 text-sm font-medium [overflow-wrap:anywhere]"
-              >
-                {s.title} ↗
-              </a>
+              {s.url ? (
+                <a
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block min-h-11 py-3 text-sm font-medium [overflow-wrap:anywhere]"
+                >
+                  {s.title} ↗
+                </a>
+              ) : (
+                <p className="py-3 text-sm font-medium break-words">
+                  {s.title}
+                </p>
+              )}
               <p className="text-xs text-fg-3">
-                Published: {s.published_at ?? "Unknown"}
+                {s.kind === "document"
+                  ? s.document_id
+                    ? sourcePages(s)
+                    : "Original file removed; saved passages retained"
+                  : `Published: ${s.published_at ?? "Unknown"}`}
               </p>
             </div>
           </div>
-          <details className="mt-2">
-            <summary className="min-h-11 cursor-pointer py-3 text-xs font-medium">
+          <Collapsible className="mt-2">
+            <CollapsibleTrigger className="flex min-h-11 w-full items-center gap-2 cursor-pointer py-3 text-xs font-medium">
               What the model saw
-            </summary>
-            {s.passages.map((p) => (
-              <div key={p.ord} className="border-t border-line py-3">
-                <h4 className="text-xs font-medium">{p.heading}</h4>
-                <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-xs leading-5 text-fg-2">
-                  {p.text}
-                </pre>
-              </div>
-            ))}
-          </details>
+              <ChevronDown className="ml-auto size-3" />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              {s.passages.map((p) => (
+                <div key={p.ord} className="border-t border-line py-3">
+                  <h4 className="text-xs font-medium">
+                    {p.heading}
+                    {p.page_start != null
+                      ? ` · p. ${p.page_start}${p.page_end !== p.page_start ? `–${p.page_end}` : ""}`
+                      : ""}
+                  </h4>
+                  <pre className="source-passage mt-2 whitespace-pre-wrap break-words text-[15px] leading-[23px] text-fg-2">
+                    {p.text}
+                  </pre>
+                </div>
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
         </section>
       ))}
       {reads
@@ -120,10 +145,14 @@ export function SourcesSheet({
       >
         <span className="flex -space-x-1">
           {sources.slice(0, 4).map((s) => (
-            <Favicon key={s.n} domain={s.domain} />
+            <SourceIcon key={s.n} source={s} />
           ))}
         </span>
-        <Globe className="size-4" />
+        {message.library ? (
+          <BookOpen className="size-4" />
+        ) : (
+          <Globe className="size-4" />
+        )}
         {sources.length} sources
         <ChevronDown className="size-3" />
       </Button>

@@ -30,9 +30,9 @@ for (const width of [390, 1440]) {
       page.getByRole("button", { name: "Choose model" }),
     ).toContainText("fake-chat");
     const open = () =>
-      page.getByRole("button", { name: "Chat settings", exact: true }).click();
+      page.getByRole("button", { name: "Chat controls", exact: true }).click();
     const close = () =>
-      page.getByRole("button", { name: "Close chat settings" }).click();
+      page.getByRole("button", { name: "Close chat controls" }).click();
     await open();
     for (const [label, value] of [
       ["Temperature", "0.55"],
@@ -55,6 +55,7 @@ for (const width of [390, 1440]) {
       .getByRole("textbox", { name: "System prompt", exact: true })
       .fill("Be concise. Parameter integration check.");
     await page.getByRole("spinbutton", { name: "Context length" }).fill("4096");
+    await page.getByRole("button", { name: "Apply context length" }).click();
     await page
       .getByRole("button", { name: "Save settings", exact: true })
       .click();

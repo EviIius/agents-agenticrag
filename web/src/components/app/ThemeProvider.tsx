@@ -1,15 +1,36 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useInsertionEffect, useRef, type ReactNode } from "react";
 import { useUI } from "@/stores/ui";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { resolvedTheme } from "@/lib/theme";
 export function ThemeProvider({ children }: { children: ReactNode }) {
+  const reduced = useReducedMotion();
+  const applied = useRef(false);
   const { theme, answerFont, textSize, reduceMotion } = useUI();
   useEffect(() => {
     const media = matchMedia("(prefers-color-scheme: dark)");
     const apply = () => {
-      document.documentElement.dataset.theme = resolvedTheme(
-        theme,
-        media.matches,
-      );
+      const resolved = resolvedTheme(theme, media.matches);
+      const update = () => {
+        document.documentElement.dataset.theme = resolved;
+        const bg = getComputedStyle(document.documentElement)
+          .getPropertyValue("--bg")
+          .trim();
+        document
+          .querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')
+          .forEach((meta) => {
+            meta.content = bg;
+          });
+      };
+      if (
+        applied.current &&
+        document.documentElement.dataset.theme !== resolved &&
+        !reduced &&
+        document.startViewTransition
+      ) {
+        const transition = document.startViewTransition(update);
+        void transition.finished.catch(() => {});
+      } else update();
+      applied.current = true;
     };
     apply();
     try {
@@ -19,8 +40,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
     media.addEventListener("change", apply);
     return () => media.removeEventListener("change", apply);
-  }, [theme]);
-  useEffect(() => {
+  }, [theme, reduced]);
+  // Apply motion CSS before Radix layout effects decide whether an exit is animated.
+  // A passive effect cancels that exit afterward, leaving Presence waiting forever.
+  useInsertionEffect(() => {
     Object.assign(document.documentElement.dataset, {
       answerFont,
       textSize,

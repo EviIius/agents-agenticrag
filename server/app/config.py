@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     dev: bool = False
     log_level: str = "INFO"
     web_fixtures: Path | None = None
+    research: bool = False  # Isolated 8A opt-in; no UI or deployment yet.
+    research_qualifications: Path | None = None
     legacy_db: Path = Path.home() / ".local/share/agenticrag/.data/workbench-chats.db"
     transcribe_home: Path | None = None
 

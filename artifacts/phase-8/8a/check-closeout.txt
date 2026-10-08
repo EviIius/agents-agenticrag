@@ -1,0 +1,53 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+All checks passed!
+. scripts/tool-env.sh; uv run --directory server ruff format --check app tests
+100 files already formatted
+. scripts/tool-env.sh; uv run --directory server mypy app tests
+Success: no issues found in 98 source files
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_coverage.py
+........................................................................ [ 21%]
+........................................................................ [ 43%]
+........................................................................ [ 65%]
+........................................................................ [ 87%]
+..........................................                               [100%]
+330 passed in 132.49s (0:02:12)
+providers line coverage: 367/421 = 87.2%
+runs line coverage: 789/880 = 89.7%
+search line coverage: 1553/1741 = 89.2%
+transcribe line coverage: 683/734 = 93.1%
+documents line coverage: 196/203 = 96.6%
+library line coverage: 762/823 = 92.6%
+backup.py line coverage: 90/93 = 96.8%
+research.py line coverage: 390/433 = 90.1%
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_contrast.py
+light: body/background 16.17:1; secondary 6.55:1; tertiary 4.96:1
+dark: body/background 14.34:1; secondary 6.56:1; tertiary 4.88:1
+Contrast: 74 token pairs passed.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/generate_api_types.py --check
+✨ openapi-typescript 7.13.0
+🚀 /var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/tmp9yk35h1c/openapi.json → /var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/tmp9yk35h1c/api-types.ts [67.6ms]
+API contract: up to date.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_api_additive.py
+API additive guard: Phase 3 contract preserved.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_motion.py
+Motion guard: all first-party motion rules pass.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/privacy_audit.py
+{
+  "scanned": 2141,
+  "failures": [],
+  "limits": "Changed files and Phase 4/5/6/7 evidence; images require human review; optional local private-marker file."
+}
+. scripts/tool-env.sh; npm run check --prefix web
+npm notice run workbench-web@1.0.0-alpha.0 check
+npm notice run tsc --noEmit && eslint . && prettier --check src index.html vite.config.ts playwright.config.ts tests && vitest run src
+Checking formatting...
+All matched files use Prettier code style!
+
+ RUN  v5.0.3 /Users/evilius/Documents/GitHub/agents-agenticrag/web
+
+
+ Test Files  4 passed (4)
+      Tests  36 passed (36)
+   Start at  20:26:57
+   Duration  286ms (transform 39%, tests 38%, import 19%, worker 4%)
+

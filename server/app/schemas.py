@@ -76,6 +76,7 @@ class ReasoningCaps(BaseModel):
 
 
 class ModelInfo(BaseModel):
+    digest: str | None = None
     connection_id: str
     model_id: str
     display_name: str
@@ -110,13 +111,70 @@ class ModelPrefs(ModelAction):
     hidden: bool | None = None
 
 
+class PresetCreate(Input):
+    name: str = Field(min_length=1, max_length=80)
+    system_prompt: str | None = None
+    params: Parameters = Field(default_factory=lambda: Parameters.model_validate({}))
+
+
+class PresetPatch(Input):
+    name: str | None = Field(None, min_length=1, max_length=80)
+    system_prompt: str | None = None
+    params: Parameters | None = None
+    position: int | None = Field(None, ge=0)
+
+
+class Preset(BaseModel):
+    id: str
+    name: str
+    system_prompt: str | None = None
+    params: dict[str, Any] = Field(default_factory=dict)
+    position: int
+    created_at: str
+    updated_at: str
+
+
+class FolderCreate(Input):
+    name: str = Field(min_length=1, max_length=80)
+
+
+class FolderPatch(Input):
+    name: str | None = Field(None, min_length=1, max_length=80)
+    position: int | None = Field(None, ge=0)
+
+
+class Folder(BaseModel):
+    id: str
+    name: str
+    position: int
+    count: int = 0
+    created_at: str
+    updated_at: str
+
+
+class BackupStatus(BaseModel):
+    last_at: str | None = None
+    count: int = 0
+    bytes: int = 0
+    warning: str | None = None
+
+
+class LibraryScope(Input):
+    collection_ids: list[str] = Field(default_factory=list, max_length=100)
+
+
 class ChatCreate(Input):
+    preset_id: str | None = None
     connection_id: str | None = None
     model_id: str | None = None
     web_enabled: bool | None = None
 
 
 class ChatPatch(Input):
+    research_enabled: bool | None = None
+    library_enabled: bool | None = None
+    library_scope: LibraryScope | None = None
+    folder_id: str | None = None
     title: str | None = Field(None, min_length=1, max_length=200)
     pinned: bool | None = None
     current_leaf_id: str | None = None
@@ -128,6 +186,11 @@ class ChatPatch(Input):
 
 
 class Chat(BaseModel):
+    research_enabled: bool = False
+    library_enabled: bool = False
+    library_scope: LibraryScope | None = None
+    folder_id: str | None = None
+    folder_name: str | None = None
     id: str
     title: str
     title_source: str = "fallback"
@@ -148,6 +211,22 @@ class ChatList(BaseModel):
     next_cursor: str | None = None
 
 
+class DocumentInfo(BaseModel):
+    source: Literal["pdf", "docx"]
+    pages: int | None
+    chars: int
+    token_estimate: int
+
+
+class DocumentText(BaseModel):
+    text: str
+
+
+class AttachmentExtensions(BaseModel):
+    text: list[str] = Field(default_factory=list)
+    document: list[str] = Field(default_factory=list)
+
+
 class Attachment(BaseModel):
     id: str
     kind: Literal["image", "text", "audio"]
@@ -156,6 +235,7 @@ class Attachment(BaseModel):
     bytes: int
     transcript: "TranscriptInfo | None" = None
     audio_available: bool = True
+    document: DocumentInfo | None = None
 
 
 class MessageModel(BaseModel):
@@ -171,6 +251,7 @@ class CleanupInfo(BaseModel):
     done: int = 0
     kept_original: int = 0
     changed_words: int = 0
+    elapsed_seconds: float | None = None
     error: ErrorDetail | None = None
 
 
@@ -221,6 +302,20 @@ class AudioStorage(BaseModel):
 
 class TranscribeRequest(Input):
     channels: Literal["mix", "split"] = "mix"
+
+
+class CleanupRequest(Input):
+    connection_id: str
+    model_id: str
+
+
+class GlossaryRequest(Input):
+    text: str
+
+
+class Glossary(BaseModel):
+    text: str
+    terms: list[str]
 
 
 class EngineCheck(BaseModel):
@@ -321,6 +416,8 @@ class Stats(BaseModel):
 
 
 class Passage(BaseModel):
+    page_start: int | None = None
+    page_end: int | None = None
     source_url: str
     heading: str = ""
     ord: int
@@ -336,7 +433,10 @@ class Source(BaseModel):
     domain: str
     published_at: str | None = None
     fetched_at: str
-    kind: Literal["page", "snippet"] = "page"
+    kind: Literal["page", "snippet", "document"] = "page"
+    document_id: str | None = None
+    page_start: int | None = None
+    page_end: int | None = None
     passages: list[Passage]
     cited: bool = False
 
@@ -368,7 +468,36 @@ class WebRead(BaseModel):
     reason: str | None = None
 
 
+class LibraryInfo(BaseModel):
+    status: Literal["used", "skipped", "failed"]
+    notice: ErrorDetail | None = None
+    queries: list[str] = Field(default_factory=list)
+    timings: dict[str, float] = Field(default_factory=dict)
+    source_count: int = 0
+    passage_count: int = 0
+
+
+class ResearchStep(BaseModel):
+    kind: Literal["search", "read", "note", "invalid", "limit"]
+    label: str
+    detail: str = ""
+    status: Literal["running", "done", "failed"] = "done"
+    ms: float = 0
+
+
+class ResearchInfo(BaseModel):
+    effort: Literal["standard"] = "standard"
+    steps: int = 0
+    searches: int = 0
+    pages: int = 0
+    invalid_calls: int = 0
+    limit_reached: str | None = None
+    loop_ms: float = 0
+
+
 class Message(BaseModel):
+    research: ResearchInfo | None = None
+    activity: list[ResearchStep] = Field(default_factory=list)
     id: str
     chat_id: str
     parent_id: str | None = None
@@ -381,6 +510,7 @@ class Message(BaseModel):
     attachments: list[Attachment] = Field(default_factory=list)
     stats: Stats | None = None
     web: WebInfo | None = None
+    library: LibraryInfo | None = None
     created_at: str
 
 
@@ -396,6 +526,8 @@ class Send(Input):
     parent_id: str | None = None
     attachment_ids: list[str] = Field(default_factory=list, max_length=8)
     web: bool | None = None
+    library: bool | None = None
+    research: bool | None = None
 
 
 class Regenerate(Input):
@@ -423,6 +555,7 @@ class ContextInfo(BaseModel):
 
 
 class Bootstrap(BaseModel):
+    attachment_extensions: AttachmentExtensions = Field(default_factory=AttachmentExtensions)
     app_name: str
     version: str
     data_dir: str
@@ -513,6 +646,11 @@ class SearchEvent(BaseModel):
         "search.read",
         "search.done",
         "search.failed",
+        "library.searching",
+        "library.results",
+        "library.done",
+        "library.failed",
+        "research.answering",
     ]
     data: dict[str, Any]
 
@@ -575,3 +713,66 @@ class LegacyStatus(BaseModel):
 class LegacyImport(BaseModel):
     imported: int
     skipped: int
+
+
+class LibraryEmbedding(Input):
+    connection_id: str
+    model_id: str
+
+
+class LibrarySelection(Input):
+    embedding: LibraryEmbedding | None = None
+
+
+class LibraryCollection(Input):
+    name: str = Field(min_length=1, max_length=120)
+
+
+class LibraryMove(Input):
+    collection_id: str | None = None
+
+
+class LibraryDelete(Input):
+    confirmation: str
+
+
+class LibraryDocument(BaseModel):
+    id: str
+    collection_id: str | None = None
+    filename: str
+    mime_type: str
+    bytes: int
+    status: Literal["queued", "extracting", "embedding", "ready", "failed", "stale"]
+    error: dict[str, str] | None = None
+    pages: int | None = None
+    chunk_count: int = 0
+    token_estimate: int | None = None
+    embedding_model: str | None = None
+    progress_done: int = 0
+    progress_total: int = 0
+    created_at: str
+    updated_at: str
+
+
+class LibraryCollectionInfo(BaseModel):
+    id: str
+    name: str
+    created_at: str
+    updated_at: str
+
+
+class LibraryIndex(BaseModel):
+    available: bool
+    embedding: dict[str, Any] | None = None
+    requires_local: bool
+    query_prefix: str
+    document_prefix: str
+    counts: dict[str, int]
+    bytes: int
+    documents: list[LibraryDocument]
+    collections: list[LibraryCollectionInfo]
+    event_id: int
+
+
+class LibraryText(BaseModel):
+    text: str

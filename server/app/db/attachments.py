@@ -4,7 +4,7 @@ import json
 from typing import Any
 
 from ..errors import AppError
-from ..schemas import Attachment, CleanupInfo, Transcript, TranscriptInfo
+from ..schemas import Attachment, CleanupInfo, DocumentInfo, Transcript, TranscriptInfo
 from .core import Store
 
 
@@ -43,7 +43,11 @@ async def attachment(store: Store, identifier: str) -> Attachment:
                 if record["cleanup_status"]
                 else None,
             )
-    return Attachment(**row, transcript=summary)
+    document = None
+    if row["meta_json"]:
+        meta = json.loads(row["meta_json"])
+        document = DocumentInfo(**meta, token_estimate=round(meta["chars"] * 0.3))
+    return Attachment(**row, transcript=summary, document=document)
 
 
 async def transcript(store: Store, identifier: str) -> Transcript:

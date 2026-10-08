@@ -1,0 +1,402 @@
+{
+  "question": "From the Linux unlink(2) and symlink(2) manuals, explain what happens when the last filename is unlinked while a process still has the file open, and which directory anchors a relative symbolic-link target.",
+  "numeric_selection_trial": null,
+  "planner_property_words": [
+    "From",
+    "the",
+    "Linux",
+    "unlink",
+    "and",
+    "symlink",
+    "manuals",
+    "explain",
+    "what",
+    "happens",
+    "when",
+    "last",
+    "filename",
+    "is",
+    "unlinked",
+    "while",
+    "a",
+    "process",
+    "still",
+    "has",
+    "file",
+    "open",
+    "which",
+    "directory",
+    "anchors",
+    "relative",
+    "symbolic",
+    "link",
+    "target"
+  ],
+  "raw_answer": "When the last filename (hard link) to a file is unlinked while a process still has the file open, the file's inode remains accessible through the open file handle (file descriptor) of the process [5]. The file's data and metadata persist in the file system until the process closes the file handle, even though the file is no longer visible by name in the directory structure. The space occupied by the file is not freed until the file handle is closed [5].\n\nFor a relative symbolic link, the target path is anchored relative to the directory containing the symbolic link itself [3]. The resolution of the symbolic link's target path is performed relative to the directory in which the link is located, not the current working directory of the process accessing it. This behavior is consistent with the standard resolution of relative paths in file systems [3].",
+  "message": {
+    "id": "090d8ce0f6934d99b27ce83ec27c32d1",
+    "chat_id": "e26d9dd20ffe4862af95bb249637ed3e",
+    "parent_id": "29be609da6cb4352bf64673e76b5504d",
+    "role": "assistant",
+    "content": "When the last filename (hard link) to a file is unlinked while a process still has the file open, the file's inode remains accessible through the open file handle (file descriptor) of the process [5]. The file's data and metadata persist in the file system until the process closes the file handle, even though the file is no longer visible by name in the directory structure. The space occupied by the file is not freed until the file handle is closed [5].\n\nFor a relative symbolic link, the target path is anchored relative to the directory containing the symbolic link itself [3]. The resolution of the symbolic link's target path is performed relative to the directory in which the link is located, not the current working directory of the process accessing it. This behavior is consistent with the standard resolution of relative paths in file systems [3].",
+    "reasoning": null,
+    "status": "complete",
+    "error": null,
+    "model": {
+      "connection_id": "7ec04182cbc2434abb2b3c7d8edcea7c",
+      "model_id": "qwen3:30b-a3b-workbench-32k",
+      "display_name": "qwen3:30b-a3b-workbench-32k"
+    },
+    "attachments": [],
+    "stats": {
+      "reasoning_ms": null,
+      "ttft_ms": 7230.045375006739,
+      "total_ms": 9523.578291991726,
+      "prompt_tokens": 3785,
+      "completion_tokens": 170,
+      "tokens_per_sec": 74.15647015202077,
+      "tokens_estimated": false,
+      "load_ms": 8.254042,
+      "finish_reason": "stop",
+      "context_length": 32768,
+      "dropped_message_count": 0,
+      "params": {}
+    },
+    "web": {
+      "status": "used",
+      "freshness": "any",
+      "notice": null,
+      "queries": [
+        "what happens to a file when the last link is removed but a process still has it open in Linux",
+        "in Linux, which directory anchors a relative symbolic link target"
+      ],
+      "timings": {
+        "plan": 917.2788329888135,
+        "search": 740.5281669925898,
+        "fetch": 2040.1957079884596,
+        "rank": 8.604917034972459
+      },
+      "source_count": 5,
+      "plan_fallback": false,
+      "providers": [
+        "SearXNG"
+      ],
+      "ranking": "keyword",
+      "selection_condition": null
+    },
+    "library": null,
+    "created_at": "2026-10-06T21:30:47.902093+00:00"
+  },
+  "sources": [
+    {
+      "n": 1,
+      "url": "https://jazz.net/library/article/970",
+      "title": "Sharing symbolic links in Rational Team Concert",
+      "site_name": "jazz.net",
+      "domain": "jazz.net",
+      "published_at": "2012-07-05",
+      "fetched_at": "2026-10-06T21:30:49.563026+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://jazz.net/library/article/970",
+          "heading": "Sharing symbolic links in Rational Team Concert / Overview",
+          "ord": 1,
+          "text": "Simple Windows file system tree with symlinks\n\nA symlink is completely dependent on its target. If the target cannot be found (no permission, moved, deleted or renamed) then it is considered broken. When it is broken it is not able to show any contents and often produces errors when programs try to access them. On the Windows platform a symlink is also broken if the type of the link (file/directory) does not match the type of the target. Since symlinks can also target other symlinks they are broken if any element in the chain is broken.\n\n| Broken file-type symlink in Windows | Broken directory-type symlink in Windows |\n| --- | --- |\n| Broken symlink on Unix |  |",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://jazz.net/library/article/970",
+          "heading": "Managing symlinks in RTC client for Visual Studio IDE",
+          "ord": 20,
+          "text": "  The RTC client for Visual Studio IDE needs to be refreshed whenever you create symbolic links and  want to check them in. You can do this manually through the refresh sandbox context menu on the   pending changes view or you can turn on the automatic detection of changes in the filesystem using   the preference called **Automatically detect when file is changes outside the environment.**  \n\n| Visual Studio client preferences |\n| --- |",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://jazz.net/library/article/970",
+          "heading": "Managing symlinks in RTC client for Visual Studio IDE",
+          "ord": 21,
+          "text": "  The RTC client for Visual Studio IDE will warn you about broken symbolic links on checkin much  like the way that the eclipse client does. In order to add non-interoperability checks on symbolic  links you can turn it on using the preference called **Prompt when broken or non-interoperable**   in the preference page shown above.  \n\nThe directory property for a symbolic link can be found in the RTC-specific property sheet. If you change the directory property of a symbolic link it will change the symbolic link type in your sandbox and create a pending local change in a very similar way to the eclipse client.\n\n| Visual Studio symlink properties |\n| --- |",
+          "selection_applied": false
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 2,
+      "url": "https://schinagl.priv.at/nt/ln/ln.html",
+      "title": "ln",
+      "site_name": "schinagl.priv.at",
+      "domain": "schinagl.priv.at",
+      "published_at": "2012-05-21",
+      "fetched_at": "2026-10-06T21:30:49.562973+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://schinagl.priv.at/nt/ln/ln.html",
+          "heading": "",
+          "ord": 3,
+          "text": "| *Last Updated November 26, 2022 Version 2.9.3.4* |  |\n| Deep Path Support |                      ln.exe can handle *Deep Paths* which are longer than 256 characters. This is usefully especially in                     the --copy, -delorean, --move, --mirror, --recursive mode. Deep Path Support is tested                     for the whole ln.exe functionality. |\n| Support for Volume{GUID} Path and GLOBALROOT | All --copy, -delorean, --move, --mirror, --recursive commands can handle \\\\?\\Volume{GUID} or \\\\?GLOBALROOT\\Device\\HarddiskVolume as path for operations: ln --copy SrcDir \\\\?\\Volume{97410ad7-54ec-11e3-97ab-005056c00008}\\ ln --copy SrcDir \\\\?\\GLOBALROOT\\Device\\HarddiskVolumeShadowCopy\\                      The above example copies files onto a formatted disk which is not mounted. To find out which volumes are                     available in the system use mountvol.exe from a command prompt. Please make sure that the root of a volume has                     a trailing slash, e.g. \\\\?\\Volume{GUID}**\\** , but a normal path specified has not, e.g.: \\\\?\\Volume{GUID}\\MyPath\\dir Accessing like this is useful when providing volumes for snapshots. |\n| Symbolic links for Windows XP | Technically it seems that NTFS5 even as shipped with WindowsXP has always supported symbolic links, but the functionality was not available for user mode applications, and even not for the upper layers of ntfs.sys                      **BUT:** There are filter drivers available from Masatoshi Kimura for WindowsXP, which enable symbolic links                     under XP. These drivers can be downloaded from his home page for 64 bit and for                     32 bit. The                          sources                      are also available. Unpack the archive for your plattform, Start the driver via executing 'senable.exe install' from the command prompt. If you want to stop the driver, execute from a command prompt 'senable.exe delete' ln.exe enables its symbolic link functions even when running WindowsXP, if it finds this driver installed. But unfortunatley this driver has a few limitations, which in 99% of the use cases are not a problem, but for completeness: Symbolic links, which have been created with the symbolic link driver installed, can not be copied/used wihtout the symbolic link driver. Symbolic links can be created on mapped network drives or UNC pathes, but such a symbolic link can't be resolved aka followed. |",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://schinagl.priv.at/nt/ln/ln.html",
+          "heading": "",
+          "ord": 13,
+          "text": "| **Normal linking** | Just for completeness: ln.exe can do the normal ln stuff too. ln sourcefile.txt destination.txt                                  In the above example *sourcefile.txt* gets hard-linked to*destination.txt* ln sourcefile.txt dest_dir                                  In the above example *sourcefile.txt* gets hard-linked to*dest_dir\\sourcefile.txt* |\n| --- | --- |\n| **--crop**Crop/Unroll/Splice Outer Junctions/ Symbolic Links | During SmartCopy, Smart Mirror, Delorean Copy and Clone so called Outer Junctions/Symlink directories may need processing. There are 3 different ways to deal with those Outer Junctions/Symlink directories: |",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://schinagl.priv.at/nt/ln/ln.html",
+          "heading": "",
+          "ord": 37,
+          "text": "| **Normal Files** | The file A is a normal file. It gets copied as any other copy tool would do. |\n| **Inner Symbolic Links** |                                              The symbolic link 'Inner Symlink' is targeted at 'Inner Symlink Target'. In LSE terms this kind                                             of symbolic link is called *Inner Symlink* , because its target points to a file, which is below                                             the common anchor 'Folder 1'.                                              *Inner Symlinks* are restored pro",
+          "selection_applied": false
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 3,
+      "url": "https://kenhuangus.substack.com/p/chapter-4-working-directory-and-file",
+      "title": "Chapter 4: Working Directory & File-Path Resolution (Claude Code vs. Hermes Agent)",
+      "site_name": "Agentic AI",
+      "domain": "kenhuangus.substack.com",
+      "published_at": "2026-06-01",
+      "fetched_at": "2026-10-06T21:30:50.740520+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://kenhuangus.substack.com/p/chapter-4-working-directory-and-file",
+          "heading": "Path expansion as the single ingress point",
+          "ord": 6,
+          "text": "```\n// src/utils/path.ts — every model-produced path passes through here.\nexport function expandPath(path: string, baseDir?: string): string {\n  const actualBaseDir = baseDir ?? getCwd() ?? getFsImplementation().cwd()\n  // Security: Check for null bytes\n  if (path.includes('\\0') || actualBaseDir.includes('\\0')) {\n    throw new Error('Path contains null bytes')\n  }\n```\nNext come the user-friendliness layers: tilde expansion to the user's home directory, and a Windows-specific rewrite that converts Git-Bash-style paths like `/c/Users/...` into native `C:\\Users\\...`. Note the `.normalize('NFC')` — every return path is NFC-normalized so downstream string comparisons are stable.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://kenhuangus.substack.com/p/chapter-4-working-directory-and-file",
+          "heading": "setCwd canonicalizes through realpathSync",
+          "ord": 12,
+          "text": "When the harness commits a new cwd, it resolves symlinks via `realpathSync` so the stored value is always canonical. This is the deliberate symmetry to `pwd -P` on the bash side.\n\n```\n// src/utils/Shell.ts\nexport function setCwd(path: string, relativeTo?: string): void {\n  const resolved = isAbsolute(path)\n    ? path\n    : resolve(relativeTo || getFsImplementation().cwd(), path)\n  // Resolve symlinks to match the behavior of pwd -P.\n  let physicalPath: string\n  try {\n    physicalPath = getFsImplementation().realpathSync(resolved)\n  } catch (e) {\n    if (isENOENT(e)) {\n      throw new Error(`Path \"${resolved}\" does not exist`)\n    }\n    throw e\n  }\n  setCwdState(physicalPath)\n}\n```",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://kenhuangus.substack.com/p/chapter-4-working-directory-and-file",
+          "heading": "Sandbox boundary: snap back when cwd escapes",
+          "ord": 14,
+          "text": "```\n// src/tools/BashTool/utils.ts\nexport function resetCwdIfOutsideProject(\n  toolPermissionContext: ToolPermissionContext,\n): boolean {\n  const cwd = getCwd()\n  const originalCwd = getOriginalCwd()\n  const shouldMaintain = shouldMaintainProjectWorkingDir()\n  if (\n    shouldMaintain ||\n    (cwd !== originalCwd &&\n      !pathInAllowedWorkingPath(cwd, toolPermissionContext))\n  ) {\n    setCwd(originalCwd)\n    if (!shouldMaintain) {\n      logEvent('tengu_bash_tool_reset_to_original_dir', {})\n      return true\n    }\n  }\n  return false\n}\n```\n`getOriginalCwd()` is the immutable startup anchor — it is never mutated by `cd`, so the harness always has a known-safe directory to fall back to.",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    },
+    {
+      "n": 4,
+      "url": "https://kodekloud.com/blog/linux-interview-questions",
+      "title": "Linux Interview Questions 2026 (With Real Answers)",
+      "site_name": "KodeKloud Blog | DevOps, Cloud, Kubernetes, AI Tutorials & More",
+      "domain": "kodekloud.com",
+      "published_at": "2026-06-23",
+      "fetched_at": "2026-10-06T21:30:50.740496+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://kodekloud.com/blog/linux-interview-questions",
+          "heading": "Q8. How do you view and search the contents of a file?",
+          "ord": 12,
+          "text": "`cat` for short files, `less` for anything large (it pages without loading the whole file into memory), and `grep` when you know what you are looking for. `grep` is the workhorse:\n\n```\n$ grep -E \" (401|403)$\" access.log\n192.168.1.11 POST /login 401\n192.168.1.42 GET /admin 403\n```\nFor a senior answer, mention `tail -f` to watch a log live and `grep -r` to search a directory tree. Reaching for `less` instead of `cat` on an unknown file size is a small tell that you have been burned before.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://kodekloud.com/blog/linux-interview-questions",
+          "heading": "Intermediate / Q9. How do you see what is running and stop a process?",
+          "ord": 13,
+          "text": "`ps aux` for a snapshot, `top` or `htop` for a live view, and `kill` to send a signal to a PID.\n\n```\n$ ps aux --sort=-%mem | head -3\nUSER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND\nroot      2696  0.0  0.0   7888  4044 ?        R    06:43   0:00 ps aux --sort=-%mem\nroot         1  0.2  0.0   4324  3592 ?        Ss   06:42   0:00 bash\n```\nThe detail that signals experience: `kill` does not mean \"force stop\", it means \"send a signal\". `kill <pid>` sends the polite SIGTERM and lets the process clean up; `kill -9 <pid>` sends SIGKILL, which the process cannot catch or ignore. Reach for `-9` only after TERM has failed, because SIGKILL gives the process no chance to flush buffers or release locks.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://kodekloud.com/blog/linux-interview-questions",
+          "heading": "Q26. A server reports \"disk full\" but `df -h` shows free space. What is going on?",
+          "ord": 31,
+          "text": "Two usual suspects, and a good candidate names both. First, **inodes are exhausted** even though blocks are free, which happens with millions of tiny files. You check the other dimension:\n\n```\n$ df -i /\nFilesystem       Inodes  IUsed    IFree IUse% Mounted on\noverlay        30574800 616702 29958098    3% /\n```\nIf `IUse%` is at 100, you are out of inodes, not space, and the fix is deleting or consolidating small files. Second suspect: a **deleted file still held open** by a process (straight from Q20), where the space will not return until that process is restarted. You find those with `lsof | grep deleted`. Naming both causes, and knowing `df -i` exists, is the senior answer here.",
+          "selection_applied": false
+        }
+      ],
+      "cited": false
+    },
+    {
+      "n": 5,
+      "url": "https://baeldung.com/linux/open-file-handle-after-move-delete",
+      "title": "What Happens to Open File Handle if File Is Moved or Deleted | Baeldung on Linux",
+      "site_name": "Baeldung on Linux",
+      "domain": "baeldung.com",
+      "published_at": "2021-05-30",
+      "fetched_at": "2026-10-06T21:30:49.562917+00:00",
+      "kind": "page",
+      "document_id": null,
+      "page_start": null,
+      "page_end": null,
+      "passages": [
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://baeldung.com/linux/open-file-handle-after-move-delete",
+          "heading": "",
+          "ord": 0,
+          "text": "Learn through the super-clean Baeldung Pro experience:\n\n>> Membership and Baeldung Pro.\n\nNo ads, dark-mode and 6 months free of IntelliJ Idea Ultimate to start with.\n\nLast updated: March 18, 2024\n\nIn this tutorial, we’ll see how the system behaves when we delete, move, or replace a file that has open file handles.\n\nFirst of all, we’ll briefly discuss files and inodes. Then, we’ll go through the different scenarios and see what happens in each of them.\n\nWhen we work on a Linux file system, it uses inodes to store information about the files.\n\nWhen we list the files in a folder, we see links to inodes. **An inode can have more than one link, and those can be symbolic or hard links**.\n\nWe can use *stat* on a file and see which inode it refers to:",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://baeldung.com/linux/open-file-handle-after-move-delete",
+          "heading": "",
+          "ord": 2,
+          "text": "```\n$ stat hardlink_inode_example \n  File: hardlink_inode_example\n  Size: 0               Blocks: 0          IO Block: 4096   regular empty file\nDevice: fd03h/64771d    Inode: 20448632    Links: 2\n```\nNotice that **the hard link also points to the same inode 20448632**. Both files, *hardlink_inode_example* and *inode_example*, are hard links to the same inode.\n\nUnlike hard links, symbolic links have their own inode numbers.\n\nWith all this in mind, **we can think of a file name as an alias for an inode, and we can have more than one file linked to the same inode**.\n\nWhen we open a file, we get a *file descriptor* pointing to it, also called *file handle*. We can use the opened file handle of a deleted file. We can write to and read from it as if the file exists. **The file name won’t be visible in the file system, but our file handle will point to the inode, which still exists**.",
+          "selection_applied": false
+        },
+        {
+          "page_start": null,
+          "page_end": null,
+          "source_url": "https://baeldung.com/linux/open-file-handle-after-move-delete",
+          "heading": "",
+          "ord": 4,
+          "text": "Inside the first sub-shell, we start by waiting one second. We do this to be sure the second sub-shell has started and opened the file. Then, we write two lines to the file descriptor *4*, one before removing the file and another after that. We also test that the file doesn’t exist before writing the last line. We do this just for clarity.\n\n**The second sub-shell starts by waiting two seconds, so it keeps the file opened while the first sub-shell writes to it and removes it**. After that, it prints the content of the file handle *4*.\n\nLet’s run it and see what happens:\n\n```\n$ ./remove_opened_file.sh \nThe file /tmp/remove_example was removed.\nThis is the content in file handle 4:\nBefore rm.\nAfter rm.\n```\nAs we see, **the second sub-shell prints both lines even when the file doesn’t exist**.\n\n This behavior is because \n\nThe system removes the inode when:",
+          "selection_applied": false
+        }
+      ],
+      "cited": true
+    }
+  ],
+  "reads": [
+    {
+      "url": "https://baeldung.com/linux/open-file-handle-after-move-delete",
+      "title": "What Happens to Open File Handle if File Is Moved or Deleted | Baeldung on Linux",
+      "site_name": "Baeldung on Linux",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://jazz.net/library/article/970",
+      "title": "Sharing symbolic links in Rational Team Concert",
+      "site_name": "jazz.net",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://kenhuangus.substack.com/p/chapter-4-working-directory-and-file",
+      "title": "Chapter 4: Working Directory & File-Path Resolution (Claude Code vs. Hermes Agent)",
+      "site_name": "Agentic AI",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://kodekloud.com/blog/linux-interview-questions",
+      "title": "Linux Interview Questions 2026 (With Real Answers)",
+      "site_name": "KodeKloud Blog | DevOps, Cloud, Kubernetes, AI Tutorials & More",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://medium.com/my-lifes-mirrow/the-real-difference-between-deleting-a-file-and-actually-freeing-up-its-space-in-linux-2632cb4c6a44",
+      "title": "The Real Difference Between Deleting a File and Actually Freeing ...",
+      "site_name": "medium.com",
+      "status": "failed",
+      "reason": "HTTP 403"
+    },
+    {
+      "url": "https://schinagl.priv.at/nt/ln/ln.html",
+      "title": "ln",
+      "site_name": "schinagl.priv.at",
+      "status": "used",
+      "reason": null
+    },
+    {
+      "url": "https://stackoverflow.com/questions/57555105/if-a-file-has-been-deleted-but-a-process-still-holds-a-file-handle-can-another",
+      "title": "If a file has been deleted, but a process still holds a file handle, can ...",
+      "site_name": "stackoverflow.com",
+      "status": "failed",
+      "reason": "HTTP 403"
+    },
+    {
+      "url": "https://stackoverflow.com/questions/9587445/how-to-create-a-link-to-a-directory-on-linux",
+      "title": "How to create a link to a directory on linux [closed] - Stack Overflow",
+      "site_name": "stackoverflow.com",
+      "status": "failed",
+      "reason": "HTTP 403"
+    },
+    {
+      "url": "https://superuser.com/questions/94481/in-linux-what-would-happen-to-a-running-program-when-its-executable-file-has-b",
+      "title": "In linux, what would happen to a running program when it's ...",
+      "site_name": "superuser.com",
+      "status": "failed",
+      "reason": "HTTP 403"
+    },
+    {
+      "url": "https://unix.stackexchange.com/questions/68523/find-and-remove-large-files-that-are-open-but-have-been-deleted",
+      "title": "Find and remove large files that are open but have been deleted",
+      "site_name": "unix.stackexchange.com",
+      "status": "failed",
+      "reason": "HTTP 403"
+    }
+  ],
+  "elapsed_ms": 9538.064999971539,
+  "web": {
+    "status": "used",
+    "freshness": "any",
+    "notice": null,
+    "queries": [
+      "what happens to a file when the last link is removed but a process still has it open in Linux",
+      "in Linux, which directory anchors a relative symbolic link target"
+    ],
+    "timings": {
+      "plan": 917.2788329888135,
+      "search": 740.5281669925898,
+      "fetch": 2040.1957079884596,
+      "rank": 8.604917034972459
+    },
+    "source_count": 5,
+    "plan_fallback": false,
+    "providers": [
+      "SearXNG"
+    ],
+    "ranking": "keyword",
+    "selection_condition": null
+  }
+}

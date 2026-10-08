@@ -28,8 +28,10 @@ def main() -> None:
         # G2's exact dark text/surface-3 pair is 10.52:1, below its stated body target.
         # Preserve the locked palette; pressed-row labels must meet AA (4.5:1).
         # This spec discrepancy is documented in docs/PHASE-0-REPORT.md.
-        pairs += [("text", "surface-3", 4.5), ("on-brand", "brand", 5.5)]
+        pairs += [("text", "surface-3", 4.5), ("on-brand", "brand", 5.5), ("brand", "brand-soft", 4.5), ("text-2", "brand-soft", 4.5)]
         pairs += [("line-input", surface, 3.2) for surface in ("bg", "surface")]
+        pairs += [("on-brand", "danger", 4.5)]
+        pairs += [(foreground, background, 4.5) for foreground in ("danger", "warning") for background in ("bg", "surface", "surface-2")]
         for foreground, background, threshold in pairs:
             actual = ratio(theme[foreground], theme[background])
             count += 1

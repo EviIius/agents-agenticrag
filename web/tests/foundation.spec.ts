@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir } from "node:fs/promises";
@@ -49,14 +50,14 @@ for (const theme of ["light", "dark"] as const) {
       await expect(
         page.getByRole("button", { name: "Choose model", exact: true }),
       ).toContainText("fake-vision");
-      await page.getByLabel("Chat settings", { exact: true }).click();
+      await page.getByLabel("Chat controls", { exact: true }).click();
       await expect(
         page
-          .getByRole("heading", { name: "Chat settings", exact: true })
+          .getByRole("heading", { name: "Chat controls", exact: true })
           .last(),
       ).toBeVisible();
       await noOverflow(page);
-      await page.getByLabel("Close chat settings").click();
+      await page.getByLabel("Close chat controls").click();
       await expect(page.getByLabel("Message fake-chat")).toBeVisible();
     });
   }
@@ -67,6 +68,7 @@ for (const theme of ["light", "dark"] as const) {
       page.getByText("Start with a clear question", { exact: true }),
     ).toBeVisible();
     await noOverflow(page);
+    await settle(page);
     const result = await new AxeBuilder({ page }).analyze();
     expect(
       result.violations.filter((item) =>
@@ -174,6 +176,7 @@ test("screenshots at all review sizes and themes (fake runtime)", async ({
           page.getByText("Start with a clear question", { exact: true }),
         ).toBeVisible();
         await noOverflow(page);
+        await settle(page);
         await page.screenshot({
           path: path.join(
             evidence,

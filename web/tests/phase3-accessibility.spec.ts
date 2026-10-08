@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir, writeFile } from "node:fs/promises";
@@ -16,10 +17,12 @@ for (const width of [390, 1440])
       await expect(region).toBeVisible();
       await mkdir("../artifacts/phase-3", { recursive: true });
       const audit = async (name: string) => {
+        await settle(page);
         await page.screenshot({
           animations: "disabled",
           path: `../artifacts/phase-3/${name}-${width}-${theme}-${test.info().project.name}-fake.png`,
         });
+        await settle(page);
         expect(
           (await new AxeBuilder({ page }).analyze()).violations.filter((v) =>
             ["serious", "critical"].includes(v.impact ?? ""),
@@ -147,13 +150,16 @@ test("keyboard walkthrough send stop regenerate branch model switch citation", a
   await page.keyboard.press("Escape");
   await page.keyboard.press("Control+Shift+o");
   await expect(page).toHaveURL("http://127.0.0.1:5173/");
-  const toggle = page.getByRole("button", { name: "Search off", exact: true });
+  await expect(page.getByRole("heading", { name: /Good / })).toBeVisible();
+  await settle(page);
+  const toggle = page.getByRole("button", { name: "Web search", exact: true });
   await expect(toggle).toBeVisible();
   await toggle.focus();
+  await expect(toggle).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(
-    page.getByRole("button", { name: "Search on", exact: true }),
-  ).toBeVisible();
+    page.getByRole("button", { name: "Web search", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
   await composer.focus();
   await composer.fill("Who lost the 2021 NBA Finals? Show a table.");
   await page.keyboard.press("Control+Enter");

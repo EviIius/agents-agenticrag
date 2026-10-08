@@ -1,0 +1,106 @@
+..........................................F....................F........ [ 44%]
+........................................................................ [ 88%]
+..................                                                       [100%]
+=================================== FAILURES ===================================
+___________ test_literal_values_and_dates_use_only_selected_evidence ___________
+
+    def test_literal_values_and_dates_use_only_selected_evidence() -> None:
+        renderer = output()
+        assert "December 25, 2021 (2021-12-25)" in renderer.render(row())
+        assert "25 December 2021" in renderer.render(row())
+        assert "[1]" in renderer.render(row()) and "FAKE-INJECTION" not in renderer.render(row())
+>       assert "1.3" in renderer.render(
+            row(label="version", kind="text", value="1.3", evidence=["s1.p1.u2"])
+        )
+
+tests/test_research_output.py:54: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.runs.research_output.EvidenceOutput object at 0x10e28da50>
+row = {'label': 'version', 'kind': 'text', 'value': '1.3', 'evidence': ['s1.p1.u2']}
+
+    def render(self, row: Any) -> str:
+        if not isinstance(row, dict) or set(row) != {"label", "kind", "value", "evidence"}:
+            raise self.invalid()
+        label, kind, value, keys = (row[k] for k in ("label", "kind", "value", "evidence"))
+        if (
+            not isinstance(label, str)
+            or not 1 <= len(label.strip()) <= 120
+            or label not in self.labels
+            or not isinstance(kind, str)
+            or kind not in {"text", "date", "true", "false", "excerpt", "missing"}
+            or not isinstance(value, str)
+            or len(value) > 160
+            or not isinstance(keys, list)
+            or len(keys) > 8
+            or any(not isinstance(key, str) or key not in self.units for key in keys)
+        ):
+>           raise self.invalid()
+E           app.errors.AppError: Research returned an invalid evidence selection.
+
+app/runs/research_output.py:245: AppError
+______ test_rows_stream_before_finish_without_selector_or_reasoning_leak _______
+
+    async def test_rows_stream_before_finish_without_selector_or_reasoning_leak() -> None:
+        closed = []
+        selector = json.dumps(
+            {"rows": [row(), row(label="version", kind="text", value="1.3", evidence=["s1.p1.u2"])]}
+        )
+        gate = asyncio.Event()
+    
+        async def upstream() -> AsyncIterator[ProviderEvent]:
+            try:
+                yield ReasoningDelta("Unverified private selection reasoning")
+                cut = selector.index("},") + 1
+                for char in selector[:cut]:
+                    yield TextDelta(char)
+                await gate.wait()
+                yield TextDelta(selector[cut:])
+                yield Usage(100, 50)
+                yield Timing(1, 1, 1)
+                yield Finish("stop")
+            finally:
+                closed.append(True)
+    
+        stream = output().stream(upstream())
+        header, first = await anext(stream), await anext(stream)
+        assert isinstance(header, TextDelta) and "Requested part" in header.text
+        assert isinstance(first, TextDelta) and "December 25" in first.text
+        gate.set()
+>       events = [event async for event in stream]
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_research_output.py:141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/runs/research_output.py:300: in stream
+    rendered = self.render(row)
+               ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.runs.research_output.EvidenceOutput object at 0x10e938110>
+row = {'label': 'version', 'kind': 'text', 'value': '1.3', 'evidence': ['s1.p1.u2']}
+
+    def render(self, row: Any) -> str:
+        if not isinstance(row, dict) or set(row) != {"label", "kind", "value", "evidence"}:
+            raise self.invalid()
+        label, kind, value, keys = (row[k] for k in ("label", "kind", "value", "evidence"))
+        if (
+            not isinstance(label, str)
+            or not 1 <= len(label.strip()) <= 120
+            or label not in self.labels
+            or not isinstance(kind, str)
+            or kind not in {"text", "date", "true", "false", "excerpt", "missing"}
+            or not isinstance(value, str)
+            or len(value) > 160
+            or not isinstance(keys, list)
+            or len(keys) > 8
+            or any(not isinstance(key, str) or key not in self.units for key in keys)
+        ):
+>           raise self.invalid()
+E           app.errors.AppError: Research returned an invalid evidence selection.
+
+app/runs/research_output.py:245: AppError
+=========================== short test summary info ============================
+FAILED tests/test_research_output.py::test_literal_values_and_dates_use_only_selected_evidence
+FAILED tests/test_research_output.py::test_rows_stream_before_finish_without_selector_or_reasoning_leak
+2 failed, 160 passed in 5.49s

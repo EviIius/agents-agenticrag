@@ -9,7 +9,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import Response
 
 from ..db import attachments as records
-from ..db import chats, messages, settings
+from ..db import chats, messages, presets, settings
 from ..db.connections import now, uid
 from ..db.legacy import import_legacy
 from ..errors import AppError
@@ -83,10 +83,18 @@ async def delete_all(body: DeleteChats, request: Request) -> None:
 
 
 @router.get("")
-async def listing(request: Request, q: str = "", cursor: str | None = None) -> ChatList:
+async def listing(
+    request: Request, q: str = "", cursor: str | None = None, folder: str | None = None
+) -> ChatList:
     store = request.app.state.store
     params: list[object] = []
     sql = "SELECT * FROM chats WHERE EXISTS (SELECT 1 FROM messages WHERE chat_id=chats.id)"
+    if folder is not None:
+        if folder == "none":
+            sql += " AND folder_id IS NULL"
+        else:
+            sql += " AND folder_id=?"
+            params.append(folder)
     if q.strip():
         terms = re.findall(r"\w+", q)
         if terms:
@@ -129,7 +137,11 @@ async def create(body: ChatCreate, request: Request) -> Chat:
             body.model_id = model.model_id
     if body.web_enabled is None:
         body.web_enabled = values["web.default_on"]
-    return await chats.create(request.app.state.store, body)
+    identifier = (
+        body.preset_id if "preset_id" in body.model_fields_set else values["default_preset_id"]
+    )
+    preset = await presets.get(request.app.state.store, identifier) if identifier else None
+    return await chats.create(request.app.state.store, body, preset)
 
 
 @router.get("/{identifier}")
@@ -251,6 +263,20 @@ async def start_message(identifier: str, body: Send, request: Request) -> RunRes
         raise AppError("run_active", "This chat is still generating.", 409)
     model = await request.app.state.registry.resolve(data.chat.connection_id, data.chat.model_id)
     parent = next((m for m in data.messages if m.id == body.parent_id), None)
+    if body.library is True and body.web is True:
+        raise AppError("validation_error", "Choose Library or web search for this message.", 422)
+    if sum(v is True for v in (body.library, body.web, body.research)) > 1:
+        raise AppError("validation_error", "Choose one retrieval option for this message.", 422)
+    research_on = body.research if body.research is not None else data.chat.research_enabled
+    if body.web is True or body.library is True:
+        research_on = False
+    library_on = body.library if body.library is not None else data.chat.library_enabled
+    if body.web is True or research_on:
+        library_on = False
+    if library_on:
+        from ..library.privacy import guard
+
+        await guard(store, model.connection_id, await settings.get(store))
     if body.parent_id and not parent:
         raise AppError("validation_error", "Parent belongs to another chat.", 422)
     if len(set(body.attachment_ids)) != len(body.attachment_ids):
@@ -293,6 +319,12 @@ async def start_message(identifier: str, body: Send, request: Request) -> RunRes
         params,
         await settings.get(store),
     )
+    if research_on:
+        await request.app.state.research.guard(
+            model,
+            assembled.has_recording
+            or any(a.kind == "audio" for m in data.messages for a in m.attachments),
+        )
     # Attachment content is assembled from unclaimed files before the transaction below.
     statements: list[tuple[str, tuple[object, ...]]] = [
         (
@@ -332,7 +364,25 @@ async def start_message(identifier: str, body: Send, request: Request) -> RunRes
         statements.append(("UPDATE attachments SET message_id=? WHERE id=?", (user_id, a["id"])))
     if body.web is not None:
         statements.append(("UPDATE chats SET web_enabled=? WHERE id=?", (body.web, identifier)))
+    if body.library is not None:
+        statements.append(
+            ("UPDATE chats SET library_enabled=? WHERE id=?", (body.library, identifier))
+        )
+    if body.research is not None:
+        statements.append(
+            ("UPDATE chats SET research_enabled=? WHERE id=?", (body.research, identifier))
+        )
+    if research_on:
+        statements.append(
+            ("UPDATE chats SET web_enabled=0,library_enabled=0 WHERE id=?", (identifier,))
+        )
+    elif library_on or body.web is True:
+        statements.append(("UPDATE chats SET research_enabled=0 WHERE id=?", (identifier,)))
+    if library_on:
+        statements.append(("UPDATE chats SET web_enabled=0 WHERE id=?", (identifier,)))
+    elif body.web is True:
+        statements.append(("UPDATE chats SET library_enabled=0 WHERE id=?", (identifier,)))
     await store.batch(statements)
     assistant = await messages.message(store, assistant_id)
-    run = request.app.state.runs.start(assistant, model, assembled, params)
+    run = request.app.state.runs.start(assistant, model, assembled, params, research=research_on)
     return RunResponse(run_id=run.id, user_message=user, assistant_message=assistant)

@@ -1,5 +1,6 @@
 """Browser-test app on the required 8787 port, with isolated temporary data."""
 
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -12,9 +13,11 @@ from app.db import connections, settings
 from app.main import create_app
 from app.schemas import ConnectionCreate
 
+data = Path(mkdtemp(prefix="workbench-e2e-"))
+os.environ["FAKE_TRANSCRIBE_GLOSSARY"] = str(data / "fake-glossary.txt")
 app = create_app(
     Settings(
-        data_dir=Path(mkdtemp(prefix="workbench-e2e-")),
+        data_dir=data,
         dev=True,
         legacy_db=Path(mkdtemp(prefix="workbench-legacy-fixture-")) / "missing.db",
         transcribe_home=Path(__file__).parent / "fake_transcribe",

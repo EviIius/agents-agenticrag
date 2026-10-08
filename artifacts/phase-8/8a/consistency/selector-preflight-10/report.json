@@ -1,0 +1,59 @@
+{
+  "scope": "One unscored current-selector preflight from previously selected public evidence, not a benchmark or confirmation. No tools or additional production calls.",
+  "recorded_at": "2026-10-07T23:05:32.625429+00:00",
+  "original_case": "sqlite-integrity-storage",
+  "request_sha256": "670b4e8389164a71c2497b41b0334f898def7ff054e4537be247491fbd3eda02",
+  "native_calls": 1,
+  "parse_error": null,
+  "rows": [
+    {
+      "row": {
+        "evidence": [
+          "s4.p2.u5",
+          "s4.p2.u7",
+          "s4.p2.u9",
+          "s5.p3.u8"
+        ],
+        "kind": "excerpt",
+        "label": "Using SQLite\u2019s documentation, explain how to enable foreign-key enforcement for each connection",
+        "value": ""
+      },
+      "valid": true,
+      "rendered": "| See evidence | Using SQLite\u2019s documentation, explain how to enable foreign-key enforcement for each connection | To get the protection you actually want, run \\`PRAGMA foreign_keys = ON;\\` at the start of every connection: / The pragma is per-connection, not per-database - the setting isn't stored in the file. / Most production code runs \\`PRAGMA foreign_keys = ON;\\` immediately after opening a connection. / - \\`foreign_keys=ON\\` is unrelated to WAL but worth setting on every connection - SQLite leaves foreign key enforcement off by default for backward compatibility. | [4][5] |\n"
+    },
+    {
+      "row": {
+        "evidence": [
+          "s1.p2.u2",
+          "s5.p1.u4",
+          "s5.p6.u3"
+        ],
+        "kind": "true",
+        "label": "whether WAL permits a reader alongside a writer",
+        "value": ""
+      },
+      "valid": true,
+      "rendered": "| True | whether WAL permits a reader alongside a writer | Because writers do nothing that would interfere with the actions of readers, writers and readers can run at the same time. / The result: a writer and any number of readers can be active at the same moment. / What WAL does change is that readers no longer block the writer, and the writer no longer blocks readers. | [1][5] |\n"
+    },
+    {
+      "row": {
+        "evidence": [
+          "s1.p1.u4",
+          "s1.p1.u5",
+          "s5.p4.u2",
+          "s5.p4.u3"
+        ],
+        "kind": "false",
+        "label": "supports a database on a network filesystem.",
+        "value": ""
+      },
+      "valid": true,
+      "rendered": "| Not true | supports a database on a network filesystem. | The wal-index greatly improves the performance of readers, but the use of shared memory means that all readers must exist on the same machine. / This is why the write-ahead log implementation will not work on a network filesystem. / - \\*\\*Network filesystems.\\*\\* WAL relies on shared memory (\\`mmap\\` ) between processes accessing the database. / NFS, SMB, and similar don't support that reliably. | [1][5] |\n"
+    }
+  ],
+  "runtime_version": "0.35.0",
+  "model_digest": "f8a791a5edd0075fb64ff3bd94a3140bfa791992db1bdda0daac587f2b6afbcb",
+  "raw_answer": "{\n  \"rows\": [\n    {\n      \"evidence\": [\n        \"s4.p2.u5\",\n        \"s4.p2.u7\",\n        \"s4.p2.u9\",\n        \"s5.p3.u8\"\n      ],\n      \"kind\": \"excerpt\",\n      \"label\": \"Using SQLite\u2019s documentation, explain how to enable foreign-key enforcement for each connection\",\n      \"value\": \"\"\n    },\n    {\n      \"evidence\": [\n        \"s1.p2.u2\",\n        \"s5.p1.u4\",\n        \"s5.p6.u3\"\n      ],\n      \"kind\": \"true\",\n      \"label\": \"whether WAL permits a reader alongside a writer\",\n      \"value\": \"\"\n    },\n    {\n      \"evidence\": [\n        \"s1.p1.u4\",\n        \"s1.p1.u5\",\n        \"s5.p4.u2\",\n        \"s5.p4.u3\"\n      ],\n      \"kind\": \"false\",\n      \"label\": \"supports a database on a network filesystem.\",\n      \"value\": \"\"\n    }\n  ]\n}",
+  "completed": true,
+  "limitation": "New stochastic output under the same retained request; not a recovery of the lost original final stream."
+}

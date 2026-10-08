@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir } from "node:fs/promises";
@@ -14,10 +15,10 @@ for (const width of [390, 1440])
       );
       await page.goto("/");
       await expect(
-        page.getByRole("button", { name: "Search off", exact: true }),
+        page.getByRole("button", { name: "Web search", exact: true }),
       ).toBeVisible();
       await page
-        .getByRole("button", { name: "Search off", exact: true })
+        .getByRole("button", { name: "Web search", exact: true })
         .click();
       await page
         .locator(".composer textarea")
@@ -27,6 +28,7 @@ for (const width of [390, 1440])
         page.getByText("Synthetic web answer", { exact: false }),
       ).toBeVisible();
       await mkdir("../artifacts/phase-2", { recursive: true });
+      await settle(page);
       await page.screenshot({
         path: `../artifacts/phase-2/web-chat-${width}-${theme}-fake-web.png`,
       });
@@ -42,9 +44,11 @@ for (const width of [390, 1440])
       await expect(
         page.getByRole("dialog", { name: "Citation sources" }),
       ).toBeInViewport({ ratio: 1 });
+      await settle(page);
       await page.screenshot({
         path: `../artifacts/phase-2/citation-card-${width}-${theme}-fake-web.png`,
       });
+      await settle(page);
       const cardAudit = await new AxeBuilder({ page }).analyze();
       expect(
         cardAudit.violations.filter((v) =>
@@ -57,11 +61,11 @@ for (const width of [390, 1440])
       await expect(
         page.getByRole("dialog", { name: "Citation sources" }),
       ).toHaveCount(0);
-      await page.getByRole("button", { name: /2 sources/ }).click();
+      await page
+        .getByRole("button", { name: "2 sources", exact: true })
+        .click();
       const dialog = page.getByRole("dialog").last();
-      await expect(
-        dialog.getByText("via DuckDuckGo", { exact: true }),
-      ).toBeVisible();
+      await expect(dialog.getByText(/^via DuckDuckGo(?: ·|$)/)).toBeVisible();
       await dialog
         .getByText("What the model saw", { exact: true })
         .first()
@@ -74,6 +78,7 @@ for (const width of [390, 1440])
           () => document.documentElement.scrollWidth <= innerWidth,
         ),
       ).toBeTruthy();
+      await settle(page);
       const a11y = await new AxeBuilder({ page }).analyze();
       expect(
         a11y.violations.filter((v) =>
@@ -81,6 +86,7 @@ for (const width of [390, 1440])
         ),
       ).toEqual([]);
       await mkdir("../artifacts/phase-2", { recursive: true });
+      await settle(page);
       await page.screenshot({
         path: `../artifacts/phase-2/sources-${width}-${theme}-fake-web.png`,
       });
@@ -120,7 +126,7 @@ test("search activity appears within 300ms and collapses after completion", asyn
     },
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Search off", exact: true }).click();
+  await page.getByRole("button", { name: "Web search", exact: true }).click();
   await page
     .locator(".composer textarea")
     .fill("Who lost the 2021 NBA Finals? Show a table.");
@@ -151,8 +157,12 @@ test("search activity appears within 300ms and collapses after completion", asyn
   );
   expect(elapsed).toBeLessThanOrEqual(300);
   const activity = page.getByTestId("search-activity");
-  await expect(activity.locator("summary")).toContainText("Searched the web");
-  await expect(activity.locator("details")).not.toHaveAttribute("open");
+  await expect(
+    activity.locator('[data-slot="collapsible-trigger"]'),
+  ).toContainText("Searched the web");
+  await expect(
+    activity.locator('[data-slot="collapsible-trigger"]'),
+  ).toHaveAttribute("data-state", "closed");
   await expect(activity.locator('[data-domain="example.org"]')).toBeVisible();
   await mkdir("../artifacts/phase-2", { recursive: true });
   await import("node:fs/promises").then(({ writeFile }) =>
@@ -180,7 +190,7 @@ test("a late streaming chat snapshot cannot erase the completed SSE answer", asy
     },
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Search off", exact: true }).click();
+  await page.getByRole("button", { name: "Web search", exact: true }).click();
   let intercepted = false;
   let release!: () => void;
   const hold = new Promise<void>((resolve) => {

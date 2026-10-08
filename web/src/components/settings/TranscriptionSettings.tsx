@@ -1,3 +1,5 @@
+import { failureCopy, failureDetail } from "@/lib/errors";
+import config from "../../../../shared/config.json";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -13,6 +15,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { GlossaryEditor } from "./GlossaryEditor";
 import { Switch } from "@/components/ui/switch";
 export function TranscriptionSettings({
   bootstrap,
@@ -102,7 +105,7 @@ export function TranscriptionSettings({
       {data && !data.configured && (
         <p className="break-words text-sm text-fg-2">
           Set <code>WORKBENCH_TRANSCRIBE_HOME</code> to the transcription engine
-          folder on your Mac, then restart Workbench.
+          folder on your Mac, then restart {config.APP_NAME}.
         </p>
       )}
       {status.isError && !fixture && (
@@ -120,7 +123,10 @@ export function TranscriptionSettings({
                 query.setQueryData(["transcription-status"], value);
                 void query.invalidateQueries({ queryKey: ["bootstrap"] });
               },
-              (error) => toast.error(String(error)),
+              (error) =>
+                toast.error(failureCopy(error), {
+                  description: failureDetail(error),
+                }),
             );
           }}
         >
@@ -139,7 +145,10 @@ export function TranscriptionSettings({
               "PATCH",
             ).then(
               () => query.invalidateQueries({ queryKey: ["bootstrap"] }),
-              (error) => toast.error(String(error)),
+              (error) =>
+                toast.error(failureCopy(error), {
+                  description: failureDetail(error),
+                }),
             );
           }}
         />
@@ -207,9 +216,9 @@ export function TranscriptionSettings({
           <AlertDialogHeader>
             <AlertDialogTitle>Clear stored audio?</AlertDialogTitle>
             <AlertDialogDescription>
-              Permanently remove Workbench’s uploaded audio copies to free
-              space. Transcripts, timestamps, JSON outputs and chats stay saved.
-              Re-upload an original to transcribe again. Active jobs are
+              Permanently remove {config.APP_NAME}’s uploaded audio copies to
+              free space. Transcripts, timestamps, JSON outputs and chats stay
+              saved. Re-upload an original to transcribe again. Active jobs are
               skipped.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -233,6 +242,9 @@ export function TranscriptionSettings({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {data?.configured && (
+        <GlossaryEditor preview={fixture ? "ready" : undefined} />
+      )}
       <p className="text-xs text-fg-3">
         Transcription stays on your Mac. Transcripts use your local Ollama
         model.

@@ -1,0 +1,27 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________________ test_word_table_retains_empty_edge_cells ___________________
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-183/test_word_table_retains_empty_0')
+
+    def test_word_table_retains_empty_edge_cells(tmp_path: Path) -> None:
+        target = tmp_path / "invented.docx"
+        xml = (
+            '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+            "<w:body><w:tbl><w:tr><w:tc><w:p/></w:tc>"
+            "<w:tc><w:p><w:r><w:t>Invented cell</w:t></w:r></w:p></w:tc>"
+            "<w:tc><w:p/></w:tc></w:tr></w:tbl></w:body></w:document>"
+        )
+        with ZipFile(target, "w") as archive:
+            archive.writestr("word/document.xml", xml)
+>       assert extract(target, ".docx").text == "\tInvented cell\t"
+E       AssertionError: assert 'Invented cell' == '\tInvented cell\t'
+E         
+E         - 	Invented cell	
+E         ? -             -
+E         + Invented cell
+
+tests/test_documents.py:369: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_documents.py::test_word_table_retains_empty_edge_cells - As...
+1 failed in 0.08s

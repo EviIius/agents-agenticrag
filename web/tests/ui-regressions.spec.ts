@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir } from "node:fs/promises";
@@ -77,6 +78,7 @@ for (const width of [320, 390, 768, 1440]) {
       expect(bounds.inputBottom).toBeLessThanOrEqual(bounds.wrapperBottom);
       expect(bounds.wrapperBottom).toBeLessThanOrEqual(bounds.listTop + 1);
       await mkdir("../artifacts/phase-2", { recursive: true });
+      await settle(page);
       await page.screenshot({
         path: `../artifacts/phase-2/review-picker-${width}-${theme}.png`,
       });
@@ -84,10 +86,10 @@ for (const width of [320, 390, 768, 1440]) {
         await page.getByRole("button", { name: "Close", exact: true }).click();
       else await page.keyboard.press("Escape");
       await page
-        .getByRole("button", { name: "Chat settings", exact: true })
+        .getByRole("button", { name: "Chat controls", exact: true })
         .click();
       const controls = page.getByRole("region", {
-        name: "Chat settings controls",
+        name: "Chat controls",
       });
       await expect(
         controls.getByRole("button", { name: "64K", exact: true }),
@@ -105,10 +107,15 @@ for (const width of [320, 390, 768, 1440]) {
       ).toBeDisabled();
       await expect(context).toHaveAttribute("aria-invalid", "true");
       await context.fill("16384");
+      await expect(context).toHaveAttribute("aria-invalid", "false");
       await expect(
         controls.getByRole("button", { name: "Save settings", exact: true }),
+      ).toBeDisabled();
+      await context.fill("8192");
+      await expect(
+        controls.getByRole("button", { name: "Apply context length" }),
       ).toBeEnabled();
-      await page.getByRole("button", { name: "Close chat settings" }).click();
+      await page.getByRole("button", { name: "Close chat controls" }).click();
       await page.keyboard.press("Control+,");
       const settings = page.getByRole("dialog", {
         name: "Settings",
@@ -121,7 +128,7 @@ for (const width of [320, 390, 768, 1440]) {
       for (const pane of [
         "Connections",
         "Models",
-        "Search",
+        "Web search",
         "Transcription",
         "Appearance",
         "Data",
@@ -160,14 +167,15 @@ for (const width of [320, 390, 768, 1440]) {
         expect(
           await section.evaluate((el) => el.scrollWidth <= el.clientWidth),
         ).toBeTruthy();
-        if ([390, 1440].includes(width))
-          await page.screenshot({
-            path: `../artifacts/phase-2/review-settings-${pane.toLowerCase()}-${width}-${theme}.png`,
-          });
+        if ([390, 1440].includes(width)) await settle(page);
+        await page.screenshot({
+          path: `../artifacts/phase-2/review-settings-${pane.toLowerCase()}-${width}-${theme}.png`,
+        });
         await section.evaluate((element) => {
           element.scrollTop = element.scrollHeight;
         });
       }
+      await settle(page);
       const audit = await new AxeBuilder({ page }).analyze();
       expect(
         audit.violations.filter((item) =>

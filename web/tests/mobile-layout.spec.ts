@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 
@@ -42,10 +43,10 @@ for (const width of [320, 390, 768, 1440]) {
       await history.getByRole("button", { name: "Collapse sidebar" }).click();
     }
     await page
-      .getByRole("button", { name: "Chat settings", exact: true })
+      .getByRole("button", { name: "Chat controls", exact: true })
       .click();
     const controls = page.getByRole("region", {
-      name: "Chat settings controls",
+      name: "Chat controls",
     });
     await expect(controls).toBeVisible();
     await page
@@ -59,7 +60,7 @@ for (const width of [320, 390, 768, 1440]) {
       });
     if (phone) {
       await expect(
-        page.getByRole("heading", { name: "Chat settings", exact: true }),
+        page.getByRole("heading", { name: "Chat controls", exact: true }),
       ).toHaveCount(1);
     }
     const toggle = controls.getByRole("switch").first();
@@ -91,10 +92,11 @@ for (const width of [320, 390, 768, 1440]) {
     const bounds = await save.boundingBox();
     expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(phone ? 810 : 844);
     await mkdir("../artifacts/phase-2", { recursive: true });
+    await settle(page);
     await page.screenshot({
       path: `../artifacts/phase-2/panel-safe-${width}-fake-runtime.png`,
     });
-    await page.getByRole("button", { name: "Close chat settings" }).click();
+    await page.getByRole("button", { name: "Close chat controls" }).click();
     await page.getByRole("button", { name: "Choose model" }).click();
     if (phone) {
       const search = page.getByRole("combobox", { name: "Search models" });
@@ -117,6 +119,7 @@ for (const width of [320, 390, 768, 1440]) {
       await expect(
         page.getByRole("option", { name: /fake-chat/ }),
       ).toBeVisible();
+      await settle(page);
       await page.screenshot({
         path: `../artifacts/phase-2/model-keyboard-${width}-fake-runtime.png`,
       });
@@ -198,9 +201,10 @@ test("tablet model picker keeps its footer above a reduced viewport", async ({
   await page.setViewportSize({ width: 768, height: 320 });
   const popover = page.locator('[data-slot="popover-content"]');
   await expect(popover).toBeInViewport({ ratio: 1 });
-  const footer = popover.getByText(
-    "30 models · capabilities reported by Ollama",
-  );
+  const footer = popover.getByRole("button", {
+    name: "Manage models…",
+    exact: true,
+  });
   await expect(footer).toBeInViewport({ ratio: 1 });
   const list = popover.locator('[data-slot="command-list"]');
   expect(

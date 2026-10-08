@@ -29,6 +29,7 @@ import {
   DrawerHeader,
   DrawerClose,
 } from "@/components/ui/drawer";
+import { useUI } from "@/stores/ui";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 export type PickerState =
   "ready" | "loading" | "offline" | "empty" | "loading-model";
@@ -55,7 +56,6 @@ export function ModelPicker({
     window.addEventListener("workbench:choose-model", show);
     return () => window.removeEventListener("workbench:choose-model", show);
   }, []);
-  const [selected, setSelected] = useState("fake-chat");
   const [busy, setBusy] = useState<string | null>(null),
     [elapsed, setElapsed] = useState(0);
   const started = useRef(0);
@@ -70,6 +70,28 @@ export function ModelPicker({
     return () => clearInterval(timer);
   }, [busy, loadingModel]);
   const phone = useMediaQuery("(max-width: 639px)");
+  const previousLoad = useRef(loadingModel);
+  const [loadedPulse, setLoadedPulse] = useState<string | null>(null);
+  useEffect(() => {
+    const loaded = previousLoad.current;
+    previousLoad.current = loadingModel;
+    if (
+      loaded &&
+      !loadingModel &&
+      models?.some(
+        (model) =>
+          model.connection_id + model.model_id === loaded &&
+          model.loaded === true,
+      )
+    ) {
+      setLoadedPulse(loaded);
+    }
+  }, [loadingModel, models]);
+  useEffect(() => {
+    if (!loadedPulse) return;
+    const timer = setTimeout(() => setLoadedPulse(null), 200);
+    return () => clearTimeout(timer);
+  }, [loadedPulse]);
   const trigger = (
     <Button
       variant="ghost"
@@ -77,24 +99,29 @@ export function ModelPicker({
       aria-label="Choose model"
       onClick={() => setOpen(true)}
     >
-      <span className="text-success" aria-hidden>
+      <span
+        data-slot="model-status"
+        data-loaded-fresh={
+          loadedPulse ===
+            (current?.connection_id ?? "") + (current?.model_id ?? "") ||
+          undefined
+        }
+        className="text-success"
+        aria-hidden
+      >
         {loadingModel ===
         (current?.connection_id ?? "") + (current?.model_id ?? "") ? (
-          <LoaderCircle className="size-4 animate-spin" />
-        ) : models ? (
-          current?.loaded == null ? (
-            ""
-          ) : current.loaded ? (
-            "●"
-          ) : (
-            "○"
-          )
-        ) : (
+          <LoaderCircle data-activity="spin" className="size-4" />
+        ) : current?.loaded == null ? (
+          ""
+        ) : current.loaded ? (
           "●"
+        ) : (
+          "○"
         )}
       </span>
       <span className="truncate font-medium">
-        {models ? (current?.display_name ?? "Choose model") : selected}
+        {current?.display_name ?? "Choose model"}
       </span>
       {loadingModel && (
         <span role="status" className="text-xs text-fg-2">
@@ -102,7 +129,9 @@ export function ModelPicker({
         </span>
       )}
       <span className="hidden text-xs text-fg-3 sm:block">
-        {models ? "Ollama" : "Fake runtime"}
+        {connections?.find(
+          (connection) => connection.id === current?.connection_id,
+        )?.name ?? ""}
       </span>
       <ChevronDown className="size-3 shrink-0" />
     </Button>
@@ -113,11 +142,6 @@ export function ModelPicker({
       <CommandList className="min-h-0 flex-1">
         <CommandEmpty>No matching models.</CommandEmpty>
         <>
-          {!models && (
-            <div className="px-2 py-1.5 text-xs font-medium text-fg-3">
-              Fake runtime · fixture connection
-            </div>
-          )}
           {models && state !== "loading" ? (
             Array.from(new Set(models.map((model) => model.connection_id))).map(
               (id) => (
@@ -133,7 +157,13 @@ export function ModelPicker({
                     .map((model) => (
                       <CommandItem
                         key={model.connection_id + model.model_id}
-                        value={model.display_name + " " + model.connection_id}
+                        value={
+                          model.display_name +
+                          " " +
+                          model.model_id +
+                          " " +
+                          model.connection_id
+                        }
                         data-active-model={
                           current?.model_id === model.model_id &&
                           current?.connection_id === model.connection_id
@@ -175,6 +205,9 @@ export function ModelPicker({
                               />
                             )}
                           </span>
+                          {model.display_name !== model.model_id && (
+                            <p className="meta break-all">{model.model_id}</p>
+                          )}
                           <p className="meta">
                             {[
                               model.params,
@@ -194,8 +227,9 @@ export function ModelPicker({
                         </div>
                         {onModelAction && (
                           <Button
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
+                            data-slot="model-action"
                             className="min-h-11 shrink-0 px-2"
                             disabled={busy !== null || !!loadingModel}
                             aria-label={`${model.loaded ? "Eject" : "Load"} ${model.display_name}`}
@@ -246,47 +280,7 @@ export function ModelPicker({
                 Retry
               </Button>
             </div>
-          ) : (
-            ["fake-chat", "fake-reasoning", "fake-vision"].map(
-              (model, index) => (
-                <CommandItem
-                  key={model}
-                  value={model}
-                  onSelect={() => {
-                    setSelected(model);
-                    setOpen(false);
-                  }}
-                  className="min-h-14 gap-3"
-                >
-                  <span
-                    className={index === 0 ? "text-success" : "text-fg-2"}
-                    aria-hidden
-                  >
-                    {index === 0 ? "●" : "○"}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      {model}
-                      {index === 1 && (
-                        <Brain
-                          aria-label="Supports reasoning"
-                          className="size-4"
-                        />
-                      )}
-                      {index === 2 && (
-                        <Eye aria-label="Accepts images" className="size-4" />
-                      )}
-                    </div>
-                    <div className="meta">
-                      Fixture · 16K context ·{" "}
-                      {index === 0 ? "Loaded" : "Not loaded"}
-                    </div>
-                  </div>
-                  {selected === model && <Check className="size-4" />}
-                </CommandItem>
-              ),
-            )
-          )}
+          ) : null}
           {models &&
             connections
               ?.filter(
@@ -302,22 +296,24 @@ export function ModelPicker({
               ))}
           {state === "loading-model" && (
             <p className="flex items-center gap-2 p-4 text-fg-2">
-              <LoaderCircle className="size-4 animate-spin" />
-              Loading fake-chat… 12 s
+              <LoaderCircle data-activity="spin" className="size-4" />
+              Loading {current?.display_name ?? "model"}… {elapsed} s
             </p>
           )}
         </>
       </CommandList>
-      <p className="shrink-0 border-t border-line p-3 text-xs text-fg-2">
-        {models
-          ? `${models.length} models · capabilities reported by Ollama`
-          : "Fixture models only · connections arrive in Phase 1"}
-        {models && (
-          <span className="mt-1 block">
-            Load selects the model for this chat.
-          </span>
-        )}
-      </p>
+      <div className="shrink-0 border-t border-line p-2">
+        <Button
+          variant="ghost"
+          className="min-h-11 w-full justify-start"
+          onClick={() => {
+            setOpen(false);
+            useUI.getState().set({ settings: true, settingsPane: "Models" });
+          }}
+        >
+          Manage models…
+        </Button>
+      </div>
     </Command>
   );
   if (phone)
@@ -328,11 +324,7 @@ export function ModelPicker({
           <DrawerContent>
             <DrawerHeader>
               <DrawerTitle>Choose model</DrawerTitle>
-              <DrawerDescription>
-                {models
-                  ? "Local models on your Mac"
-                  : "Fake runtime · UI fixtures"}
-              </DrawerDescription>
+              <DrawerDescription>Local models on your Mac</DrawerDescription>
             </DrawerHeader>
             {content}
             <DrawerClose asChild>
@@ -348,8 +340,9 @@ export function ModelPicker({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent
+        aria-label="Choose model"
         align="start"
-        className="flex max-h-(--radix-popover-content-available-height) w-[min(420px,calc(100vw-32px))] flex-col overflow-hidden p-0"
+        className="flex max-h-[calc(var(--radix-popover-content-available-height)-var(--spacing))] w-[min(420px,calc(100vw-32px))] flex-col overflow-hidden p-0"
       >
         {content}
       </PopoverContent>

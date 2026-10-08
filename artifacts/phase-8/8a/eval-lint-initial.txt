@@ -1,0 +1,316 @@
+E501 Line too long (103 > 100)
+  --> evals/research/qualify.py:20:101
+   |
+18 |             tags = (await client.get("http://127.0.0.1:11434/api/tags")).json()
+19 |             model = next(m for m in tags["models"] if m["name"] == daily)
+20 |             show = (await client.post("http://127.0.0.1:11434/api/show", json={"model": daily})).json()
+   |                                                                                                     ^^^
+21 |             version = (await client.get("http://127.0.0.1:11434/api/version")).json()["version"]
+22 |             return {"digest": model["digest"], "runtime_version": version,
+   |
+
+E501 Line too long (131 > 100)
+  --> evals/research/qualify.py:34:101
+   |
+32 |         await probe_tools.main()
+33 |         after = await metadata()
+34 |     (OUT / "metadata.json").write_text(json.dumps({"before": before, "after": after, "unchanged": before == after}, indent=2)+"\n")
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+35 |     probe = json.loads((OUT / "tool-probe.json").read_text())["models"][0]
+36 |     assert before == after and probe["fraction"] >= .95
+   |
+
+E501 Line too long (107 > 100)
+  --> evals/research/qualify.py:40:101
+   |
+38 |                       "context_length": selected["context_length"], "fraction": probe["fraction"],
+39 |                       "evidence": "artifacts/phase-8/8a/qualification/tool-probe.json"}]
+40 |     (ROOT / "server/app/runs/research-qualified.json").write_text(json.dumps(qualification, indent=2)+"\n")
+   |                                                                                                     ^^^^^^^
+
+E501 Line too long (131 > 100)
+  --> evals/research/regrade.py:19:101
+   |
+17 |     # Same portability fact, stated through the documented hardcoded-path mechanism.
+18 |     # Recreation and the separate sqlite thread requirements remain independently required.
+19 |     row["expect"]["must_include"][0] += r"|(?i:hardcoded\s+path[^.!?\n]{0,100}(?:original|virtual environment|directory|location))"
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+20 |     return rows
+   |
+
+E501 Line too long (128 > 100)
+  --> evals/research/regrade.py:35:101
+   |
+33 |     (OUT / "cases-grading-v2.json").write_text(json.dumps(revised, indent=2) + "\n")
+34 |     result = {"revision": 2, "model_calls": 0, "changes": {
+35 |         "python-environment-threads": "Accept equivalent hardcoded path dependence. All remaining fact requirements unchanged.",
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+36 |         "linux-link-lifetime": "No change: live omits all/last descriptor qualifier; replay includes it."
+37 |     }, "reports": []}
+   |
+
+E501 Line too long (105 > 100)
+  --> evals/research/regrade.py:36:101
+   |
+34 |     result = {"revision": 2, "model_calls": 0, "changes": {
+35 |         "python-environment-threads": "Accept equivalent hardcoded path dependence. All remaining fact requirements unchanged.",
+36 |         "linux-link-lifetime": "No change: live omits all/last descriptor qualifier; replay includes it."
+   |                                                                                                     ^^^^^
+37 |     }, "reports": []}
+38 |     for mode in ("baseline-record", "baseline-replay"):
+   |
+
+E501 Line too long (107 > 100)
+  --> evals/research/regrade.py:46:101
+   |
+44 |         result["reports"].append({"source": str(file.relative_to(ROOT)),
+45 |                                   "sha256": hashlib.sha256(file.read_bytes()).hexdigest(),
+46 |                                   "judgments": judgments, "complete": sum(j["revised"] for j in judgments),
+   |                                                                                                     ^^^^^^^
+47 |                                   "total": len(judgments)})
+48 |     result["candidate_minimum_complete"] = 13
+   |
+
+E501 Line too long (180 > 100)
+  --> evals/research/regrade.py:49:101
+   |
+47 | …
+48 | …
+49 | …ntage points requires 13/15 (86.67%). Regex screening is separate from unsupported-claim/citation review."
+   |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+50 | …) + "\n")
+51 | …
+   |
+
+E501 Line too long (164 > 100)
+  --> evals/research/run_eval.py:41:101
+   |
+39 | …al-") as directory:
+40 | …ch=True, dev=True))
+41 | …ient(transport=httpx.ASGITransport(app=app), base_url="http://localhost", timeout=None) as client:
+   |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+42 | …ase_url": "http://127.0.0.1:11434"})).json()["id"]
+43 | …")).json() if m["model_id"] == args.model)
+   |
+
+E501 Line too long (108 > 100)
+  --> evals/research/run_eval.py:43:101
+   |
+41 | …     async with app.router.lifespan_context(app), httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://localhos…
+42 | …         conn = (await client.post("/api/connections", json={"base_url": "http://127.0.0.1:11434"})).json()["id"]
+43 | …         model = next(m for m in (await client.get("/api/models")).json() if m["model_id"] == args.model)
+   |                                                                                                   ^^^^^^^^
+44 | …         await client.patch("/api/settings", json={"auto_title": False, "web.provider_order": ["ollama", "searxng", "exa", "ddgs"]})
+45 | …         adapter = await app.state.registry.adapter(conn)
+   |
+
+E501 Line too long (135 > 100)
+  --> evals/research/run_eval.py:44:101
+   |
+42 |             conn = (await client.post("/api/connections", json={"base_url": "http://127.0.0.1:11434"})).json()["id"]
+43 |             model = next(m for m in (await client.get("/api/models")).json() if m["model_id"] == args.model)
+44 |             await client.patch("/api/settings", json={"auto_title": False, "web.provider_order": ["ollama", "searxng", "exa", "ddgs"]})
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+45 |             adapter = await app.state.registry.adapter(conn)
+46 |             original_payload = adapter.payload
+   |
+
+B023 Function definition does not bind loop variable `captures`
+  --> evals/research/run_eval.py:70:21
+   |
+68 |                 def payload(req):
+69 |                     body = original_payload(req)
+70 |                     captures.append(body)
+   |                     ^^^^^^^^
+71 |                     return body
+72 |                 async def stream(req):
+   |
+
+E501 Line too long (101 > 100)
+  --> evals/research/run_eval.py:75:101
+   |
+73 |                     collected = []
+74 |                     async for event in original_stream(req):
+75 |                         collected.append({"type": type(event).__name__, **dataclasses.asdict(event)})
+   |                                                                                                     ^
+76 |                         yield event
+77 |                     events.append(collected)
+   |
+
+B023 Function definition does not bind loop variable `events`
+  --> evals/research/run_eval.py:77:21
+   |
+75 |                         collected.append({"type": type(event).__name__, **dataclasses.asdict(event)})
+76 |                         yield event
+77 |                     events.append(collected)
+   |                     ^^^^^^
+78 |                 adapter.payload, adapter.stream = payload, stream
+79 |                 chat = (await client.post("/api/chats", json={"connection_id": conn, "model_id": args.model})).json()
+   |
+
+E501 Line too long (117 > 100)
+  --> evals/research/run_eval.py:79:101
+   |
+77 | …         events.append(collected)
+78 | …     adapter.payload, adapter.stream = payload, stream
+79 | …     chat = (await client.post("/api/chats", json={"connection_id": conn, "model_id": args.model})).json()
+   |                                                                                           ^^^^^^^^^^^^^^^^^
+80 | …     clock = monotonic()
+81 | …     reply = await client.post("/api/chats/"+chat["id"]+"/messages", json={"content": case["turns"][0]["user"], "research": True})
+   |
+
+E501 Line too long (141 > 100)
+  --> evals/research/run_eval.py:81:101
+   |
+79 | …, json={"connection_id": conn, "model_id": args.model})).json()
+80 | …
+81 | …"+chat["id"]+"/messages", json={"content": case["turns"][0]["user"], "research": True})
+   |                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+82 | …
+83 | …
+   |
+
+E501 Line too long (104 > 100)
+   --> evals/research/run_eval.py:103:101
+    |
+101 |                 citations = cited(run.message.content)
+102 |                 result = {"id": case["id"], "required_facts": facts(run.message.content,case),
+103 |                           "citations_valid": bool(citations) and citations <= {s["n"] for s in sources},
+    |                                                                                                     ^^^^
+104 |                           "minimum_citations": len(citations)>=case["expect"]["min_citations"],
+105 |                           "status": run.message.status, "error": run.message.error.model_dump() if run.message.error else None,
+    |
+
+E501 Line too long (127 > 100)
+   --> evals/research/run_eval.py:105:101
+    |
+103 |                           "citations_valid": bool(citations) and citations <= {s["n"] for s in sources},
+104 |                           "minimum_citations": len(citations)>=case["expect"]["min_citations"],
+105 |                           "status": run.message.status, "error": run.message.error.model_dump() if run.message.error else None,
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+106 |                           "message": run.message.model_dump(), "sources": sources,
+107 |                           "reads": detail["reads"].get(run.message.id, []),
+    |
+
+E501 Line too long (107 > 100)
+   --> evals/research/run_eval.py:108:101
+    |
+106 |                           "message": run.message.model_dump(), "sources": sources,
+107 |                           "reads": detail["reads"].get(run.message.id, []),
+108 |                           "calls": len(captures), "tool_calls": len(valid), "valid_tool_calls": sum(valid),
+    |                                                                                                     ^^^^^^^
+109 |                           "budget_exceeded": exceeded, "total_ms": elapsed, "captured_requests": captures,
+110 |                           "provider_events": events}
+    |
+
+E501 Line too long (106 > 100)
+   --> evals/research/run_eval.py:109:101
+    |
+107 |                           "reads": detail["reads"].get(run.message.id, []),
+108 |                           "calls": len(captures), "tool_calls": len(valid), "valid_tool_calls": sum(valid),
+109 |                           "budget_exceeded": exceeded, "total_ms": elapsed, "captured_requests": captures,
+    |                                                                                                     ^^^^^^
+110 |                           "provider_events": events}
+111 |                 results.append(result)
+    |
+
+E501 Line too long (149 > 100)
+   --> evals/research/run_eval.py:113:101
+    |
+111 | …
+112 | …dumps(result,indent=2,ensure_ascii=False)+"\n")
+113 | …uired_facts"] else "FACT MISS", info.steps, "steps", round(elapsed/1000,1),"s",flush=True)
+    |                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+114 | …oad, original_stream
+115 | …
+    |
+
+E501 Line too long (124 > 100)
+   --> evals/research/run_eval.py:118:101
+    |
+116 |     times = sorted(r["total_ms"]/1000 for r in results)
+117 |     complete = sum(r["required_facts"] for r in results)
+118 |     metrics = {"required_facts_cases": complete, "total_cases": len(results), "factual_completeness": complete/len(results),
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^
+119 |                "baseline_factual_completeness": 10/15, "gain_percentage_points": 100*(complete/len(results)-10/15),
+120 |                "fact_target": complete>=13, "citations_valid": all(r["citations_valid"] for r in results),
+    |
+
+E501 Line too long (115 > 100)
+   --> evals/research/run_eval.py:119:101
+    |
+117 |     complete = sum(r["required_facts"] for r in results)
+118 |     metrics = {"required_facts_cases": complete, "total_cases": len(results), "factual_completeness": complete/len(results),
+119 |                "baseline_factual_completeness": 10/15, "gain_percentage_points": 100*(complete/len(results)-10/15),
+    |                                                                                                     ^^^^^^^^^^^^^^^
+120 |                "fact_target": complete>=13, "citations_valid": all(r["citations_valid"] for r in results),
+121 |                "min_citations": all(r["minimum_citations"] for r in results),
+    |
+
+E501 Line too long (106 > 100)
+   --> evals/research/run_eval.py:120:101
+    |
+118 |     metrics = {"required_facts_cases": complete, "total_cases": len(results), "factual_completeness": complete/len(results),
+119 |                "baseline_factual_completeness": 10/15, "gain_percentage_points": 100*(complete/len(results)-10/15),
+120 |                "fact_target": complete>=13, "citations_valid": all(r["citations_valid"] for r in results),
+    |                                                                                                     ^^^^^^
+121 |                "min_citations": all(r["minimum_citations"] for r in results),
+122 |                "valid_tool_fraction": sum(r["valid_tool_calls"] for r in results)/max(1,sum(r["tool_calls"] for r in results)),
+    |
+
+E501 Line too long (127 > 100)
+   --> evals/research/run_eval.py:122:101
+    |
+120 |                "fact_target": complete>=13, "citations_valid": all(r["citations_valid"] for r in results),
+121 |                "min_citations": all(r["minimum_citations"] for r in results),
+122 |                "valid_tool_fraction": sum(r["valid_tool_calls"] for r in results)/max(1,sum(r["tool_calls"] for r in results)),
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+123 |                "budgets_exceeded": any(r["budget_exceeded"] for r in results),
+124 |                "max_model_calls": max(r["calls"] for r in results), "median_seconds": times[len(times)//2],
+    |
+
+E501 Line too long (107 > 100)
+   --> evals/research/run_eval.py:124:101
+    |
+122 |                "valid_tool_fraction": sum(r["valid_tool_calls"] for r in results)/max(1,sum(r["tool_calls"] for r in results)),
+123 |                "budgets_exceeded": any(r["budget_exceeded"] for r in results),
+124 |                "max_model_calls": max(r["calls"] for r in results), "median_seconds": times[len(times)//2],
+    |                                                                                                     ^^^^^^^
+125 |                "p90_seconds": times[math.ceil(.9*len(times))-1],
+126 |                "manual_claim_and_citation_review": "pending; regex/numeric validity are not semantic support certification"}
+    |
+
+E501 Line too long (124 > 100)
+   --> evals/research/run_eval.py:126:101
+    |
+124 |                "max_model_calls": max(r["calls"] for r in results), "median_seconds": times[len(times)//2],
+125 |                "p90_seconds": times[math.ceil(.9*len(times))-1],
+126 |                "manual_claim_and_citation_review": "pending; regex/numeric validity are not semantic support certification"}
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^
+127 |     report={"recorded_at":datetime.now(UTC).isoformat(), "model":model, "mode":"offline frozen corpus, real native tool loop",
+128 |             "corpus":"same per-case 8-0 search results/pages, query-independent replay like the saved Search baseline",
+    |
+
+E501 Line too long (126 > 100)
+   --> evals/research/run_eval.py:127:101
+    |
+125 |                "p90_seconds": times[math.ceil(.9*len(times))-1],
+126 |                "manual_claim_and_citation_review": "pending; regex/numeric validity are not semantic support certification"}
+127 |     report={"recorded_at":datetime.now(UTC).isoformat(), "model":model, "mode":"offline frozen corpus, real native tool loop",
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+128 |             "corpus":"same per-case 8-0 search results/pages, query-independent replay like the saved Search baseline",
+129 |             "prompt_sha256":hashlib.sha256(PROMPT.encode()).hexdigest(),"grading_revision":2,"sampling_overrides":{},
+    |
+
+E501 Line too long (119 > 100)
+   --> evals/research/run_eval.py:128:101
+    |
+126 |                "manual_claim_and_citation_review": "pending; regex/numeric validity are not semantic support certification"}
+127 |     report={"recorded_at":datetime.now(UTC).isoformat(), "model":model, "mode":"offline frozen corpus, real native tool loop",
+128 |             "corpus":"same per-case 8-0 search results/pages, query-independent replay like the saved Search baseline",
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^
+129 |             "prompt_sha256":hashlib.sha256(PROMPT.encode()).hexdigest(),"grading_revision":2,"sampling_overrides":{},
+130 |             "metrics":metrics,"results":results}
+    |
+
+Found 30 errors (1 fixed, 29 remaining).

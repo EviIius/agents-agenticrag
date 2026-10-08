@@ -1,3 +1,7 @@
+import { WaitingDots } from "./WaitingDots";
+import { useFreshRows } from "@/stores/fresh";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { DocumentChip } from "./DocumentChip";
 import { AudioChip } from "./AudioChip";
 import {
   lazy,
@@ -56,9 +60,11 @@ function Thinking({
     >
       <CollapsibleTrigger className="flex min-h-11 w-full items-center gap-2 px-3 text-sm text-fg-2">
         <Brain className="size-4" />
-        {live
-          ? `Thinking… ${elapsed}s`
-          : `Thought for ${Math.round((duration ?? elapsed * 1000) / 1000)}s`}
+        <span data-slot="activity-label" data-live={live || undefined}>
+          {live
+            ? `Thinking… ${elapsed}s`
+            : `Thought for ${Math.round((duration ?? elapsed * 1000) / 1000)}s`}
+        </span>
         <ChevronDown className="ml-auto size-4" />
       </CollapsibleTrigger>
       <CollapsibleContent className="max-h-72 overflow-y-auto whitespace-pre-wrap px-4 pb-4 text-sm leading-6 text-fg-2">
@@ -68,6 +74,9 @@ function Thinking({
   );
 }
 type LiveThreadProps = {
+  pending?: Message | null;
+  position?: number;
+  onScrollChange?: (scrolled: boolean) => void;
   onRegenerateWith?: (message: Message, model: Model) => void;
   models?: Model[];
   selectedModel?: Model;
@@ -112,6 +121,9 @@ export function LiveThread({
   onChatSettings,
   onNew,
   onRegenerateWith,
+  pending,
+  position,
+  onScrollChange,
 }: LiveThreadProps) {
   const [editing, setEditing] = useState<string | null>(null),
     [draft, setDraft] = useState("");
@@ -198,7 +210,7 @@ export function LiveThread({
   useEffect(() => {
     if (stick.current && scrollRef.current)
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [messages, steps, scrollRef]);
+  }, [messages, steps, pending, scrollRef]);
   return (
     <>
       <p className="sr-only" role="status">
@@ -216,6 +228,7 @@ export function LiveThread({
           if (e) {
             stick.current = e.scrollHeight - e.clientHeight - e.scrollTop < 80;
             onAboveBottomChange(!stick.current);
+            onScrollChange?.(e.scrollTop > 0);
           }
         }}
       >
@@ -224,7 +237,9 @@ export function LiveThread({
             <MessageRow
               key={message.id}
               message={message}
+              lastAssistant={last?.id === message.id}
               all={all}
+              position={message.status === "streaming" ? position : undefined}
               stage={message.status === "streaming" ? stage : undefined}
               steps={message.status === "streaming" ? steps : undefined}
               sources={sources?.[message.id]}
@@ -240,9 +255,53 @@ export function LiveThread({
               setDraft={setDraft}
             />
           ))}
+          {pending && <OptimisticRow message={pending} />}
         </div>
       </div>
     </>
+  );
+}
+
+function useFreshRow(id: string) {
+  const fresh = useFreshRows((state) => Boolean(state.ids[id]));
+  const reduced = useReducedMotion();
+  useEffect(() => {
+    if (!fresh) return;
+    if (reduced) {
+      useFreshRows.getState().clear(id);
+      return;
+    }
+    const timeout = setTimeout(() => useFreshRows.getState().clear(id), 400);
+    return () => clearTimeout(timeout);
+  }, [fresh, reduced, id]);
+  return fresh;
+}
+function OptimisticRow({ message }: { message: Message }) {
+  const fresh = useFreshRow(message.id);
+  return (
+    <div data-testid="optimistic-send">
+      <article
+        aria-label="user message"
+        data-message-id={message.id}
+        data-fresh={fresh || undefined}
+        onAnimationEnd={(event) => {
+          if (event.target === event.currentTarget)
+            useFreshRows.getState().clear(message.id);
+        }}
+        className="min-w-0 py-4"
+      >
+        <h2 className="sr-only">You said</h2>
+        <div className="user-bubble ml-auto w-fit">
+          <p className="whitespace-pre-wrap break-words">{message.content}</p>
+          {message.attachments?.map((attachment) => (
+            <p key={attachment.id} className="text-xs text-fg-2">
+              {attachment.filename}
+            </p>
+          ))}
+        </div>
+      </article>
+      <WaitingDots />
+    </div>
   );
 }
 
@@ -251,6 +310,7 @@ type MessageRowProps = Omit<
   "messages" | "scrollRef" | "onAboveBottomChange" | "sources" | "reads"
 > & {
   message: Message;
+  lastAssistant?: boolean;
   sources?: Source[];
   reads?: WebRead[];
   editing: string | null;
@@ -258,8 +318,10 @@ type MessageRowProps = Omit<
   setEditing: Dispatch<SetStateAction<string | null>>;
   setDraft: Dispatch<SetStateAction<string>>;
 };
-const MessageRow = memo(function MessageRow({
+export const MessageRow = memo(function MessageRow({
   message,
+  lastAssistant = true,
+  position,
   all,
   stage,
   steps,
@@ -281,10 +343,16 @@ const MessageRow = memo(function MessageRow({
   setEditing,
   setDraft,
 }: MessageRowProps) {
+  const fresh = useFreshRow(message.id);
   const content = (
     <article
       aria-label={`${message.role} message`}
       className="min-w-0 py-4"
+      data-fresh={fresh || undefined}
+      onAnimationEnd={(event) => {
+        if (event.target === event.currentTarget)
+          useFreshRows.getState().clear(message.id);
+      }}
       data-message-id={message.id}
       style={
         message.status !== "streaming"
@@ -322,16 +390,18 @@ const MessageRow = memo(function MessageRow({
                   if (await onEdit(message, draft)) setEditing(null);
                 }}
               >
-                Save & submit
+                Send
               </Button>
             </div>
           </div>
         ) : (
-          <div className="ml-auto w-fit max-w-full rounded-2xl border border-line bg-surface-2 px-4 py-3">
+          <div className="user-bubble ml-auto w-fit">
             <p className="whitespace-pre-wrap break-words">{message.content}</p>
             {(message.attachments ?? []).map((a) =>
               a.kind === "audio" ? (
                 <AudioChip key={a.id} attachment={a} model={selectedModel} />
+              ) : a.document ? (
+                <DocumentChip key={a.id} attachment={a} model={selectedModel} />
               ) : (
                 <a
                   className="block text-xs text-brand"
@@ -359,21 +429,20 @@ const MessageRow = memo(function MessageRow({
           {message.status === "streaming" &&
             stage !== "search" &&
             !message.content &&
-            !message.reasoning && (
+            !message.reasoning &&
+            (stage === "queued" || stage === "loading-model" ? (
               <p
                 className="flex min-h-12 items-center gap-2 text-sm text-fg-2"
                 role="status"
               >
-                <LoaderCircle className="size-4 animate-spin" />
+                <LoaderCircle data-activity="spin" className="size-4" />
                 {stage === "queued"
-                  ? "Waiting in line…"
-                  : stage === "loading-model"
-                    ? "Loading model…"
-                    : stage === "search"
-                      ? "Searching the web…"
-                      : "Waiting for first token…"}
+                  ? `Waiting for ${message.model?.display_name ?? "model"}…${position ? ` (#${position} in line)` : ""}`
+                  : "Loading model…"}
               </p>
-            )}
+            ) : (
+              <WaitingDots />
+            ))}
           <SearchActivity
             message={message}
             sources={sources ?? []}
@@ -388,7 +457,16 @@ const MessageRow = memo(function MessageRow({
             />
           )}
           <Suspense
-            fallback={<p className="text-fg-2">Loading formatted answer…</p>}
+            fallback={
+              <div
+                role="status"
+                aria-label="Loading formatted answer"
+                className="space-y-3 py-3"
+              >
+                <div className="skeleton h-4 w-4/5" />
+                <div className="skeleton h-4 w-3/5" />
+              </div>
+            }
           >
             <Markdown
               text={message.content}
@@ -445,44 +523,59 @@ const MessageRow = memo(function MessageRow({
                       Start new chat
                     </Button>
                     <Button variant="outline" onClick={onChatSettings}>
-                      Chat settings
+                      Chat controls
                     </Button>
                   </>
                 )}
               </div>
             </div>
           )}
-          {!renderSources && message.web?.status === "used" && (
-            <>
-              <SourcesSheet
-                message={message}
-                sources={sources ?? []}
-                reads={reads ?? []}
-              />
-              {message.web.notice?.code === "uncited" && (
-                <p className="mb-3 text-xs text-fg-3">
-                  This answer doesn't cite specific sources.
-                </p>
-              )}
-            </>
-          )}
+          {!renderSources &&
+            (message.web?.status === "used" ||
+              message.library?.status === "used") && (
+              <>
+                <SourcesSheet
+                  message={message}
+                  sources={sources ?? []}
+                  reads={reads ?? []}
+                />
+                {message.web?.notice?.code === "uncited" && (
+                  <p className="mb-3 text-xs text-fg-3">
+                    This answer doesn't cite specific sources.
+                  </p>
+                )}
+              </>
+            )}
           {renderSources?.(message, sources ?? [], reads ?? [])}
-          {message.status !== "streaming" && <StatsLine message={message} />}
         </>
       )}
       {message.status !== "streaming" && (
-        <MessageActions
-          message={message}
-          models={models}
-          onRegenerateWith={(m) => onRegenerateWith?.(message, m)}
-          messages={all}
-          onEdit={() => {
-            setEditing(message.id);
-            setDraft(message.content);
-          }}
-          onRegenerate={() => onRegenerate(message)}
-          onBranch={onBranch}
-        />
+        <div
+          data-slot="message-footer"
+          data-role={message.role}
+          data-last={lastAssistant || undefined}
+          className="flex flex-wrap items-center justify-between gap-x-3"
+        >
+          <div data-slot="message-actions">
+            <MessageActions
+              message={message}
+              models={models}
+              onRegenerateWith={(m) => onRegenerateWith?.(message, m)}
+              messages={all}
+              onEdit={() => {
+                setEditing(message.id);
+                setDraft(message.content);
+              }}
+              onRegenerate={() => onRegenerate(message)}
+              onBranch={onBranch}
+            />
+          </div>
+          {message.role === "assistant" && (
+            <div data-slot="message-stats" className="min-w-0 text-right">
+              <StatsLine message={message} />
+            </div>
+          )}
+        </div>
       )}
     </article>
   );

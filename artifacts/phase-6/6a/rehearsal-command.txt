@@ -1,0 +1,14 @@
+. scripts/tool-env.sh
+PYTHONPATH=. uv run --directory server python ../scripts/rehearse_transcript_cleanup.py --model qwen3:30b-a3b-workbench-32k
+
+Initial successful run: 800 generated words, 224.12 seconds, shorter than the
+approximately-five-minute target. real-cleanup-shorter.json preserves it.
+The first launch without PYTHONPATH failed before application execution.
+
+Five-minute run (same app/test source; only invented speech count replaced in memory):
+PYTHONPATH=. uv run --directory server python -c 'from pathlib import Path; exec(compile(Path("../scripts/rehearse_transcript_cleanup.py").read_text().replace("[paragraph] * 12", "[paragraph] * 16").replace("speech.split()[:800]", "speech.split()[:1050]"), "rehearse_transcript_cleanup.py", "exec"))' --model qwen3:30b-a3b-workbench-32k
+
+Prints counts/timing only, with temporary generated audio/transcripts removed on exit.
+Production connection metadata is read only; production recordings/transcripts
+are not read and the installed glossary is never edited. Its hash is compared.
+No recording, transcript or private glossary content is retained in evidence.

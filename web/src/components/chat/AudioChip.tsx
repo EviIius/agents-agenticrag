@@ -1,6 +1,16 @@
+import { failureCopy, failureDetail } from "@/lib/errors";
+import { useCleanup } from "@/hooks/useCleanup";
+import { useOverlaySession } from "@/hooks/useOverlaySession";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { AudioLines, Ellipsis, Square, Trash2, X } from "lucide-react";
+import {
+  AudioLines,
+  FileText,
+  Ellipsis,
+  Square,
+  Trash2,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { api, type Attachment, type Model, type Transcript } from "@/lib/api";
 import { attachTranscription, detachTranscription } from "@/lib/sse";
@@ -25,6 +35,7 @@ export type AudioUpload = {
   id: string;
   filename: string;
   percent: number;
+  kind?: "document";
   failed?: boolean;
   reason?: string;
 };
@@ -37,16 +48,35 @@ export function UploadChip({
 }) {
   return (
     <div
+      data-slot="attachment-chip"
       role="status"
       className="mb-2 flex max-w-full items-center gap-2 rounded-lg border border-line bg-surface-2 p-2 text-xs"
     >
-      <AudioLines className="size-4 shrink-0" />
+      {upload.kind === "document" ? (
+        <FileText className="size-4 shrink-0" />
+      ) : (
+        <AudioLines className="size-4 shrink-0" />
+      )}
       <div className="min-w-0 flex-1">
         <p className="truncate">{upload.filename}</p>
+        <div
+          data-slot="upload-progress"
+          role="progressbar"
+          aria-label="Upload progress"
+          aria-valuenow={upload.percent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <span
+            style={{ width: `${Math.min(100, Math.max(0, upload.percent))}%` }}
+          />
+        </div>
         <p className="text-fg-2">
           {upload.failed
             ? "Upload didn't finish"
-            : `Uploading ${upload.percent}%`}
+            : upload.kind === "document" && upload.percent === 100
+              ? "Reading document…"
+              : `Uploading ${upload.percent}%`}
         </p>
         {upload.failed && upload.reason && (
           <p className="break-words text-danger">{upload.reason}</p>
@@ -76,8 +106,11 @@ export function AudioChip({
   const live = useTranscripts((state) => state.attachments[attachment.id]);
   const item = fixture ? attachment : (live ?? attachment);
   const meta = item.transcript;
+  const cleanup = useCleanup(item, model, !!fixture);
+  const cleaning = meta?.cleanup?.status === "running";
   const query = useQueryClient();
   const [download, setDownload] = useState<RecordingDownload | null>(null);
+  const downloadSession = useOverlaySession(download);
   const [open, setOpen] = useState(false),
     [clock, setClock] = useState(Date.now());
   useEffect(() => {
@@ -119,6 +152,8 @@ export function AudioChip({
             : ready && !meta.word_count
               ? "No speech found"
               : `${duration(meta?.duration_seconds ?? 0)} · ${meta?.word_count?.toLocaleString()} words · ≈${meta?.token_estimate?.toLocaleString()} tokens`;
+  if (cleaning)
+    label = `Cleaning up… ${meta?.cleanup?.done ?? 0} of ${meta?.cleanup?.chunks ?? 0}`;
   if (meta?.cleanup?.status === "ready") label += " · Cleaned";
   const retry = async (channels = meta?.channels ?? "mix") => {
     if (fixture) return;
@@ -130,18 +165,20 @@ export function AudioChip({
       attachTranscription(next);
       void query.invalidateQueries({ queryKey: ["transcript", item.id] });
     } catch (error) {
-      toast.error(String(error));
+      toast.error(failureCopy(error), { description: failureDetail(error) });
     }
   };
   const cancel = () => {
     if (!fixture)
       void api(`/attachments/${item.id}/cancel`, {}).catch((error) =>
-        toast.error(String(error)),
+        toast.error(failureCopy(error), { description: failureDetail(error) }),
       );
   };
   return (
     <>
       <div
+        data-slot="audio-chip"
+        data-live={meta?.status === "transcribing" || cleaning || undefined}
         data-testid="audio-chip"
         className={`mb-2 flex max-w-full items-center gap-2 rounded-lg border p-2 ${tooLarge && ready ? "border-warning text-warning" : "border-line bg-surface-2"}`}
       >
@@ -156,7 +193,12 @@ export function AudioChip({
           onClick={() => setOpen(true)}
         >
           <span className="block truncate font-medium">{item.filename}</span>
-          <span className="block break-words text-fg-2" role="status">
+          <span
+            data-slot="activity-label"
+            data-live={meta?.status === "transcribing" || cleaning || undefined}
+            className="block break-words text-fg-2"
+            role="status"
+          >
             {label}
           </span>
           {item.audio_available === false && (
@@ -174,7 +216,16 @@ export function AudioChip({
             </span>
           )}
         </button>
-        {meta && ["queued", "transcribing"].includes(meta.status) ? (
+        {cleaning ? (
+          <IconButton
+            type="button"
+            label="Cancel clean-up"
+            disabled={cleanup.busy}
+            onClick={cleanup.cancel}
+          >
+            <Square />
+          </IconButton>
+        ) : meta && ["queued", "transcribing"].includes(meta.status) ? (
           <IconButton
             type="button"
             label="Cancel transcription"
@@ -226,6 +277,14 @@ export function AudioChip({
                 </DropdownMenuItem>
               ))}
               <DropdownMenuSeparator />
+              {model && !!meta?.word_count && (
+                <DropdownMenuItem
+                  disabled={cleanup.busy}
+                  onSelect={cleanup.start}
+                >
+                  Clean up with {model.display_name}
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem
                 disabled={item.audio_available === false}
                 onSelect={() => void retry("mix")}
@@ -277,10 +336,12 @@ export function AudioChip({
           </IconButton>
         )}
       </div>
-      {download && (
+      {downloadSession.value && (
         <RecordingDownloadDialog
+          open={downloadSession.open}
+          key={downloadSession.sequence}
           attachment={item}
-          initial={download}
+          initial={downloadSession.value}
           includeAudio={item.audio_available !== false}
           preview={fixture ? "ready" : undefined}
           onClose={() => setDownload(null)}
@@ -291,6 +352,7 @@ export function AudioChip({
         open={open}
         onOpenChange={setOpen}
         fixture={fixture}
+        model={model}
       />
     </>
   );

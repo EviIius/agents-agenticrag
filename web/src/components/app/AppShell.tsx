@@ -26,14 +26,20 @@ import { Sidebar } from "./Sidebar";
 import { IconButton } from "./IconButton";
 import { TopBar } from "./TopBar";
 import { SettingsDialog } from "@/components/settings/SettingsDialog";
-import { ChatSettingsPanel } from "@/components/settings/ChatSettingsPanel";
-import { Thread } from "@/components/chat/Thread";
+import {
+  FixtureChatSettings as ChatSettingsPanel,
+  FixtureThread as Thread,
+  FixtureSettingsPane,
+  fixtureModels,
+} from "@/design/ProductionFixtures";
 import { Composer } from "@/components/chat/Composer";
 import { useUI } from "@/stores/ui";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { fixtureTitles } from "@/design/fixtures";
+import { useAppEntrance } from "@/hooks/useAppEntrance";
 export function AppShell({ children }: { children?: ReactNode }) {
   const ui = useUI();
+  const entering = useAppEntrance(true);
   const phone = useMediaQuery("(max-width: 639px)");
   const wide = useMediaQuery("(min-width: 1280px)");
   const location = useLocation();
@@ -65,6 +71,8 @@ export function AppShell({ children }: { children?: ReactNode }) {
       autoFocus={Boolean(message) && !empty}
       key={starter}
       starter={starter}
+      model={fixtureModels[0]}
+      context={{ used_tokens: 6200, context_length: 16384 }}
       onSend={(text) => {
         setMessage(text);
         navigate("/design/chat/fixture");
@@ -78,7 +86,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
   );
   const panel = <ChatSettingsPanel drawer={phone && !wide} />;
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-app-entry={entering || undefined}>
       <aside className="sidebar-desktop" data-collapsed={ui.collapsed}>
         <Sidebar collapsed={ui.collapsed} />
       </aside>
@@ -172,13 +180,13 @@ export function AppShell({ children }: { children?: ReactNode }) {
             <DrawerContent className="overflow-hidden">
               <DrawerHeader className="relative shrink-0 px-14">
                 <IconButton
-                  label="Close chat settings"
+                  label="Close chat controls"
                   className="absolute right-3 top-2"
                   onClick={() => ui.set({ panel: false })}
                 >
                   <X />
                 </IconButton>
-                <DrawerTitle>Chat settings</DrawerTitle>
+                <DrawerTitle>Chat controls</DrawerTitle>
                 <DrawerDescription>
                   Fake runtime · preview controls
                 </DrawerDescription>
@@ -192,7 +200,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
               className="overflow-y-auto p-0"
               showCloseButton={false}
             >
-              <SheetTitle className="sr-only">Chat settings</SheetTitle>
+              <SheetTitle className="sr-only">Chat controls</SheetTitle>
               <SheetDescription className="sr-only">
                 Fixture generation controls
               </SheetDescription>
@@ -200,7 +208,10 @@ export function AppShell({ children }: { children?: ReactNode }) {
             </SheetContent>
           </Sheet>
         ))}
-      <SettingsDialog />
+      <SettingsDialog
+        searchEnabled
+        renderPane={(pane) => <FixtureSettingsPane pane={pane} />}
+      />
       <CommandDialog
         open={ui.command}
         onOpenChange={(command) => ui.set({ command })}

@@ -1,0 +1,47 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+All checks passed!
+. scripts/tool-env.sh; uv run --directory server ruff format --check app tests
+69 files already formatted
+. scripts/tool-env.sh; uv run --directory server mypy app tests
+Success: no issues found in 67 source files
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_coverage.py
+........................................................................ [ 33%]
+........................................................................ [ 67%]
+....................................................................     [100%]
+212 passed in 20.57s
+providers line coverage: 343/400 = 85.8%
+runs line coverage: 381/427 = 89.2%
+search line coverage: 1547/1741 = 88.9%
+transcribe line coverage: 370/408 = 90.7%
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_contrast.py
+light: body/background 16.17:1; secondary 6.55:1; tertiary 4.96:1
+dark: body/background 14.34:1; secondary 6.56:1; tertiary 4.88:1
+Contrast: 56 token pairs passed.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/generate_api_types.py --check
+✨ openapi-typescript 7.13.0
+🚀 /var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/tmp09ys24ii/openapi.json → /var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/tmp09ys24ii/api-types.ts [47.7ms]
+API contract: up to date.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_api_additive.py
+API additive guard: Phase 3 contract preserved.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_motion.py
+Motion guard: all first-party motion rules pass.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/privacy_audit.py
+{
+  "scanned": 386,
+  "failures": [],
+  "limits": "Changed files and Phase 4 evidence only; images require human review; optional local private-marker file."
+}
+. scripts/tool-env.sh; npm run check --prefix web
+npm notice run workbench-web@1.0.0-alpha.0 check
+npm notice run tsc --noEmit && eslint . && prettier --check src index.html vite.config.ts playwright.config.ts tests && vitest run src
+Checking formatting...
+All matched files use Prettier code style!
+
+ RUN  v5.0.3 /Users/evilius/Documents/GitHub/agents-agenticrag/web
+
+
+ Test Files  4 passed (4)
+      Tests  36 passed (36)
+   Start at  12:27:14
+   Duration  206ms (tests 50%, transform 33%, import 14%, worker 3%)
+

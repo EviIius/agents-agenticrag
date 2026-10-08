@@ -1,0 +1,537 @@
+[
+  {
+    "id": "sqlite-integrity-storage",
+    "turns": [
+      {
+        "user": "Using SQLite\u2019s documentation, explain how to enable foreign-key enforcement for each connection and whether WAL permits a reader alongside a writer or supports a database on a network filesystem."
+      }
+    ],
+    "expect": {
+      "search": true,
+      "must_include": [
+        "PRAGMA\\s+foreign_keys\\s*=\\s*(?:ON|1)",
+        "(?i)(?:each|every|per)[^.!?\\n]{0,50}connection",
+        "(?i)reader[^.!?\\n]{0,110}(?:concurrent|writer)|writer[^.!?\\n]{0,110}reader",
+        "(?i)(?:not|cannot|doesn.t|unsupported)[^.!?\\n]{0,100}network|network[^.!?\\n]{0,100}(?:not|cannot|unsupported)"
+      ],
+      "min_citations": 2
+    },
+    "research": {
+      "rationale": "Two distinct authoritative references cover separate requested parts; neither reference alone supports every required fact.",
+      "references": [
+        {
+          "url": "https://www.sqlite.org/foreignkeys.html",
+          "facts": [
+            "PRAGMA foreign_keys = ON",
+            "each connection"
+          ]
+        },
+        {
+          "url": "https://www.sqlite.org/wal.html",
+          "facts": [
+            "readers and writer can run concurrently",
+            "same host; no network filesystem"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "python-environment-threads",
+    "turns": [
+      {
+        "user": "Consult Python\u2019s venv and sqlite3 documentation. Why should a virtual environment be recreated after moving it, and what happens when another thread uses a sqlite3 connection with the default check_same_thread setting?"
+      }
+    ],
+    "expect": {
+      "search": true,
+      "must_include": [
+        "(?i)(?:absolute|non.portable|not[^.!?\\n]{0,30}portable)",
+        "(?i)recreat",
+        "(?i)check_same_thread",
+        "(?i)True",
+        "ProgrammingError"
+      ],
+      "min_citations": 2
+    },
+    "research": {
+      "rationale": "Two distinct authoritative references cover separate requested parts; neither reference alone supports every required fact.",
+      "references": [
+        {
+          "url": "https://docs.python.org/3/library/venv.html",
+          "facts": [
+            "absolute interpreter paths make environments non-portable; recreate"
+          ]
+        },
+        {
+          "url": "https://docs.python.org/3/library/sqlite3.html",
+          "facts": [
+            "check_same_thread defaults True; ProgrammingError in a different thread"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "git-undo-strategies",
+    "turns": [
+      {
+        "user": "According to the Git manuals, compare reset --soft with revert: which moves HEAD without changing the index or working tree, and which records new commits that reverse earlier changes?"
+      }
+    ],
+    "expect": {
+      "search": true,
+      "must_include": [
+        "(?i)reset\\s+--soft|--soft",
+        "HEAD",
+        "(?i)(?:index|staging)",
+        "(?i)working (?:tree|directory)",
+        "(?i)revert",
+        "(?i)new commit"
+      ],
+      "min_citations": 2
+    },
+    "research": {
+      "rationale": "Two distinct authoritative references cover separate requested parts; neither reference alone supports every required fact.",
+      "references": [
+        {
+          "url": "https://git-scm.com/docs/git-reset",
+          "facts": [
+            "soft resets HEAD; index and working tree unchanged"
+          ]
+        },
+        {
+          "url": "https://git-scm.com/docs/git-revert",
+          "facts": [
+            "records new commits reversing prior commits"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "browser-worker-cache",
+    "turns": [
+      {
+        "user": "Using MDN\u2019s Service Worker API and Cache documentation, explain the secure-context requirement for service workers, the localhost exception for development, and whether entries in the Cache API automatically expire."
+      }
+    ],
+    "expect": {
+      "search": true,
+      "must_include": [
+        "HTTPS",
+        "localhost",
+        "(?i)(?:not|don.t|do not|never)[^.!?\\n]{0,80}expir|expir[^.!?\\n]{0,80}(?:not|manual|explicit)"
+      ],
+      "min_citations": 2
+    },
+    "research": {
+      "rationale": "Two distinct authoritative references cover separate requested parts; neither reference alone supports every required fact.",
+      "references": [
+        {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API",
+          "facts": [
+            "HTTPS secure context; localhost treated secure"
+          ]
+        },
+        {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/API/Cache",
+          "facts": [
+            "entries do not expire unless deleted"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "wcag-keyboard-motion",
+    "turns": [
+      {
+        "user": "From the W3C Understanding documents, give the success criterion number and conformance level for Keyboard and Animation from Interactions, then distinguish what each requires."
+      }
+    ],
+    "expect": {
+      "search": true,
+      "must_include": [
+        "2\\.1\\.1",
+        "(?i)Level\\s+A\\b|\\|\\s*A\\s*\\|",
+        "2\\.3\\.3",
+        "AAA",
+        "(?i)(?:disabl|turn.{0,5}off)",
+        "(?i)essential"
+      ],
+      "min_citations": 2
+    },
+    "research": {
+      "rationale": "Two distinct authoritative references cover separate requested parts; neither reference alone supports every required fact.",
+      "references": [
+        {
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/keyboard.html",
+          "facts": [
+            "2.1.1 Level A; keyboard functionality except path-dependent input"
+          ]
+        },
+        {
+          "url": "https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html",
+          "facts": [
+            "2.3.3 Level AAA; disable interaction motion unless essential"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "http-precondition-comparison",
+    "turns": [
+      {
+        "user": "Using MDN\u2019s If-Match and If-None-Match references, compare their ETag matching rules. What status follows a failed If-Match precondition, and what status does a matching If-None-Match produce for GET or HEAD?"
+      }
+    ],
+    "expect": {
+      "search": true,
+      "must_include": [
+        "(?i)strong",
+        "412",
+        "(?i)weak",
+        "304"
+      ],
+      "min_citations": 2
+    },
+    "research": {
+      "rationale": "Two distinct authoritative references cover separate requested parts; neither reference alone supports every required fact.",
+      "references": [
+        {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/If-Match",
+          "facts": [
+            "strong comparison; failed precondition 412"
+          ]
+        },
+        {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/If-None-Match",
+          "facts": [
+            "weak comparison; matching GET/HEAD 304"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "postgres-snapshot-recovery",
+    "turns": [
+      {
+        "user": "Consult PostgreSQL\u2019s transaction-isolation and continuous-archiving documentation. Contrast snapshot timing under Read Committed and Repeatable Read, then identify the two backup components needed for point-in-time recovery."
+      }
+    ],
+    "expect": {
+      "search": true,
+      "must_include": [
+        "(?i)Read Committed",
+        "(?i)(?:each|every|new)[^.!?\\n]{0,70}(?:statement|command|query)",
+        "(?i)Repeatable Read",
+        "(?i)base backup",
+        "\\bWAL\\b"
+      ],
+      "min_citations": 2
+    },
+    "research": {
+      "rationale": "Two distinct authoritative references cover separate requested parts; neither reference alone supports every required fact.",
+      "references": [
+        {
+          "url": "https://www.postgresql.org/docs/current/transaction-iso.html",
+          "facts": [
+            "Read Committed each statement; Repeatable Read transaction snapshot"
+          ]
+        },
+        {
+          "url": "https://www.postgresql.org/docs/current/continuous-archiving.html",
+          "facts": [
+            "base backup and archived WAL sequence"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "linux-link-lifetime",
+    "turns": [
+      {
+        "user": "From the Linux unlink(2) and symlink(2) manuals, explain what happens when the last filename is unlinked while a process still has the file open, and which directory anchors a relative symbolic-link target."
+      }
+    ],
+    "expect": {
+      "search": true,
+      "must_include": [
+        "(?i)(?:last|all)[^.!?\\n]{0,60}(?:descriptor|open|close)",
+        "(?i)directory[^.!?\\n]{0,70}(?:contain|link)|(?:contain|link)[^.!?\\n]{0,70}directory"
+      ],
+      "min_citations": 2
+    },
+    "research": {
+      "rationale": "Two distinct authoritative references cover separate requested parts; neither reference alone supports every required fact.",
+      "references": [
+        {
+          "url": "https://man7.org/linux/man-pages/man2/unlink.2.html",
+          "facts": [
+            "file remains until last open descriptor closes"
+          ]
+        },
+        {
+          "url": "https://man7.org/linux/man-pages/man2/symlink.2.html",
+          "facts": [
+            "relative target resolved against directory containing link"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "nasa-voyager-webb",
+    "turns": [
+      {
+        "user": "Use NASA mission information to compare Voyager 1\u2019s entry into interstellar space with Webb\u2019s launch: give the date of each event and explain Webb\u2019s operating location relative to Earth."
+      }
+    ],
+    "expect": {
+      "search": true,
+      "must_include": [
+        "(?i)Aug(?:ust|\\.)?\\s+25(?:th)?,?\\s+2012|2012-08-25",
+        "(?i)Dec(?:ember|\\.)?\\s+25(?:th)?,?\\s+2021|2021-12-25",
+        "\\bL2\\b|second Lagrange"
+      ],
+      "min_citations": 2
+    },
+    "research": {
+      "rationale": "Two distinct authoritative references cover separate requested parts; neither reference alone supports every required fact.",
+      "references": [
+        {
+          "url": "https://science.nasa.gov/mission/voyager/questions-and-answers-with-dr-ed-stone/",
+          "facts": [
+            "interstellar entry August 25 2012"
+          ]
+        },
+        {
+          "url": "https://science.nasa.gov/mission/webb/",
+          "facts": [
+            "launched December 25 2021; Sun-Earth L2"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "nasa-mars-landings",
+    "turns": [
+      {
+        "user": "Compare NASA\u2019s Perseverance and Curiosity mission pages. For each rover, give its Mars landing date in UTC and landing crater, and identify which one landed first."
+      }
+    ],
+    "expect": {
+      "search": true,
+      "must_include": [
+        "(?i)Feb(?:ruary|\\.)?\\s+18(?:th)?,?\\s+2021|2021-02-18",
+        "Jezero",
+        "(?i)Aug(?:ust|\\.)?\\s+6(?:th)?,?\\s+2012|2012-08-06",
+        "Gale",
+        "(?i)Curiosity[^.!?\\n]{0,90}(?:first|earlier)|(?:first|earlier)[^.!?\\n]{0,90}Curiosity"
+      ],
+      "min_citations": 2
+    },
+    "research": {
+      "rationale": "Two distinct authoritative references cover separate requested parts; neither reference alone supports every required fact.",
+      "references": [
+        {
+          "url": "https://science.nasa.gov/mission/mars-2020-perseverance/",
+          "facts": [
+            "February 18 2021; Jezero"
+          ]
+        },
+        {
+          "url": "https://science.nasa.gov/mission/msl-curiosity/",
+          "facts": [
+            "August 6 2012 UTC; Gale"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "esa-observatory-comparison",
+    "turns": [
+      {
+        "user": "Using ESA\u2019s Euclid and Gaia facts pages, give each spacecraft\u2019s launch date and launch vehicle, and identify the common Lagrange-point region used by their science missions."
+      }
+    ],
+    "expect": {
+      "search": true,
+      "must_include": [
+        "(?i)1\\s+July\\s+2023|July\\s+1,?\\s+2023|2023-07-01",
+        "Falcon\\s*9",
+        "(?i)19\\s+December\\s+2013|December\\s+19,?\\s+2013|2013-12-19",
+        "Soyuz",
+        "\\bL2\\b|second Lagrange"
+      ],
+      "min_citations": 2
+    },
+    "research": {
+      "rationale": "Two distinct authoritative references cover separate requested parts; neither reference alone supports every required fact.",
+      "references": [
+        {
+          "url": "https://www.esa.int/Newsroom/Press_Releases/ESA_s_Euclid_lifts_off_on_quest_to_unravel_the_cosmic_mystery_of_dark_matter_and_dark_energy",
+          "facts": [
+            "1 July 2023; Falcon 9; L2"
+          ]
+        },
+        {
+          "url": "https://www.esa.int/Science_Exploration/Space_Science/Gaia/Gaia_factsheet",
+          "facts": [
+            "19 December 2013; Soyuz; L2"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "national-park-origins",
+    "turns": [
+      {
+        "user": "Using National Park Service history pages, compare Yellowstone and Yosemite: give each national park\u2019s establishment date and name the states containing it."
+      }
+    ],
+    "expect": {
+      "search": true,
+      "must_include": [
+        "(?i)March\\s+1,?\\s+1872|1872-03-01",
+        "Wyoming",
+        "Montana",
+        "Idaho",
+        "(?i)October\\s+1,?\\s+1890|1890-10-01",
+        "California"
+      ],
+      "min_citations": 2
+    },
+    "research": {
+      "rationale": "Two distinct authoritative references cover separate requested parts; neither reference alone supports every required fact.",
+      "references": [
+        {
+          "url": "https://www.nps.gov/yell/planyourvisit/parkfacts.htm",
+          "facts": [
+            "March 1 1872; Wyoming Montana Idaho"
+          ]
+        },
+        {
+          "url": "https://www.nps.gov/articles/000/stratotype-inventory-yosemite-national-park-california.htm",
+          "facts": [
+            "October 1 1890; California"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "unesco-first-sites",
+    "turns": [
+      {
+        "user": "Compare UNESCO\u2019s World Heritage entries for the Gal\u00e1pagos Islands and Yellowstone National Park. State the country and inscription year of each, and whether each is classified as natural or cultural."
+      }
+    ],
+    "expect": {
+      "search": true,
+      "must_include": [
+        "Ecuador",
+        "United States",
+        "1978",
+        "(?i)natural"
+      ],
+      "min_citations": 2
+    },
+    "research": {
+      "rationale": "Two distinct authoritative references cover separate requested parts; neither reference alone supports every required fact.",
+      "references": [
+        {
+          "url": "https://whc.unesco.org/en/list/1/",
+          "facts": [
+            "Ecuador; 1978; natural"
+          ]
+        },
+        {
+          "url": "https://whc.unesco.org/en/list/28/",
+          "facts": [
+            "United States; 1978; natural"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "archives-founding-documents",
+    "turns": [
+      {
+        "user": "Using the US National Archives\u2019 Declaration of Independence and Constitution pages, distinguish the Declaration\u2019s adoption date from the Constitution\u2019s signing date, and name the city where each event occurred."
+      }
+    ],
+    "expect": {
+      "search": true,
+      "must_include": [
+        "(?i)July\\s+4,?\\s+1776|1776-07-04",
+        "(?i)September\\s+17,?\\s+1787|1787-09-17",
+        "Philadelphia"
+      ],
+      "min_citations": 2
+    },
+    "research": {
+      "rationale": "Two distinct authoritative references cover separate requested parts; neither reference alone supports every required fact.",
+      "references": [
+        {
+          "url": "https://www.archives.gov/founding-docs/declaration-history",
+          "facts": [
+            "adopted July 4 1776; Philadelphia"
+          ]
+        },
+        {
+          "url": "https://www.archives.gov/milestone-documents/constitution",
+          "facts": [
+            "signed September 17 1787; Philadelphia"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "ietf-http-transports",
+    "turns": [
+      {
+        "user": "Compare the IETF specifications RFC 9113 and RFC 9114. Which defines HTTP/2 and which HTTP/3, what underlying transport does each use, and what TLS version does HTTP/3 use for its handshake?"
+      }
+    ],
+    "expect": {
+      "search": true,
+      "must_include": [
+        "9113",
+        "HTTP/?2|HTTP version 2",
+        "TCP",
+        "9114",
+        "HTTP/?3|HTTP version 3",
+        "QUIC",
+        "TLS\\s+1\\.3"
+      ],
+      "min_citations": 2
+    },
+    "research": {
+      "rationale": "Two distinct authoritative references cover separate requested parts; neither reference alone supports every required fact.",
+      "references": [
+        {
+          "url": "https://www.rfc-editor.org/rfc/rfc9113.html",
+          "facts": [
+            "HTTP/2; TCP"
+          ]
+        },
+        {
+          "url": "https://www.rfc-editor.org/rfc/rfc9114.html",
+          "facts": [
+            "HTTP/3; QUIC; TLS 1.3"
+          ]
+        }
+      ]
+    }
+  }
+]

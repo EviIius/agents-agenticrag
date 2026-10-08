@@ -1,3 +1,4 @@
+import config from "../../../../shared/config.json";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -102,9 +103,9 @@ export function LegacyImportDialog({ preview }: { preview?: ImportPreview }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Import old chats?</AlertDialogTitle>
             <AlertDialogDescription>
-              Copy titles and messages into Workbench with an Imported label.
-              Previously imported chats are skipped. The old database stays
-              unchanged.
+              Copy titles and messages into {config.APP_NAME} with an Imported
+              label. Previously imported chats are skipped. The old database
+              stays unchanged.
             </AlertDialogDescription>
           </AlertDialogHeader>
           {visibleError && (

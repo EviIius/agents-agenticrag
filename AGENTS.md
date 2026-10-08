@@ -42,3 +42,165 @@ retain phase reports and evidence. Existing httpx adapters need no added SDK.
 Completed transcript outputs are kept even when unsent; seven-day housekeeping removes only unfinished unsent attachments.
 
 **User amendment — 3 October 2026 (VoiceOver):** Jake reports VoiceOver did not work and asked to defer it for this build. Record the reported failure as an unresolved accessibility limitation; VoiceOver is no longer a release-blocking Phase 3 acceptance gate. Do not claim VoiceOver support passed. Other phase evidence and phone checks remain applicable.
+
+**User authorization — 4 October 2026 (Phase 4):** Proceed with the reviewed roadmap corrections and Phase 4, stopping after 4B and 4D for review. Use Atelier, Chat controls and Web search as display labels at 4D; retain internal Workbench identifiers and compact numbered citations. CSS motion only, no new dependencies or model calls. Small motion is at most 200 ms; large surfaces at most 320 ms. Motion lives in `web/src/styles/motion.css`, checked by `scripts/check_motion.py`. C1's send timing and draft rollback are an explicit behavior change requiring rejection, chat-switch and new-draft tests. Future phases, `sqlite-vec`, embedding model installation and a second runtime are not authorized by this amendment.
+
+**User authorization — 4 October 2026 (Phase 5):** Fix and verify the reported
+Reduce motion › Always failure and missing app entrance using iPhone Mirroring,
+then build `docs/next/PHASE-5-EVERYDAY-CHAT.md`. Presets, folders, document
+attachments and automatic backups are in scope; this lifts the earlier non-goal
+on folders. Stop for review after 5A, 5B and 5C. Document text and filenames follow
+the recording privacy rule. No new packages or model calls. Later phases and
+optional chat forking remain separately gated.
+
+**User authorization — 4 October 2026 (4B review and 4C):** Jake asked Codex to verify the live Workbench and iPhone Mirroring, fix Markdown/JSON chat exports to use the cancellable format-selection/save/share flow already provided for recording outputs, then continue to 4C. Preparing a file may fetch the existing export endpoint; cancellation never starts a download or opens the native share sheet. Keep the chat export dialog available after save/share/download. Physical review observations by Codex must be labeled as such, not attributed to Jake. The 4D review stop remains in force.
+
+**User clarification — 5 October 2026 (preset precedence):** Jake delegated the
+conflict between exact preset-only sampling and the frozen model-default pipeline
+to Codex ("Do what you think is best."). Preserve saved model defaults: a preset
+overrides only the values it stores; unspecified values inherit the user's saved
+model defaults, otherwise the runtime default. Empty presets add no sampling
+values of their own. This refines P5-AC1; no provider/run pipeline change is needed.
+
+**User acceptance and authorization — 5 October 2026 (5C and 6A):** Jake said
+"5C is sufficient. Continue on." Record 5C as accepted without inventing individual
+phone test results. Proceed to 6A transcript clean-up and glossary per
+`docs/next/PHASE-6-TRANSCRIPTION-T2-AND-RUNTIMES.md`, stopping for review after 6A.
+The optional second runtime, Library and Research remain separately gated. The
+reported sidebar/other motion regression remains deferred at Jake's request.
+
+**User clarification — 5 October 2026 (6A retry visibility):** Jake delegated the
+conflict between hiding retry controls and the frozen T1 disabled-control behavior
+to Codex ("Do what you think is best."). Preserve the visible disabled
+"Transcribe again" entries after audio removal, with the re-upload explanation.
+This refines the 6A plan's visibility note; unavailable audio still cannot retry.
+
+**User acceptance — 5 October 2026 (6A):** Jake said “I confirmed it works.
+Move on.” Close the 6A review stop, retaining source/evidence and the deferred
+motion/accessibility limitations. The next phase's explicit gates remain: 6B
+needs a named second runtime; 7-0 needs `sqlite-vec` approval and an embedding
+model selection before installation or probe execution.
+
+**User authorization — 5 October 2026 (7-0):** After Codex requested explicit
+approval for `sqlite-vec` and the installed, runtime-reported embedding model
+`qwen3-embedding:0.6b`, Jake said “go ahead.” Proceed with the Library probe
+in `docs/next/PHASE-7-LIBRARY.md` §2 and stop for review after 7-0. Library
+retrieval is in scope; this lifts the earlier RAG non-goal. Library text and
+filenames follow the recording privacy rule. The future library answer prompt
+in §5.3 requires frozen hashes and before/after evals for edits. Embedding calls
+are distinct from chat model calls. Optional 6B is skipped; Ollama remains the
+only runtime. Research is not authorized.
+
+**User authorization — 5 October 2026 (7-0 interpreter remedy):** After the
+extension-loading prerequisite failed, Jake said “go ahead” to preparing and
+verifying an isolated uv-managed Python 3.14.7 environment while preserving
+the current live runtime. Verify the approved extension and embedding probe
+and existing app tests against the candidate. Keep the framework interpreter
+and existing environments intact; do not alter the transcription interpreter.
+An installed-app runtime switch is presented after candidate verification.
+
+**7-0 environment closeout — 5 October 2026:** Both server environments now
+use the verified uv-managed Python 3.14.7 build with extension-capable SQLite.
+Their previous framework environments and installed manifests are preserved
+under the private fallback path recorded in `artifacts/phase-7/candidate/promotion.json`.
+The system/framework Python and transcription interpreter remain unchanged.
+The full check/browser suites and actual installed/development probes passed.
+Stop for 7-0 review before 7A. J7 eval targets remain unapproved until a later
+explicit decision before 7B. Record the initial launchd activation failure and
+successful recovery without claiming its cause was proven.
+
+**User acceptance and authorization — 5 October 2026 (7-0 and 7A):** Jake said
+“Not sure how to verify it, so I guess continue on”. Accept the technical 7-0
+probe without inventing physical phone checks. Proceed to Phase 7A Library
+storage, ingestion and Settings UI, stopping for review after 7A. Retrieval,
+composer integration and the new answer prompt remain 7B work; J7 eval targets
+still need approval before 7B. Ollama only; Research remains unauthorized.
+
+**User acceptance and authorization — 6 October 2026 (7A and 7B):** Jake asked
+to continue to 7B, reviewed the proposed J7 targets, then said “go ahead then”.
+Proceed with retrieval, composer integration, cited answers and the synthetic
+eval harness. J7 targets in Phase 7 §8 are approved as written. Stop for review
+after 7B; missed targets keep the phase open. Ollama remains the only runtime,
+and Research remains unauthorized. Do not use the user's real Library files
+for logs, screenshots, fixtures or eval evidence.
+
+**User authorization — 6 October 2026 (7B prompt refinement):** After the
+version-one eval missed per-fact citation placement, Jake said “Go ahead and”
+in response to the proposed generic refinement and before/after retest. Apply
+the documented per-sentence/per-row citation and explicit-stated-facts
+reinforcement, retain the original baseline and unchanged corpus/cases, and
+rerun the full eval without lowering J7 targets. Finish 7B regression gates and
+deployment if they pass, then stop for 7B review. Research remains unauthorized.
+
+**User authorization — 6 October 2026 (7B table citations and web variance):**
+Jake said “Approve the recommendations”. Apply the proposed generic Citation
+column refinement and continue in-scope citation wording refinements with retained
+before/after reports, unchanged corpus/cases and the 100% J7 target. Accept the
+documented G9 web replay variance for this checkpoint: all 25 cases pass with no
+case regressions, lexical support 0.8823817 vs 0.8852879, median TTFT 4.467 vs
+3.968 seconds and p90 5.987 vs 4.786 seconds. Preserve both reports and all release
+thresholds; this is a specific accepted variance, not a general G9 exemption.
+Finish the full regression gates before 7B deployment, then stop for review.
+Research remains unauthorized.
+
+**User acceptance — 6 October 2026 (7B):** Jake reported “The citation is correct
+and information too.” Record Library answer/citation verification on his iPhone
+and close the 7B review stop without inventing other phone checklist results.
+Defer the recording attachment dropdown layout issue for later, as requested;
+track it in `docs/DEFERRED-FIXES.md`. Keep private filenames/text and the supplied
+phone screenshots out of repo evidence. Research remains unauthorized.
+
+**User authorization — 6 October 2026 (8-0 evaluation only):** After Codex
+recommended starting only the isolated Research evaluation early, Jake said
+“Then go ahead and start”. Waive the two-week / 17 October calendar hold for
+checkpoint 8-0 only. Prepare 15 multi-part cases and recorded public web fixtures,
+measure the existing single-shot Search baseline and fresh live web release
+eval, and run the 40-prompt native-tool probe on installed runtime-reported
+tool-capable models. These isolated evaluation calls are authorized; production
+model-call rules, code, data and deployment remain unchanged. Retain all failures
+and stop with the gate report before 8A. Do not claim two weeks of daily use.
+The Research product spec and proposed release targets still need Jake’s review
+after the gate results; no agent loop, new dependency or product UI is authorized.
+
+**User authorization — 6 October 2026 (8A isolated backend):** After reviewing
+8-0 and Codex's recommendation, Jake said “Then do so”. Approve the Research
+product specification and §9 targets with these qualifications: deterministically
+regrade equivalent baseline wording using retained answers before freezing the
+comparison; preserve genuine omissions and contradictions, original reports and
+corpus. Keep ≥80% factual completeness, ≥15 percentage-point gain, native validity
+≥95%, manual citation/claim review and all host budgets. Waive the remaining
+calendar hold for isolated 8A development only; this does not assert two weeks of
+daily use. Start with the tested daily 32K Qwen, qualifying by measured metadata
+rather than model-name inference; GPT-OSS's failed probe is not qualified.
+Research-only native steps (maximum eight) plus one answer are authorized in
+the isolated backend. Tools are web_search, read_page and finish; no added
+dependency, routing, supervisors, sub-agents or other tools. Freeze the v1
+Research prompt; edits require before/after eval evidence. Keep the live app on
+7B. Stop for 8A review before 8B UI or deployment.
+
+**User authorization — 6 October 2026 (8A evidence refinement):** Jake asked to
+continue the isolated prototype, fix evidence gathering and unsupported answers,
+and determine whether it can exceed the required threshold for 8B. Refine the
+generic Research planning/evidence behavior, with retained v1 before/after evals
+and frozen prompt hashes. Preserve ordinary Search/Library prompts and payloads,
+all original cases, corpus and grading, ≥13/15 complete cases, citation/support,
+validity, injection and budget targets. No topic-specific rules, new packages,
+extra calls, models or tools. Keep live 7B installed. Retain every trial; assess
+semantic support separately from regex matches. Stop with the feasibility/8A
+review before 8B UI or deployment; the request does not waive failed gates.
+
+**User authorization — 6 October 2026 (8A consistency):** Jake asked to do what
+is required to make 13/15 or 15/15 consistent. Continue isolated generic coverage
+and support experiments, preserving all trials, the original benchmark, baseline
+and thresholds. Predeclare repeated full runs of a frozen candidate and review
+claim support separately; one favorable run does not qualify. Any additional
+query-aware corpus must be separate and evaluate Search and Research on identical
+evidence. No new dependencies, tools, models or calls; live 7B and the 8A review
+stop remain unchanged.
+
+**User clarification — 7 October 2026 (model research):** Jake requested more
+model options and clearer picker categorization, then said to document Qwen 3.8
+for now, research other candidates and continue the existing 8A scope. Model
+research and a picker proposal are authorized; new model downloads, runtime
+upgrades, default switches and picker deployment are not. Preserve the isolated
+8A limits, accepted live 7B and the review stop before 8B.

@@ -1,4 +1,10 @@
-import { Globe } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
+import { Globe, ChevronDown, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Message, Source } from "@/lib/api";
 import { Favicon } from "./CitationPill";
@@ -13,8 +19,14 @@ export function SearchActivity({
   steps?: { label: string; detail: string; status: string }[];
   onRetry: () => void;
 }) {
-  const info = message.web,
-    live = message.status === "streaming";
+  const info = message.web;
+  const live =
+    message.status === "streaming" &&
+    !(steps ?? []).some((step) =>
+      ["done", "failed", "skipped"].includes(step.label),
+    );
+  const [open, setOpen] = useState(live);
+  useEffect(() => setOpen(live), [live]);
   const domains = Array.from(
     new Set([
       ...sources.map((source) => source.domain),
@@ -29,6 +41,38 @@ export function SearchActivity({
         }),
     ]),
   ).slice(0, 4);
+  const library = message.library;
+  if (library)
+    return (
+      <div className="mb-4 text-xs text-fg-2" data-testid="library-activity">
+        {library.notice && (
+          <div className="mb-2 rounded-lg border border-line p-3" role="status">
+            <p>
+              {library.notice.code === "library_empty"
+                ? "No ready files in this scope. This answer uses the model's own knowledge."
+                : library.notice.code === "uncited"
+                  ? "This answer doesn't cite specific sources."
+                  : `Couldn't search your files (${library.notice.message}). This answer uses the model's own knowledge.`}
+            </p>
+            {library.notice.code !== "uncited" && (
+              <Button variant="link" className="px-0 text-xs" onClick={onRetry}>
+                Retry with Library
+              </Button>
+            )}
+          </div>
+        )}
+        {library.status === "used" && (
+          <p className="flex min-h-11 items-center gap-2" role="status">
+            <BookOpen className="size-4" />
+            <span data-slot="activity-label" data-live={live || undefined}>
+              {live
+                ? "Searching your files…"
+                : `Searched your files · ${library.passage_count} passages from ${library.source_count} files · ${((library.timings?.total ?? 0) / 1000).toFixed(1)} s`}
+            </span>
+          </p>
+        )}
+      </div>
+    );
   if (!info && !steps?.length) return null;
   if (info?.notice?.code === "search_blocked_recording")
     return (
@@ -64,36 +108,65 @@ export function SearchActivity({
           </Button>
         </div>
       )}
-      <details
-        key={live ? "live" : "finished"}
-        open={live}
-        className="rounded-lg border border-line p-3"
-      >
-        <summary className="flex min-h-11 cursor-pointer flex-wrap items-center gap-2">
-          <Globe className="size-4" />
-          {live
-            ? "Searching the web…"
-            : `Searched the web · ${sources.length} sources · ${(Object.values(info?.timings ?? {}).reduce((a, b) => a + b, 0) / 1000).toFixed(1)}s`}
+      <Collapsible open={open} onOpenChange={setOpen} className="py-1">
+        <CollapsibleTrigger className="flex min-h-11 w-full cursor-pointer flex-wrap items-center gap-2 text-left">
+          {!domains.length && <Globe className="size-4" />}
           <span className="flex gap-1">
-            {domains.map((domain) => (
-              <Favicon key={domain} domain={domain} />
+            {domains.map((domain, index) => (
+              <span
+                key={domain}
+                data-slot="activity-favicon"
+                data-stagger={index}
+              >
+                <Favicon domain={domain} />
+              </span>
             ))}
           </span>
-        </summary>
-        <ul className="space-y-2 border-t border-line pt-3">
-          {(steps ?? []).map((s, i) => (
-            <li key={i} className="break-words">
-              {s.label} · {s.detail}
-            </li>
-          ))}
-          {!steps?.length &&
-            info?.queries?.map((q) => (
-              <li key={q} className="break-words">
-                {q}
+          <span data-slot="activity-label" data-live={live || undefined}>
+            {live
+              ? "Searching the web…"
+              : `Searched the web · ${sources.length} sources · ${(Object.values(info?.timings ?? {}).reduce((a, b) => a + b, 0) / 1000).toFixed(1)} s`}
+          </span>
+          <ChevronDown className="ml-auto size-3" />
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <ul className="space-y-2 border-t border-line pt-3">
+            {(steps ?? []).map((s, i) => (
+              <li
+                key={i}
+                data-slot="search-step"
+                data-live={live || undefined}
+                className="break-words"
+              >
+                {activityCopy(s)}
               </li>
             ))}
-        </ul>
-      </details>
+            {!steps?.length &&
+              info?.queries?.map((q) => (
+                <li key={q} className="break-words">
+                  {q}
+                </li>
+              ))}
+          </ul>
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
+}
+
+function activityCopy(step: { label: string; detail: string; status: string }) {
+  if (step.label === "read" || step.label === "reading") {
+    let site = step.detail;
+    try {
+      site = new URL(step.detail).hostname;
+    } catch {
+      /* Keep the supplied detail. */
+    }
+    return `${step.status === "failed" ? "Couldn't read" : "Read"} ${site}`;
+  }
+  if (step.label === "query" || step.label === "search")
+    return `Searched: ${step.detail}`;
+  if (step.label === "plan") return step.detail || "Planning the search";
+  if (step.label === "done") return "Search complete";
+  return step.detail || step.label.replaceAll("_", " ");
 }

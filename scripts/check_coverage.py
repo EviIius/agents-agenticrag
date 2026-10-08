@@ -9,12 +9,14 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "server"))
-TARGETS = [ROOT / 'server/app' / name for name in ('providers', 'runs', 'search', 'transcribe')]
+TARGETS = [ROOT / 'server/app' / name for name in ('providers', 'runs', 'search', 'transcribe', 'documents', 'library')]
+TARGETS.append(ROOT / 'server/app/backup.py')
+TARGETS.append(ROOT / 'server/app/runs/research.py')
 hits: dict[str, set[int]] = {}
 
 def trace(frame, event, arg):
     filename = frame.f_code.co_filename
-    if event == 'line' and any(filename.startswith(str(folder)+'/') for folder in TARGETS):
+    if event == 'line' and any(filename == str(folder) or filename.startswith(str(folder)+'/') for folder in TARGETS):
         hits.setdefault(filename, set()).add(frame.f_lineno)
     return trace
 
@@ -31,7 +33,7 @@ reports = []
 failed = result != 0
 for folder in TARGETS:
     total = covered = 0
-    for path in sorted(folder.glob('*.py')):
+    for path in ([folder] if folder.is_file() else sorted(folder.glob('*.py'))):
         if not path.read_text().strip(): continue
         lines = executable(compile(path.read_text(), str(path), 'exec'))
         # Definition lines are executed on import; pytest can import modules before tracing

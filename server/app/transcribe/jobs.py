@@ -7,7 +7,7 @@ from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from ..db import attachments, settings
 from ..db.connections import now
@@ -20,6 +20,7 @@ from .engine import Engine
 @dataclass
 class Job:
     id: str
+    kind: Literal["transcription", "cleanup"] = "transcription"
     events: list[TranscriptionEvent] = field(default_factory=list)
     changed: asyncio.Condition = field(default_factory=asyncio.Condition)
     closed: bool = False
@@ -277,7 +278,9 @@ class TranscriptionManager:
             if not job.closed:
                 await self.cancelled(job)
                 await job.emit(
-                    "transcription.failed" if job.interrupted else "transcription.cancelled",
+                    "cleanup.failed"
+                    if job.kind == "cleanup"
+                    else ("transcription.failed" if job.interrupted else "transcription.cancelled"),
                     {
                         "attachment": (
                             await attachments.attachment(self.store, identifier)
@@ -287,6 +290,23 @@ class TranscriptionManager:
                 await job.emit("stream.closed", {})
 
     async def cancelled(self, job: Job) -> None:
+        if job.kind == "cleanup":
+            row = await self.store.one(
+                "SELECT cleanup_json FROM transcripts WHERE attachment_id=?", (job.id,)
+            )
+            info = json.loads(row["cleanup_json"] or "{}") if row else {}
+            info["error"] = {
+                "code": "cleanup_failed",
+                "message": "Interrupted because the server restarted"
+                if job.interrupted
+                else "Cancelled",
+            }
+            await self.store.execute(
+                "UPDATE transcripts SET cleaned_text=NULL,cleanup_status='failed',"
+                "cleanup_json=?,updated_at=? WHERE attachment_id=?",
+                (json.dumps(info), now(), job.id),
+            )
+            return
         error = (
             json.dumps(
                 {

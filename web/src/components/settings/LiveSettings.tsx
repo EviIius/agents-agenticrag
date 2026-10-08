@@ -1,5 +1,9 @@
+import { BackupPane } from "./BackupPane";
+import { ModelRename } from "./ModelRename";
+import { failureCopy, failureDetail } from "@/lib/errors";
+import config from "../../../../shared/config.json";
 import { LegacyImportDialog } from "./LegacyImportDialog";
-import { useState, useEffect, useRef } from "react";
+import { lazy, Suspense, useState, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { useUI } from "@/stores/ui";
@@ -36,12 +40,18 @@ import { OllamaSearchKey } from "./OllamaSearchKey";
 import { Textarea } from "@/components/ui/textarea";
 import { api, type Bootstrap, type Model } from "@/lib/api";
 import type { components } from "@/lib/api-types";
+const LibraryPane = lazy(() => import("./LibraryPane"));
+const PresetsPane = lazy(() => import("./PresetsPane"));
 export function LiveSettingsPane({
   pane,
   bootstrap,
   models,
   onModelAction,
+  request = api,
+  queryScope = [],
 }: {
+  request?: typeof api;
+  queryScope?: string[];
   pane: string;
   bootstrap?: Bootstrap;
   models: Model[];
@@ -65,27 +75,47 @@ export function LiveSettingsPane({
     return () => clearInterval(timer);
   }, [loading]);
   const all = useQuery({
-    queryKey: ["models", "all"],
-    queryFn: () => api<Model[]>("/models?include_hidden=true"),
-    enabled: pane === "Models" || pane === "Search",
+    queryKey: ["models", ...queryScope, "all"],
+    queryFn: () => request<Model[]>("/models?include_hidden=true"),
+    enabled: pane === "Models" || pane === "Search" || pane === "Library",
   });
   const status = useQuery({
-    queryKey: ["search-status"],
+    queryKey: ["search-status", ...queryScope],
     queryFn: () =>
-      api<components["schemas"]["SearchStatus"][]>("/search/status"),
+      request<components["schemas"]["SearchStatus"][]>("/search/status"),
     enabled: pane === "Search",
   });
   const update = async (endpoint: string, body: unknown, method?: string) => {
     try {
-      await api(endpoint, body, method);
+      await request(endpoint, body, method);
       await query.invalidateQueries();
       toast.success("Saved");
       return true;
     } catch (e) {
-      toast.error(String(e));
+      toast.error(failureCopy(e), { description: failureDetail(e) });
       return false;
     }
   };
+  if (pane === "Library")
+    return (
+      <Suspense fallback={<p role="status">Loading Library…</p>}>
+        <LibraryPane
+          request={request}
+          queryScope={queryScope}
+          models={all.data ?? models}
+        />
+      </Suspense>
+    );
+  if (pane === "Presets")
+    return (
+      <Suspense fallback={<p role="status">Loading presets…</p>}>
+        <PresetsPane
+          bootstrap={bootstrap}
+          request={request}
+          queryScope={queryScope}
+        />
+      </Suspense>
+    );
   if (pane === "Transcription")
     return <TranscriptionSettings bootstrap={bootstrap} />;
   if (pane === "Connections")
@@ -200,7 +230,7 @@ export function LiveSettingsPane({
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={() =>
-                        void update("/connections/" + c.id, undefined, "DELETE")
+                        update("/connections/" + c.id, undefined, "DELETE")
                       }
                     >
                       Remove
@@ -285,7 +315,10 @@ export function LiveSettingsPane({
           </label>
         )}
         <label className="block space-y-2 text-sm">
-          <span>Utility model · search queries and titles</span>
+          <span>Helper model</span>
+          <p className="text-xs text-fg-3">
+            Plans web searches and writes chat titles.
+          </p>
           <Select
             value={
               bootstrap?.settings.utility_model
@@ -302,7 +335,7 @@ export function LiveSettingsPane({
               )
             }
           >
-            <SelectTrigger aria-label="Utility model">
+            <SelectTrigger aria-label="Helper model">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -362,22 +395,24 @@ export function LiveSettingsPane({
             key={m.connection_id + m.model_id}
             className="rounded-lg border border-line p-4"
           >
-            <Input
-              aria-label={`Display name for ${m.model_id}`}
-              defaultValue={m.display_name}
-              onBlur={(e) => {
-                if (e.target.value !== m.display_name)
-                  void update(
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="font-medium break-words">{m.display_name}</h3>
+              <ModelRename
+                model={m}
+                onSave={(display_name) =>
+                  update(
                     "/models/prefs",
                     {
                       connection_id: m.connection_id,
                       model_id: m.model_id,
-                      display_name: e.target.value,
+                      display_name,
                     },
                     "PUT",
-                  );
-              }}
-            />
+                  )
+                }
+              />
+            </div>
+            <p className="mt-2 text-xs text-fg-3 break-all">{m.model_id}</p>
             <p className="my-3 text-xs text-fg-3 break-all">
               {m.params} · {m.quant} ·{" "}
               {m.size_bytes ? (m.size_bytes / 1e9).toFixed(1) + " GB" : ""} ·{" "}
@@ -405,7 +440,7 @@ export function LiveSettingsPane({
                         })
                   ).finally(() => {
                     void query.invalidateQueries({
-                      queryKey: ["models", "all"],
+                      queryKey: ["models", ...queryScope, "all"],
                     });
                     setLoading(null);
                   });
@@ -441,16 +476,11 @@ export function LiveSettingsPane({
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <LiveChatSettings
-                    key={JSON.stringify([
-                      m.connection_id,
-                      m.model_id,
-                      m.params_defaults,
-                      m.context_length,
-                    ])}
+                    key={JSON.stringify([m.connection_id, m.model_id])}
                     model={m}
                     defaultsOnly
                     onSave={(_, params) =>
-                      void update(
+                      update(
                         "/models/prefs",
                         {
                           connection_id: m.connection_id,
@@ -461,7 +491,7 @@ export function LiveSettingsPane({
                       )
                     }
                     onDefaults={(params) =>
-                      void update(
+                      update(
                         "/models/prefs",
                         {
                           connection_id: m.connection_id,
@@ -472,7 +502,7 @@ export function LiveSettingsPane({
                       )
                     }
                     onContext={(context_length) =>
-                      void update(
+                      update(
                         "/models/prefs",
                         {
                           connection_id: m.connection_id,
@@ -540,7 +570,7 @@ export function LiveSettingsPane({
                 <Button
                   variant="outline"
                   onClick={() =>
-                    void api<components["schemas"]["SearchTestResult"]>(
+                    void request<components["schemas"]["SearchTestResult"]>(
                       "/search/test",
                       { provider },
                     ).then((r) =>
@@ -761,14 +791,16 @@ export function LiveSettingsPane({
         <div>⌘/Ctrl , · Settings</div>
         <div>⌘/Ctrl Shift O · New chat</div>
         <div>⌘/Ctrl B · Toggle sidebar</div>
-        <div>⌘/Ctrl Shift . · Chat settings</div>
+        <div>⌘/Ctrl Shift . · Chat controls</div>
         <div>⌘/Ctrl / · Shortcuts</div>
       </dl>
     );
   if (pane === "About")
     return (
       <>
-        <p>Workbench {bootstrap?.version}</p>
+        <p>
+          {config.APP_NAME} {bootstrap?.version}
+        </p>
         <p className="text-sm break-all">Data folder: {bootstrap?.data_dir}</p>
         <ul className="space-y-2 text-sm text-fg-2">
           {bootstrap?.connections.map((connection) => (
@@ -812,6 +844,13 @@ export function DataPane({ preview = false }: { preview?: boolean }) {
           Export all chats
         </a>
       </Button>
+      <BackupPane
+        fixture={
+          preview
+            ? { last_at: "2026-10-05T03:30:00", count: 7, bytes: 43000000 }
+            : undefined
+        }
+      />
       <LegacyImportDialog preview={preview ? "ready" : undefined} />
       <AlertDialog
         open={open}
@@ -861,6 +900,8 @@ export function DataPane({ preview = false }: { preview?: boolean }) {
                   set({ settings: false, sidebar: false, panel: false });
                   query.removeQueries({ queryKey: ["chat"] });
                   await query.invalidateQueries({ queryKey: ["chats"] });
+                  await query.invalidateQueries({ queryKey: ["folders"] });
+                  await query.invalidateQueries({ queryKey: ["folder-chats"] });
                   navigate("/");
                   toast("Chats deleted");
                 } catch (failure) {

@@ -1,5 +1,13 @@
+import { DocumentChip } from "./DocumentChip";
+import { LibraryControl } from "./LibraryControl";
 import { AudioChip, UploadChip, type AudioUpload } from "./AudioChip";
-import { useRef, useState, useLayoutEffect } from "react";
+import {
+  useRef,
+  useState,
+  useLayoutEffect,
+  useEffect,
+  useCallback,
+} from "react";
 import { ArrowUp, Plus, Brain, X, Square, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/app/IconButton";
@@ -16,9 +24,8 @@ import {
 } from "@/components/ui/tooltip";
 export function Composer({
   starter = "",
+  optimistic = false,
   running = false,
-  attached = false,
-  reasoning = false,
   autoFocus = false,
   onSend,
   model,
@@ -36,18 +43,23 @@ export function Composer({
   suggestions = false,
   transcriptionReady = false,
   uploads = [],
+  audioExtensions = [],
+  attachmentExtensions,
   onCancelUpload,
   webBlocked = false,
+  libraryControl,
 }: {
+  optimistic?: boolean;
+  libraryControl?: React.ComponentProps<typeof LibraryControl>;
   transcriptionReady?: boolean;
+  audioExtensions?: string[];
+  attachmentExtensions?: import("@/lib/api").Bootstrap["attachment_extensions"];
   uploads?: AudioUpload[];
   onCancelUpload?: (id: string) => void;
   webBlocked?: boolean;
   starter?: string;
   suggestions?: boolean;
   running?: boolean;
-  attached?: boolean;
-  reasoning?: boolean;
   autoFocus?: boolean;
   onSend?: (text: string) => void | Promise<boolean | void>;
   error?: string;
@@ -59,13 +71,47 @@ export function Composer({
   onAttach?: (files: File[]) => void;
   files?: import("@/lib/api").Attachment[];
   onRemove?: (id: string) => void;
-  context?: { used_tokens: number; context_length: number };
+  context?: { used_tokens: number; context_length: number; reserve?: number };
   thinkValue?: string;
   onThinkChange?: (value: string | null) => void;
 }) {
   const [value, setValue] = useState(starter);
-  const [attachment, setAttachment] = useState(attached);
-  const [think, setThink] = useState("Off");
+  const [attachmentMenuOpen, setAttachmentMenuOpen] = useState(false);
+  const restoreAttachmentBackground = useRef<() => void>(() => {});
+  const bindAttachmentMenu = useCallback((node: HTMLDivElement | null) => {
+    restoreAttachmentBackground.current();
+    if (!node?.isConnected) return;
+    const changed: HTMLElement[] = [];
+    let current: HTMLElement | null = node;
+    while (current && current !== document.body) {
+      for (const sibling of current.parentElement?.children ?? []) {
+        if (
+          sibling instanceof HTMLElement &&
+          sibling !== current &&
+          !sibling.inert
+        ) {
+          sibling.inert = true;
+          changed.push(sibling);
+        }
+      }
+      current = current.parentElement;
+    }
+    restoreAttachmentBackground.current = () => {
+      for (const sibling of changed) sibling.inert = false;
+    };
+  }, []);
+  const revision = useRef(0),
+    mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  const updateDraft = (text: string) => {
+    revision.current++;
+    setValue(text);
+  };
   const fileInput = useRef<HTMLInputElement>(null);
   const textarea = useRef<HTMLTextAreaElement>(null);
   useLayoutEffect(() => {
@@ -85,13 +131,19 @@ export function Composer({
   const send = async () => {
     if (!running && !disabled && !waiting && value.trim()) {
       const submitted = value;
+      const version = revision.current;
+      if (optimistic) setValue("");
       const accepted = await onSend?.(submitted);
-      if (accepted !== false) setValue((v) => (v === submitted ? "" : v));
+      if (!mounted.current || revision.current !== version) return;
+      if (accepted === false && optimistic) setValue(submitted);
+      else if (accepted !== false)
+        setValue((draft) => (draft === submitted ? "" : draft));
     }
   };
   return (
     <>
       <form
+        data-slot="composer"
         className="composer"
         aria-label="Message"
         onSubmit={(event) => {
@@ -129,9 +181,17 @@ export function Composer({
               model={model}
               onRemove={() => onRemove?.(file.id)}
             />
+          ) : file.document ? (
+            <DocumentChip
+              key={file.id}
+              attachment={file}
+              model={model}
+              onRemove={() => onRemove?.(file.id)}
+            />
           ) : (
             <div
               key={file.id}
+              data-slot="attachment-chip"
               className="mb-2 inline-flex max-w-full items-center rounded-md border border-line px-2 text-xs"
             >
               <span className="truncate">{file.filename}</span>
@@ -145,33 +205,33 @@ export function Composer({
             </div>
           ),
         )}
-        {attachment && (
-          <div className="mb-3 inline-flex max-w-full items-center rounded-md border border-line px-2 text-xs">
-            <span className="truncate">notes.md · fixture</span>
-            <IconButton
-              label="Remove attachment"
-              onClick={() => setAttachment(false)}
-              type="button"
-            >
-              <X />
-            </IconButton>
-          </div>
-        )}
+        {files.some((file) => file.document) &&
+          context &&
+          context.used_tokens + value.length * 0.3 >
+            context.context_length -
+              (context.reserve ??
+                Math.max(1024, Math.min(8192, context.context_length * 0.25))) -
+              256 && (
+            <p role="status" className="mb-3 text-xs text-warning">
+              This message and its documents may exceed{" "}
+              {model?.display_name ?? "this model"}'s context window (
+              {context.context_length.toLocaleString()} tokens). Choose a model
+              with a larger context or remove a document.
+            </p>
+          )}
         <textarea
           ref={textarea}
           autoFocus={autoFocus}
-          aria-label={
-            model ? `Message ${model.display_name}` : "Message fake-chat"
-          }
+          aria-label={model ? `Message ${model.display_name}` : "Message"}
           placeholder={
             model
               ? `Message ${model.display_name}…`
               : disabled
                 ? "Choose a model to begin…"
-                : "Message fake-chat…"
+                : "Message…"
           }
           value={value}
-          onChange={(event) => setValue(event.target.value)}
+          onChange={(event) => updateDraft(event.target.value)}
           onPaste={(event) => {
             const files = Array.from(event.clipboardData.files);
             if (files.length) {
@@ -202,14 +262,28 @@ export function Composer({
           }}
           rows={2}
         />
-        <div className="flex min-w-0 items-center gap-1">
-          <DropdownMenu>
+        <div className="flex min-w-0 flex-wrap items-center gap-1">
+          <DropdownMenu
+            open={attachmentMenuOpen}
+            onOpenChange={setAttachmentMenuOpen}
+          >
             <DropdownMenuTrigger asChild>
               <IconButton label="Add attachment" type="button">
                 <Plus />
               </IconButton>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
+            <DropdownMenuContent
+              ref={bindAttachmentMenu}
+              onCloseAutoFocus={() => restoreAttachmentBackground.current()}
+              align="start"
+              onKeyDown={(event) => {
+                // Escape also works before Radix's document listener mounts.
+                if (event.key === "Escape") {
+                  event.preventDefault();
+                  setAttachmentMenuOpen(false);
+                }
+              }}
+            >
               <DropdownMenuItem
                 disabled={model?.vision !== true}
                 onSelect={() => {
@@ -219,29 +293,42 @@ export function Composer({
                   }
                 }}
               >
-                {model?.vision ? "Add image" : "Images need a vision model"}
+                <span>
+                  Add image
+                  {!model?.vision && (
+                    <span className="block text-xs text-fg-3">
+                      Images need a vision model
+                    </span>
+                  )}
+                </span>
               </DropdownMenuItem>
               <DropdownMenuItem
-                onSelect={() =>
-                  onAttach
-                    ? (() => {
-                        if (fileInput.current) {
-                          fileInput.current.accept =
-                            ".txt,.md,.csv,.json,.yaml,.yml,.py,.js,.ts,.tsx,.html,.css,.sql,.sh,.log";
-                          fileInput.current.click();
-                        }
-                      })()
-                    : setAttachment(true)
-                }
+                onSelect={() => {
+                  if (fileInput.current) {
+                    fileInput.current.accept =
+                      attachmentExtensions?.text?.join(",") ?? "";
+                    fileInput.current.click();
+                  }
+                }}
               >
-                {onAttach ? "Add text file" : "Add text file (fixture)"}
+                Add text file
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => {
+                  if (fileInput.current) {
+                    fileInput.current.accept =
+                      attachmentExtensions?.document?.join(",") ?? "";
+                    fileInput.current.click();
+                  }
+                }}
+              >
+                Add document (PDF, Word)
               </DropdownMenuItem>
               <DropdownMenuItem
                 disabled={!transcriptionReady}
                 onSelect={() => {
                   if (fileInput.current) {
-                    fileInput.current.accept =
-                      ".wav,.mp3,.m4a,.flac,.aif,.aiff,.aac,.amr,.caf,.mka,.mov,.mp4,.oga,.ogg,.opus,.webm,.wma";
+                    fileInput.current.accept = audioExtensions.join(",");
                     fileInput.current.click();
                   }
                 }}
@@ -253,53 +340,55 @@ export function Composer({
             </DropdownMenuContent>
           </DropdownMenu>
           {onWebChange && (
-            <IconButton
-              label={
-                webBlocked
-                  ? "Search is off in chats with a recording"
-                  : web
-                    ? "Search on"
-                    : "Search off"
-              }
+            <Button
               type="button"
+              variant="ghost"
+              aria-label="Web search"
               aria-pressed={web && !webBlocked}
               aria-disabled={webBlocked}
-              className={web && !webBlocked ? "bg-brand-soft text-brand" : ""}
+              title={
+                webBlocked
+                  ? "Search is off in chats with a recording"
+                  : undefined
+              }
+              className={`h-11 gap-2 px-2 rounded-full ${web && !webBlocked ? "bg-brand-soft text-brand" : ""}`}
               onClick={() => {
                 if (!webBlocked) onWebChange(!web);
               }}
             >
-              <Globe />
-            </IconButton>
+              <Globe className="size-4" />
+              <span className="hidden text-xs sm:inline">Search</span>
+            </Button>
           )}
-          {(model?.reasoning || reasoning) && (
+          {libraryControl && <LibraryControl {...libraryControl} />}
+          {model?.reasoning && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   type="button"
                   variant="ghost"
                   className="h-11 gap-2 px-2"
-                  aria-label={`Think: ${thinkValue ?? (model ? "Model default" : think)}`}
+                  aria-label={`Think: ${thinkValue ?? "Model default"}`}
                 >
                   <Brain className="size-4" />
                   <span className="hidden text-xs sm:inline">Think</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                {(model
-                  ? ["Model default", ...(model.reasoning?.options ?? [])]
-                  : ["Off", "On", "Low", "Medium", "High"]
-                ).map((level) => (
-                  <DropdownMenuItem
-                    key={level}
-                    onSelect={() => {
-                      setThink(level);
-                      onThinkChange?.(level === "Model default" ? null : level);
-                    }}
-                  >
-                    {level[0].toUpperCase() + level.slice(1)}
-                  </DropdownMenuItem>
-                ))}
+                {["Model default", ...(model.reasoning?.options ?? [])].map(
+                  (level) => (
+                    <DropdownMenuItem
+                      key={level}
+                      onSelect={() => {
+                        onThinkChange?.(
+                          level === "Model default" ? null : level,
+                        );
+                      }}
+                    >
+                      {level[0].toUpperCase() + level.slice(1)}
+                    </DropdownMenuItem>
+                  ),
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -312,7 +401,7 @@ export function Composer({
                   aria-label={
                     context
                       ? `${Math.round(context.used_tokens + value.length * 0.3)} of ${context.context_length} tokens`
-                      : "6.2K of 16K tokens"
+                      : "Context usage unavailable"
                   }
                   className="flex size-11 items-center justify-center"
                 >
@@ -332,10 +421,11 @@ export function Composer({
                       fill="none"
                       stroke="var(--text-3)"
                       strokeWidth="2"
+                      data-slot="context-ring"
                       strokeDasharray={
                         context
                           ? `${Math.min(1, (context.used_tokens + value.length * 0.3) / context.context_length) * 51} 51`
-                          : "19 51"
+                          : "0 51"
                       }
                       transform="rotate(-90 10 10)"
                     />
@@ -345,7 +435,7 @@ export function Composer({
               <TooltipContent>
                 {context
                   ? `${Math.round(context.used_tokens + value.length * 0.3)} of ${context.context_length} tokens`
-                  : "6.2K of 16K tokens · fixture"}
+                  : "Choose a model to see context usage"}
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -364,13 +454,17 @@ export function Composer({
                     onClick={running ? onStop : undefined}
                     className={`size-11 rounded-full disabled:bg-surface-3 disabled:text-fg-2 disabled:opacity-100 ${running ? "bg-surface-3 text-fg" : "bg-brand text-on-brand"}`}
                   >
-                    {running ? <Square /> : <ArrowUp />}
+                    <span key={running ? "stop" : "send"} data-slot="send-icon">
+                      {running ? <Square /> : <ArrowUp />}
+                    </span>
                   </Button>
                 </span>
               </TooltipTrigger>
               <TooltipContent>
                 {waiting
-                  ? "Waiting for the transcript"
+                  ? uploads.some((u) => u.kind === "document" && !u.failed)
+                    ? "Waiting for the document"
+                    : "Waiting for the transcript"
                   : running
                     ? "Stop generating"
                     : "Send message"}
@@ -380,7 +474,10 @@ export function Composer({
         </div>
       </form>
       {(suggestions || recordingReady) && (!recordingReady || !value) && (
-        <div className="mt-4 flex flex-wrap justify-center gap-2">
+        <div
+          data-slot="suggestion-chips"
+          className="mt-4 flex flex-wrap justify-center gap-2"
+        >
           {(recordingReady
             ? ["Summarize", "Action items", "Decisions"]
             : [
@@ -395,7 +492,7 @@ export function Composer({
               variant="outline"
               className="min-h-11 rounded-full bg-surface text-sm"
               onClick={() => {
-                setValue(
+                updateDraft(
                   recordingReady
                     ? ({
                         Summarize: "Summarize this recording.",

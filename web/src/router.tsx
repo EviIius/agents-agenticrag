@@ -1,3 +1,4 @@
+import config from "../../shared/config.json";
 import { createBrowserRouter } from "react-router";
 import { LiveAppShell } from "@/components/app/LiveAppShell";
 import App from "./App";
@@ -7,7 +8,7 @@ export const router = createBrowserRouter([
     element: <App />,
     HydrateFallback: () => (
       <p role="status" className="p-6 text-fg-2">
-        Loading Workbench…
+        Loading {config.APP_NAME}…
       </p>
     ),
     children: [

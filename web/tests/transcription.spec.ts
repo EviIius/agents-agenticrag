@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir } from "node:fs/promises";
@@ -64,9 +65,16 @@ test("T-1/T-2/T-5 upload, transcript views, downloads, local chat and follow-up"
   );
   await expect(
     page.getByRole("button", {
-      name: "Search is off in chats with a recording",
+      name: "Web search",
+      exact: true,
     }),
   ).toHaveAttribute("aria-disabled", "true");
+  await expect(
+    page.getByRole("button", { name: "Web search", exact: true }),
+  ).toHaveAttribute("title", "Search is off in chats with a recording");
+  await expect(
+    page.getByRole("button", { name: "Web search", exact: true }),
+  ).toHaveAttribute("aria-pressed", "false");
   await page.getByRole("button", { name: "Send message" }).click();
   await expect(page).toHaveURL(/\/c\//);
   await expect(
@@ -220,6 +228,7 @@ for (const width of [390, 1440])
         ),
       ).toBeTruthy();
       await mkdir(evidence, { recursive: true });
+      await settle(page);
       await preview.screenshot({
         path: `${evidence}/states-${width}-${theme}-fake.png`,
       });
@@ -235,10 +244,12 @@ for (const width of [390, 1440])
         menu.getByRole("menuitem", { name: "Remove", exact: true }),
       ).toHaveAttribute("data-variant", "destructive");
       await expect(menu).toBeInViewport({ ratio: 0.99 });
+      await settle(page);
       await page.screenshot({
         animations: "disabled",
         path: `${evidence}/recording-menu-${width}-${theme}-fake.png`,
       });
+      await settle(page);
       const menuAxe = await new AxeBuilder({ page }).analyze();
       expect(
         menuAxe.violations.filter((violation) =>
@@ -262,10 +273,12 @@ for (const width of [390, 1440])
       await expect(
         page.getByRole("button", { name: "Copy", exact: true }),
       ).toBeInViewport({ ratio: 0.9 });
+      await settle(page);
       await page.screenshot({
         animations: "disabled",
         path: `${evidence}/transcript-text-${width}-${theme}-fake.png`,
       });
+      await settle(page);
       const axe = await new AxeBuilder({ page }).analyze();
       expect(
         axe.violations.filter((violation) =>
@@ -275,6 +288,7 @@ for (const width of [390, 1440])
       await page
         .getByRole("button", { name: "Timestamps", exact: true })
         .click();
+      await settle(page);
       await page.screenshot({
         path: `${evidence}/transcript-timestamps-${width}-${theme}-fake.png`,
       });

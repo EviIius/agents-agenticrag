@@ -1,3 +1,12 @@
+import { LibraryPreview } from "./LibraryPreview";
+import { CleanupPreview } from "./CleanupPreview";
+import { OrganizationPreview } from "./OrganizationPreview";
+import { DocumentsPreview } from "./DocumentsPreview";
+import { EverydayPreview } from "./EverydayPreview";
+import config from "../../../shared/config.json";
+import { RefinementPreview } from "./RefinementPreview";
+import { ConversationMotionPreview } from "./ConversationMotionPreview";
+import { MotionPreview } from "./MotionPreview";
 import { PolishPreview } from "./PolishPreview";
 import { TranscriptionPreview } from "./TranscriptionPreview";
 import { lazy, Suspense, useState } from "react";
@@ -8,15 +17,15 @@ import { ChatList } from "@/components/app/ChatList";
 import { LiveChatSettings } from "@/components/settings/LiveChatSettings";
 import { Button } from "@/components/ui/button";
 import {
-  AssistantMessage,
-  type AssistantState,
-} from "@/components/chat/AssistantMessage";
-import { UserMessage } from "@/components/chat/UserMessage";
+  MessagePreview,
+  FixtureChatSettings,
+  fixtureModels,
+  type PreviewState,
+} from "./ProductionFixtures";
 import { Composer } from "@/components/chat/Composer";
 import { Welcome } from "@/components/app/Welcome";
 import { Sidebar, type SidebarState } from "@/components/app/Sidebar";
 import { ModelPicker, type PickerState } from "@/components/app/ModelPicker";
-import { ChatSettingsPanel } from "@/components/settings/ChatSettingsPanel";
 import { SearchActivity } from "@/components/chat/SearchActivity";
 import { SourcesSheet } from "@/components/chat/SourcesSheet";
 import type { Source, Message, Chat, Model } from "@/lib/api";
@@ -62,12 +71,27 @@ const webMessage: Message = {
   },
 };
 const Markdown = lazy(() => import("@/components/chat/Markdown"));
+const LibraryAnswersPreview = lazy(() => import("./LibraryAnswersPreview"));
 export function DesignPage() {
   const ui = useUI();
+  if (new URLSearchParams(location.search).has("library-answers"))
+    return <LibraryAnswersPreview />;
+  if (new URLSearchParams(location.search).has("library"))
+    return <LibraryPreview />;
+  if (new URLSearchParams(location.search).has("cleanup"))
+    return <CleanupPreview />;
+  if (new URLSearchParams(location.search).has("organize"))
+    return <OrganizationPreview />;
+  if (new URLSearchParams(location.search).has("documents"))
+    return <DocumentsPreview />;
+  if (new URLSearchParams(location.search).has("everyday"))
+    return <EverydayPreview />;
   return (
     <div className="design-page">
       <header className="mb-10">
-        <p className="mb-3 text-xs text-fg-3">WORKBENCH / FOUNDATION</p>
+        <p className="mb-3 text-xs text-fg-3">
+          {config.APP_NAME.toUpperCase()} / FOUNDATION
+        </p>
         <h1 className="font-serif text-3xl leading-10">
           A quieter place to think.
         </h1>
@@ -90,6 +114,9 @@ export function DesignPage() {
           </Button>
           <Button variant="outline" onClick={() => ui.set({ theme: "system" })}>
             System
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/design?everyday">Everyday chat states</Link>
           </Button>
           <Button asChild variant="outline">
             <Link to="/design/chat/fixture">Fixture chat</Link>
@@ -261,6 +288,9 @@ export function DesignPage() {
         </h2>
         <DataPane preview />
       </section>
+      <MotionPreview />
+      <RefinementPreview />
+      <ConversationMotionPreview />
       <PolishPreview />
       <TranscriptionPreview />
       <ReviewStates />
@@ -280,7 +310,15 @@ export function DesignPage() {
           ).map((state) => (
             <div className="design-card" key={state}>
               <h3 className="mb-3 font-medium">{state}</h3>
-              <ModelPicker state={state} />
+              <ModelPicker
+                state={state}
+                models={
+                  state === "offline" || state === "empty"
+                    ? undefined
+                    : fixtureModels
+                }
+                current={fixtureModels[0]}
+              />
             </div>
           ))}
         </div>
@@ -317,13 +355,13 @@ export function DesignPage() {
         </h2>
         <div className="design-card mb-4">
           <h3 className="mb-5 font-medium">User · text, attachment, edit</h3>
-          <UserMessage />
-          <UserMessage attachment />
-          <UserMessage editing />
+          <MessagePreview role="user" />
+          <MessagePreview role="user" attachment />
+          <MessagePreview role="user" editing />
         </div>
         <div className="design-card mb-4">
           <h3 className="mb-5 font-medium">Assistant · complete</h3>
-          <AssistantMessage />
+          <MessagePreview />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           {(
@@ -336,11 +374,11 @@ export function DesignPage() {
               "stopped",
               "error",
               "interrupted",
-            ] as AssistantState[]
+            ] as PreviewState[]
           ).map((state) => (
             <div className="design-card" key={state}>
               <h3 className="mb-3 font-medium">{state}</h3>
-              <AssistantMessage
+              <MessagePreview
                 state={state}
                 text="A partial answer from the Fake runtime. **Formatting stays readable** while the rest arrives."
               />
@@ -353,17 +391,39 @@ export function DesignPage() {
           Composer
         </h2>
         <div className="space-y-4">
-          <Composer suggestions onWebChange={() => {}} />
-          <Composer starter="An editable fixture message" attached reasoning />
-          <Composer starter="A fixture message in progress" running />
+          <Composer
+            model={fixtureModels[0]}
+            context={{ used_tokens: 6200, context_length: 16384 }}
+            suggestions
+            onWebChange={() => {}}
+          />
+          <Composer
+            model={fixtureModels[1]}
+            starter="An editable fixture message"
+            files={[
+              {
+                id: "fake-note",
+                kind: "text",
+                filename: "fake-notes.md",
+                mime_type: "text/markdown",
+                bytes: 64,
+                audio_available: true,
+              },
+            ]}
+          />
+          <Composer
+            model={fixtureModels[0]}
+            starter="A fixture message in progress"
+            running
+          />
         </div>
       </section>
       <section aria-labelledby="chat-settings" className="design-card mb-8">
         <h2 id="chat-settings" className="text-lg font-medium">
-          Chat settings · model defaults
+          Chat controls · model defaults
         </h2>
         <div className="max-w-sm">
-          <ChatSettingsPanel />
+          <FixtureChatSettings />
         </div>
       </section>
       <section aria-labelledby="markdown-safety" className="design-card mb-8">
@@ -418,6 +478,8 @@ const reviewChat: Chat = {
   pinned: true,
   params: {},
   web_enabled: false,
+  library_enabled: false,
+  research_enabled: false,
 };
 const reviewModel: Model = {
   connection_id: "design",

@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir } from "node:fs/promises";
@@ -49,14 +50,19 @@ for (const width of [320, 390, 1440])
           dialog.getByRole("option", { name: /Synthetic palette chat/ }),
         ).toBeVisible();
         await input.fill("");
-        await expect(
-          dialog.getByRole("button", { name: "Close command palette" }),
-        ).toBeInViewport({ ratio: 1 });
+        const close = dialog.getByRole("button", {
+          name: "Close command palette",
+        });
+        if (await page.evaluate(() => matchMedia("(pointer: coarse)").matches))
+          await expect(close).toBeInViewport({ ratio: 1 });
+        else await expect(close).toHaveCount(0);
         await mkdir("../artifacts/phase-3", { recursive: true });
+        await settle(page);
         await page.screenshot({
           animations: "disabled",
           path: `../artifacts/phase-3/palette-${width}-${theme}-fake.png`,
         });
+        await settle(page);
         expect(
           (await new AxeBuilder({ page }).analyze()).violations.filter((v) =>
             ["serious", "critical"].includes(v.impact ?? ""),
@@ -79,7 +85,12 @@ for (const width of [320, 390, 1440])
         await expect(
           page.getByRole("option", { name: /fake-reasoning/ }),
         ).toBeVisible();
+        await settle(page);
         await page.keyboard.press("Escape");
+        await expect(
+          page.getByRole("option", { name: /fake-reasoning/ }),
+        ).not.toBeVisible();
+        await settle(page);
         await page.keyboard.press("Control+/");
         await expect(
           page.getByRole("dialog", { name: "Settings" }),
@@ -87,8 +98,13 @@ for (const width of [320, 390, 1440])
         await expect(
           page.getByRole("heading", { name: "Shortcuts", exact: true }),
         ).toBeVisible();
+        await settle(page);
         await page.keyboard.press("Escape");
+        await expect(
+          page.getByRole("dialog", { name: "Settings" }),
+        ).toHaveCount(0);
         await page.keyboard.press("Control+k");
+        await expect(input).toBeFocused();
         await input.fill("palette search phrase");
         await dialog
           .getByRole("option", { name: /Synthetic palette chat/ })

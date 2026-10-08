@@ -10,6 +10,7 @@ import {
   SlidersHorizontal,
   X,
   Layers,
+  BookOpen,
 } from "lucide-react";
 import { api, type Chat } from "@/lib/api";
 import type { components } from "@/lib/api-types";
@@ -29,6 +30,8 @@ import {
 import { IconButton } from "./IconButton";
 import { Button } from "@/components/ui/button";
 export type PaletteActions = {
+  toggleLibrary?: () => void;
+  applyPreset?: () => void;
   newChat: () => void;
   switchModel: () => void;
   toggleSearch: () => void;
@@ -43,6 +46,7 @@ export function CommandPalette({
   actions,
   onChat,
   searchDisabled,
+  libraryDisabled,
   previewChats,
   previewState,
 }: {
@@ -51,6 +55,7 @@ export function CommandPalette({
   actions: PaletteActions;
   onChat: (chat: Chat) => void;
   searchDisabled?: boolean;
+  libraryDisabled?: boolean;
   previewChats?: Chat[];
   previewState?: "loading" | "error" | "empty";
 }) {
@@ -93,10 +98,29 @@ export function CommandPalette({
             disabled: searchDisabled,
           },
           {
-            label: "Chat settings",
+            label: "Chat controls",
             icon: SlidersHorizontal,
             action: actions.chatSettings,
           },
+          ...(actions.toggleLibrary
+            ? [
+                {
+                  label: "Toggle library",
+                  icon: BookOpen,
+                  action: actions.toggleLibrary,
+                  disabled: libraryDisabled,
+                },
+              ]
+            : []),
+          ...(actions.applyPreset
+            ? [
+                {
+                  label: "Apply preset…",
+                  icon: SlidersHorizontal,
+                  action: actions.applyPreset,
+                },
+              ]
+            : []),
           { label: "Settings", icon: Settings, action: actions.settings },
           { label: "Toggle theme", icon: Moon, action: actions.toggleTheme },
           { label: "Shortcuts", icon: Keyboard, action: actions.shortcuts },
@@ -126,24 +150,22 @@ export function CommandPalette({
         showCloseButton={false}
         className="flex flex-col gap-0 overflow-clip p-0"
       >
-        <header className="relative shrink-0 space-y-1 border-b border-line p-4 pr-16">
-          <DialogTitle>Command palette</DialogTitle>
-          <DialogDescription>
-            Search chats or choose an action
-          </DialogDescription>
-          <IconButton
-            label="Close command palette"
-            className="absolute right-3 top-3"
-            onClick={() => onOpenChange(false)}
-          >
-            <X />
-          </IconButton>
-        </header>
+        <DialogTitle className="sr-only">Command palette</DialogTitle>
+        <DialogDescription className="sr-only">
+          Search chats or run a command
+        </DialogDescription>
+        <IconButton
+          label="Close command palette"
+          className="palette-close absolute right-2 top-2 z-10"
+          onClick={() => onOpenChange(false)}
+        >
+          <X />
+        </IconButton>
         <Command shouldFilter={false} className="min-h-0">
           <CommandInput
             ref={inputRef}
             aria-label="Search chats and actions"
-            placeholder="Search chats and actions…"
+            placeholder="Search chats or run a command…"
             value={text}
             onValueChange={setText}
           />
@@ -160,6 +182,20 @@ export function CommandPalette({
                   >
                     <Icon />
                     <span>{label}</span>
+                    <kbd
+                      aria-hidden="true"
+                      className="ml-auto text-xs text-fg-3"
+                    >
+                      {
+                        {
+                          "New chat": "⌘⇧O",
+
+                          "Chat controls": "⌘⇧>",
+                          Settings: "⌘,",
+                          Shortcuts: "⌘/",
+                        }[label]
+                      }
+                    </kbd>
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -195,7 +231,14 @@ export function CommandPalette({
                   >
                     <FileText />
                     <span className="min-w-0">
-                      <span className="block truncate">{chat.title}</span>
+                      <span className="block truncate">
+                        {chat.title}
+                        {chat.folder_name && (
+                          <span className="ml-2 text-xs text-fg-3">
+                            · {chat.folder_name}
+                          </span>
+                        )}
+                      </span>
                       {chat.snippet && (
                         <span className="block line-clamp-2 text-xs text-fg-2">
                           {chat.snippet}

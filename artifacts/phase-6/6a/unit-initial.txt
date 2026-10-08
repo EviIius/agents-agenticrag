@@ -1,0 +1,140 @@
+.FF.F                                                                    [100%]
+=================================== FAILURES ===================================
+_______ test_cleanup_guard_progress_versions_context_discard_and_request _______
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10d4a7230>, <httpx.AsyncClient object at 0x10d2b8ad0>, <fastapi.applications.FastAPI object at 0x10d4a6a50>)
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-192/test_cleanup_guard_progress_ve0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10d473360>
+
+    async def test_cleanup_guard_progress_versions_context_discard_and_request(
+        chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        app, client, runtime = chat_app
+        glossary = tmp_path / "invented-glossary.txt"
+        glossary.write_text("Invented Orion = invented orion\n")
+        monkeypatch.setenv("FAKE_TRANSCRIBE_GLOSSARY", str(glossary))
+        source = (
+            ("invented lantern ember orchard sky " * 55).strip()
+            + "\n\n"
+            + ("FAKE-REWRITE invented branch harvest seed " * 55).strip()
+        )
+        item = await record(app, client, source)
+        before = await original(app, item["id"])
+        started = await launch(app, client, item["id"])
+        assert started.status_code == 202
+        assert (await launch(app, client, item["id"])).status_code == 409
+        job = app.state.transcription.jobs[item["id"]]
+        await job.task
+        value = (await client.get(f"/api/attachments/{item['id']}/transcript")).json()
+        info = value["attachment"]["transcript"]["cleanup"]
+        assert info["status"] == "ready" and info["kept_original"] >= 1
+        assert info["done"] == info["chunks"] and info["elapsed_seconds"] >= 0
+        assert "FAKE-REWRITE" in value["cleaned_text"]
+        assert before == await original(app, item["id"])
+        assert [e.type for e in job.events][0] == "cleanup.started"
+        progress = [e.data for e in job.events if e.type == "cleanup.progress"]
+        assert [p["done"] for p in progress] == list(range(1, info["chunks"] + 1))
+        assert [e.type for e in job.events][-2:] == ["cleanup.done", "stream.closed"]
+        captures = [b for b in runtime.state.captures if b.get("messages")]
+        assert len(captures) == info["chunks"]
+        for capture in captures:
+            content = capture["messages"][0]["content"]
+            assert len(capture["messages"]) == 1 and capture["messages"][0]["role"] == "user"
+            assert "Spell these names exactly as written when they occur: Invented Orion." in content
+            chunk = content.split("<chunk>\n")[-1].split("\n</chunk>")[0]
+>           assert capture["think"] is False
+                   ^^^^^^^^^^^^^^^^
+E           KeyError: 'think'
+
+tests/test_cleanup.py:112: KeyError
+____________ test_cleanup_rejections_timeout_cancel_and_local_guard ____________
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10d4a74d0>, <httpx.AsyncClient object at 0x10d2c0c30>, <fastapi.applications.FastAPI object at 0x10d4a6e40>)
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10d2d56a0>
+
+    async def test_cleanup_rejections_timeout_cancel_and_local_guard(
+        chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI], monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        app, client, runtime = chat_app
+        item = await record(app, client, "FAKE-REWRITE invented orchard lantern ember " * 50)
+        before = await original(app, item["id"])
+        await launch(app, client, item["id"])
+        await app.state.transcription.jobs[item["id"]].task
+        meta = (await attachments.attachment(app.state.store, item["id"])).transcript
+        assert meta and meta.cleanup and meta.cleanup.status == "failed"
+        assert meta.cleanup.error and "every section" in meta.cleanup.error.message
+        monkeypatch.setattr(cleanup, "TIMEOUT", 0.001)
+        await app.state.store.execute(
+            "UPDATE transcripts SET text=? WHERE attachment_id=?", ("invented word " * 150, item["id"])
+        )
+        before = await original(app, item["id"])
+        count = len(runtime.state.captures)
+        await launch(app, client, item["id"])
+        await app.state.transcription.jobs[item["id"]].task
+>       assert len(runtime.state.captures) == count + 1
+E       AssertionError: assert 7 == (5 + 1)
+E        +  where 7 = len([{'model': 'fake-chat'}, {'model': 'fake-reasoning'}, {'model': 'fake-vision'}, {'model': 'fake-chat', 'messages': [{'...d word invented word invented word invented word invented\n</chunk>'}], 'stream': True, 'keep_alive': '30m', ...}, ...])
+E        +    where [{'model': 'fake-chat'}, {'model': 'fake-reasoning'}, {'model': 'fake-vision'}, {'model': 'fake-chat', 'messages': [{'...d word invented word invented word invented word invented\n</chunk>'}], 'stream': True, 'keep_alive': '30m', ...}, ...] = <starlette.datastructures.State object at 0x10d473e10>.captures
+E        +      where <starlette.datastructures.State object at 0x10d473e10> = <fastapi.applications.FastAPI object at 0x10d4a6e40>.state
+
+tests/test_cleanup.py:167: AssertionError
+_________ test_glossary_validation_atomic_save_and_next_engine_prompt __________
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10d6e5e80>, <httpx.AsyncClient object at 0x10d690b50>, <fastapi.applications.FastAPI object at 0x10d6e5be0>)
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-192/test_glossary_validation_atomi0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10d26d0f0>
+
+    async def test_glossary_validation_atomic_save_and_next_engine_prompt(
+        chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        app, client, _ = chat_app
+        glossary = tmp_path / "invented-glossary.txt"
+        monkeypatch.setenv("FAKE_TRANSCRIBE_GLOSSARY", str(glossary))
+        await upload(app, client)
+        assert (await client.get("/api/transcription/glossary")).json() == {"text": "", "terms": []}
+        response = await client.put(
+            "/api/transcription/glossary",
+            json={"text": "# Invented\r\nInvented Orion = invented orion\rInvented Ember"},
+        )
+        assert response.status_code == 200
+        assert response.json()["terms"] == ["Invented Orion", "Invented Ember"]
+        assert glossary.read_text() == "# Invented\nInvented Orion = invented orion\nInvented Ember\n"
+        assert glossary.stat().st_mode & 0o777 == 0o600
+        for text in ["nul\0", "x" * 65537, "\ud800"]:
+>           response = await client.put("/api/transcription/glossary", json={"text": text})
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_cleanup.py:257:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.venv/lib/python3.14/site-packages/httpx/_client.py:1896: in put
+    return await self.request(
+.venv/lib/python3.14/site-packages/httpx/_client.py:1527: in request
+    request = self.build_request(
+.venv/lib/python3.14/site-packages/httpx/_client.py:378: in build_request
+    return Request(
+.venv/lib/python3.14/site-packages/httpx/_models.py:408: in __init__
+    headers, stream = encode_request(
+.venv/lib/python3.14/site-packages/httpx/_content.py:216: in encode_request
+    return encode_json(json)
+           ^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+json = {'text': '\ud800'}
+
+    def encode_json(json: Any) -> tuple[dict[str, str], ByteStream]:
+        body = json_dumps(
+            json, ensure_ascii=False, separators=(",", ":"), allow_nan=False
+>       ).encode("utf-8")
+          ^^^^^^^^^^^^^^^
+E       UnicodeEncodeError: 'utf-8' codec can't encode character '\ud800' in position 9: surrogates not allowed
+
+.venv/lib/python3.14/site-packages/httpx/_content.py:179: UnicodeEncodeError
+=========================== short test summary info ============================
+FAILED tests/test_cleanup.py::test_cleanup_guard_progress_versions_context_discard_and_request
+FAILED tests/test_cleanup.py::test_cleanup_rejections_timeout_cancel_and_local_guard
+FAILED tests/test_cleanup.py::test_glossary_validation_atomic_save_and_next_engine_prompt
+3 failed, 2 passed in 2.65s

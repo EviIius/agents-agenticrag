@@ -80,6 +80,15 @@ Preserve the launchd identity and Tailscale route; retain verification/report ev
 
 **User confirmation — 3 October 2026 (Phase 3 phone closeout):** After the keyboard-only walkthrough and <1.5 s phone readiness target were explained, Jake confirmed "both those work." Record these as user-confirmed acceptance and the supplied airplane-mode screenshot as offline-shell evidence. No instrumented physical timing sample was collected; retain that evidence limitation without inventing a numeric result. Phase 3 closes with this acceptance and the deferred VoiceOver limitation.
 
+**User authorization — 4 October 2026 (Phase 4):** Proceed with `docs/next/PHASE-4-POLISH-AND-MOTION.md` as corrected after review, and its QA requirements. Stop for review after 4B and 4D. Atelier, Chat controls and Web search are display changes at 4D; internal identifiers and numbered citations remain. C1 send timing/draft rollback is an explicit tested behavior change. Later phases retain their separate approval gates.
+
+**User authorization — 4 October 2026 (Phase 5):** Fix and confirm Reduce motion
+› Always and the missing app entrance on the mirrored iPhone, then proceed with
+`docs/next/PHASE-5-EVERYDAY-CHAT.md`. Presets, documents, folders and automatic
+backups are authorized, with review stops after 5A, 5B and 5C. No new packages or
+model calls; document privacy follows recording privacy. Optional forking and
+later phases retain their separate gates.
+
 1. Save it in the repo as `docs/SPEC.md`.
 2. Paste the prompt in §0 into Codex.
 3. After each phase, review the report (checklist, screenshots, test output) before you reply "continue".
@@ -800,6 +809,11 @@ Pings use the `sse-starlette` default comment every 15 s.
 | `search_no_results` | notice | "The web search found nothing for “{query}”. This answer uses the model's own knowledge." | Retry with search |
 | `pages_unreadable` | notice | "Couldn't read any of the search results ({reason}). This answer uses the model's own knowledge." | Retry with search |
 | `uncited` | note under the sources row | "This answer doesn't cite specific sources." | — |
+| `document_no_text` | upload | "This PDF has no selectable text. Scanned documents aren't supported yet." | Choose another file |
+| `document_encrypted` | upload | "This PDF is password-protected. Remove the password and try again." | Choose another file |
+| `document_unreadable` | upload | "Couldn't read this file. It may be damaged." | Choose another file |
+| `document_too_large` | upload | "Documents can be up to 50 MB and 1,500 pages." | Choose a smaller file |
+| `document_timeout` | upload | "This document took too long to read." | Retry |
 
 Never add these texts to `message.content`. The server stores only codes and details, in `error_json` and `web_json.notice`; components map the codes to this copy.
 
@@ -1465,7 +1479,7 @@ This part exists so that Phases 1–2 leave the right seams, and so the agent wo
   1. Content first. No decorative gradients, glows, emoji or illustration.
   2. Use hairline borders and soft shadows only for floating layers (composer, popovers, dialogs).
   3. Each screen has one primary action.
-  4. Motion is quick and functional (≤ 200 ms) and is removed for reduced motion.
+  4. Motion is functional and brief. Small elements take at most 200 ms; large surfaces (sheets, drawers, sidebar and side panel) at most 320 ms. Only activity indicators loop. Animate opacity and transform; exceptions are collapsible height, sidebar width and context-ring stroke-dasharray. Remove all animation and transitions for system reduced motion and Appearance › Reduce motion › Always. Motion lives in `web/src/styles/motion.css`, selected by data attributes; components carry no animation utility classes.
   5. Status color is always paired with an icon or word.
   6. Metadata (stats, sizes, IDs) is muted and set in tabular figures; IDs use the monospace face.
 
@@ -2393,3 +2407,10 @@ Hard rules:
 **User amendment — 3 October 2026 (deployment and storage):** Keep the engine’s public source under `transcribe/` in the Workbench repo and run it as a subprocess. Model weights, actual config, glossary and interpreter selection are ignored by Git; deployment copies them inside the installed app at `~/.local/share/workbench/app/transcribe` to avoid Documents access restrictions. Source recordings remain outside the repo. Uploaded audio is temporary by default: remove Workbench’s copy after durable transcription, preserving transcript text, raw text, timestamps and metadata. Failed/cancelled audio remains retryable until cleared. Settings offers opt-in audio retention and bulk clearing of inactive audio without deleting outputs or chats. This supersedes TRANSCRIPTION-SPEC decisions 1 and 3 and §12’s separate deployment folder. Jake authorized removal of existing uploaded audio copies.
 
 Completed transcript outputs are kept even when unsent; seven-day housekeeping removes only unfinished unsent attachments.
+
+**User clarification — 5 October 2026 (preset precedence):** Jake delegated the
+conflict between exact preset-only sampling and the frozen model-default pipeline
+to Codex ("Do what you think is best."). Preserve saved model defaults: a preset
+overrides only the values it stores; unspecified values inherit the user's saved
+model defaults, otherwise the runtime default. Empty presets add no sampling
+values of their own. This refines P5-AC1; no provider/run pipeline change is needed.

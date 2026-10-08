@@ -3,6 +3,8 @@ import { useUI } from "@/stores/ui";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { IconButton } from "./IconButton";
 import { ModelPicker } from "./ModelPicker";
+import { fixtureModels } from "@/design/ProductionFixtures";
+import { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +14,7 @@ import {
 import { toast } from "sonner";
 export function TopBar() {
   const { collapsed, set } = useUI();
+  const [current, choose] = useState(fixtureModels[0]);
   const desktop = useMediaQuery("(min-width: 1024px)");
   return (
     <header className="topbar">
@@ -26,14 +29,18 @@ export function TopBar() {
             <PanelLeftOpen />
           </IconButton>
         )}
-        <ModelPicker />
+        <ModelPicker
+          models={fixtureModels}
+          current={current}
+          onChoose={choose}
+        />
       </div>
       <span className="hidden max-w-64 flex-1 truncate text-center text-xs text-fg-3 md:block">
         A clearer way to learn
       </span>
       <div className="flex shrink-0 items-center">
         <IconButton
-          label="Chat settings"
+          label="Chat controls"
           onClick={() => set({ panel: !useUI.getState().panel })}
         >
           <SlidersHorizontal />

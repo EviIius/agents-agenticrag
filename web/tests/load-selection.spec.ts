@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 
 for (const width of [390, 1440]) {
@@ -39,7 +40,7 @@ for (const width of [390, 1440]) {
       await page.goto(chat ? "/c/" + chat.id : "/");
       if (width >= 640)
         await page
-          .getByRole("button", { name: "Chat settings", exact: true })
+          .getByRole("button", { name: "Chat controls", exact: true })
           .click();
       await page
         .getByRole("button", { name: "Choose model", exact: true })
@@ -55,6 +56,7 @@ for (const width of [390, 1440]) {
       await expect(
         selected.getByRole("img", { name: "Selected for chat" }),
       ).toBeVisible();
+      await settle(page);
       await page.screenshot({
         path: `../artifacts/phase-2/load-selected-${width}-${existing ? "existing" : "new"}-${browserName}.png`,
       });
@@ -75,10 +77,10 @@ for (const width of [390, 1440]) {
         ).toBe("fake-vision");
       if (width < 640)
         await page
-          .getByRole("button", { name: "Chat settings", exact: true })
+          .getByRole("button", { name: "Chat controls", exact: true })
           .click();
       const controls = page.getByRole("region", {
-        name: "Chat settings controls",
+        name: "Chat controls",
       });
       await expect(
         controls.getByText("fake-vision", { exact: true }),
@@ -92,25 +94,29 @@ for (const width of [390, 1440]) {
         controls.getByRole("button", { name: "64K", exact: true }),
       ).toHaveCount(0);
       await context.fill("16384");
+      await controls
+        .getByRole("button", { name: "Apply context length" })
+        .click();
       await controls.getByRole("button", { name: "32K", exact: true }).click();
       await expect(
         controls.getByRole("button", { name: "32K", exact: true }),
       ).toHaveAttribute("aria-pressed", "true");
       await controls
-        .getByRole("button", { name: "Save settings", exact: true })
+        .getByRole("button", { name: "Apply context length", exact: true })
         .click();
       if (width < 640) {
-        const drawer = page.getByRole("dialog", { name: "Chat settings" });
+        const drawer = page.getByRole("dialog", { name: "Chat controls" });
         expect(await drawer.evaluate((element) => element.scrollTop)).toBe(0);
         await expect(
-          drawer.getByRole("button", { name: "Close chat settings" }),
+          drawer.getByRole("button", { name: "Close chat controls" }),
         ).toBeInViewport({ ratio: 1 });
       }
+      await settle(page);
       await page.screenshot({
         path: `../artifacts/phase-2/load-context-32k-${width}-${browserName}.png`,
       });
       await page
-        .getByRole("button", { name: "Close chat settings", exact: true })
+        .getByRole("button", { name: "Close chat controls", exact: true })
         .click();
       const question = `Context payload ${width} ${existing} ${browserName}`;
       await page.locator(".composer textarea").fill(question);
@@ -161,11 +167,8 @@ for (const width of [390, 1440]) {
     });
     await settings.getByRole("button", { name: "Models", exact: true }).click();
     const card = settings
-      .getByRole("textbox", {
-        name: "Display name for fake-reasoning",
-        exact: true,
-      })
-      .locator("..");
+      .getByRole("button", { name: "Rename fake-reasoning", exact: true })
+      .locator("../..");
     await card.getByRole("button", { name: "Load", exact: true }).click();
     await expect(
       card.getByRole("button", { name: "Eject", exact: true }),

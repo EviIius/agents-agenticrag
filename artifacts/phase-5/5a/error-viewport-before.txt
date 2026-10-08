@@ -1,0 +1,59 @@
+npm notice run workbench-web@1.0.0-alpha.0 e2e
+npm notice run playwright test phase5a-design.spec.ts --project=webkit --grep 5A production design states 390 dark
+[WebServer] INFO:     Started server process [31821]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8787 (Press CTRL+C to quit)
+[WebServer] npm notice run workbench-web@1.0.0-alpha.0 dev
+[WebServer] npm notice run vite --host 127.0.0.1 --port 5173 --strictPort
+[WebServer] (node:31857) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] INFO:     Started server process [31861]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:18080 (Press CTRL+C to quit)
+
+Running 1 test using 1 worker
+
+(node:31862) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [webkit] › tests/phase5a-design.spec.ts:7:5 › 5A production design states 390 dark (12.4s)
+
+
+  1) [webkit] › tests/phase5a-design.spec.ts:7:5 › 5A production design states 390 dark ────────────
+
+    Error: expect(locator).toBeInViewport() failed
+
+    Locator:  getByRole('dialog', { name: 'Save as preset', exact: true }).getByRole('alert')
+    Expected: in viewport
+    Received: viewport ratio 0
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeInViewport" getByRole('dialog', { name: 'Save as preset', exact: true }).getByRole('alert') with timeout 5000ms
+      - waiting for getByRole('dialog', { name: 'Save as preset', exact: true }).getByRole('alert')
+        14 × locator resolved to <p role="alert" class="text-sm text-danger">A preset with this name already exists. Choose an…</p>
+           - unexpected value "viewport ratio 0"
+
+
+      89 |         .click();
+      90 |       await expect(editor.getByRole("alert")).toContainText("already exists");
+    > 91 |       await expect(editor.getByRole("alert")).toBeInViewport();
+         |                                               ^
+      92 |       await capture("preset-collision");
+      93 |       await editor.getByRole("button", { name: "Cancel", exact: true }).click();
+      94 |       await page.getByRole("button", { name: "Delete", exact: true }).click();
+        at /Users/evilius/Documents/GitHub/agents-agenticrag/web/tests/phase5a-design.spec.ts:91:47
+
+    Error Context: test-results/phase5a-design-5A-production-design-states-390-dark-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/phase5a-design-5A-production-design-states-390-dark-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/phase5a-design-5A-production-design-states-390-dark-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › tests/phase5a-design.spec.ts:7:5 › 5A production design states 390 dark ─────────────

@@ -1,3 +1,4 @@
+import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir, readFile } from "node:fs/promises";
@@ -58,7 +59,10 @@ async function openDownload(
     })
     .click();
   await page.getByRole("menuitem", { name, exact: true }).click();
-  return page.getByRole("dialog", { name: "Save recording" });
+  const dialog = page.getByRole("dialog", { name: "Save recording" });
+  await expect(dialog).toBeVisible();
+  await settle(page);
+  return dialog;
 }
 
 test("format choice, cancel and downloads retain Workbench", async ({
@@ -203,6 +207,7 @@ test("preparation failure, retry and original audio remain cancellable", async (
   await expect(
     dialog.getByRole("link", { name: "Download file" }),
   ).toBeVisible();
+  await settle(page);
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);
   let audioRequests = 0;
@@ -260,6 +265,7 @@ for (const width of [320, 390, 1440])
       await expect(
         dialog.getByRole("link", { name: "Download file" }),
       ).toBeVisible();
+      await settle(page);
       const close = dialog.getByRole("button", {
         name: "Close recording download",
       });
@@ -280,10 +286,12 @@ for (const width of [320, 390, 1440])
         ),
       ).toBe(true);
       await mkdir(evidence, { recursive: true });
+      await settle(page);
       await page.screenshot({
         animations: "disabled",
         path: `${evidence}/mobile-save-${width}-${theme}-fake.png`,
       });
+      await settle(page);
       const axe = await new AxeBuilder({ page }).analyze();
       expect(
         axe.violations.filter((v) =>
