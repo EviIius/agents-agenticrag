@@ -127,10 +127,13 @@ evidence before this proposal ships.
 1. Recording dropdown safe-area clipping: highest priority for phone usability.
 2. Sidebar/overlay motion regression: normal, system-reduced and Always-reduced
    checks using authored synthetic content.
-3. Picker organization and readable capability labels: use this proposal after
-   the current 8A review; model qualification remains separate.
-4. VoiceOver: preserve the reported failure and deferred acceptance status until
-   a physical accessibility review is scheduled. Do not mark it passed.
+3. Picker organization and readable capability labels: the deferred-polish
+   checkpoint implements capability filters and separate Selected/Loaded labels.
+   Favorites and explicit context-profile grouping remain proposals; model
+   qualification remains separate.
+
+VoiceOver is excluded from current work at Jake's request. Its historical failure
+is retained without scheduling a new acceptance check or claiming it passed.
 
 The authoritative bug list remains `docs/DEFERRED-FIXES.md`. No real phone capture,
 recording, private filename or Library text was used for this proposal.

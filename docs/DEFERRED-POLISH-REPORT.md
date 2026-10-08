@@ -15,14 +15,14 @@ VoiceOver is excluded from current work; historical failure reports are retained
 |---|---|---|
 | Research stopped and history preserved | Pass | `RESEARCH-SHELVED.md`, existing main merge `a55041f`; no running Research eval process |
 | VoiceOver removed from current backlog | Pass | `DEFERRED-FIXES.md`, AGENTS/SPEC amendment and QA G-5; no pass invented |
-| Recording menu safe edges and scrolling | Initial checks pass; final suite pending | `deferred-polish.spec.ts`: portrait 390×844, landscape 844×390, keyboard-sized 390×360, light/dark, first/last access and dismissal |
+| Recording menu safe edges and scrolling | Pass | `deferred-polish.spec.ts`: portrait 390×844, landscape 844×390, keyboard-sized 390×360, light/dark, first/last access and dismissal |
 | Explain missing motion | Diagnosed | Installed preference is `always`; it intentionally disables motion. Appearance now explains effective status and how to follow the device preference. No saved preference was changed. |
-| Phone sidebar entrance/exit and reduced modes | Final suite pending | New sidebar event checks; existing phone/overlay/conversation suites |
+| Phone sidebar entrance/exit and reduced modes | Pass | New sidebar event checks; existing phone/overlay/conversation suites |
 | Preserve desktop performance fallback | Pass by source review | Prior `PHASE-4-REPORT.md`: width animation exceeded WebKit’s 18 ms gate (25 ms). Width snap retained; labels and phone sheets retain CSS motion. |
-| Picker clarity and genuine capabilities | Final suite pending | All/Loaded/Images/Reasoning/Tools; explicit Selected text distinct from residency; selected/loaded rows first; IDs remain searchable; load/context tests preserved |
-| Types, lint, units, contrast, frozen contracts | Initial pass; final evidence pending | 298 Python tests, 36 web unit tests, 74 contrast pairs; API/prompt/row/payload guards |
-| Full browser regression | Pending | Final run uses fake app on test-only 18787; installed app stays on 127.0.0.1:8787 |
-| Production update and fallback | Pending | Frontend-only static publication after gates; backup first, leave server/interpreters/engine/data and network identity intact |
+| Picker clarity and genuine capabilities | Pass | All/Loaded/Images/Reasoning/Tools; explicit Selected text distinct from residency; selected/loaded rows first; IDs remain searchable; load/context tests preserved |
+| Types, lint, units, contrast, frozen contracts | Pass | 298 Python tests, 36 web unit tests, 74 contrast pairs; API/prompt/row/payload guards |
+| Full browser regression | Pass: 457 passed, 3 existing skips | Final run uses fake app on test-only 18787; installed app stays on 127.0.0.1:8787 |
+| Production update and fallback | Pass | `deployment.json`: frontend-only publication, local/Tailscale health, unchanged 84 public runtime files, service identity and route; private static/database fallback preserved |
 | Physical iPhone observations | Not claimed | Synthetic Chromium/WebKit evidence is not a physical phone test. Prior Jake acceptance remains historical. |
 
 ## Changed files
@@ -68,14 +68,53 @@ See `service-during-tests.json`; live data was never used as test data.
 
 ## Test output
 
-Pending final full-run results. The initial diagnostic failures were new test
+Final `make check` passes: 298 Python tests, 36 web unit tests, types, lint,
+formatting, 74 contrast pairs and frozen contract/privacy/motion guards. The
+targeted polish suite passes all 26 Chromium/WebKit checks. The final complete
+`make e2e` run passes: **457 passed, 3 existing skips (38.1 minutes)**. The skips
+remain the WebKit long-answer case, foundation screenshot case and offline PWA
+navigation case; they are not counted as passes. See `verification.json` and
+`e2e.txt`. Initial compressed JavaScript is 240,526 bytes
+against the 256,000-byte budget, a 707-byte increase from accepted 7B against the
+8,192-byte growth limit. See `bundle.json`.
+
+The initial diagnostic failures were new test
 mistakes: a focused tooltip consumes the first Escape before the sidebar, and
 cmdk’s search control is a combobox rather than a textbox. The sidebar animation
 check now uses the actual close button. A subsequent whole-suite run was stopped
 before completion when a separate synthetic short-screen check showed the picker
 list collapsing to zero height. The compact layout was corrected and the suite
-restarted; keep `browser-before-short-picker-fix.txt` as an incomplete run. Existing assertions, thresholds, timeouts
+restarted; `browser-before-short-picker-fix.txt` retains 205 passed, one
+interrupted transcription wait and 250 not run. It is an incomplete run, not
+acceptance evidence. Text logs normalize trailing whitespace only. Existing assertions, thresholds, timeouts
 and skips are unchanged. Retain `diagnostic-browser.txt` as an unsuccessful run.
+
+## Publication and fallback
+
+The frontend from source checkpoint `85477f5` was published on 8 October 2026.
+New assets were staged first, old hashed assets retained for existing clients,
+and the index/service worker published last. The server was not restarted.
+All 84 checked public server/shared files still match accepted `d74067e`;
+production `/design` returns 404. Local and Tailscale `/api/health` return
+HTTP 200 with `ok: true`; listener, launchd identity and Tailscale route match.
+
+The first attempt rolled back after framework Python rejected the Tailscale
+certificate chain. The restored service-worker hash was verified; the retry
+used macOS curl with certificate verification enabled and passed. No certificate
+verification was bypassed. See `publication-first-attempt.json`.
+
+The private fallback is:
+`~/.local/share/workbench/data/backups/polish-static-20261008T045106Z/`.
+It contains the previous static files and a consistent SQLite backup, with no
+audio copied. To undo only this frontend publication, restore its `static/`
+into `~/.local/share/workbench/app/server/app/static/` using `rsync -a --delete`.
+Do not restore the database for a frontend rollback; that could replace newer
+chat/output data.
+
+Live desktop checks confirmed the filters, explicit Selected label, Loaded
+filter toggle and effective-motion explanation. The saved Always preference
+was not changed. Targeted DOM checks avoided private content; owned tabs were
+closed. See `live-browser.json`. No physical iPhone pass is claimed.
 
 ## Test-diff ledger
 
@@ -98,6 +137,8 @@ Synthetic screenshots live under `artifacts/deferred-polish/`:
 - `picker-{390,1440}-{chromium,webkit}-fake.png`
 - `picker-short-{320,390}x360-{chromium,webkit}-fake.png`
 
+The recording menu at 390×360, the compact picker at 320×360, the phone picker
+and Always-motion status were visually reviewed using synthetic WebKit images.
 No real recording/document name, transcript or user screenshot is retained.
 
 ## Open questions for Jake / next steps
@@ -111,3 +152,10 @@ No real recording/document name, transcript or user screenshot is retained.
 3. When desired, separately approve one named candidate from
    `MODEL-OPTIONS-AND-PICKER.md` for matched everyday chat/search/Library testing.
    Keep the current model as a fallback and do not download the entire shortlist.
+
+## Saved checkpoint
+
+Source implementation: `85477f5` on `codex/deferred-polish`. The final source,
+reports and evidence are preserved by local tag
+`atelier-7b-polish-2026-10-08`. Main remains at the existing Research-history
+merge; this polish has not been merged or pushed.
