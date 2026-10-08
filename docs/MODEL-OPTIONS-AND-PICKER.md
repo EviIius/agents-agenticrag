@@ -2,13 +2,11 @@
 
 > **7 October 2026 update:** Research is shelved. This remains a candidate list, not installation approval or a quality ranking. The current polish adds metadata-based picker filters and explicit selection labels; new models, runtime upgrades and automatic routing remain unapproved.
 
-Status: researched proposal, no model download, runtime upgrade, default switch,
-new routing, Research qualification or UI deployment. The accepted 7B app remains
-installed. Jake requested model research and clearer categorization while 8A
-consistency work continues.
-
-Jake's follow-up: document candidates and continue the existing 8A scope; do not
-install Qwen 3.8 or another model now. Expand this list through research only.
+Status: documented candidates. Research is shelved and the tested frontend
+polish is installed. The active next proposal is
+[Everyday model comparison](MODEL-COMPARISON-PLAN.md), covering normal chat,
+single-shot Web search and Library. Named downloads, evaluation execution,
+runtime upgrades and default switches still need approval.
 
 ## What to test first
 
@@ -82,7 +80,10 @@ Recommended eventual order: Qwen 3.8 27B first; then one different family
 coding candidate if needed. Test one at a time with only one chat model resident
 before comparing memory. Avoid downloading every candidate on this list.
 
-## Qualification before recommendation
+## Archived Research qualification procedure — do not execute
+
+This older procedure is preserved for a future explicit Research restart. It is
+not part of the next everyday comparison.
 
 1. Get approval for the named weight download and test profile. The current 8A
    amendment excludes new models; research alone does not authorize installation.
