@@ -6,6 +6,7 @@ import {
   Eye,
   LoaderCircle,
   Wrench,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,6 +52,15 @@ export function ModelPicker({
   onModelAction?: (model: import("@/lib/api").Model) => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
+  const [filter, setFilter] = useState("All");
+  const matches = (model: import("@/lib/api").Model) =>
+    filter === "All" ||
+    (filter === "Loaded" && model.loaded === true) ||
+    (filter === "Images" && model.vision === true) ||
+    (filter === "Reasoning" && !!model.reasoning) ||
+    (filter === "Tools" && model.tools === true);
+  const available = models?.filter(matches);
+
   useEffect(() => {
     const show = () => setOpen(true);
     window.addEventListener("workbench:choose-model", show);
@@ -137,9 +147,35 @@ export function ModelPicker({
     </Button>
   );
   const content = (
-    <Command className="min-h-0 flex-1">
-      <CommandInput placeholder="Search models…" aria-label="Search models" />
-      <CommandList className="min-h-0 flex-1">
+    <Command
+      className={`min-h-0 flex-1 ${phone ? "model-picker-command overflow-y-auto scroll-pt-14" : ""}`}
+    >
+      <CommandInput
+        placeholder="Search models…"
+        aria-label="Search models"
+        className={phone ? "pr-14" : undefined}
+      />
+      {models && state !== "loading" && (
+        <div
+          role="group"
+          aria-label="Filter models"
+          className="flex shrink-0 flex-wrap gap-1 border-b border-line px-2 py-1"
+        >
+          {["All", "Loaded", "Images", "Reasoning", "Tools"].map((label) => (
+            <Button
+              key={label}
+              variant={filter === label ? "secondary" : "ghost"}
+              size="sm"
+              className="min-h-11 px-2"
+              aria-pressed={filter === label}
+              onClick={() => setFilter(label)}
+            >
+              {label}
+            </Button>
+          ))}
+        </div>
+      )}
+      <CommandList className={`min-h-0 ${phone ? "shrink-0" : "flex-1"}`}>
         <CommandEmpty>No matching models.</CommandEmpty>
         <>
           {models && state !== "loading" ? (
@@ -152,8 +188,19 @@ export function ModelPicker({
                       ?.name ?? "Ollama"
                   }
                 >
-                  {models
-                    .filter((model) => model.connection_id === id)
+                  {available
+                    ?.filter((model) => model.connection_id === id)
+                    .sort((a, b) => {
+                      const selected = (model: import("@/lib/api").Model) =>
+                        Number(
+                          model.model_id === current?.model_id &&
+                            model.connection_id === current?.connection_id,
+                        );
+                      return (
+                        selected(b) - selected(a) ||
+                        Number(b.loaded === true) - Number(a.loaded === true)
+                      );
+                    })
                     .map((model) => (
                       <CommandItem
                         key={model.connection_id + model.model_id}
@@ -186,6 +233,13 @@ export function ModelPicker({
                         <div className="min-w-0 flex-1">
                           <span className="flex flex-wrap items-center gap-2 break-words">
                             {model.display_name}
+                            {current?.model_id === model.model_id &&
+                              current?.connection_id ===
+                                model.connection_id && (
+                                <span className="text-xs font-medium text-brand">
+                                  Selected
+                                </span>
+                              )}
                             {model.reasoning && (
                               <Brain
                                 aria-label="Supports reasoning"
@@ -322,13 +376,23 @@ export function ModelPicker({
         <div className="min-w-0">{trigger}</div>
         <Drawer open={open} onOpenChange={setOpen}>
           <DrawerContent>
-            <DrawerHeader>
+            <DrawerHeader className="model-picker-heading">
               <DrawerTitle>Choose model</DrawerTitle>
               <DrawerDescription>Local models on your Mac</DrawerDescription>
             </DrawerHeader>
             {content}
             <DrawerClose asChild>
-              <Button variant="ghost" className="m-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Close model picker"
+                className="model-picker-close-compact icon-button absolute right-3 top-6 z-20"
+              >
+                <X />
+              </Button>
+            </DrawerClose>
+            <DrawerClose asChild>
+              <Button variant="ghost" className="model-picker-close-footer m-3">
                 Close
               </Button>
             </DrawerClose>

@@ -1,3 +1,4 @@
+import { fakeAppURL } from "../test-runtime";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { settle } from "./helpers";
@@ -153,9 +154,7 @@ test("message alignment, single code/table surfaces and inline rename", async ({
     })
   ).json();
   expect(
-    (
-      await request.post(`http://127.0.0.1:8787/tests/long-chat/${chat.id}`)
-    ).ok(),
+    (await request.post(`${fakeAppURL}/tests/long-chat/${chat.id}`)).ok(),
   ).toBe(true);
   const seeded = { chat_id: chat.id };
   await page.goto("/c/" + seeded.chat_id);

@@ -54,12 +54,14 @@ async def generate(
     queued = False
     stream = None
     try:
-        request = ChatRequest(
-            model.model_id, context.messages, params, model.context_length, params.get("reasoning")
-        )
-        if run.research_enabled:
-            if manager.research_hook is None:
-                raise AppError("research_unavailable", "Research is unavailable.", 422)
+        if semaphore.locked():
+            manager.waiting[conn] = manager.waiting.get(conn, 0) + 1
+            queued = True
+            await run.emit("run.queued", {"position": manager.waiting[conn]})
+        async with semaphore:
+            if queued:
+                manager.waiting[conn] -= 1
+                queued = False
             await run.emit(
                 "run.started",
                 {
@@ -69,31 +71,16 @@ async def generate(
                     "model_loaded": model.loaded,
                 },
             )
-            await manager.research_hook(run, request, context, semaphore)
-        if semaphore.locked():
-            manager.waiting[conn] = manager.waiting.get(conn, 0) + 1
-            queued = True
-            await run.emit("run.queued", {"position": manager.waiting[conn]})
-        async with semaphore:
-            if queued:
-                manager.waiting[conn] -= 1
-                queued = False
-            if not run.research_enabled:
-                await run.emit(
-                    "run.started",
-                    {
-                        "assistant_message_id": run.message.id,
-                        "connection_id": conn,
-                        "model_id": model.model_id,
-                        "model_loaded": model.loaded,
-                    },
-                )
             adapter = await manager.registry.adapter(conn)
-
+            request = ChatRequest(
+                model.model_id,
+                context.messages,
+                params,
+                model.context_length,
+                params.get("reasoning"),
+            )
             chat = await chats.chat(manager.store, run.message.chat_id)
-            if run.research_enabled:
-                pass  # Research prepared the existing answer request before this lock.
-            elif chat.library_enabled and manager.library_hook:
+            if chat.library_enabled and manager.library_hook:
                 await manager.library_hook(run, request, context)
             elif (
                 context.has_recording
@@ -107,8 +94,6 @@ async def generate(
             elif manager.web_hook and (chat.web_enabled or force_web):
                 await manager.web_hook(run, request, context, force_web)
             stream = adapter.stream(request)
-            if run.research_enabled and run.research_output is not None:
-                stream = run.research_output.stream(stream)
             async for event in stream:
                 clock = monotonic()
                 if isinstance(event, (TextDelta, ReasoningDelta)):
@@ -171,7 +156,6 @@ async def generate(
             manager.waiting[conn] -= 1
         if stream:
             await stream.aclose()
-        run.research_output = None
         stats.total_ms = (monotonic() - started) * 1000
         if stats.tokens_estimated:
             stats.completion_tokens = round(
@@ -195,7 +179,7 @@ async def generate(
             )
         else:
             await run.emit("message.done", {"message": run.message.model_dump()})
-        if run.message.status == "complete" and not run.research_enabled:
+        if run.message.status == "complete":
             from .titles import title
 
             try:

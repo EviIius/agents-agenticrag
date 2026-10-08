@@ -690,17 +690,13 @@ html
   [data-slot="message-footer"][data-role="user"] [data-slot="message-actions"],
   [data-slot="message-footer"][data-role="assistant"]:not([data-last="true"])
     [data-slot="message-actions"],
-  [data-slot="message-stats"],
-  [data-slot="model-action"] {
+  [data-slot="message-stats"] {
     opacity: 0;
   }
   article:hover [data-slot="message-actions"],
   article:focus-within [data-slot="message-actions"],
   article:hover [data-slot="message-stats"],
-  article:focus-within [data-slot="message-stats"],
-  [role="option"]:hover [data-slot="model-action"],
-  [role="option"]:focus-within [data-slot="model-action"],
-  [role="option"][data-selected="true"] [data-slot="model-action"] {
+  article:focus-within [data-slot="message-stats"] {
     opacity: 1;
   }
   .palette-close {
@@ -722,4 +718,47 @@ html
     max-width: calc(36% - 20px);
     margin-right: auto;
   }
+}
+
+/* Keep long menus scrollable inside the visible, safe viewport, including the keyboard. */
+[data-slot="dropdown-menu-content"] {
+  max-height: min(
+    var(--radix-dropdown-menu-content-available-height),
+    calc(
+      var(--viewport-h, 100dvh) -
+        var(--safe-area-top, env(safe-area-inset-top)) -
+        var(--safe-area-bottom, env(safe-area-inset-bottom)) - 16px
+    )
+  );
+  overscroll-behavior: contain;
+  scroll-padding-block: 4px;
+}
+
+/* Leave room for suggestions when the phone keyboard reduces the visual viewport.
+   Keep the dialog's accessible title while the search field is in use. */
+html[data-compact-viewport] .model-picker-heading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.model-picker-close-compact {
+  display: none;
+}
+html[data-compact-viewport] .model-picker-close-compact {
+  display: inline-flex;
+}
+html[data-compact-viewport] .model-picker-close-footer {
+  display: none;
+}
+.model-picker-command [data-slot="command-input-wrapper"] {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--popover);
 }

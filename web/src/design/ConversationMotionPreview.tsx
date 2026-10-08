@@ -30,7 +30,6 @@ export function ConversationMotionPreview() {
     params: {},
     web_enabled: false,
     library_enabled: false,
-    research_enabled: false,
     created_at: "2026-10-04",
     updated_at: "2026-10-04",
   };

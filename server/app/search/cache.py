@@ -11,16 +11,8 @@ from .fixtures import Fixtures
 
 
 async def read(
-    store: Store,
-    url: str,
-    days: int,
-    fixtures: Fixtures,
-    freshness: str = "any",
-    *,
-    max_chars: int = 80000,
+    store: Store, url: str, days: int, fixtures: Fixtures, freshness: str = "any"
 ) -> Page:
-    if not 1 <= max_chars <= 500000:
-        raise ValueError("Invalid extraction limit")
     date = datetime.now(UTC)
     # Retention and reuse are separate: a recent-information request must not
     # reuse an old snapshot merely because the user keeps pages for 7/30 days.
@@ -30,7 +22,7 @@ async def read(
         "AND (? IS NULL OR fetched_at>?)",
         (url, date.isoformat(), cutoff, cutoff),
     )
-    if cached and max_chars == 80000 and not fixtures.recording and not fixtures.directory:
+    if cached and not fixtures.recording and not fixtures.directory:
         return Page(
             str(cached["final_url"]),
             str(cached["title"] or ""),
@@ -42,23 +34,20 @@ async def read(
     if raw is None:
         raw = await read_network(url)
     fixtures.save_page(url, raw)
-    page = await extract_async(raw, max_chars)
-    # Extended reads neither reuse an 80K prefix nor change Search's cache.
-    # Network byte/timeout/SSRF limits remain in the existing reader.
-    if max_chars == 80000:
-        await store.execute(
-            "INSERT OR REPLACE INTO page_cache VALUES (?,?,?,?,?,?,NULL,?,?)",
-            (
-                url,
-                page.url,
-                page.title,
-                page.site_name,
-                page.published_at,
-                page.text,
-                date.isoformat(),
-                (date + timedelta(days=days)).isoformat(),
-            ),
-        )
+    page = await extract_async(raw)
+    await store.execute(
+        "INSERT OR REPLACE INTO page_cache VALUES (?,?,?,?,?,?,NULL,?,?)",
+        (
+            url,
+            page.url,
+            page.title,
+            page.site_name,
+            page.published_at,
+            page.text,
+            date.isoformat(),
+            (date + timedelta(days=days)).isoformat(),
+        ),
+    )
     return page
 
 

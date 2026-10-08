@@ -11,7 +11,6 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "server"))
 TARGETS = [ROOT / 'server/app' / name for name in ('providers', 'runs', 'search', 'transcribe', 'documents', 'library')]
 TARGETS.append(ROOT / 'server/app/backup.py')
-TARGETS.append(ROOT / 'server/app/runs/research.py')
 hits: dict[str, set[int]] = {}
 
 def trace(frame, event, arg):

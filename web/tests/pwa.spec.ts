@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { readFile, writeFile } from "node:fs/promises";
-const host = "http://127.0.0.1:8787";
+import { fakeAppURL as host } from "../test-runtime";
 test("built PWA installs and never caches APIs", async ({ page, request }) => {
   const manifest = await (
     await request.get(host + "/manifest.webmanifest")

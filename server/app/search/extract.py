@@ -14,10 +14,10 @@ from .fetch import RawPage
 _WORKER = ThreadPoolExecutor(max_workers=1, thread_name_prefix="web-extract")
 
 
-async def extract_async(raw: RawPage, max_chars: int = 80000) -> "Page":
+async def extract_async(raw: RawPage) -> "Page":
     # trafilatura shares native lxml parsers. Keep their trees on one worker:
     # concurrent parsing crashed CPython on this Mac (Phase 2 crash report).
-    return await asyncio.get_running_loop().run_in_executor(_WORKER, extract, raw, max_chars)
+    return await asyncio.get_running_loop().run_in_executor(_WORKER, extract, raw)
 
 
 class _Text(HTMLParser):
@@ -130,9 +130,7 @@ class Page:
     text: str
 
 
-def extract(raw: RawPage, max_chars: int = 80000) -> Page:
-    if not 1 <= max_chars <= 500000:
-        raise ValueError("Invalid extraction limit")
+def extract(raw: RawPage) -> Page:
     mime = raw.content_type.split(";", 1)[0].strip().lower()
     domain = urlsplit(raw.url).hostname or ""
     title, site, date = domain, domain, None
@@ -197,4 +195,4 @@ def extract(raw: RawPage, max_chars: int = 80000) -> Page:
         raise ValueError("blocked or needs JavaScript")
     if len(text) < 300:
         raise ValueError("too little readable text")
-    return Page(raw.url, title, site, date, text[:max_chars])
+    return Page(raw.url, title, site, date, text[:80000])

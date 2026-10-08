@@ -153,6 +153,7 @@ export function CleanupPreview() {
               attachment={item}
               model={model}
               fixture={transcript}
+              onRemove={() => {}}
             />
           )}
         </div>

@@ -1,3 +1,4 @@
+import { fakeAppURL } from "../test-runtime";
 import {
   test,
   expect,
@@ -485,7 +486,7 @@ test("sidebar candidate width motion keeps the existing 300-message frame budget
   request,
 }) => {
   const chat = await existing(page, request);
-  await request.post(`http://127.0.0.1:8787/tests/long-chat/${chat.id}`);
+  await request.post(`${fakeAppURL}/tests/long-chat/${chat.id}`);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.reload();
   await expect(page.getByRole("article")).toHaveCount(300);

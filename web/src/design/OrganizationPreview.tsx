@@ -29,7 +29,6 @@ const chat: Chat = {
   params: {},
   web_enabled: false,
   library_enabled: false,
-  research_enabled: false,
 };
 export const organizationStates = [
   "Folders",

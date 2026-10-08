@@ -1,3 +1,4 @@
+import { fakeAppURL } from "../test-runtime";
 import { test, expect } from "@playwright/test";
 import { mkdir, writeFile } from "node:fs/promises";
 
@@ -23,9 +24,7 @@ test.beforeAll(async ({ request }) => {
       })
     ).json();
     expect(
-      (
-        await request.post(`http://127.0.0.1:8787/tests/long-chat/${chat.id}`)
-      ).ok(),
+      (await request.post(`${fakeAppURL}/tests/long-chat/${chat.id}`)).ok(),
     ).toBe(true);
     await request.patch(`/api/chats/${chat.id}`, {
       data: { title: `Synthetic handoff history ${i}` },

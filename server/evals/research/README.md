@@ -1,3 +1,9 @@
+> **Shelved, 8 October 2026.** These are historical evaluation harnesses. Their
+> matching experimental application source is preserved at `7737046` and on
+> `codex/phase-8a-research`. Current main uses the verified 7B production source
+> and does not include the Research runtime. Do not run these harnesses or resume
+> 8A/8B without a new explicit decision. All failed reports and inputs remain.
+
 # Research gate 8-0
 
 This is an evaluation checkpoint. It adds no Research toggle, tool loop, product

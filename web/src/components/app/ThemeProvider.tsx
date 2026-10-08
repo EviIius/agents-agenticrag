@@ -53,6 +53,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const viewport = window.visualViewport;
     const resize = () => {
+      document.documentElement.toggleAttribute(
+        "data-compact-viewport",
+        (viewport?.height ?? window.innerHeight) < 480,
+      );
       document.documentElement.style.setProperty(
         "--viewport-h",
         `${viewport?.height ?? window.innerHeight}px`,

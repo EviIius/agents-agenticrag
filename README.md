@@ -1,6 +1,6 @@
-# Workbench
+# Atelier
 
-Local Ollama chat, optional web search and local audio transcription. The build plan is
+Local Ollama chat, optional web search, audio transcription and cited Library answers. The build plan is
 [docs/SPEC.md](docs/SPEC.md); phase reports and synthetic evidence document verification.
 
 ## Setup and development
@@ -28,13 +28,16 @@ make eval-web       # repeatable Phase 2 search evaluation
 make fmt
 ```
 
-E2E owns 8787 while running; never point it at the live server. Fixtures and screenshots
+E2E owns a separate fake app on 127.0.0.1:18787 and fake runtime on 18080.
+Playwright opts Vite into that test proxy; ordinary development still targets 8787.
+The installed app can remain available throughout `make e2e`. Fixtures and screenshots
 must use synthetic audio and text. Real recordings, their names, transcripts, account
 keys and personal glossary content do not belong in Git or logs.
 
 ## Use
 
-Select a chat model; **Load** also selects it. Context presets respect the model's
+Select a chat model; **Load** also selects it. Picker filters use reported image,
+reasoning and tool capabilities; **Selected** and **Loaded** describe separate states. Context presets respect the model's
 configured operational limit. Sampling controls left at **Model default** are omitted
 from requests. The standard Llama variant is hidden through a stored user preference.
 
@@ -75,8 +78,8 @@ assets prepared:
 WORKBENCH_TRANSCRIBE_HOME="$PWD/transcribe" make dev-server
 ```
 
-Settings shows setup checks. T1 transcription is implemented; manual model cleanup and
-glossary editing remain the separate T2 checkpoint. See [the transcription spec](docs/TRANSCRIPTION-SPEC.md).
+Settings shows setup checks. Transcription, manual transcript cleanup and glossary
+editing are implemented. See [the transcription spec](docs/TRANSCRIPTION-SPEC.md).
 
 ## Deployment and Tailscale
 
@@ -118,7 +121,7 @@ Open the Tailscale HTTPS URL in Safari, choose **Share → Add to Home Screen**,
 Workbench from that icon. The standalone shell uses safe areas and the visible keyboard
 viewport. Verify installed-app input, offline behavior and warm-load performance on a
 physical phone before closing Phase 3. VoiceOver has a reported failure and is
-deferred for this build; support is not claimed.
+excluded from current work at Jake’s request; support is not claimed.
 
 The service worker caches public shell/hashed assets and never `/api` responses, audio,
 transcripts or streamed messages. Without the Mac connection, the shell shows a connection
@@ -187,3 +190,21 @@ To restore safely:
 Practice this sequence on a copied data folder before replacing production data.
 The Phase 5C rehearsal script and report record a copied-data restoration and
 previous-version rollback without modifying production. No restore UI is provided.
+
+## Current work — 7 October 2026
+
+Research is shelved. Keep its source, benchmark, failed trials and prompt hashes
+as historical evidence; do not start 8B or deploy the isolated prototype. The
+production polish is based on the accepted 7B build. See
+[the shelving decision](docs/RESEARCH-SHELVED.md) and
+[deferred polish report](docs/DEFERRED-POLISH-REPORT.md).
+
+Appearance reports whether motion is enabled, disabled by Always, or reduced by
+the device. Follow system allows the existing brief motion when the device permits
+it. Desktop sidebar width intentionally snaps to preserve the WebKit frame budget.
+
+Library requires SQLite extension loading. The verified server environments use
+the approved uv-managed Python 3.14.7 build; preserve the separate transcription
+interpreter. New models remain proposals in
+[the model shortlist](docs/MODEL-OPTIONS-AND-PICKER.md), with no download or default
+switch authorized by this polish.

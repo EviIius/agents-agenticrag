@@ -204,3 +204,23 @@ for now, research other candidates and continue the existing 8A scope. Model
 research and a picker proposal are authorized; new model downloads, runtime
 upgrades, default switches and picker deployment are not. Preserve the isolated
 8A limits, accepted live 7B and the review stop before 8B.
+
+**User authorization — 7 October 2026 (Research shelved; deferred polish):** Jake
+asked to shelve Research, analyze and fix deferred issues, and provide next steps.
+Stop isolated Research experiments; preserve source, failed trials and benchmark
+history on their existing commits. No 8B or Research deployment. The production
+polish branch starts from the accepted 7B build. Repair recording-menu safe-area
+and scrolling behavior, diagnose mobile motion and refine model-picker clarity
+using runtime-reported metadata only. No model downloads, runtime upgrades, new
+packages, prompts, sampling changes or routing. Jake removed VoiceOver from the
+current work list; preserve its historical reported failure without claiming a
+pass, and keep ordinary keyboard/focus/label semantics.
+
+**Source closeout — 8 October 2026:** While continuing Jake's next steps, main
+was consolidated to the tested production application/tooling tree from
+`codex/deferred-polish`; the unreleased Research runtime, schema additions and
+wiring are absent from that tree. Research source remains on `7737046` /
+`codex/phase-8a-research`, with failed reports and frozen inputs preserved. No
+Research deployment or new experiment is authorized. The ordinary model
+comparison proposal is `docs/MODEL-COMPARISON-PLAN.md`; named download and
+evaluation approval remains separate.
