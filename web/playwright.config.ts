@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { fakeAppPort, fakeAppURL } from "./test-runtime";
 export default defineConfig({
   testDir: "./tests",
   fullyParallel: false,
@@ -15,13 +16,13 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command:
-        "cd .. && . scripts/tool-env.sh && uv run --directory server uvicorn tests.serve_app:app --host 127.0.0.1 --port 8787 --workers 1",
-      url: "http://127.0.0.1:8787/api/health",
+      command: `cd .. && . scripts/tool-env.sh && uv run --directory server uvicorn tests.serve_app:app --host 127.0.0.1 --port ${fakeAppPort} --workers 1`,
+      url: fakeAppURL + "/api/health",
       reuseExistingServer: false,
     },
     {
       command: "npm run dev -- --port 5173 --strictPort",
+      env: { WORKBENCH_E2E: "1" },
       url: "http://127.0.0.1:5173",
       reuseExistingServer: false,
     },

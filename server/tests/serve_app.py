@@ -1,4 +1,4 @@
-"""Browser-test app on the required 8787 port, with isolated temporary data."""
+"""Browser-test app with isolated temporary data and a test-only listener."""
 
 import os
 from collections.abc import AsyncIterator

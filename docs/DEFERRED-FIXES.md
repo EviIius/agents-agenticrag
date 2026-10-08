@@ -1,7 +1,13 @@
-# Deferred fixes
+# Deferred fixes — 7 October 2026
 
-| Issue | Status | Later verification |
+| Issue | Current action | Verification |
 |---|---|---|
-| iPhone recording attachment dropdown clips the upper item and reaches the bottom home indicator. Constrain its height to the available safe viewport and allow scrolling so every action stays reachable. | Deferred at Jake’s request, 6 October 2026. Reproduce with synthetic audio; no real filename or screenshot retained. | Open the menu with a recording near the lower screen; verify the first and last actions, scrolling, dismissal, and safe areas in portrait/landscape and with the keyboard open. |
-| Sidebar and other animations stopped appearing on the phone. | Deferred at Jake’s request, 5 October 2026. Existing automated motion checks pass; physical regression remains unresolved. | Verify installed-app motion with normal, system-reduced, and Always-reduced settings. |
-| VoiceOver did not work on the iPhone. | Reported failure; deferred for this build, 3 October 2026. Never recorded as a pass. | Repeat the physical VoiceOver walkthrough when scheduled. |
+| iPhone recording menu clips its first action and reaches the home indicator. | Add safe-area collision padding and a scrollable visible-viewport height limit. Preserve unavailable retry entries and their explanation. | Synthetic portrait, landscape and keyboard-sized viewport checks; first/last action access, dismissal and focus return. See deferred polish report for results. |
+| Sidebar/other motion appears absent on the phone. | The installed preference is Always, which intentionally suppresses animations. Show effective status and how to follow the device preference in Appearance. Verify phone sidebar entrance/exit in normal, Always and system-reduced modes. Preserve the intentional desktop width snap because its WebKit candidate exceeded the frame budget. | No physical iPhone pass is invented. Automated browser results and remaining device observation are recorded in the polish report. |
+| Model picker is difficult to scan. | Add All, Loaded, Images, Reasoning and Tools filters using reported capabilities; mark Selected separately from Loaded. | Synthetic filter, search, selection, loading/context and keyboard tests. |
+
+VoiceOver was removed from the current work list at Jake’s request. Historical
+reports retain the reported failure; this is not a successful VoiceOver test.
+Ordinary labels, keyboard access and focus handling remain in place.
+
+Research is shelved; see [RESEARCH-SHELVED.md](RESEARCH-SHELVED.md).

@@ -1,3 +1,4 @@
+import { fakeAppPort } from "../test-runtime";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import {
@@ -203,9 +204,13 @@ test("7A 100 MB Library upload server RSS growth below 20 MB", async ({
   await page.keyboard.press("Control+,");
   const settings = page.getByRole("dialog", { name: "Settings", exact: true });
   await settings.getByRole("button", { name: "Library", exact: true }).click();
-  const pid = execFileSync("lsof", ["-t", "-iTCP:8787", "-sTCP:LISTEN"], {
-    encoding: "utf8",
-  })
+  const pid = execFileSync(
+    "lsof",
+    ["-t", `-iTCP:${fakeAppPort}`, "-sTCP:LISTEN"],
+    {
+      encoding: "utf8",
+    },
+  )
     .trim()
     .split("\n")[0];
   const rss = () =>

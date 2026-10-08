@@ -161,3 +161,57 @@ model-call rules, code, data and deployment remain unchanged. Retain all failure
 and stop with the gate report before 8A. Do not claim two weeks of daily use.
 The Research product spec and proposed release targets still need Jake’s review
 after the gate results; no agent loop, new dependency or product UI is authorized.
+
+**User authorization — 6 October 2026 (8A isolated backend):** After reviewing
+8-0 and Codex's recommendation, Jake said “Then do so”. Approve the Research
+product specification and §9 targets with these qualifications: deterministically
+regrade equivalent baseline wording using retained answers before freezing the
+comparison; preserve genuine omissions and contradictions, original reports and
+corpus. Keep ≥80% factual completeness, ≥15 percentage-point gain, native validity
+≥95%, manual citation/claim review and all host budgets. Waive the remaining
+calendar hold for isolated 8A development only; this does not assert two weeks of
+daily use. Start with the tested daily 32K Qwen, qualifying by measured metadata
+rather than model-name inference; GPT-OSS's failed probe is not qualified.
+Research-only native steps (maximum eight) plus one answer are authorized in
+the isolated backend. Tools are web_search, read_page and finish; no added
+dependency, routing, supervisors, sub-agents or other tools. Freeze the v1
+Research prompt; edits require before/after eval evidence. Keep the live app on
+7B. Stop for 8A review before 8B UI or deployment.
+
+**User authorization — 6 October 2026 (8A evidence refinement):** Jake asked to
+continue the isolated prototype, fix evidence gathering and unsupported answers,
+and determine whether it can exceed the required threshold for 8B. Refine the
+generic Research planning/evidence behavior, with retained v1 before/after evals
+and frozen prompt hashes. Preserve ordinary Search/Library prompts and payloads,
+all original cases, corpus and grading, ≥13/15 complete cases, citation/support,
+validity, injection and budget targets. No topic-specific rules, new packages,
+extra calls, models or tools. Keep live 7B installed. Retain every trial; assess
+semantic support separately from regex matches. Stop with the feasibility/8A
+review before 8B UI or deployment; the request does not waive failed gates.
+
+**User authorization — 6 October 2026 (8A consistency):** Jake asked to do what
+is required to make 13/15 or 15/15 consistent. Continue isolated generic coverage
+and support experiments, preserving all trials, the original benchmark, baseline
+and thresholds. Predeclare repeated full runs of a frozen candidate and review
+claim support separately; one favorable run does not qualify. Any additional
+query-aware corpus must be separate and evaluate Search and Research on identical
+evidence. No new dependencies, tools, models or calls; live 7B and the 8A review
+stop remain unchanged.
+
+**User clarification — 7 October 2026 (model research):** Jake requested more
+model options and clearer picker categorization, then said to document Qwen 3.8
+for now, research other candidates and continue the existing 8A scope. Model
+research and a picker proposal are authorized; new model downloads, runtime
+upgrades, default switches and picker deployment are not. Preserve the isolated
+8A limits, accepted live 7B and the review stop before 8B.
+
+**User authorization — 7 October 2026 (Research shelved; deferred polish):** Jake
+asked to shelve Research, analyze and fix deferred issues, and provide next steps.
+Stop isolated Research experiments; preserve source, failed trials and benchmark
+history on their existing commits. No 8B or Research deployment. The production
+polish branch starts from the accepted 7B build. Repair recording-menu safe-area
+and scrolling behavior, diagnose mobile motion and refine model-picker clarity
+using runtime-reported metadata only. No model downloads, runtime upgrades, new
+packages, prompts, sampling changes or routing. Jake removed VoiceOver from the
+current work list; preserve its historical reported failure without claiming a
+pass, and keep ordinary keyboard/focus/label semantics.

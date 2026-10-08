@@ -31,13 +31,27 @@ function DropdownMenuTrigger({
 function DropdownMenuContent({
   className,
   sideOffset = 4,
+  collisionPadding: providedPadding,
+  ref: providedRef,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Content>) {
+  const [element, setElement] = React.useState<HTMLDivElement | null>(null);
+  const bind = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      setElement(node);
+      if (typeof providedRef === "function") return providedRef(node);
+      if (providedRef) providedRef.current = node;
+    },
+    [providedRef],
+  );
+  const collisionPadding = useSafeMenuPadding(element);
   return (
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
+        ref={bind}
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
+        collisionPadding={providedPadding ?? collisionPadding}
         className={cn(
           "z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
           className,
@@ -46,6 +60,42 @@ function DropdownMenuContent({
       />
     </DropdownMenuPrimitive.Portal>
   );
+}
+
+// Radix handles the visual viewport; give it the phone's safe edges as well.
+// Read env() through CSS so landscape, standalone mode and test overrides agree.
+function useSafeMenuPadding(element: HTMLElement | null) {
+  const [padding, setPadding] = React.useState({
+    top: 8,
+    right: 8,
+    bottom: 8,
+    left: 8,
+  });
+  React.useLayoutEffect(() => {
+    if (!element) return;
+    const probe = document.createElement("div");
+    probe.style.cssText =
+      "position:fixed;visibility:hidden;pointer-events:none;padding:calc(var(--safe-area-top, env(safe-area-inset-top)) + 8px) calc(var(--safe-area-right, env(safe-area-inset-right)) + 8px) calc(var(--safe-area-bottom, env(safe-area-inset-bottom)) + 8px) calc(var(--safe-area-left, env(safe-area-inset-left)) + 8px)";
+    document.body.append(probe);
+    const measure = () => {
+      const css = getComputedStyle(probe);
+      setPadding({
+        top: parseFloat(css.paddingTop),
+        right: parseFloat(css.paddingRight),
+        bottom: parseFloat(css.paddingBottom),
+        left: parseFloat(css.paddingLeft),
+      });
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    window.visualViewport?.addEventListener("resize", measure);
+    return () => {
+      probe.remove();
+      window.removeEventListener("resize", measure);
+      window.visualViewport?.removeEventListener("resize", measure);
+    };
+  }, [element]);
+  return padding;
 }
 
 function DropdownMenuGroup({

@@ -1,5 +1,7 @@
 # Workbench: what comes after Phase 3
 
+> **7 October 2026:** Research is shelved at Jake’s request. Retain its failed evaluation history; do not start 8B. The next work is production polish of the accepted 7B app. VoiceOver is excluded from the current backlog.
+
 **Written:** 3 October 2026, against commit `66a8c6b` · **By:** Claude (validator) · **For:** Jake to approve, Codex to build
 
 Phases 0 to 3 and T1 are closed. This folder holds the review of where the app stands and the plans for what to build next, in the same form as `docs/SPEC.md` and `docs/TRANSCRIPTION-SPEC.md`: exact files, exact rules, acceptance criteria, evidence.

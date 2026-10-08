@@ -1,3 +1,4 @@
+import { fakeAppURL } from "../test-runtime";
 import { test, expect } from "@playwright/test";
 import { writeFile, mkdir } from "node:fs/promises";
 test("300 messages scroll and only the streaming row renders at 100 tokens per second", async ({
@@ -12,9 +13,7 @@ test("300 messages scroll and only the streaming row renders at 100 tokens per s
   ).json();
   try {
     expect(
-      (
-        await request.post(`http://127.0.0.1:8787/tests/long-chat/${chat.id}`)
-      ).ok(),
+      (await request.post(`${fakeAppURL}/tests/long-chat/${chat.id}`)).ok(),
     ).toBe(true);
     await page.addInitScript(() => {
       const records: { id: string; phase: string; actualDuration: number }[] =

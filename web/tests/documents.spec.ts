@@ -1,3 +1,4 @@
+import { fakeAppPort } from "../test-runtime";
 import {
   test,
   expect,
@@ -261,9 +262,13 @@ test("5B 50 MB browser upload keeps server RSS growth below 20 MB", async ({
   await target.truncate(size);
   await target.write(tail, 0, tail.length, size - tail.length);
   await target.close();
-  const pid = execFileSync("lsof", ["-t", "-iTCP:8787", "-sTCP:LISTEN"], {
-    encoding: "utf8",
-  })
+  const pid = execFileSync(
+    "lsof",
+    ["-t", `-iTCP:${fakeAppPort}`, "-sTCP:LISTEN"],
+    {
+      encoding: "utf8",
+    },
+  )
     .trim()
     .split("\n")[0];
   const rss = () =>

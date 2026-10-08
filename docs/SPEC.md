@@ -26,6 +26,15 @@ parameter controls and chat actions against actual API/runtime payloads. The six
 everyday questions supplied by Jake are supplemental eval cases, alongside E12's
 25-case suite. Production prompt changes still require before/after evidence.
 
+
+**User amendment — 7 October 2026 (Research shelved; deferred polish):** Research
+is shelved at Jake’s request. Preserve isolated evidence and failed gates; do not
+continue 8A experiments or 8B. Repair the recording-menu layout, diagnose motion
+and improve picker clarity on the accepted 7B production feature set. No new
+models, dependencies, prompts, runtime upgrades or automatic routing. VoiceOver
+is removed from the current work list; retain its historical failure without a
+pass claim. See `docs/RESEARCH-SHELVED.md` and `docs/DEFERRED-FIXES.md`.
+
 **How Jake uses this file**
 
 **User amendment — 1 October 2026:** Evaluate the supplied web-search links and

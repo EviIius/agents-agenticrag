@@ -1,4 +1,5 @@
 import config from "../../../../shared/config.json";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import {
   Dialog,
   DialogContent,
@@ -61,6 +62,7 @@ export function SettingsDialog({
         ...basePanes.slice(3),
       ];
   const ui = useUI();
+  const reduced = useReducedMotion();
   const pane = ui.settingsPane;
   const navigation = useRef<HTMLElement>(null);
   const bindNavigation = useCallback((element: HTMLElement | null) => {
@@ -196,6 +198,13 @@ export function SettingsDialog({
                       <SelectItem value="always">Always</SelectItem>
                     </SelectContent>
                   </Select>
+                  <span className="block text-sm text-fg-2" role="status">
+                    {ui.reduceMotion === "always"
+                      ? "Animations are off. Choose Follow system to use your device’s preference."
+                      : reduced
+                        ? "Animations are off because Reduce motion is enabled on this device."
+                        : "Brief animations are enabled."}
+                  </span>
                 </label>
                 <label className="block space-y-2">
                   <span className="font-medium">
