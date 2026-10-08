@@ -224,3 +224,12 @@ wiring are absent from that tree. Research source remains on `7737046` /
 Research deployment or new experiment is authorized. The ordinary model
 comparison proposal is `docs/MODEL-COMPARISON-PLAN.md`; named download and
 evaluation approval remains separate.
+
+**User authorization — 8 October 2026 (everyday model comparison):** Jake
+answered "Approved" to the named Qwen3.8 comparison question. Download
+`qwen3.8:27b-q4_K_M`, prepare an isolated 32K profile and execute
+`docs/MODEL-COMPARISON-PLAN.md`, including the proposed everyday 18/20 gate and
+unchanged E12/E13/J7 targets. Stop on smoke protocol/context/format/support/
+injection failure and preserve all outcomes. No Research restart, other models,
+runtime upgrade, new dependency, prompt/sampling change, default switch or
+deployment is authorized. The existing runtime and production data remain.

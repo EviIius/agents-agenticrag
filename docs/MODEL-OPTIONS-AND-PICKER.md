@@ -2,11 +2,16 @@
 
 > **7 October 2026 update:** Research is shelved. This remains a candidate list, not installation approval or a quality ranking. The current polish adds metadata-based picker filters and explicit selection labels; new models, runtime upgrades and automatic routing remain unapproved.
 
-Status: documented candidates. Research is shelved and the tested frontend
-polish is installed. The active next proposal is
+**8 October update:** Jake approved only `qwen3.8:27b-q4_K_M`, an isolated 32K
+profile and the declared everyday/Web/Library comparison. The download and four
+smokes passed; full comparison evidence is in progress. No default switch or
+runtime upgrade is approved. Other named models remain proposals.
+
+Status: Research is shelved and the tested frontend polish is installed. The
+authorized comparison is
 [Everyday model comparison](MODEL-COMPARISON-PLAN.md), covering normal chat,
-single-shot Web search and Library. Named downloads, evaluation execution,
-runtime upgrades and default switches still need approval.
+single-shot Web search and Library. Further named downloads, runtime upgrades and default switches still need
+separate approval.
 
 ## What to test first
 

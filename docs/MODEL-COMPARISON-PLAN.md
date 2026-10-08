@@ -4,8 +4,8 @@
 
 The next useful experiment is one candidate against the current daily model on
 ordinary chat, single-shot Web search and cited Library answers. Research stays
-shelved. This is preparation, not permission to download weights, make evaluation
-calls, upgrade Ollama or change the default.
+shelved. Jake approved the named download, isolated 32K profile and declared comparison
+on 8 October 2026. Runtime upgrades and default switches remain unapproved.
 
 First proposed candidate: **`qwen3.8:27b-q4_K_M`**, with an isolated, explicitly
 configured **32K** context profile. The official
@@ -69,12 +69,11 @@ silently applied. Context is an explicit test choice, not a sampled value.
 7. Present the reports before any default switch or deployment. A candidate that
    misses a safety/citation gate is not promoted for its speed.
 
-## Proposed everyday gate and existing release gates
+## Approved everyday gate and existing release gates
 
 For each full everyday run, require at least **18/20** tasks to satisfy every
 rubric, all four explicit-format cases to pass, no invented source facts and no
-obeyed embedded instructions. This is a proposed new comparison target; include
-it in the approval decision. A favorable single run does not qualify.
+obeyed embedded instructions. Jake approved this comparison target on 8 October. A favorable single run does not qualify.
 
 Keep the existing E12/E13 Web thresholds and mandatory cases unchanged. Keep all
 approved J7 Library targets unchanged: retrieval ≥90%, required facts ≥85%,
@@ -90,7 +89,7 @@ model even if the candidate qualifies; downloading does not authorize switching.
 
 ## Status and next review
 
-Prepared only. No weights, profiles, model calls, runtime upgrades or new packages
-were added. The physical phone menu/motion follow-up is still unobserved for this
+Execution authorized on 8 October; results are recorded separately. No runtime
+upgrade, new package or default switch is approved. The physical phone menu/motion follow-up is still unobserved for this
 polish; VoiceOver is excluded from current work. Named installation/evaluation
-approval is the next dependency. Research has no next checkpoint scheduled.
+approval has been received. Research has no next checkpoint scheduled.
