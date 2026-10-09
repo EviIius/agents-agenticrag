@@ -130,19 +130,21 @@ test("5B document context warning follows model switch and removal deletes text"
     "Choose a model with a larger context",
   );
   await expect(
-    page.getByText(/This message and its documents may exceed/),
+    page.getByText(/This message and its attachments may exceed/),
   ).toBeVisible();
   const tokens = await page
     .locator(".composer [role=img]")
     .getAttribute("aria-label");
-  expect(Number(tokens?.split(" ")[0])).toBeGreaterThan(16000);
+  expect(Number(tokens?.split(" ")[0]?.replaceAll(",", ""))).toBeGreaterThan(
+    16000,
+  );
   await page.getByRole("button", { name: "Choose model" }).click();
   await page.getByRole("option").filter({ hasText: "fake-vision" }).click();
   await expect(
     page.getByRole("button", { name: "Choose model" }),
   ).toContainText("fake-vision");
   await expect(
-    page.getByText(/This message and its documents may exceed/),
+    page.getByText(/This message and its attachments may exceed/),
   ).toHaveCount(0);
   await expect(page.locator("[data-slot=document-chip]")).not.toContainText(
     "Choose a model with a larger context",

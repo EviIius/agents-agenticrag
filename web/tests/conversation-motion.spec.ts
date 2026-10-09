@@ -640,6 +640,16 @@ test("code and transcript copy show a local check and clear it after 1.5 seconds
   const code = preview
     .locator('[data-streamdown="code-block-copy-button"]')
     .first();
+  // WebKit's automatic nearest scrolling left this control below the viewport
+  // on the expanded /design page. Exercise a visible control after user scrolling.
+  await code.evaluate((element) =>
+    element.scrollIntoView({
+      block: "center",
+      inline: "center",
+      behavior: "instant",
+    }),
+  );
+  await expect(code).toBeInViewport();
   await code.click();
   await expect(code.locator('[data-slot="copy-check"]')).toBeVisible();
   await expect(

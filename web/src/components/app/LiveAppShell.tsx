@@ -482,7 +482,9 @@ export function LiveAppShell() {
               reserve:
                 typeof chatParams.max_tokens === "number"
                   ? chatParams.max_tokens
-                  : undefined,
+                  : typeof current.params_defaults?.max_tokens === "number"
+                    ? current.params_defaults.max_tokens
+                    : undefined,
             }
           : undefined
       }

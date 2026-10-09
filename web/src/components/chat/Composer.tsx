@@ -1,4 +1,5 @@
 import { DocumentChip } from "./DocumentChip";
+import { contextBudget } from "@/lib/context-budget";
 import { LibraryControl } from "./LibraryControl";
 import { AudioChip, UploadChip, type AudioUpload } from "./AudioChip";
 import {
@@ -128,6 +129,13 @@ export function Composer({
   const recordingReady = files.some(
     (file) => file.kind === "audio" && file.transcript?.status === "ready",
   );
+  const budget = contextBudget(model, context?.reserve);
+  const estimatedInput = Math.round(
+    (context?.used_tokens ?? 0) + value.length * 0.3,
+  );
+  const contextLabel = context
+    ? `${estimatedInput.toLocaleString()} of ${context.context_length.toLocaleString()} total tokens; ${budget.available.toLocaleString()} input allowance; ${budget.reserve.toLocaleString()} reserved for response; 256 safety margin`
+    : "Context usage unavailable";
   const send = async () => {
     if (!running && !disabled && !waiting && value.trim()) {
       const submitted = value;
@@ -179,6 +187,7 @@ export function Composer({
               key={file.id}
               attachment={file}
               model={model}
+              reserve={context?.reserve}
               onRemove={() => onRemove?.(file.id)}
             />
           ) : file.document ? (
@@ -186,6 +195,7 @@ export function Composer({
               key={file.id}
               attachment={file}
               model={model}
+              reserve={context?.reserve}
               onRemove={() => onRemove?.(file.id)}
             />
           ) : (
@@ -205,18 +215,20 @@ export function Composer({
             </div>
           ),
         )}
-        {files.some((file) => file.document) &&
+        {files.some(
+          (file) =>
+            file.document ||
+            (file.kind === "audio" &&
+              (file.transcript?.token_estimate ?? 0) <= budget.available),
+        ) &&
           context &&
-          context.used_tokens + value.length * 0.3 >
-            context.context_length -
-              (context.reserve ??
-                Math.max(1024, Math.min(8192, context.context_length * 0.25))) -
-              256 && (
+          estimatedInput > budget.available && (
             <p role="status" className="mb-3 text-xs text-warning">
-              This message and its documents may exceed{" "}
-              {model?.display_name ?? "this model"}'s context window (
-              {context.context_length.toLocaleString()} tokens). Choose a model
-              with a larger context or remove a document.
+              This message and its attachments may exceed the input allowance (
+              {budget.available.toLocaleString()} tokens after reserving{" "}
+              {budget.reserve.toLocaleString()} for the response and 256 for
+              safety). Lower Max output tokens in Chat controls, choose a larger
+              context or remove an attachment.
             </p>
           )}
         <textarea
@@ -398,11 +410,7 @@ export function Composer({
                 <span
                   tabIndex={0}
                   role="img"
-                  aria-label={
-                    context
-                      ? `${Math.round(context.used_tokens + value.length * 0.3)} of ${context.context_length} tokens`
-                      : "Context usage unavailable"
-                  }
+                  aria-label={contextLabel}
                   className="flex size-11 items-center justify-center"
                 >
                   <svg viewBox="0 0 20 20" className="size-[18px]" aria-hidden>
@@ -433,9 +441,7 @@ export function Composer({
                 </span>
               </TooltipTrigger>
               <TooltipContent>
-                {context
-                  ? `${Math.round(context.used_tokens + value.length * 0.3)} of ${context.context_length} tokens`
-                  : "Choose a model to see context usage"}
+                {context ? contextLabel : "Choose a model to see context usage"}
               </TooltipContent>
             </Tooltip>
             <Tooltip>

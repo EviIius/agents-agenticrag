@@ -1,4 +1,5 @@
 import { failureCopy, failureDetail } from "@/lib/errors";
+import { contextBudget } from "@/lib/context-budget";
 import { useCleanup } from "@/hooks/useCleanup";
 import { useOverlaySession } from "@/hooks/useOverlaySession";
 import { useEffect, useState } from "react";
@@ -97,11 +98,13 @@ export function AudioChip({
   model,
   onRemove,
   fixture,
+  reserve,
 }: {
   attachment: Attachment;
   model?: Model;
   onRemove?: () => void;
   fixture?: Transcript;
+  reserve?: number;
 }) {
   const live = useTranscripts((state) => state.attachments[attachment.id]);
   const item = fixture ? attachment : (live ?? attachment);
@@ -133,10 +136,8 @@ export function AudioChip({
     const timer = setInterval(() => setClock(Date.now()), 1000);
     return () => clearInterval(timer);
   }, [meta?.status]);
-  const maximum = model?.context_length ?? 8192;
-  const tooLarge =
-    (meta?.token_estimate ?? 0) >
-    maximum - Math.max(1024, Math.min(8192, maximum * 0.25)) - 256;
+  const budget = contextBudget(model, reserve);
+  const tooLarge = (meta?.token_estimate ?? 0) > budget.available;
   const ready = meta?.status === "ready";
   let label =
     meta?.status === "queued"
@@ -180,7 +181,7 @@ export function AudioChip({
         data-slot="audio-chip"
         data-live={meta?.status === "transcribing" || cleaning || undefined}
         data-testid="audio-chip"
-        className={`mb-2 flex max-w-full items-center gap-2 rounded-lg border p-2 ${tooLarge && ready ? "border-warning text-warning" : "border-line bg-surface-2"}`}
+        className={`mb-2 flex max-w-full flex-wrap items-center gap-2 rounded-lg border p-2 ${tooLarge && ready ? "border-warning text-warning" : "border-line bg-surface-2"}`}
       >
         <AudioLines className="size-4 shrink-0" aria-hidden />
         <button
@@ -206,13 +207,6 @@ export function AudioChip({
               {ready
                 ? "Transcript saved · audio removed"
                 : "Audio removed · upload again to retry"}
-            </span>
-          )}
-          {ready && tooLarge && (
-            <span className="block break-words text-warning">
-              About {meta?.token_estimate?.toLocaleString()} tokens: more than{" "}
-              {model?.display_name ?? "this model"} can take (
-              {maximum.toLocaleString()}). Choose a model with a larger context.
             </span>
           )}
         </button>
@@ -334,6 +328,15 @@ export function AudioChip({
           >
             <Trash2 />
           </IconButton>
+        )}
+        {ready && tooLarge && (
+          <p className="w-full break-words text-xs text-warning">
+            About {meta?.token_estimate?.toLocaleString()} input tokens exceeds
+            the {budget.available.toLocaleString()}-token input allowance.{" "}
+            {budget.reserve.toLocaleString()} tokens are reserved for the
+            response. Choose a model with a larger context or lower Max output
+            tokens in Chat controls.
+          </p>
         )}
       </div>
       {downloadSession.value && (

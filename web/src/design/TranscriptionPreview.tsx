@@ -216,6 +216,27 @@ export function TranscriptionPreview() {
         />
       </div>
       <SearchActivity message={message} sources={[]} onRetry={() => {}} />
+      {[undefined, 3072].map((reserve) => (
+        <div className="my-6" key={reserve ?? "default"}>
+          <h3 className="mb-2 text-sm">
+            32K input allowance ·{" "}
+            {reserve ? "user output limit" : "default response reserve"}
+          </h3>
+          <Composer
+            model={{ ...model, context_length: 32768 }}
+            context={{ used_tokens: 28509, context_length: 32768, reserve }}
+            files={[
+              {
+                ...fakeRecording,
+                transcript: {
+                  ...fakeRecording.transcript!,
+                  token_estimate: 26861,
+                },
+              },
+            ]}
+          />
+        </div>
+      ))}
       <Button variant="outline" onClick={() => setOpen(true)}>
         Preview transcript panel
       </Button>

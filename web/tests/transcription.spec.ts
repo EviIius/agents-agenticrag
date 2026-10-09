@@ -168,7 +168,7 @@ test("T-6 too-large transcript warns; switching model changes budget", async ({
   await upload(page, "#fake:words 9000");
   await ready(page);
   await expect(page.getByTestId("audio-chip")).toContainText("≈13,500 tokens");
-  await expect(page.getByTestId("audio-chip")).toContainText("more than");
+  await expect(page.getByTestId("audio-chip")).toContainText("input allowance");
   await page
     .getByRole("button", { name: "Choose model", exact: true })
     .first()
@@ -177,7 +177,100 @@ test("T-6 too-large transcript warns; switching model changes budget", async ({
   await expect(
     page.getByRole("button", { name: "Choose model", exact: true }).first(),
   ).toContainText("fake-vision");
-  await expect(page.getByTestId("audio-chip")).not.toContainText("more than");
+  await expect(page.getByTestId("audio-chip")).not.toContainText(
+    "input allowance",
+  );
+});
+test("transcript allowance follows user output limits and saved model defaults", async ({
+  page,
+  request,
+  browserName,
+}) => {
+  await page.emulateMedia({ colorScheme: "dark" });
+  const connection = (await (await request.get("/api/connections")).json())[0];
+  await request.put("/api/models/prefs", {
+    data: {
+      connection_id: connection.id,
+      model_id: "fake-chat",
+      context_length: 16384,
+      params: {},
+    },
+  });
+  await page.reload();
+  await upload(page, "#fake:words 9000");
+  await ready(page);
+  await expect(page.getByTestId("audio-chip")).toContainText(
+    "12,032-token input allowance",
+  );
+  await expect(page.locator(".composer [role=img]")).toHaveAttribute(
+    "aria-label",
+    /4,096 reserved for response/,
+  );
+  await page.screenshot({
+    path: `../artifacts/reliability/context-budget/input-reserved-${browserName}.png`,
+  });
+  await page
+    .getByRole("button", { name: "Chat controls", exact: true })
+    .click();
+  await page
+    .getByRole("switch", { name: "Use model default for Max output tokens" })
+    .click();
+  await page
+    .getByRole("spinbutton", { name: "Max output tokens", exact: true })
+    .fill("1024");
+  await page
+    .getByRole("button", { name: "Save settings", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Close chat controls" }).click();
+  await expect(page.getByTestId("audio-chip")).not.toContainText(
+    "input allowance",
+  );
+  await expect(page.locator(".composer [role=img]")).toHaveAttribute(
+    "aria-label",
+    /15,104 input allowance; 1,024 reserved/,
+  );
+  await page.screenshot({
+    path: `../artifacts/reliability/context-budget/input-adjusted-${browserName}.png`,
+  });
+  await page.locator(".composer textarea").fill("Synthetic budget request");
+  await page.getByRole("button", { name: "Send message" }).click();
+  await expect(page).toHaveURL(/\/c\//);
+  await expect(
+    page.getByRole("button", { name: "Stop generating" }),
+  ).toHaveCount(0);
+  const captures = (
+    await (await request.get("http://127.0.0.1:18080/tests/state")).json()
+  ).captures;
+  const sent = captures.findLast((item: { messages?: { content: string }[] }) =>
+    item.messages?.at(-1)?.content.includes("Synthetic budget request"),
+  );
+  expect(sent.options).toEqual({ num_ctx: 16384, num_predict: 1024 });
+  await request.put("/api/models/prefs", {
+    data: {
+      connection_id: connection.id,
+      model_id: "fake-chat",
+      context_length: 16384,
+      params: { max_tokens: 1024 },
+    },
+  });
+  await page.goto("/");
+  await upload(page, "#fake:words 9000");
+  await ready(page);
+  await expect(page.getByTestId("audio-chip")).not.toContainText(
+    "input allowance",
+  );
+  await expect(page.locator(".composer [role=img]")).toHaveAttribute(
+    "aria-label",
+    /1,024 reserved/,
+  );
+  await request.put("/api/models/prefs", {
+    data: {
+      connection_id: connection.id,
+      model_id: "fake-chat",
+      context_length: 16384,
+      params: {},
+    },
+  });
 });
 test("T-9 unavailable engine menu and settings", async ({ page }) => {
   await page.route("**/api/bootstrap", async (route) => {
