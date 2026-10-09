@@ -272,3 +272,30 @@ the stable f87db46 tree. Research remains shelved. H4 evidence is
 `docs/RELIABILITY-REPORT.md`; the bounded answer-contract proposal is
 `docs/RELIABILITY-NEXT-CHECKPOINT.md`. Stop for review before product integration
 or further experiments; no default switch or deployment occurred.
+
+
+**User authorization — 9 October 2026 (evidence contract continuation):** Jake
+asked to continue the proposed next reliability checkpoint: preserve source fields
+and context, validate references, and explicitly decline unsupported information.
+Build and evaluate the bounded evidence contract in isolation, preserving earlier
+trials, corpus and targets. Research stays shelved; no new model, dependency,
+runtime, default or deployment is authorized. Review the output/streaming tradeoff
+before product integration. Also correct the reported misleading attachment
+context warning and honor user-set output limits in its estimate; keep the
+existing reserve rule and provider sampling unchanged.
+
+**Evidence contract checkpoint — 9 October 2026:** The isolated source/context
+catalogue and single-call ID-selection contract are implemented, but the first
+full baseline pilot fails: Web 5/25 full cases, Library 22/28 required-fact/citation
+final turns and excessive validated-answer latency. Ordinary unchanged-pipeline
+checks score 16/20 by their declared rubrics. Do not qualify or deploy it. All
+v4-v10 sources, failures and original inputs are retained; v6-v10 are host-only
+replays with no new inference. The latest renderer preserves literal values and
+neutralizes source markup/links in actual Chromium/WebKit chat checks. Relevance,
+completeness, table citation parsing and the quotation cap remain unresolved.
+The context-warning correction honors user output overrides/defaults in its
+estimate, with no sampling or provider change; it is tested but not deployed.
+The full browser run retains one WebKit auto-scroll test failure; visible center
+scrolling fixes that check in the focused rerun, without changing product copy
+behavior. H4 evidence is `docs/EVIDENCE-CONTRACT-REPORT.md`. Stop for review before
+another inference experiment or product integration; Research remains shelved.
