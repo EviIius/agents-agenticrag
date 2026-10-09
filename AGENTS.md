@@ -299,3 +299,27 @@ The full browser run retains one WebKit auto-scroll test failure; visible center
 scrolling fixes that check in the focused rerun, without changing product copy
 behavior. H4 evidence is `docs/EVIDENCE-CONTRACT-REPORT.md`. Stop for review before
 another inference experiment or product integration; Research remains shelved.
+
+**User continuation — 9 October 2026 (isolated evidence fields):** Jake said
+“continue going forward” after the evidence contract report and proposed next
+scope. Proceed with the bounded checkpoint in docs/EVIDENCE-FIELDS-PLAN.md:
+repair table citation evaluation with separate regrades, select original table
+columns with retained subject/property/context, separate Web prose/data and
+Library excerpt limits, compact duplicated evidence input and measure original
+retrieval coverage. Freeze inputs before a baseline pilot; retain all failures
+and stop for review. No Research restart, product integration/deployment, default
+switch, new models/packages/runtime, sampling changes or extra model calls.
+
+**Evidence fields closeout — 9 October 2026:** Table-row citation evaluation is
+repaired with separate regrades; original reports/cases remain unchanged. v11
+separates Web prose/data and Library excerpt limits and offers original column
+selection with compact input. Its native baseline trial fails protocol: 15
+rejected, one unsupported, one interrupted grounded stream; no full Web report,
+Library trial, candidate or repeat. Host-only old Library selections score 27/28
+required facts/citations, not a new model or semantic pass. v12's stricter schema
+and ordinal/subject guard are prepared and tested but unexecuted. Native grammar
+compatibility, immediate protocol stopping, authenticated host-context costs,
+retrieval coverage, relevance/completeness, ordinary grounding and latency remain.
+Full make check passes (434 Python / 39 frontend); production is unchanged, no
+deployment or Research. H4: docs/EVIDENCE-FIELDS-REPORT.md. Stop for review before
+another inference trial or product integration.

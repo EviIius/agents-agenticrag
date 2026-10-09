@@ -1,0 +1,31 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+B009 [*] Do not call `getattr` with a constant attribute value. It is not any safer than normal property access.
+   --> tests/test_evidence_fields.py:128:12
+    |
+126 |     assert payload["units"][1]["required_context"] == "Fern 2031\nFern is not waterproof."
+127 |     original["passages"][0]["text"] = "Mutated"
+128 |     assert getattr(request, "_evidence_catalog").sources["source_1"]["passages"][0]["text"] != "Mutated"
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+129 |     assert request.params == {}
+    |
+help: Replace `getattr` with attribute access
+    |
+127 |     original["passages"][0]["text"] = "Mutated"
+    -     assert getattr(request, "_evidence_catalog").sources["source_1"]["passages"][0]["text"] != "Mutated"
+128 +     assert request._evidence_catalog.sources["source_1"]["passages"][0]["text"] != "Mutated"
+129 |     assert request.params == {}
+    |
+
+E501 Line too long (104 > 100)
+   --> tests/test_evidence_fields.py:128:101
+    |
+126 |     assert payload["units"][1]["required_context"] == "Fern 2031\nFern is not waterproof."
+127 |     original["passages"][0]["text"] = "Mutated"
+128 |     assert getattr(request, "_evidence_catalog").sources["source_1"]["passages"][0]["text"] != "Mutated"
+    |                                                                                                     ^^^^
+129 |     assert request.params == {}
+    |
+
+Found 2 errors.
+[*] 1 fixable with the `--fix` option.
+make: *** [check] Error 1

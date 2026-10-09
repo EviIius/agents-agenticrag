@@ -95,6 +95,37 @@ def test_post_period_citation_cannot_borrow_matching_fact_from_wrong_source() ->
     assert result["required_fact_citation_support"] == [False, False]
 
 
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "| Evidence | Citation |\n| --- | --- |\n| Leave is 24 days. | [1] |",
+        "| Leave is 24 days. Notice is unknown. | [1] |",
+        "| Leave is 24 days. \\| label | [1] |",
+        "| Accuracy is 0.5 C. | [1] |",
+    ],
+)
+def test_table_citation_column_remains_bound_to_punctuated_row(answer: str) -> None:
+    fact = "0.5" if "Accuracy" in answer else "24"
+    sources = [{"n": 1, "passages": [{"text": f"The value is {fact}."}]}]
+    assert grade({"facts": [fact]}, answer, sources, answer)["citation_support"]
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "| Leave is 24 days. | |\n| Other fact. | [1] |",
+        "| Other fact. | [1] |\n| Leave is 24 days. | |",
+        "| Leave is 24 days. | [1]",
+        "| Leave is 24 days. |\n[1]",
+        "| Leave is 24 days. | [1](https://example.org) |",
+        "| Leave is 24 days. | [2] |\n| Other fact. | [1] |",
+    ],
+)
+def test_table_citation_never_leaks_from_other_row_link_or_outside_cell(answer: str) -> None:
+    sources = [{"n": 1, "passages": [{"text": "Annual leave is 24 days."}]}]
+    assert not grade({"facts": ["24"]}, answer, sources, answer)["citation_support"]
+
+
 def test_library_eval_corpus_cases_and_safety_grades() -> None:
     cases = json.loads((Path(__file__).parents[1] / "evals/library/cases.yaml").read_text())
     assert Counter(c["kind"] for c in cases) == {
