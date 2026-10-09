@@ -233,3 +233,16 @@ unchanged E12/E13/J7 targets. Stop on smoke protocol/context/format/support/
 injection failure and preserve all outcomes. No Research restart, other models,
 runtime upgrade, new dependency, prompt/sampling change, default switch or
 deployment is authorized. The existing runtime and production data remain.
+
+**Comparison closeout — 8 October 2026:** The named candidate and isolated 32K
+profile are installed; four ordered smokes and all three matched full pairs are
+complete. The candidate fails qualification: mandatory Web lookup/citation
+checks fail in every run, and source-only everyday grounding remains incomplete.
+Original Library citation failures include a documented post-period parser
+limitation; do not misrepresent those as fabricated required facts or silently
+regrade them. Baseline weaknesses, all setup failures, answers and manual reviews
+are retained in `artifacts/model-comparison/` and the H4 report at
+`docs/MODEL-COMPARISON-REPORT.md`. Production equals the stable `f87db46` tree,
+Ollama remains 0.35.0, and no default switch, deployment or Research restart took
+place. Repository checks passed. Stop for comparison review; further prompt,
+grader, profile, download or runtime experiments require their own reviewed scope.

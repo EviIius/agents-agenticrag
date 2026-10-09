@@ -4,7 +4,9 @@
 
 **8 October update:** Jake approved only `qwen3.8:27b-q4_K_M`, an isolated 32K
 profile and the declared everyday/Web/Library comparison. The download and four
-smokes passed; full comparison evidence is in progress. No default switch or
+smokes passed; all three matched pairs are complete. The candidate failed
+qualification and remains an installed test profile. See
+[the comparison report](MODEL-COMPARISON-REPORT.md). No default switch or
 runtime upgrade is approved. Other named models remain proposals.
 
 Status: Research is shelved and the tested frontend polish is installed. The
@@ -22,7 +24,7 @@ inferences, not speed or quality results on this Mac.
 
 | Priority | Explicit Ollama candidate | Published size | Proposed purpose |
 |---|---|---|---|
-| 1 | `qwen3.8:27b-q4_K_M` | About 18 GB | First candidate for grounded answers and native tool reliability. Explicit quantized tag avoids the moving `latest` alias; record its full digest after installation. |
+| Evaluated | `qwen3.8:27b-q4_K_M` | About 18 GB | Installed 32K test profile fails ordinary comparison qualification; not promoted. Native tool/vision quality was not tested. Full digests are retained. |
 | 2 | `qwen3.6:35b` | About 23–24 GB | Alternative for coding and tool work. The publisher specifies 35B total / 3B active parameters; measure actual speed rather than equating active parameters with RAM. |
 | 3 | `gemma4:26b` | About 16–19 GB | A second model family for comparison, with a mixture-of-experts architecture. Keep the existing Gemma 12B as the smaller installed option. |
 | 4 | `qwen3.5:9b` | About 6.6–7.6 GB | Smaller candidate for quick everyday requests; accuracy and latency still require local tests. |
@@ -80,10 +82,11 @@ lists only a cloud tag, so it is outside this local shortlist. The older
 on 25 September 2026 and has no downloadable tags. A cloud alias would change
 where prompts are processed and is not an equivalent local replacement.
 
-Recommended eventual order: Qwen 3.8 27B first; then one different family
-(Nemotron 30B for Research or Ministral 14B for smaller everyday use); then a
-coding candidate if needed. Test one at a time with only one chat model resident
-before comparing memory. Avoid downloading every candidate on this list.
+Qwen 3.8 has now completed its approved comparison without qualifying. Repair
+the documented grounding and grading weaknesses before another download. A later
+different-family comparison, such as the smaller Ministral 14B proposal, still
+needs named approval. Research remains shelved. Avoid downloading every candidate
+on this list or treating a published size as measured residency.
 
 ## Archived Research qualification procedure — do not execute
 

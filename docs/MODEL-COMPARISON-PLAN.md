@@ -89,7 +89,9 @@ model even if the candidate qualifies; downloading does not authorize switching.
 
 ## Status and next review
 
-Execution authorized on 8 October; results are recorded separately. No runtime
+Execution completed on 8 October: four smokes and three matched pairs. The
+candidate did not qualify. See [comparison report](MODEL-COMPARISON-REPORT.md)
+and the retained per-run evidence. No runtime
 upgrade, new package or default switch is approved. The physical phone menu/motion follow-up is still unobserved for this
 polish; VoiceOver is excluded from current work. Named installation/evaluation
 approval has been received. Research has no next checkpoint scheduled.
