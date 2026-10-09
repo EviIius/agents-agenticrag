@@ -5,6 +5,8 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 from evals.library.run_eval import grade, retrieval_ok
 
 
@@ -41,6 +43,56 @@ def test_library_eval_requires_selected_page_not_aggregate_page_span() -> None:
     assert not retrieval_ok(case, sources)
     sources[0]["passages"].append({"page_start": 2, "page_end": 2})
     assert retrieval_ok(case, sources)
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "Leave is 24 days. [1]",
+        "Leave is 24 days. [1] Another claim is unknown.",
+        "Leave is 24 days.[1] Another claim is unknown.",
+        "Leave is 24 days.[1]Another claim is unknown.",
+        "Leave is 24 days! [1][2]",
+        "- Leave is 24 days. [1]\n- Another claim is unknown.",
+        "| Leave | 24 days. [1] |",
+        "Accuracy is 0.5 C. [1]",
+    ],
+)
+def test_post_period_citation_supports_only_its_local_claim(answer: str) -> None:
+    fact = "0.5" if "Accuracy" in answer else "24"
+    sources = [{"n": n, "passages": [{"text": f"The value is {fact}."}]} for n in (1, 2)]
+    assert grade({"facts": [fact]}, answer, sources, answer)["citation_support"]
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "Leave is 24 days. Another fact has a reference [1].",
+        "Another fact has a reference. [1] Leave is 24 days.",
+        "Another fact has a reference.[1]Leave is 24 days.",
+        "Leave is 24 days.\n[1]",
+        "Leave is 24 days.\n\nSources: [1]",
+        "- Leave is 24 days.\n- Another fact. [1]",
+        "| Leave | 24 days |\n| Other | referenced. [1] |",
+        "| Leave | 24 days | [1]",
+        "Leave is 24 days. [1](https://example.org)",
+        "Leave is 24 days. [2]",
+    ],
+)
+def test_post_period_citation_does_not_leak_across_units(answer: str) -> None:
+    sources = [{"n": 1, "passages": [{"text": "Annual leave is 24 days."}]}]
+    assert not grade({"facts": ["24"]}, answer, sources, answer)["citation_support"]
+
+
+def test_post_period_citation_cannot_borrow_matching_fact_from_wrong_source() -> None:
+    sources = [
+        {"n": 1, "passages": [{"text": "Annual leave is 24 days."}]},
+        {"n": 2, "passages": [{"text": "Annual leave is 20 days."}]},
+    ]
+    answer = "Leave is 24 days. [2] There are 20 days. [1]"
+    result = grade({"facts": ["24", "20"]}, answer, sources, answer)
+    assert result["facts_all"]
+    assert result["required_fact_citation_support"] == [False, False]
 
 
 def test_library_eval_corpus_cases_and_safety_grades() -> None:

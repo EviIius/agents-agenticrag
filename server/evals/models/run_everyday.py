@@ -19,6 +19,7 @@ sys.path.insert(0, str(ROOT))
 from app.config import Settings  # noqa: E402
 from app.main import create_app  # noqa: E402
 from app.providers.base import ReasoningDelta, TextDelta  # noqa: E402
+from app.runs import context  # noqa: E402
 
 REPO = ROOT.parent
 CASES = REPO / "docs/model-comparison/everyday-cases.json"
@@ -66,6 +67,10 @@ async def evaluate(args: argparse.Namespace) -> None:
         "source_hashes": {
             str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
             for p in (ROOT / "app").rglob("*.py")
+        },
+        "effective_context_module": {
+            "path": context.__file__,
+            "sha256": hashlib.sha256(Path(context.__file__).read_bytes()).hexdigest(),
         },
         "new_sampling_values": {},
         "results": results,

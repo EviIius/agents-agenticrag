@@ -29,6 +29,7 @@ from app.providers.base import ProviderMessage  # noqa: E402
 from app.providers.ollama import Ollama  # noqa: E402
 from app.search.citations import cited  # noqa: E402
 from app.search.planner import heuristic  # noqa: E402
+from evals.library.citation_binding import claim_units  # noqa: E402
 from tests.fake_runtime import create_fake_runtime  # noqa: E402
 
 HERE = Path(__file__).parent
@@ -48,7 +49,7 @@ def grade(
         pattern = re.compile(r"(?<![\w.])" + re.escape(fact) + r"(?!\w|\.\d)", re.I)
         present = bool(pattern.search(answer))
         fact_results.append(present)
-        sentences = [s for s in re.split(r"(?<=[.!?])\s+|\n", answer) if pattern.search(s)]
+        sentences = [s for s in claim_units(answer) if pattern.search(s)]
         supported = any(
             pattern.search(
                 " ".join(
@@ -368,7 +369,7 @@ async def evaluate(args: argparse.Namespace) -> None:
         "model": None if args.retrieval_only else args.model,
         "embedding": args.embedding if not args.fake_embedding else "fake-embedding",
         "prompt_sha256": hashlib.sha256(prompt.PROMPT.encode()).hexdigest(),
-        "builder_sha256": hashlib.sha256((ROOT / "app/library/prompt.py").read_bytes()).hexdigest(),
+        "builder_sha256": hashlib.sha256(Path(prompt.__file__).read_bytes()).hexdigest(),
         "cases_sha256": hashlib.sha256(cases_bytes).hexdigest(),
         "source_hashes": {
             str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()

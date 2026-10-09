@@ -97,11 +97,11 @@ def percentile(values: list[float], p: float) -> float:
 
 
 async def evaluate(args: argparse.Namespace) -> None:
-    answer_builder_hash = hashlib.sha256((ROOT / "app/search/prompt.py").read_bytes()).hexdigest()
+    answer_builder_hash = hashlib.sha256(Path(answer_prompt.__file__).read_bytes()).hexdigest()
     selector_hash = hashlib.sha256((ROOT / "app/search/selection.py").read_bytes()).hexdigest()
     chunker_hash = hashlib.sha256((ROOT / "app/search/chunk.py").read_bytes()).hexdigest()
     ranker_hash = hashlib.sha256((ROOT / "app/search/rank.py").read_bytes()).hexdigest()
-    pipeline_hash = hashlib.sha256((ROOT / "app/search/pipeline.py").read_bytes()).hexdigest()
+    pipeline_hash = hashlib.sha256(Path(search_pipeline.__file__).read_bytes()).hexdigest()
     original_rank = search_pipeline.rank
     selection_question = ""
     if args.fill_trial == "source-order":
