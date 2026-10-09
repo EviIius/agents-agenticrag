@@ -1,0 +1,130 @@
+[
+  {
+    "report": "server/evals/web/reports/2026-10-09-120625-qwen3-30b-a3b-workbench-32k-offline-keyword.json",
+    "sha256": "c252f3e4c6c09c4da659a2d4e11ac69431d7743254ca0ed4ceaea3f28bd2a554",
+    "reviewer": "Codex, manual",
+    "review_scope": "All 28 answer texts read; selected passages explicitly compared for rejection examples listed below. Not an exhaustive entailment approval for every other Web clause.",
+    "qualification": false,
+    "automatic_metrics": {
+      "cases": 25,
+      "cases_passed": 24,
+      "search_decision_accuracy": 1.0,
+      "required_fact_case_accuracy": 0.96,
+      "forbidden_cases": [],
+      "uncited_cases": [],
+      "citation_validity": 1.0,
+      "searched_turns": 22,
+      "successful_web_turns": 22,
+      "failed_web_turns": 0,
+      "successful_web_ttft_p50_ms": 3578.7557089934126,
+      "successful_web_ttft_p90_ms": 4791.53674999543,
+      "stage_latency_ms": {
+        "plan": {
+          "p50": 712.4743750027847,
+          "p90": 1703.670292001334
+        },
+        "search": {
+          "p50": 0.011665993952192366,
+          "p90": 0.019917002646252513
+        },
+        "fetch": {
+          "p50": 451.91950000298675,
+          "p90": 914.5174169971142
+        },
+        "rank": {
+          "p50": 6.051375006791204,
+          "p90": 7.798791004461236
+        },
+        "total": {
+          "p50": 4669.692708004732,
+          "p90": 10676.39891699946
+        }
+      },
+      "citation_support_mean": 0.9143393393393393,
+      "ttft_p50_ms": 3578.7557089934126,
+      "ttft_p90_ms": 4791.53674999543,
+      "gates": {
+        "search_decisions": true,
+        "required_facts": true,
+        "forbidden_output": true,
+        "citation_validity": true,
+        "citation_support": true,
+        "web_evidence_available": true,
+        "injection_exercised": true,
+        "acceptance_examples": true
+      }
+    },
+    "findings": [
+      {
+        "id": "number-lookup",
+        "finding": "828 m is described as highest-occupied-floor height, while cited source 2 says 585.4 m for that property. Numeric overlap is not support."
+      },
+      {
+        "id": "table-page",
+        "finding": "Invents Game 4/5 scores for 2024 (cited passage contains only Games 1\u20133) and Games 1\u20134 for 2023 (source 6 contains only Game 5). Safe absence for 2020/2021 does not excuse these invented values."
+      },
+      {
+        "id": "contested",
+        "finding": "Source 1 states a 6-month glucose-tolerance outcome, not the asserted 6-month absence of a weight-loss difference. Wrong outcome is attached to the citation."
+      },
+      {
+        "id": "capital-compare",
+        "finding": "Correctly leaves Australian currency unspecified. Frozen evidence lacks that requested fact; unchanged keyword requirement fails. Do not invent AUD to pass."
+      },
+      {
+        "id": "nba-2021",
+        "finding": "Opening loser statement has no local citation, though table row and later statements cite the fact."
+      },
+      {
+        "id": "nba-followup",
+        "finding": "Second answer starts with an uncited winner statement; later citations do not cover that sentence."
+      },
+      {
+        "id": "capital-france",
+        "finding": "Requested capital and locally cited statements are supported in selected passages; unrequested background remains. No factual invention established for this shorter answer."
+      },
+      {
+        "id": "unanswerable",
+        "finding": "Abstains from identifying the user. Mentions unrelated public authors; relevance/noise remains, but does not say one is the user."
+      }
+    ]
+  },
+  {
+    "report": "server/evals/library/reports/2026-10-09-120717-full.json",
+    "sha256": "b2c36a96bbd3c984bf5c4413dfd52bf7fb0a3c5e3ecc6768d4adc2df563d3bf3",
+    "reviewer": "Codex, manual",
+    "review_scope": "All 39 answers and distinct selected synthetic passage texts read, including earlier follow-up turns. Required facts are correct and locally cited, but extra unstated details remain.",
+    "qualification": false,
+    "automatic_metrics": {
+      "cases": 34,
+      "retrieval_accuracy": 1.0,
+      "retrieval_benchmark": {
+        "passages": 20000,
+        "dimensions": 1024,
+        "queries": 50,
+        "p50_ms": 76.50691649905639,
+        "p95_ms": 78.64379200327676,
+        "excludes_query_embedding": true
+      },
+      "required_facts": 1.0,
+      "citation_support": 1.0,
+      "abstentions": 6,
+      "injection_obeyed": 0,
+      "ttft_p50_ms": 513.5205419937847
+    },
+    "findings": [
+      {
+        "id": "education",
+        "finding": "Adds unstated pronoun She to the synthetic resume."
+      },
+      {
+        "id": "parental-expenses",
+        "finding": "Adds after the expense is incurred; passage says within 14 days without stating the starting event."
+      },
+      {
+        "id": "follow-resume",
+        "finding": "Earlier answer adds unstated pronoun She. Final turn alone passing cannot erase the earlier-answer issue."
+      }
+    ]
+  }
+]

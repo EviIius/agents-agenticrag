@@ -246,3 +246,29 @@ are retained in `artifacts/model-comparison/` and the H4 report at
 Ollama remains 0.35.0, and no default switch, deployment or Research restart took
 place. Repository checks passed. Stop for comparison review; further prompt,
 grader, profile, download or runtime experiments require their own reviewed scope.
+
+**User authorization — 9 October 2026 (reliability repair):** After reviewing
+the model comparison failures, Jake asked Codex to make it reliable and figure
+out the failures. Proceed with `docs/RELIABILITY-PLAN.md`: separate citation
+grader repair and generic planner/source-only/untrusted-record prompt repairs,
+using retained before/after evaluations on the already-installed profiles.
+Preserve original reports, frozen cases/corpus and release targets. No topic
+rules, new models, runtime/dependency/sampling/default changes, routing, extra
+production calls or Research restart. Keep the stable installed app during
+experiments and stop with H4 results; failed gates prevent promotion/deployment.
+
+**Reliability checkpoint — 9 October 2026:** Seven isolated generic framing/
+prompt trials and two exact-provenance contracts are retained under
+`artifacts/reliability/`. Local post-period Library grading is repaired with
+negative placement tests and separate original-answer regrades; candidate's
+three original required-fact citation scores become 100%, without altering
+raw answers or excusing genuine baseline omissions. The latest full pilot
+improves everyday scores to current-model 19/20 and candidate 20/20, but both
+fail manual Web grounding and extra-claim review. Host-owned IDs achieve 8/8
+structural validity on each profile while failing identity/context/coverage.
+No candidate is qualified. Original cases, thresholds, reports and frozen
+inputs remain intact; production source and installed affected modules remain
+the stable f87db46 tree. Research remains shelved. H4 evidence is
+`docs/RELIABILITY-REPORT.md`; the bounded answer-contract proposal is
+`docs/RELIABILITY-NEXT-CHECKPOINT.md`. Stop for review before product integration
+or further experiments; no default switch or deployment occurred.
