@@ -323,3 +323,30 @@ retrieval coverage, relevance/completeness, ordinary grounding and latency remai
 Full make check passes (434 Python / 39 frontend); production is unchanged, no
 deployment or Research. H4: docs/EVIDENCE-FIELDS-REPORT.md. Stop for review before
 another inference trial or product integration.
+
+
+**User continuation — 10 October 2026 (native evidence and image research):** Jake
+asked to continue the refinement and research image generation models for the Mac
+mini. Proceed with the isolated checkpoint in docs/EVIDENCE-NATIVE-PLAN.md: fix
+authenticated host-context accounting, validate the prospective strict schema
+with an original-case smoke, and stop immediately on protocol or semantic failure.
+Preserve all prior outcomes, original inputs and thresholds. Research image
+models and Mac implementations only; no image weights, application/runtime
+installation, package addition or image integration is authorized. Research stays
+shelved; no production prompt/default change or deployment. Stop with an H4 report.
+
+
+**Native evidence closeout — 10 October 2026:** v13 fixes authenticated host-note
+quotation accounting; unchanged saved selections recover the 23-row budget
+rejection, a host-only diagnostic. The single original-case native smoke fails
+and stops automatically: missing identity columns and repeated IDs, no factual
+output, full report, remainder, Library, candidate or retry. Ollama 0.35.0's
+pinned llama.cpp schema builder gives items precedence over prefixItems; the
+positional schema was incompatible. A named-object v14 remedy is prepared and
+host-tested but unexecuted natively. 452 Python / 39 frontend checks pass; all
+7,296 original inputs and frozen executed source remain intact. Installed source
+matches stable f87db46 and remains healthy; no deployment or Research. Image
+model options are researched in docs/IMAGE-MODEL-OPTIONS.md, recommending a named
+Draw Things / FLUX.2 klein 4B trial separately; no image download/install or
+integration occurred. H4: docs/EVIDENCE-NATIVE-REPORT.md. Stop for review before
+further inference, runtime/model installation or product integration.

@@ -1,0 +1,39 @@
+E501 Line too long (102 > 100)
+  --> evals/reliability/evidence_object_v14.py:69:101
+   |
+67 |             if not isinstance(fields, dict) or any(v is not True for v in fields.values()):
+68 |                 raise ValueError("Field selections must be true-valued objects")
+69 |             allowed = {str(c) for c in range(len(unit["header"]))} if unit["kind"] == "row" else set()
+   |                                                                                                     ^^
+70 |             if not set(fields).issubset(allowed):
+71 |                 raise ValueError("Invalid original field reference")
+   |
+
+E501 Line too long (115 > 100)
+  --> tests/test_evidence_object.py:13:101
+   |
+12 | def available() -> Any:
+13 |     return catalog([{"n": 1, "passages": [{"text": "| | Item | Value |\n| --- | --- | --- |\n| 1 | Fern | 7 |"}]}])
+   |                                                                                                     ^^^^^^^^^^^^^^^
+
+E501 Line too long (109 > 100)
+  --> tests/test_evidence_object.py:25:101
+   |
+23 |     encoded = json.dumps(grammar)
+24 |     assert "prefixItems" not in encoded and "uniqueItems" not in encoded and "anyOf" not in encoded
+25 |     raw = json.dumps({"coverage": "evidence", "selections": {unit["id"]: {"0": True, "1": True, "2": True}}})
+   |                                                                                                     ^^^^^^^^^
+26 |     result = render(raw, evidence)
+27 |     assert result["status"] == "evidence" and "Fern | 7" in result["content"]
+   |
+
+E501 Line too long (155 > 100)
+  --> tests/test_evidence_object.py:31:101
+   |
+31 | …"0": True, "2": True}, {"0": True, "1": 1}, {"0": True, "1": False}, {"01": True, "2": True}])
+   |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+32 | …ne(fields: dict[str, Any]) -> None:
+33 | …
+   |
+
+Found 4 errors.
