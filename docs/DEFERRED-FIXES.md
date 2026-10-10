@@ -24,3 +24,21 @@ repair scope; no production prompt or grader change was made during measurement.
 | Library grader can attach a citation after a sentence period to the following sentence. | Add a focused positive/negative citation-binding fixture and repair the grader separately; preserve all original scores and avoid granting unsupported neighboring claims a citation. | Candidate pair 1 Library `resume`; raw report and manual review retain the 96.4% automatic result. |
 
 No new production fix, model switch or Research restart is part of this comparison.
+
+## Reliability follow-up — 10 October 2026
+
+The comparison table above records its original proposed scope. The citation
+grader's post-period/table binding has since been repaired with positive and
+negative fixtures and separately labelled regrades; original answers and scores
+are retained. This corrects measurement, not semantic support or model quality.
+
+| Remaining item | Current state | Next action |
+| --- | --- | --- |
+| Grounded answer contract | v14 original-case native smoke rejected and stopped. Named references/identity keys are valid, but identity-only rows and an over-budget prose selection still fail the host guards. No candidate qualified. | Align native schema with host admissibility before another bounded original-case trial; preserve source context and all failures. |
+| Retrieval, completeness and relevance | Full latest Web/Library trial remains gated; previous omissions and extra/irrelevant claims remain unresolved. | Evaluate unchanged cases and manual claim support only after the protocol smoke passes. |
+| Ordinary-chat untrusted records | No production fix; retained unchanged-pipeline evaluation remains 16/20. | Separately evaluate generic untrusted-record treatment against original everyday and release checks. |
+| Attachment context warning | Published the corrected input/output allowance, saved-default precedence and readable warning. Six focused checks and one complete 463-pass browser rerun passed; three existing skips retained. | Reopen/reload Atelier to receive the frontend update. Stable server preserved; private static/database fallback saved. No physical iPhone acceptance claimed. |
+| Image generation | Documented Mac options only; nothing installed or downloaded. | Separately approve and benchmark a named Draw Things / FLUX.2 klein 4B trial before integration. |
+
+See `EVIDENCE-OBJECT-REPORT.md` for this checkpoint's actual results. Research
+remains shelved and VoiceOver stays off the current work list.

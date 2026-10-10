@@ -640,8 +640,16 @@ test("code and transcript copy show a local check and clear it after 1.5 seconds
   const code = preview
     .locator('[data-streamdown="code-block-copy-button"]')
     .first();
-  // WebKit's automatic nearest scrolling left this control below the viewport
-  // on the expanded /design page. Exercise a visible control after user scrolling.
+  await expect(code).toBeVisible();
+  await settle(page);
+  // Bring the containing conversation onto the page before scrolling its code
+  // control. WebKit can scroll the nested thread while leaving the page at the
+  // preview buttons; the copied control then remains outside the viewport.
+  const thread = preview.getByTestId("thread");
+  await thread.evaluate((element) =>
+    element.scrollIntoView({ block: "center", behavior: "instant" }),
+  );
+  await expect(thread).toBeInViewport();
   await code.evaluate((element) =>
     element.scrollIntoView({
       block: "center",

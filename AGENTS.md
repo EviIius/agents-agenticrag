@@ -350,3 +350,31 @@ model options are researched in docs/IMAGE-MODEL-OPTIONS.md, recommending a name
 Draw Things / FLUX.2 klein 4B trial separately; no image download/install or
 integration occurred. H4: docs/EVIDENCE-NATIVE-REPORT.md. Stop for review before
 further inference, runtime/model installation or product integration.
+
+**User continuation — 10 October 2026 (named evidence fields):** After the
+remaining-work review, Jake said “Go ahead with what you think is best.” Proceed
+with `docs/EVIDENCE-OBJECT-PLAN.md`: validate the prepared v14 named-object schema
+in isolation, using one original-case smoke and immediate protocol/semantic
+stopping before gated original Web/Library stages. Preserve all failures, original
+inputs and targets. Assess the independently tested frontend context-warning
+correction for a separate release. Research stays shelved; no image installation,
+new models/packages/runtime, default switch or unqualified production answer
+change. Stop with an H4 checkpoint report before further inference experiments.
+
+**Named evidence closeout — 10 October 2026:** One original-case v14 native smoke
+ran and failed; no remainder, Library, candidate or retry followed. Named IDs and
+identity keys satisfy the supplied schema, but its identity-only rows violate
+the host's minimum-field guard; a separate long prose selection exceeds its
+quotation allowance. This is an under-constrained contract, not proof that the
+runtime ignored its named-object grammar. No factual output or answer integration
+occurred. The next proposed repair is native/host admissibility parity, unexecuted.
+All 7,296 original inputs, 194 prior source files, six prospective files and 204
+executed files are unchanged. Full checks pass (458 Python / 39 frontend); the
+WebKit scrolling failure is retained, fixed with stronger visibility/settling
+preconditions, and passed ten repeated checks plus one complete browser rerun
+(463 passed, three existing skips). The independently approved context-warning
+frontend was published with private static/database fallback, healthy local/HTTPS
+checks and unchanged 81-file stable server, service identity and Tailscale route.
+No runtime restart, prompt/sampling/default change, image installation or Research.
+No physical phone pass is invented. H4: `docs/EVIDENCE-OBJECT-REPORT.md`. Stop for
+review before another inference experiment or unqualified answer integration.
