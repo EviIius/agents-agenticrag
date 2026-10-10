@@ -1,0 +1,13 @@
+"""Typed test interface for the frozen, subprocess-only evaluation driver."""
+
+from pathlib import Path
+
+SERVER: Path
+REPO: Path
+FOLDER: Path
+MODEL: str
+
+def verify() -> None: ...
+def isolated(suite: str, arguments: list[str], trace: str) -> None: ...
+def check_gate(stage: str) -> None: ...
+def main(stage: str) -> None: ...

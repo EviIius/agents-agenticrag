@@ -42,3 +42,23 @@ are retained. This corrects measurement, not semantic support or model quality.
 
 See `EVIDENCE-OBJECT-REPORT.md` for this checkpoint's actual results. Research
 remains shelved and VoiceOver stays off the current work list.
+
+## Approved sequence, checkpoint R — 10 October 2026
+
+The earlier table remains the v14 history. The approved bounded v15 repair now
+passes the original first smoke, selecting complete Team/Wins fields with the
+original context and citations. Its gated Web remainder then stops when six
+individually admitted excerpts violate a source's combined quotation allowance.
+No failed factual output, retry, full Web result, Library or consistency run
+followed. This candidate is not qualified.
+
+End this selector design at the declared checkpoint. Review a simpler presentation
+through existing source cards/“What the model saw” and explicit missing-evidence
+status. This proposed fallback is not implemented and does not resolve remaining
+relevance, completeness or ordinary-chat injection failures. No release targets
+are waived; factual automated outputs remain drafts for review.
+
+The next independent checkpoint is the concrete MFLUX/FLUX.2 klein 4B worker
+trial proposed in `IMAGE-TRIAL-PLAN.md`, followed by durable jobs and image UI,
+then ordered workflows. No image dependency or weights were installed. See
+`EVIDENCE-BUNDLES-REPORT.md` for actual results and the checkpoint review stop.

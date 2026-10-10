@@ -378,3 +378,32 @@ checks and unchanged 81-file stable server, service identity and Tailscale route
 No runtime restart, prompt/sampling/default change, image installation or Research.
 No physical phone pass is invented. H4: `docs/EVIDENCE-OBJECT-REPORT.md`. Stop for
 review before another inference experiment or unqualified answer integration.
+
+**User authorization — 10 October 2026 (proposed sequence, checkpoint R):** Jake
+approved `docs/APP-DIRECTION-AND-WORKFLOWS.md` and prioritized its recommended
+sequence. Begin with the bounded generic native/host admissibility repair in
+`docs/EVIDENCE-BUNDLES-PLAN.md`: synthetic tests, one original-case daily-profile
+smoke, immediate protocol/semantic stopping, then conditional original Web/Library
+and predeclared consistency checks. Preserve earlier trials, inputs and targets.
+One candidate only in this checkpoint; failure ends inference and prompts a
+simpler-design recommendation. Stop with H4 evidence before product integration
+or image installation. Future image-engine/dependency selection and workflows
+need their concrete reviewed scopes; no new model/package/runtime/sampling/default
+change or Research restart is part of checkpoint R.
+
+**Checkpoint R closeout — 10 October 2026:** The bounded v15 candidate passes
+the first original-case smoke (5.37-second validated-answer TTFT), then stops
+automatically when individually legal excerpts exceed their combined source
+quotation allowance. It is not qualified. No retry, full Web score, Library,
+consistency run or new native contract follows. End this selector design; a
+simpler existing-source presentation is proposed, not implemented. Checks pass:
+480 Python, 39 frontend and 463 browser tests, three existing browser skips.
+All 7,296 original inputs, 204 prior frozen files and 214 current frozen files
+remain intact; original tracked evidence is restored with new results retained
+separately. Installed 81-file server and 422-file static tree are unchanged;
+local and normally verified Tailscale HTTPS health checks pass, Ollama remains
+0.35.0, and no deployment or Research restart occurred. H4 report:
+`docs/EVIDENCE-BUNDLES-REPORT.md`. Stop for review. The concrete next image-worker
+scope, MFLUX/FLUX.2 klein 4B in `docs/IMAGE-TRIAL-PLAN.md`, is prepared but no
+image dependencies/weights are installed; named-dependency approval remains
+required before that installation.
