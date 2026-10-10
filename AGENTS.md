@@ -407,3 +407,36 @@ local and normally verified Tailscale HTTPS health checks pass, Ollama remains
 scope, MFLUX/FLUX.2 klein 4B in `docs/IMAGE-TRIAL-PLAN.md`, is prepared but no
 image dependencies/weights are installed; named-dependency approval remains
 required before that installation.
+
+**User authorization — 10 October 2026 (image trial I0):** Jake said “go mahead”
+after the checkpoint R report and concrete MFLUX/FLUX.2 klein 4B recommendation.
+Accept R's closeout without qualifying the failed grounding candidate. Proceed
+with `docs/IMAGE-TRIAL-PLAN.md`: the named MFLUX dependency set and one model are
+approved in an isolated image-worker environment. Pin the published package,
+dependency lock and model revision; preserve the application/transcription
+interpreters, Ollama, service, ports and production data. Use the declared
+synthetic prompts/settings, retain all outputs/failures, measure actual resource
+use/progress/cancellation/recovery, and stop with the I0 H4 report for quality
+and latency review before I1 integration. No Research restart, production image
+UI, additional model, chat prompt/default change or workflow agents are approved.
+
+
+**Image trial I0 closeout — 10 October 2026:** The approved isolated
+MFLUX 0.22.0 / FLUX.2 klein 4B trial completes twelve 1024-square generations
+and one reference edit. Actual synchronized progress, initialization/generation
+cancellation with process reaping and next-job recovery pass. Preserve the first
+wrapper quantization-inspection failure and exact nine-file source snapshot;
+its generic Module-leaf correction changes no model, precision, prompt or seed.
+All outputs remain native and retained. Codex flags three generation samples;
+Jake's quality/latency review is pending. Median generation is 9.77 seconds;
+comfortable mixed-model memory is not qualified because first-image swap grows
+and the chat model expires before the resident batch ends. Proposed bounded-cache
+qualification and I1 jobs/Images are in `docs/IMAGE-INTEGRATION-PLAN.md`, not run.
+Checks pass: 480 Python, 39 frontend, 12 isolated controls and 463 browser tests,
+three existing browser skips. All 505 installed app files, 7,296 original inputs,
+204/214 earlier frozen files, both nine-file image attempts and 5,260 earlier
+tracked artifacts verify preserved. Local/normally verified HTTPS health pass;
+Ollama remains 0.35.0 and no deployment/service restart occurred. H4 report:
+`docs/IMAGE-TRIAL-REPORT.md`. Stop for I0 review before memory-policy inference
+or I1 product integration. Research remains shelved; workflows/agents remain
+later reviewed scope and no factual-answer candidate is qualified by this trial.

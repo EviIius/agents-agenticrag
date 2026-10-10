@@ -1,0 +1,47 @@
+⚠️  Directory '/Users/evilius/.local/share/workbench/image-worker/i0/broken-snapshot/e7b7dc27f91deacad38e78976d1f2b499d76a294' exists but contains no files matching ['vae/*.safetensors', 'vae/*.json', 'transformer/*.safetensors', 'transformer/*.json', 'text_encoder/*.safetensors', 'text_encoder/*.json', 'tokenizer/**', 'added_tokens.json', 'chat_template.jinja']. Model loading may fail.
+Traceback (most recent call last):
+  File "/Users/evilius/.local/share/workbench/image-worker/i0/source/worker.py", line 203, in <module>
+    main()
+    ~~~~^^
+  File "/Users/evilius/.local/share/workbench/image-worker/i0/source/worker.py", line 76, in main
+    model = model_class(
+        model_config=config, model_path=str(args.model_path), quantize=spec["quantization"]
+    )
+  File "/Users/evilius/.local/share/workbench/image-worker/i0/venv/lib/python3.13/site-packages/mflux/models/flux2/variants/txt2img/flux2_klein.py", line 41, in __init__
+    Flux2Initializer.init(
+    ~~~~~~~~~~~~~~~~~~~~~^
+        model=self,
+        ^^^^^^^^^^^
+    ...<6 lines>...
+        compute_precision=compute_precision,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/evilius/.local/share/workbench/image-worker/i0/venv/lib/python3.13/site-packages/mflux/models/flux2/flux2_initializer.py", line 33, in init
+    weights = Flux2Initializer._load_weights(path)
+  File "/Users/evilius/.local/share/workbench/image-worker/i0/venv/lib/python3.13/site-packages/mflux/models/flux2/flux2_initializer.py", line 52, in _load_weights
+    return WeightLoader.load(
+           ~~~~~~~~~~~~~~~~~^
+        weight_definition=Flux2KleinWeightDefinition,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        model_path=model_path,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/evilius/.local/share/workbench/image-worker/i0/venv/lib/python3.13/site-packages/mflux/models/common/weights/loading/weight_loader.py", line 93, in load
+    weights, q_level, version = WeightLoader._load_component(
+                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        root_path, component, raw_weights_cache, save_subdirs[component.name]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/evilius/.local/share/workbench/image-worker/i0/venv/lib/python3.13/site-packages/mflux/models/common/weights/loading/weight_loader.py", line 156, in _load_component
+    raw_weights = WeightLoader._load_safetensors(
+        component_path, component.loading_mode, component.weight_files
+    )
+  File "/Users/evilius/.local/share/workbench/image-worker/i0/venv/lib/python3.13/site-packages/mflux/models/common/weights/loading/weight_loader.py", line 337, in _load_safetensors
+    return WeightLoader._load_mlx_native(path, weight_files)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/Users/evilius/.local/share/workbench/image-worker/i0/venv/lib/python3.13/site-packages/mflux/models/common/weights/loading/weight_loader.py", line 365, in _load_mlx_native
+    raise FileNotFoundError(f"No safetensors files found in {path}")
+FileNotFoundError: No safetensors files found in /Users/evilius/.local/share/workbench/image-worker/i0/broken-snapshot/e7b7dc27f91deacad38e78976d1f2b499d76a294/vae

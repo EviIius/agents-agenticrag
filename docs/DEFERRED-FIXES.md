@@ -62,3 +62,23 @@ The next independent checkpoint is the concrete MFLUX/FLUX.2 klein 4B worker
 trial proposed in `IMAGE-TRIAL-PLAN.md`, followed by durable jobs and image UI,
 then ordered workflows. No image dependency or weights were installed. See
 `EVIDENCE-BUNDLES-REPORT.md` for actual results and the checkpoint review stop.
+
+
+## Image trial I0 — 10 October 2026
+
+The earlier image rows describe the pre-installation proposals. Jake subsequently
+approved the named isolated MFLUX/FLUX.2 klein 4B trial. Its twelve generations
+and one reference edit are complete; the live application is not integrated.
+All original grounding failures remain unqualified and Research remains shelved.
+
+| Item | Measured state | Proposed next action |
+| --- | --- | --- |
+| Native image execution | All 13 outputs validate; real initialization/denoising cancellation and next-job recovery work. The first wrapper inspection bug and exact source are retained. | Review the full gallery and I0 H4 report before selecting the engine for integration. |
+| Image quality | Nine clean generation matches; three flagged samples, including a second lamp, fox anatomy and ambiguous pear shape. | Human quality review; no favorable-seed selection, prompt rewrite or automated repair loop. |
+| Image/chat resource coexistence | First image increases host swap. Chat is loaded in the fresh-worker stages, then expires before the resident batch ends. | Separately qualify bounded unused-allocation caching with intended chat residency verified for each sample; do not claim a global memory cap. |
+| Queue and image product | Proposed only, with durable state/artifacts, real cancellation, SSE recovery and explicit resource handling. | Use the existing stack for I1 jobs and Images together after the memory gate; see `IMAGE-INTEGRATION-PLAN.md`. |
+| Ordered workflows | Proposed after I1; no workflow model calls or autonomous agents implemented. | Recording-to-meeting-pack drafts first, then image drafts/variants with human selection. Factual reliability targets still apply. |
+
+See `IMAGE-TRIAL-REPORT.md` for measurements, failures and regression closeout.
+This is a separate image trial; neither factual-answer qualification nor a
+physical phone pass follows from these results. VoiceOver remains off the list.
