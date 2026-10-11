@@ -637,3 +637,18 @@ Research, image invocation or W1 action follows. H4 is
 `docs/SEARCH-INPUT-FALLBACK-REPORT.md`. Stop for review before the proposed generic
 non-lookup/conversation admissibility guard or another candidate. Images remains
 held and original release targets are not waived.
+
+**User authorization — 11 October 2026 (isolated conversation guard):** Jake said
+“continue then” after the current improvement list and recommendation to repair
+Search routing first. Implement one isolated conservative guard for native
+conversation decisions, with explicit complete small-talk preconditions and the
+existing lookup fallback otherwise. Preserve supplied-input binding, references,
+clarification, genuine greetings/thanks, creative work, pure math/code, recording
+protection, one planner/one answer, runtime/context/sampling and global prompts.
+Retain all original 25 cases, 24 boundaries, nine supplements, grading, failures
+and release targets. Declare separate ordinary-task regression cases and their
+order before inference; they supplement rather than replace existing inputs.
+Freeze once; stop on first mandatory candidate/support/protocol/G9 failure, retain
+every outcome and unexecuted call, with H4 before a further candidate or release.
+No new package/model/default/runtime, topic rule, repair call, automatic retry,
+promotion, Research, image invocation or W1 work is included in this checkpoint.

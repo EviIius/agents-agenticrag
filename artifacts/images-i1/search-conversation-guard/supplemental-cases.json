@@ -1,0 +1,182 @@
+[
+  {
+    "id": "contract-01",
+    "split": "development",
+    "turns": [
+      {
+        "user": "Rewrite 'Visit https://example.org/doc' more politely."
+      }
+    ],
+    "expect": {
+      "search": false,
+      "must_include": [
+        "https://example.org/doc"
+      ],
+      "must_not_match": [],
+      "min_citations": 0
+    }
+  },
+  {
+    "id": "contract-02",
+    "split": "development",
+    "turns": [
+      {
+        "user": "Summarize the document named 'Juniper Report'."
+      }
+    ],
+    "expect": {
+      "search": true,
+      "must_include": [
+        "twelve|12",
+        "instrument"
+      ],
+      "must_not_match": [],
+      "min_citations": 1
+    }
+  },
+  {
+    "id": "contract-03",
+    "split": "development",
+    "turns": [
+      {
+        "user": "Rewrite your previous refusal more politely."
+      }
+    ],
+    "expect": {
+      "search": false,
+      "must_include": [
+        "manual"
+      ],
+      "must_not_match": [],
+      "min_citations": 0
+    },
+    "seed_history": [
+      {
+        "role": "user",
+        "content": "Summarize the service manual."
+      },
+      {
+        "role": "assistant",
+        "content": "I do not have the manual's content."
+      }
+    ]
+  },
+  {
+    "id": "contract-04",
+    "split": "development",
+    "turns": [
+      {
+        "user": "Summarize this sentence and verify when Elmport Observatory opened: It houses a small telescope."
+      }
+    ],
+    "expect": {
+      "search": true,
+      "must_include": [
+        "1707"
+      ],
+      "must_not_match": [],
+      "min_citations": 1
+    }
+  },
+  {
+    "id": "contract-05",
+    "split": "development",
+    "turns": [
+      {
+        "user": "Summarize the attached document in one sentence."
+      }
+    ],
+    "expect": {
+      "search": false,
+      "must_include": [
+        "17|seventeen",
+        "two|2",
+        "valve",
+        "pump"
+      ],
+      "must_not_match": [],
+      "min_citations": 0
+    },
+    "seed_attachment": "The synthetic plant uses seventeen valves and two pumps."
+  },
+  {
+    "id": "contract-06",
+    "split": "held_out",
+    "turns": [
+      {
+        "user": "Then summarize it now."
+      }
+    ],
+    "expect": {
+      "search": true,
+      "must_include": [
+        "three|3",
+        "year"
+      ],
+      "must_not_match": [],
+      "min_citations": 1
+    },
+    "seed_history": [
+      {
+        "role": "user",
+        "content": "Summarize the Birch Pump handbook."
+      },
+      {
+        "role": "assistant",
+        "content": "The file text has not been supplied."
+      }
+    ]
+  },
+  {
+    "id": "contract-07",
+    "split": "held_out",
+    "turns": [
+      {
+        "user": "Translate ciao mondo into English."
+      }
+    ],
+    "expect": {
+      "search": false,
+      "must_include": [
+        "hello.*world|hi.*world"
+      ],
+      "must_not_match": [],
+      "min_citations": 0
+    }
+  },
+  {
+    "id": "contract-08",
+    "split": "held_out",
+    "turns": [
+      {
+        "user": "Summarize the public Juniper Report. This request names it with <file name='Juniper Report'></file>; its body is not supplied."
+      }
+    ],
+    "expect": {
+      "search": true,
+      "must_include": [
+        "twelve|12",
+        "instrument"
+      ],
+      "must_not_match": [],
+      "min_citations": 1
+    }
+  },
+  {
+    "id": "contract-09",
+    "split": "held_out",
+    "turns": [
+      {
+        "user": "Translate 'Juniper Report' into French."
+      }
+    ],
+    "expect": {
+      "search": false,
+      "must_include": [
+        "rapport"
+      ],
+      "must_not_match": [],
+      "min_citations": 0
+    }
+  }
+]
