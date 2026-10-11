@@ -554,3 +554,19 @@ Preserve the first invalid trial and all prior bytes. Stop at protocol/host,
 mandatory candidate/support or G9 failure; do not retry, broaden prompts or
 silently regrade. Production stays unchanged, Images unreleased, Research shelved
 and W1 unstarted. Stop with H4 before a release or larger repair design.
+
+**Corrected Search retest closeout — 11 October 2026:** Frozen at `3507d1d` before
+inference; all 25 children have verified native planner and answer requests with
+unchanged schema/sampling. Baseline is 19/24 on the separate boundary suite; the
+first candidate case fails (0/1 executed), returning transform/empty queries for
+an absent page, skipping retrieval and missing the required facts. No fallback
+or harness failure causes that candidate outcome. Stop preserved immediately;
+23 candidate cases and six original full runs remain unexecuted. First invalid
+trial, all 13,947 frozen inputs and 6,564 prior evidence files remain intact.
+Production is healthy and unchanged, Ollama remains 0.35.0; no release/restart,
+extra experiment, W1 or Research call occurred. H4 is
+`docs/SEARCH-REPAIR-RETEST-REPORT.md`. Its explicit erratum corrects the earlier
+report's abstention-grading prose without modifying original reports or scores.
+Stop for review before implementing or evaluating the proposed supplied-input
+contract in `docs/SEARCH-INPUT-CONTRACT-PLAN.md`; no further prompt-only trials
+or Images deployment are authorized by this closeout.

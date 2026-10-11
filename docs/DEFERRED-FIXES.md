@@ -130,6 +130,22 @@ with actual planner wire/trace verification. See `SEARCH-REPAIR-REPORT.md`.
 **Images remains unreleased; prior G9 failures remain open.** No production
 prompt change, deployment, service restart, W1 or Research call occurred.
 
+## Corrected Search retest — 11 October 2026
+
+The corrected native trial genuinely fails the first candidate case: an absent
+page is classified as a transformation, Search is skipped and required facts are
+missed. All 25 children have real planner/answer traces; baseline is 19/24 on the
+separate boundary suite, executed candidate 0/1. Twenty-nine later children remain
+unexecuted. These are not original 25-case benchmark scores. See
+`SEARCH-REPAIR-RETEST-REPORT.md`, including its correction to the first report's
+abstention-grading prose.
+
+**Images remains unreleased.** Next proposed checkpoint is the supplied-input
+reference check in `SEARCH-INPUT-CONTRACT-PLAN.md`, with unchanged original
+benchmarks/gates and explicit preservation of transformations and attachments.
+No product change, extra experiment, deployment, W1 or Research call followed
+the mandatory stop.
+
 ## Image memory checkpoint I1-0 — 10 October 2026
 
 Jake accepted proceeding from I0. The frozen 1 GiB unused-allocation cache policy
