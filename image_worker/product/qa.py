@@ -16,8 +16,11 @@ from app.main import create_app
 from app.providers.base import ChatRequest, Finish, ProviderMessage, TextDelta
 from app.schemas import ConnectionCreate, ImageCreate
 
-EVIDENCE = ROOT / "artifacts/images-i1/native"
-DATA = Path.home() / ".local/share/workbench/image-worker/product/qualification-data"
+TRIAL = sys.argv[1] if len(sys.argv) > 1 else "corrected-2"
+if not TRIAL.replace("-", "").isalnum():
+    raise ValueError("Invalid trial identifier")
+EVIDENCE = ROOT / "artifacts/images-i1/native" / TRIAL
+DATA = Path.home() / ".local/share/workbench/image-worker/product" / ("qualification-data-" + TRIAL)
 PROFILE = "qwen3:30b-a3b-workbench-32k"
 PROMPT = json.loads((ROOT / "image_worker/memory/trial.json").read_text())["cases"][0]["prompt"]
 
@@ -38,7 +41,7 @@ async def main():
         if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != digest:
             raise RuntimeError("Frozen native candidate changed: " + name)
     app = create_app(Settings(data_dir=DATA, image_home=Path.home() / ".local/share/workbench/image-worker/product"))
-    results = {"stages": [], "passed": False, "new_image_calls": 0, "chat_payload": {"model": PROFILE, "messages": [{"role": "user", "content": "Reply with only the word READY."}], "context_length": 32768, "sampling": {}}}
+    results = {"stages": [], "passed": False, "new_image_calls": 0, "chat_payload": {"model": PROFILE, "messages": [{"role": "user", "content": "Reply with only the word READY."}], "context_length": 32768, "sampling": {}, "keep_alive": "30m"}}
     try:
         async with app.router.lifespan_context(app):
             connection = await connections.create(app.state.store, ConnectionCreate())

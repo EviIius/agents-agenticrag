@@ -23,7 +23,7 @@ def emit(kind, **fields):
 def parent_watch():
     # The server owns the only write end. Abrupt server death closes it; the
     # worker exits even while Python's main thread is inside native Metal work.
-    sys.stdin.buffer.read()
+    os.read(sys.stdin.fileno(), 1)
     os._exit(71)
 
 

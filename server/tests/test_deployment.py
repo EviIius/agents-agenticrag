@@ -60,6 +60,37 @@ def test_database_backup_is_consistent_private_and_bounded(tmp_path: Path) -> No
         assert copy.execute("SELECT value FROM example").fetchone() == ("synthetic",)
 
 
+def test_image_deployment_is_explicit_private_and_reuses_existing_files(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    module = deployment()
+    base = tmp_path / "private"
+    monkeypatch.setattr(module, "BASE", base)
+    assert module.image_home({}, None) is None
+    preserved = module.image_home({"WORKBENCH_IMAGE_HOME": "/existing/selector"}, None)
+    assert preserved == "/existing/selector"
+    home = base / "image-worker/product"
+    home.mkdir(parents=True)
+    python = base / "python"
+    python.write_text("synthetic interpreter")
+    python.chmod(0o700)
+    model = base / "shared-model"
+    model.mkdir()
+    (home / ".python").write_text(str(python))
+    (home / "config.json").write_text(json.dumps({"model_path": str(model)}))
+    source = module.ROOT / "image_worker/product/worker.py"
+    (home / "worker.py").write_bytes(source.read_bytes())
+    assert module.image_home({}, home) == str(home)
+    assert not list(model.iterdir())  # Deployment copied no weights.
+    (home / "worker.py").write_text("old worker")
+    with pytest.raises(RuntimeError, match="differs"):
+        module.image_home({}, home)
+    outside = tmp_path / "Documents"
+    outside.mkdir()
+    with pytest.raises(RuntimeError, match="private folder"):
+        module.image_home({}, outside)
+
+
 def test_engine_install_excludes_recordings_and_preserves_private_config(tmp_path: Path) -> None:
     module = deployment()
     source, target = tmp_path / "source", tmp_path / "installed/app/transcribe"

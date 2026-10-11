@@ -2,6 +2,7 @@
 """Install Workbench using the existing launchd identity and Tailscale route."""
 
 import argparse
+import hashlib
 import json
 import os
 import plistlib
@@ -120,6 +121,24 @@ def backup_database(data: Path) -> None:
             old.unlink()
 
 
+def image_home(existing: dict, requested: Path | None) -> str | None:
+    """Opt in only to the verified private worker; preserve an existing selector."""
+    if requested is None:
+        return existing.get("WORKBENCH_IMAGE_HOME")
+    home = requested.expanduser().resolve(strict=True)
+    if not home.is_relative_to(BASE):
+        raise RuntimeError("Image worker must be installed in Workbench's private folder.")
+    worker = home / "worker.py"
+    source = ROOT / "image_worker/product/worker.py"
+    if hashlib.sha256(worker.read_bytes()).digest() != hashlib.sha256(source.read_bytes()).digest():
+        raise RuntimeError("Installed image worker differs; install the reviewed source first.")
+    python = Path((home / ".python").read_text().strip())
+    model = Path(json.loads((home / "config.json").read_text())["model_path"])
+    if not python.is_file() or not os.access(python, os.X_OK) or not model.is_dir():
+        raise RuntimeError("The existing image interpreter or model is unavailable.")
+    return str(home)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -127,6 +146,7 @@ def main() -> None:
     )
     parser.add_argument("--engine-source", type=Path, default=ROOT / "transcribe")
     parser.add_argument("--preview-pid", type=int)
+    parser.add_argument("--image-home", type=Path, help="Enable the reviewed private image worker.")
     args = parser.parse_args()
     plist, old = existing_service()
     previous_plist = plist.read_bytes()
@@ -137,6 +157,7 @@ def main() -> None:
     if "http://127.0.0.1:8787" not in route:
         raise RuntimeError("Tailscale route differs from 127.0.0.1:8787; deployment stopped.")
     env = old.get("EnvironmentVariables", {})
+    images = image_home(env, args.image_home)
     hosts = env.get("WORKBENCH_ALLOWED_HOSTS", env.get("AGENTICRAG_ALLOWED_HOSTS", ""))
     if not hosts:
         raise RuntimeError("Existing allowed hosts are missing; deployment stopped.")
@@ -148,6 +169,7 @@ def main() -> None:
                 "bind": "127.0.0.1:8787",
                 "installed_app": str(BASE / "app"),
                 "installed_engine": str(BASE / "app/transcribe"),
+                "images_enabled": images is not None,
                 "old_data": "read-only import only",
                 "apply": args.apply,
             }
@@ -203,7 +225,10 @@ def main() -> None:
     rendered = Template((ROOT / "deploy/launchd.plist.template").read_text()).substitute(
         {k: escape(v) for k, v in values.items()}
     )
-    plistlib.loads(rendered.encode())
+    configuration = plistlib.loads(rendered.encode())
+    if images is not None:
+        configuration["EnvironmentVariables"]["WORKBENCH_IMAGE_HOME"] = images
+        rendered = plistlib.dumps(configuration).decode()
     domain = f"gui/{os.getuid()}"
     if args.preview_pid:
         command = run(

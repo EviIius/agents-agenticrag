@@ -485,3 +485,17 @@ versions are complete outputs; reference editing remains gated by its file rules
 Retain native cancellation/recovery and full regression evidence, then stop for
 I1 review before W1.
 Research remains shelved; workflow/agent calls remain separately reviewed scope.
+
+**I1 candidate review stop — 11 October 2026:** Durable image jobs, shared native
+admission, Images/job visibility, storage removal and image-aware backup/restore
+are implemented on `codex/images-jobs-i1`. The corrected isolated native sequence
+passes; initial shutdown, harness and overlapping-eval failures remain retained.
+Checks pass: 508 Python, 39 frontend and one complete Chromium/WebKit run with
+473 passed / three existing skips. All prior artifact bytes, installed source,
+image environment and weights are preserved. G9 remains failed: the accepted
+frozen Search replay is 25/25; the current 24/25 run skips the injection fixture
+and lowers lexical citation support. No application deployment, service restart
+or merge to main occurred. Stop with `docs/IMAGES-I1-REPORT.md` for I1 review;
+do not begin W1, reference editing or release around the failed gate. Any further
+Search comparison/refinement must retain this failure, original corpus/thresholds
+and frozen prompts. Research remains shelved.

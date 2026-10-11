@@ -1,0 +1,14 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+E501 Line too long (106 > 100)
+  --> tests/test_deployment.py:70:101
+   |
+68 |     monkeypatch.setattr(module, "BASE", base)
+69 |     assert module.image_home({}, None) is None
+70 |     assert module.image_home({"WORKBENCH_IMAGE_HOME": "/existing/selector"}, None) == "/existing/selector"
+   |                                                                                                     ^^^^^^
+71 |     home = base / "image-worker/product"
+72 |     home.mkdir(parents=True)
+   |
+
+Found 1 error.
+make: *** [check] Error 1

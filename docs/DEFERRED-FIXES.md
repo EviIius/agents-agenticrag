@@ -83,6 +83,22 @@ See `IMAGE-TRIAL-REPORT.md` for measurements, failures and regression closeout.
 This is a separate image trial; neither factual-answer qualification nor a
 physical phone pass follows from these results. VoiceOver remains off the list.
 
+## I1 candidate — 11 October 2026
+
+The authorized jobs/Images candidate now implements durable acceptance, native
+admission, real cancellation/reaping, SSE replay, restart reconciliation, gallery
+and job visibility, storage/removal and image-aware backup/restore. The corrected
+native sequence, 508 Python / 39 frontend checks and one complete 473-pass browser
+run pass. It is **not deployed**: the frozen Search replay is 24/25 against the
+accepted 25/25, skips the injection fixture and lowers lexical citation support.
+See `IMAGES-I1-REPORT.md`; preserve the failed trials and this review stop.
+
+Next: review I1 and diagnose G9 with a separately frozen baseline/candidate
+comparison before release. Physical phone review follows release. W1 ordered
+meeting-pack drafts, reference editing, other loaded image/chat combinations and
+the previously observed preference-write question remain later work. VoiceOver
+remains outside the work list. Storage measurements are in `IMAGES-STORAGE.md`.
+
 ## Image memory checkpoint I1-0 — 10 October 2026
 
 Jake accepted proceeding from I0. The frozen 1 GiB unused-allocation cache policy

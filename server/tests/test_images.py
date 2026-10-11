@@ -17,6 +17,7 @@ from uuid import uuid4
 import httpx
 import pytest
 import respx
+from fastapi import FastAPI
 
 from app.backup import Backups
 from app.capacity import Capacity
@@ -29,6 +30,9 @@ from app.images.files import MODEL, REVISION, validate
 from app.images.jobs import Images
 from app.main import create_app
 from app.schemas import ImageCreate, ImageStatus
+from tests.test_chat import chat_app as chat_app
+from tests.test_chat import finish as finish_chat
+from tests.test_chat import start as start_chat
 
 
 def png() -> bytes:
@@ -110,6 +114,30 @@ async def images(tmp_path: Path) -> AsyncIterator[Images]:
 
 def spec(**kwargs: Any) -> ImageCreate:
     return ImageCreate(request_key=uuid4().hex, prompt="Synthetic blue circle", seed=42, **kwargs)
+
+
+async def test_enabled_capacity_preserves_default_chat_payload(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+) -> None:
+    app, client, runtime = chat_app
+    app.state.registry.capacity = app.state.capacity
+    await client.patch("/api/settings", json={"include_current_date": False})
+    async with app.state.capacity.lease(background=True):
+        response = await start_chat(client, "Synthetic default request", "fake-chat")
+        async with asyncio.timeout(2):
+            while not app.state.capacity.interactive:
+                await asyncio.sleep(0)
+        assert not [body for body in runtime.state.captures if body.get("messages")]
+    await finish_chat(app, response)
+    captured = [body for body in runtime.state.captures if body.get("messages")][-1]
+    root = Path(__file__).resolve().parents[2]
+    expected = json.loads((root / "artifacts/baseline/ordinary-chat-phase3.json").read_text())
+    assert json.dumps(captured, sort_keys=True, separators=(",", ":")) == json.dumps(
+        expected, sort_keys=True, separators=(",", ":")
+    )
+    assert set(captured["options"]) == {"num_ctx"}
+    assert "tools" not in captured
+    assert not app.state.capacity.busy
 
 
 async def finish(images: Images, job: str) -> None:
@@ -547,3 +575,25 @@ async def test_output_backup_retention_and_failed_backup(images: Images) -> None
     assert len(backups.files()) == 7
     assert not list((images.data / "backups/images/blobs").iterdir())
     assert len(list((images.data / "backups/images").glob("auto-*.json"))) == 7
+
+
+async def test_parent_watch_exits_normally_with_open_control_pipe(tmp_path: Path) -> None:
+    worker = tmp_path / "watch.py"
+    worker.write_text(
+        "import os,sys,threading,time\n"
+        "threading.Thread(target=lambda:os.read(sys.stdin.fileno(),1),daemon=True).start()\n"
+        "time.sleep(.1)\n"
+        "print('finished',flush=True)\n"
+    )
+    child = await asyncio.create_subprocess_exec(
+        sys.executable,
+        str(worker),
+        stdin=asyncio.subprocess.PIPE,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    assert child.stdout and child.stdin and child.stderr
+    assert await child.stdout.readline() == b"finished\n"
+    assert await asyncio.wait_for(child.wait(), 3) == 0
+    assert await child.stderr.read() == b""
+    child.stdin.close()

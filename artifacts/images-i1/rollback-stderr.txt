@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "/Users/evilius/Documents/GitHub/agents-agenticrag/server/../scripts/rehearse_images_rollback.py", line 55, in <module>
+    if __name__=="__main__": asyncio.run(main())
+                             ~~~~~~~~~~~^^^^^^^^
+  File "/Users/evilius/.local/share/workbench/tools/python-library-probe/cpython-3.14.7-macos-aarch64-none/lib/python3.14/asyncio/runners.py", line 205, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/Users/evilius/.local/share/workbench/tools/python-library-probe/cpython-3.14.7-macos-aarch64-none/lib/python3.14/asyncio/runners.py", line 128, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/evilius/.local/share/workbench/tools/python-library-probe/cpython-3.14.7-macos-aarch64-none/lib/python3.14/asyncio/base_events.py", line 720, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/Users/evilius/Documents/GitHub/agents-agenticrag/server/../scripts/rehearse_images_rollback.py", line 37, in main
+    before=rows(database)
+  File "/Users/evilius/Documents/GitHub/agents-agenticrag/server/../scripts/rehearse_images_rollback.py", line 22, in rows
+    return {name: hashlib.sha256(repr(db.execute(f'SELECT * FROM "{name}" ORDER BY rowid').fetchall()).encode()).hexdigest() for (name,) in db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE '%fts%' AND name NOT LIKE 'sqlite_%'")}
+                                      ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: rowid

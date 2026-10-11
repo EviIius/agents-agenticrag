@@ -48,3 +48,30 @@ into a **new** directory. Model weights are excluded.
 
 Measurements: `artifacts/images-i1/storage-measurement.json` and
 `artifacts/images-i1/private-storage-measurement.json`.
+
+## Durable native generation and version
+
+The final I1 queue check saves an original and a new generation version with the
+same explicit prompt and different seeds. Their decoded pixels match the accepted
+I1-0 outputs for the corresponding seeds. Measured on 11 October:
+
+| Output | PNG | JSON | Total |
+| --- | ---: | ---: | ---: |
+| Original | 1,426,638 bytes | 755 bytes | 1,427,393 bytes (1.43 MB) |
+| Additional version | 1,496,695 bytes | 760 bytes | 1,497,455 bytes (1.50 MB) |
+| Both retained | 2,923,333 bytes | 1,515 bytes | 2,924,848 bytes (2.92 MB) |
+
+The private qualification folder's post-run backup files take another
+3,605,928 bytes (3.61 MB), including paired database snapshots and manifests.
+Unchanged PNG/JSON blobs are stored once across those snapshots. These are backup
+bytes in addition to the live outputs, not additional generation revisions.
+
+The failed/interrupted earlier native attempt's one completed output is also
+retained. All additional native output copies and backup files in the specifically
+measured repository/private QA folders total 12,638,200 bytes (12.64 MB). Together
+with the earlier 35.45 MB output copies, this measured set totals 48.09 MB. It
+excludes screenshots, traces, request history, the active shared database, model
+weights and interpreter environment; it is not a whole-Mac disk audit.
+
+Evidence: `artifacts/images-i1/native-storage-final.json` and
+`artifacts/images-i1/native/sequential-4/result.json`.
