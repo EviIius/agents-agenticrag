@@ -454,3 +454,22 @@ latency/failure guards; no fallback, explicit model unload, keep-alive override,
 new package/model, runtime/default/sampling/prompt change or Research restart.
 Retain H4 evidence and stop after I1-0 review before I1 production jobs/Images.
 Ordered workflows/agents remain later reviewed scope.
+
+**Image memory I1-0 closeout — 10 October 2026:** The single frozen 1 GiB
+unused-allocation cache policy passes unchanged before/after READY probes,
+initialization/denoising cancellation with reaping and four-image recovery.
+Daily chat residency remains reported before/after every image; 45 health/swap/
+activity samples show no positive stage-relative swap growth. Median generation
+is 9.47 seconds; all four decoded outputs match I0 exactly. Live allocation still
+peaks at 18.66 GB; neither a global memory cap nor concurrent full-context chat
+is qualified. Preserve the failed first read-only browser assertion and its
+separately frozen after-batch correction; no physical iPhone pass or normal
+Chromium startup during generation is claimed. Checks pass: 480 Python, 39
+frontend, 26 isolated controls/guards and 463 browser tests, three existing skips.
+All 505 installed app files, 5,458 earlier tracked artifacts, 7,296 original inputs,
+204/214 grounding files, both nine-file I0 attempts, 17 current frozen files and
+18 model files verify preserved; the image interpreter and 56 package versions
+are unchanged. Local and normally verified HTTPS health pass; Ollama stays 0.35.0.
+No deployment/service restart occurs. H4 report: `docs/IMAGE-MEMORY-REPORT.md`.
+Stop for I1-0 review before the proposed I1-A/B durable jobs and Images integration.
+Research remains shelved; workflow/agent calls remain separately reviewed scope.

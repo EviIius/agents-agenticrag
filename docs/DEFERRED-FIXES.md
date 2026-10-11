@@ -82,3 +82,23 @@ All original grounding failures remain unqualified and Research remains shelved.
 See `IMAGE-TRIAL-REPORT.md` for measurements, failures and regression closeout.
 This is a separate image trial; neither factual-answer qualification nor a
 physical phone pass follows from these results. VoiceOver remains off the list.
+
+## Image memory checkpoint I1-0 — 10 October 2026
+
+Jake accepted proceeding from I0. The frozen 1 GiB unused-allocation cache policy
+now passes both native cancellations, four-image recovery and unchanged before/
+after READY probes. Daily chat residency remains present around every image;
+45 health/swap/activity samples show no stage-relative swap growth. All four
+decoded outputs match their I0 counterparts exactly. Live allocation still peaks
+at 18.66 GB; this qualifies a small sequential combination, not a hard host cap
+or concurrent full-context chat. See `IMAGE-MEMORY-REPORT.md` and retained results.
+
+| Remaining item | Current state | Next action |
+| --- | --- | --- |
+| Image resource admission | Tested daily profile plus fixed image settings passes; other loaded models/context sizes are unqualified. | Admit only measured combinations initially; report resource waiting explicitly, without silently unloading models. |
+| Durable queue and Images | Concrete I1-A/B proposal exists; no production code, schema or image UI deployed. | Implement durable acceptance/artifacts, idempotency, real cancellation/reaping, SSE replay, restart reconciliation and Images/Jobs together after this review. |
+| Startup preference write | An isolated read-only Chromium probe attempts `PATCH /api/settings` during startup; the route is blocked and its body is not captured. WebKit attempts no write in the same measurement. | Check appearance hydration/preference synchronization separately; no redundant-write cause or phone failure is established. Original failed measurement and corrected after-batch result remain separate. |
+| Image quality and factual reliability | Four resource samples match I0 pixels; I0's other defects and prior grounding failures remain open. | Keep human selection and reviewed factual drafts; do not infer broad quality or answer reliability from the memory pass. |
+
+The original Research failures remain preserved and shelved. Ordered workflows
+follow durable execution and have a separate reviewed call/evaluation scope.
