@@ -542,3 +542,15 @@ production prompt edit, deployment/restart, W1 or Research call occurred. Stop
 with `docs/SEARCH-REPAIR-REPORT.md`; next review is a fresh frozen retest of the
 same candidate with the corrected harness, not a product redesign inferred from
 invalid planner measurements.
+
+**User authorization — 11 October 2026 (corrected Search retest):** Jake said
+“continue going” after the invalid-trial H4 report and concrete corrected-harness
+proposal. Execute `docs/SEARCH-REPAIR-RETEST-EXECUTION.md` in a new retained output
+directory. Apply only the reviewed harness schema-observation/error-recording/
+protocol correction, validate it offline, and freeze it before inference. Keep
+the same candidate, 24 cases/eight designated held out, fixtures, original 25-case
+benchmark/grading, 54-child order, runtime/context/sampling and release targets.
+Preserve the first invalid trial and all prior bytes. Stop at protocol/host,
+mandatory candidate/support or G9 failure; do not retry, broaden prompts or
+silently regrade. Production stays unchanged, Images unreleased, Research shelved
+and W1 unstarted. Stop with H4 before a release or larger repair design.
