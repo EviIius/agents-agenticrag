@@ -584,3 +584,21 @@ No new package/model/runtime/default, repair call, retry, topic rule, Research,
 Images invocation/release or W1 work is authorized. Reference validation is not
 a general semantic guarantee; explicitly test missing material, prior refusals,
 literal transformations, context dropping and attachment/recording protection.
+
+**Search input-contract closeout — 11 October 2026:** The isolated candidate and
+72-child declaration were frozen at `4ac3100`. All 29 executed children have
+verified native planner/answer wire/events. Fresh baseline is 20/24 on the separate
+boundaries; candidate is 4/5 executed. Four absent-resource summaries now perform
+native lookup with supported facts/citations; these successes do not exercise
+host rejection of an invalid transformation. The literal translation then emits
+transform/input_ref=null despite an actual supplied literal catalog/schema ID.
+Host rejection falls back to Search and the answer cites unrelated evidence;
+search decision/manual support fail. Mandatory stop preserved; 43 later children
+(including all supplemental and original full runs) remain unexecuted. Twenty-five
+offline tests and two-arm rejecting-transport capture checks passed before freeze.
+All 14,237 frozen files and 6,853 prior committed evidence files remain intact.
+Production is healthy/unchanged and Ollama stays 0.35.0. No release/restart, extra
+call, Research, image invocation or W1 action occurred. Stop with H4 at
+`docs/SEARCH-INPUT-CONTRACT-REPORT.md`. Review its proposed host fallback-policy
+correction before another candidate; do not waive original targets or promote
+this four-case improvement as qualification.

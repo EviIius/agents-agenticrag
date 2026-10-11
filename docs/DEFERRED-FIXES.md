@@ -146,6 +146,21 @@ benchmarks/gates and explicit preservation of transformations and attachments.
 No product change, extra experiment, deployment, W1 or Research call followed
 the mandatory stop.
 
+## Isolated Search input contract — 11 October 2026
+
+Frozen at `4ac3100`. Four candidate missing-resource summaries now perform native
+lookup and give supported citations, but the next literal translation fails: its
+supplied `bonjour` reference is omitted, and generic host fallback searches and
+cites an unrelated record. The declared mandatory stop is preserved. Baseline is
+20/24; candidate is 4/5 executed, with 43 later children unexecuted. These are
+separate boundary scores, not qualification of the original Web benchmark.
+
+See `SEARCH-INPUT-CONTRACT-REPORT.md` for native/host evidence and the proposed
+next fallback-policy correction: locally resolve unambiguous literal input,
+retain lookup for absent external content, and clarify ambiguous targets. No
+further experiment is run after the stop. **Images remains unreleased; G9 stays
+open.** The live app remains healthy and unchanged. Research is shelved; W1 waits.
+
 ## Image memory checkpoint I1-0 — 10 October 2026
 
 Jake accepted proceeding from I0. The frozen 1 GiB unused-allocation cache policy
