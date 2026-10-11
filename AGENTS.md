@@ -499,3 +499,16 @@ or merge to main occurred. Stop with `docs/IMAGES-I1-REPORT.md` for I1 review;
 do not begin W1, reference editing or release around the failed gate. Any further
 Search comparison/refinement must retain this failure, original corpus/thresholds
 and frozen prompts. Research remains shelved.
+
+**I1 matched Search diagnosis closeout — 11 October 2026:** Jake asked to
+“continue going” after the I1 report recommended an isolated matched comparison.
+The declaration/harness/manifest was frozen at `897056f` before inference. All six
+focused planner tests and both full real-runtime replay runs are retained. Accepted
+`ba75e28` and Images `7383347` both score 23/25 and fail the same summary/unknown-
+subject cases. All six focused requests are identical; Search source is unchanged.
+The historical summary pass used plan fallback, whose original error is unknown.
+This diagnoses an existing failure, not a G9 waiver: injection is unexercised and
+candidate lexical support is lower. No prompt/product edit, deployment, service
+restart, W1 call or Research restart occurred. Preserve all 6,134 earlier evidence
+files. Stop with `docs/IMAGES-SEARCH-DIAGNOSIS-REPORT.md`; the concrete bounded
+prompt/eval proposal in `docs/SEARCH-REPAIR-PLAN.md` remains separately reviewed.

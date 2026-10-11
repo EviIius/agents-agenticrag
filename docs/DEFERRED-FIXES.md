@@ -99,6 +99,21 @@ meeting-pack drafts, reference editing, other loaded image/chat combinations and
 the previously observed preference-write question remain later work. VoiceOver
 remains outside the work list. Storage measurements are in `IMAGES-STORAGE.md`.
 
+## I1 matched Search diagnosis — 11 October 2026
+
+The frozen eight-run comparison is complete. Accepted source and Images source
+both fail the same external-summary/unknown-subject cases, scoring 23/25. Six
+focused planner requests match exactly and all select transformation without
+supplied page text. The historical summary pass used fallback; its original
+error is unknown. All failures, source captures and earlier evidence are retained.
+
+**G9 remains failed; Images is not released.** Candidate lexical support is lower,
+and semantic inspection also finds identity/relevance and unsupported-value
+weaknesses. No prompt edit, production restart or W1 work occurred. See
+`IMAGES-SEARCH-DIAGNOSIS-REPORT.md` and the bounded proposed before/after scope
+in `SEARCH-REPAIR-PLAN.md`. Review that repair before further native experiments;
+do not weaken the original cases/targets or deploy around the gate.
+
 ## Image memory checkpoint I1-0 — 10 October 2026
 
 Jake accepted proceeding from I0. The frozen 1 GiB unused-allocation cache policy
