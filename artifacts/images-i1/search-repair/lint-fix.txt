@@ -1,0 +1,251 @@
+E501 Line too long (102 > 100)
+  --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:73:101
+   |
+71 |     selected = None
+72 |     if case_id:
+73 |         selected = next(c for c in json.loads((OUT / "cases.json").read_text()) if c["id"] == case_id)
+   |                                                                                                     ^^
+74 |     folder = OUT / label
+75 |     folder.mkdir(exist_ok=False)
+   |
+
+E501 Line too long (122 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:98:101
+    |
+ 96 |                 body = request.content.decode()
+ 97 |                 with (folder / "wire.jsonl").open("a") as handle:
+ 98 |                     handle.write(json.dumps({"body": body, "sha256": hashlib.sha256(request.content).hexdigest()}) + "\n")
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^
+ 99 |
+100 |         self.client.event_hooks["request"].append(wire)
+    |
+
+E501 Line too long (119 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:129:101
+    |
+127 |         print("Repair trial: final evaluator unload skipped; no human model ejection.", flush=True)
+128 |
+129 |     Ollama.__init__, Ollama.stream, Ollama.load, Ollama.unload = initialize, captured_stream, checked_load, no_ejection
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^
+130 |     original_post = httpx.AsyncClient.post
+131 |     seeded = False
+    |
+
+E501 Line too long (142 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:135:101
+    |
+133 | …
+134 | …
+135 | …d not seeded and str(url).startswith("/api/chats/") and str(url).endswith("/messages"):
+    |                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+136 | …
+137 | …
+    |
+
+E501 Line too long (123 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:143:101
+    |
+141 |                 identifier = "seed-" + selected["id"] + "-" + str(index)
+142 |                 await app.state.store.execute(
+143 |                     "INSERT INTO messages(id,chat_id,parent_id,role,content,created_at,updated_at) VALUES (?,?,?,?,?,?,?)",
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^
+144 |                     (identifier, chat_id, parent, message["role"], message["content"], NOW.isoformat(), NOW.isoformat()),
+145 |                 )
+    |
+
+E501 Line too long (121 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:144:101
+    |
+142 |                 await app.state.store.execute(
+143 |                     "INSERT INTO messages(id,chat_id,parent_id,role,content,created_at,updated_at) VALUES (?,?,?,?,?,?,?)",
+144 |                     (identifier, chat_id, parent, message["role"], message["content"], NOW.isoformat(), NOW.isoformat()),
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^
+145 |                 )
+146 |                 parent = identifier
+    |
+
+E501 Line too long (102 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:155:101
+    |
+153 |         "arm": arm, "source": "ba51370 product tree", "case": case_id or "original full suite",
+154 |         "clock": NOW.isoformat(), "capacity_enabled": True, "image_calls": 0,
+155 |         "prompt_hashes": {k: hashlib.sha256(v.encode()).hexdigest() for k, v in prompts[arm].items()},
+    |                                                                                                     ^^
+156 |         "sampling_edit": False, "schema_edit": False, "seeded_history": bool(selected and selected.get("seed_history")),
+157 |         "seed_note": "Fixed synthetic conversation context; not a claimed tested model answer.",
+    |
+
+E501 Line too long (120 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:156:101
+    |
+154 |         "clock": NOW.isoformat(), "capacity_enabled": True, "image_calls": 0,
+155 |         "prompt_hashes": {k: hashlib.sha256(v.encode()).hexdigest() for k, v in prompts[arm].items()},
+156 |         "sampling_edit": False, "schema_edit": False, "seeded_history": bool(selected and selected.get("seed_history")),
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^
+157 |         "seed_note": "Fixed synthetic conversation context; not a claimed tested model answer.",
+158 |         "report_destination_only": str(folder.relative_to(ROOT)), "final_unload_skipped": True,
+    |
+
+E501 Line too long (115 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:162:101
+    |
+160 |     args = argparse.Namespace(
+161 |         model=MODEL, url="http://127.0.0.1:11434", temperature=None, live=False, record=False,
+162 |         case=case_id, cases_file=str(OUT / "cases.json") if case_id else str(ROOT / "server/evals/web/cases.yaml"),
+    |                                                                                                     ^^^^^^^^^^^^^^^
+163 |         fixture_root=str(OUT / "fixtures") if case_id else str(ROOT / "server/evals/web/fixtures/phase2-final-corpus"),
+164 |         providers="ddgs" if case_id else "ollama,searxng,exa,ddgs", search_key_db="",
+    |
+
+E501 Line too long (119 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:163:101
+    |
+161 |         model=MODEL, url="http://127.0.0.1:11434", temperature=None, live=False, record=False,
+162 |         case=case_id, cases_file=str(OUT / "cases.json") if case_id else str(ROOT / "server/evals/web/cases.yaml"),
+163 |         fixture_root=str(OUT / "fixtures") if case_id else str(ROOT / "server/evals/web/fixtures/phase2-final-corpus"),
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^
+164 |         providers="ddgs" if case_id else "ollama,searxng,exa,ddgs", search_key_db="",
+165 |         replay_corpus=not bool(case_id), replay_plans=False, ranking="keyword", embedding="qwen3-embedding:0.6b",
+    |
+
+E501 Line too long (113 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:165:101
+    |
+163 |         fixture_root=str(OUT / "fixtures") if case_id else str(ROOT / "server/evals/web/fixtures/phase2-final-corpus"),
+164 |         providers="ddgs" if case_id else "ollama,searxng,exa,ddgs", search_key_db="",
+165 |         replay_corpus=not bool(case_id), replay_plans=False, ranking="keyword", embedding="qwen3-embedding:0.6b",
+    |                                                                                                     ^^^^^^^^^^^^^
+166 |         planner_trial="spec", answer_trial="spec", table_trial="spec", evidence_format="spec",
+167 |         ranking_query="spec", question_first=False, fill_trial="spec", filter_proof="",
+    |
+
+E501 Line too long (119 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:176:101
+    |
+174 |     for name in ("search_decision_accuracy", "required_fact_case_accuracy", "citation_validity",
+175 |                  "citation_support_mean", "successful_web_turns"):
+176 |         checks[name] = candidate[name] is not None and baseline[name] is not None and candidate[name] >= baseline[name]
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^
+177 |     for name in ("failed_web_turns", "successful_web_ttft_p50_ms", "successful_web_ttft_p90_ms"):
+178 |         checks[name] = candidate[name] is not None and baseline[name] is not None and candidate[name] <= baseline[name]
+    |
+
+E501 Line too long (119 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:178:101
+    |
+176 |         checks[name] = candidate[name] is not None and baseline[name] is not None and candidate[name] >= baseline[name]
+177 |     for name in ("failed_web_turns", "successful_web_ttft_p50_ms", "successful_web_ttft_p90_ms"):
+178 |         checks[name] = candidate[name] is not None and baseline[name] is not None and candidate[name] <= baseline[name]
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^
+179 |     for stage, metrics in baseline["stage_latency_ms"].items():
+180 |         for percentile, value in metrics.items():
+    |
+
+E501 Line too long (102 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:196:101
+    |
+194 |         asyncio.run(activity())
+195 |         with (OUT / (label + ".log")).open("x") as handle:
+196 |             process = subprocess.run([sys.executable, str(Path(__file__).resolve()), "--child", label,
+    |                                                                                                     ^^
+197 |                                       "--arm", arm, "--case-id", case_id], cwd=ROOT,
+198 |                                      stdout=handle, stderr=subprocess.STDOUT, timeout=900)
+    |
+
+E501 Line too long (116 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:201:101
+    |
+199 |         reports = list((OUT / label / "reports").glob("*.json"))
+200 |         if len(reports) != 1 or process.returncode not in (0, 1):
+201 |             result["stop"] = {"label": label, "reason": "protocol/harness failure", "exit_code": process.returncode}
+    |                                                                                                     ^^^^^^^^^^^^^^^^
+202 |             index.write_text(json.dumps(result, indent=2) + "\n")
+203 |             raise RuntimeError("No valid retained evaluator report: " + label)
+    |
+
+E501 Line too long (106 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:208:101
+    |
+206 |         prompts = json.loads((OUT / "prompts.json").read_text())[arm]
+207 |         for kind in ("planner", "answer"):
+208 |             assert document[kind + "_prompt_sha256"] == hashlib.sha256(prompts[kind].encode()).hexdigest()
+    |                                                                                                     ^^^^^^
+209 |         passed = all(r["passed"] for r in document["results"])
+210 |         exposure = None
+    |
+
+E501 Line too long (102 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:212:101
+    |
+210 |         exposure = None
+211 |         if case_id:
+212 |             case = next(c for c in json.loads((OUT / "cases.json").read_text()) if c["id"] == case_id)
+    |                                                                                                     ^^
+213 |             if case.get("attack_marker"):
+214 |                 exposure = any(case["attack_marker"] in passage["text"] for r in document["results"]
+    |
+
+E501 Line too long (118 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:215:101
+    |
+213 |             if case.get("attack_marker"):
+214 |                 exposure = any(case["attack_marker"] in passage["text"] for r in document["results"]
+215 |                                for turn in r["turns"] for source in turn["sources"] for passage in source["passages"])
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^
+216 |                 passed = passed and exposure
+217 |         else:
+    |
+
+E501 Line too long (125 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:232:101
+    |
+230 |                 result["stop"] = {"label": label, "reason": "historical G9 aggregate failure"}
+231 |         if not case_id and label.startswith("full-pair-"):
+232 |             partner = next((r for r in result["runs"][:-1] if r["label"].rsplit("-", 1)[0] == label.rsplit("-", 1)[0]), None)
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^
+233 |             if partner:
+234 |                 c = entry if arm == "candidate" else partner
+    |
+
+E501 Line too long (112 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:240:101
+    |
+238 |                     result["stop"] = {"label": label, "reason": "matched G9 aggregate failure"}
+239 |         index.write_text(json.dumps(result, indent=2) + "\n")
+240 |         print(json.dumps({"label": label, "passed": passed, "cases_passed": document["metrics"]["cases_passed"],
+    |                                                                                                     ^^^^^^^^^^^^
+241 |                           "stop": result["stop"]}), flush=True)
+242 |         frozen()
+    |
+
+E501 Line too long (110 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:244:101
+    |
+242 |         frozen()
+243 |         if result["stop"]:
+244 |             print("Stopped at declared gate; later runs not executed. No production prompt edit.", flush=True)
+    |                                                                                                     ^^^^^^^^^^
+245 |             return
+246 |     print("Declared model runs complete; manual support review and release gates still required.", flush=True)
+    |
+
+E501 Line too long (110 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/experiment.py:246:101
+    |
+244 |             print("Stopped at declared gate; later runs not executed. No production prompt edit.", flush=True)
+245 |             return
+246 |     print("Declared model runs complete; manual support review and release gates still required.", flush=True)
+    |                                                                                                     ^^^^^^^^^^
+
+E501 Line too long (115 > 100)
+  --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-repair/prepare.py:62:101
+   |
+60 |         key = hashlib.sha256(url.encode()).hexdigest()
+61 |         (directory / (key + ".page.bin")).write_bytes(body.encode())
+62 |         (directory / (key + ".page.json")).write_text(json.dumps({"url": url, "content_type": "text/html"}) + "\n")
+   |                                                                                                     ^^^^^^^^^^^^^^^
+63 |         (directory / "ddgs.search.json").write_text(json.dumps([{
+64 |             "url": url, "title": title, "snippet": content, "provider": "Synthetic boundary fixture"
+   |
+
+Found 24 errors (1 fixed, 23 remaining).

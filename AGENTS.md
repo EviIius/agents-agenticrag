@@ -512,3 +512,15 @@ candidate lexical support is lower. No prompt/product edit, deployment, service
 restart, W1 call or Research restart occurred. Preserve all 6,134 earlier evidence
 files. Stop with `docs/IMAGES-SEARCH-DIAGNOSIS-REPORT.md`; the concrete bounded
 prompt/eval proposal in `docs/SEARCH-REPAIR-PLAN.md` remains separately reviewed.
+
+**User authorization — 11 October 2026 (bounded Search repair):** Jake said
+“continue going” after the matched diagnosis and concrete repair proposal.
+Execute the single generic prompt candidate and frozen before/after scope in
+`docs/SEARCH-REPAIR-PLAN.md` / `docs/SEARCH-REPAIR-EXECUTION.md`. Keep production
+prompts unchanged until qualification. Preserve the original 25 cases/corpus/
+grading, all failed trials, thresholds, empty answer sampling and existing utility
+parameters. Freeze the separate 24 synthetic cases, eight held out, before any
+candidate inference. Stop at a mandatory candidate/support/G9 failure and retain
+unexecuted calls explicitly. No new dependency/model/runtime/default, added call,
+automatic retry, topic rule, Research restart, image invocation or W1 work.
+Stop with the H4 result before release or a larger deterministic repair design.
