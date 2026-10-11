@@ -1,0 +1,275 @@
+diff --git a/artifacts/images-i1/search-input-contract/contract.py b/artifacts/images-i1/search-input-fallback/contract.py
+index 44dc6ac..ec8ddaa 100644
+--- a/artifacts/images-i1/search-input-contract/contract.py
++++ b/artifacts/images-i1/search-input-fallback/contract.py
+@@ -19,6 +19,15 @@ from app.runs.context import path
+ from app.search import planner
+ 
+ MATERIALS: ContextVar[tuple] = ContextVar("search_input_materials", default=())
++CURRENT_TURN: ContextVar[str | None] = ContextVar("search_input_current_turn", default=None)
++DECISION: ContextVar[dict | None] = ContextVar("search_input_decision", default=None)
++OBSERVER = None
++CLARIFY_PROMPT = (
++    "The host could not bind the requested transformation to supplied material. "
++    "Ask one brief question identifying which provided text, attachment or earlier "
++    "response the user means, or request the missing text. Do not transform unidentified "
++    "material, add factual claims, or assert that a resource does not exist."
++)
+ OPERATION = re.compile(
+     r"\b(?:translate|rewrite|rephrase|shorten|summari[sz]e|edit|turn|convert)\b", re.I
+ )
+@@ -224,8 +233,182 @@ def verified_input(raw, materials):
+     return material
+ 
+ 
++# This grammar describes text operations/formatting, not subjects or named cases.
++# It deliberately declines formats it cannot bind unambiguously.
++COMMAND = re.compile(
++    r"^\s*(?:(?:please|then)\s+|(?:could|can) you\s+)?"
++    r"(translate|rewrite|rephrase|shorten|summari[sz]e|edit|turn|convert)\b\s*",
++    re.I,
++)
++FORMAT_ATOM = (
++    r"(?:more politely|politely|without (?:changing (?:facts|(?:its |the )?meaning)|"
++    r"adding external information)|(?:in|into) (?:one|two|three|a|\d+) "
++    r"(?:sentences?|bullet points?)|(?:in|into|to) [\w-]+(?: [\w-]+)?|"
++    r"only|now|in uppercase|in lowercase)"
++)
++DESCRIPTOR = (
++    r"(?:(?:this|these|the following)\s*(?:(?:quoted|provided|supplied)\s+)?"
++    r"(?:text|words|sentence|phrase|excerpt|report|note|comparison)?)?"
++)
++
++
++def formatting(text):
++    return bool(re.fullmatch(r"[\s,.]*(?:" + FORMAT_ATOM + r"[\s,.]*)*", text, re.I))
++
++
++def prefix_format(text):
++    match = re.match(DESCRIPTOR, text, re.I)
++    return bool(match and formatting(text[match.end() :]))
++
++
++def instruction_stub(latest):
++    """Strip explicit supplied bodies before checking for separate external acts."""
++    command = COMMAND.match(latest)
++    if not command:
++        return latest
++    stripped = re.sub(r'"[^"\n]*"|\x27[^\x27\n]*\x27|“[^”]*”|‘[^’]*’', "[text]", latest)
++    separator = re.search(r":\s+|\n\s*\n", stripped)
++    if separator:
++        return stripped[: separator.start()]
++    return stripped
++
++
++def external_check(latest):
++    if not COMMAND.match(latest):
++        return False
++    stub = instruction_stub(latest)
++    return bool(
++        re.search(
++            r"\b(?:verify|fact[- ]?check|look up|search|research)\b|"
++            r"\b(?:and|also|then)\s+(?:what|who|where|when|which|how|is|are|does|did)\b",
++            stub,
++            re.I,
++        )
++    )
++
++
++def availability_notice(text):
++    return bool(
++        ABSENCE.search(text)
++        or re.match(
++            r"^\s*(?:the|this|that)\s+(?:\w+\s+){0,3}(?:text|content|file)\s+"
++            r"(?:has not been|was not|is not|isn't|wasn't)\s+(?:supplied|provided|available)",
++            text,
++            re.I,
++        )
++    )
++
++
++def local_target(latest, materials):
++    """Bind a complete explicit instruction to real material, independently of JSON.
++
++    Multiple matching literal catalog entries can describe the same quoted body;
++    they are deduplicated by text. No invented native ID or quote is accepted here.
++    Deictic history binding uses the most recent supplied body/response, excluding
++    availability-only replies. This bounded grammar is not semantic proof.
++    """
++    command = COMMAND.match(latest)
++    if not command or external_check(latest):
++        return ()
++    rest = latest[command.end() :].strip()
++    available = [m for m, _ in visible(materials)]
++    current = CURRENT_TURN.get()
++    fresh = [m for m in available if current is None or m.position == current]
++    candidates = []
++    separator = re.search(r":\s+|\n\s*\n", rest)
++    if separator and prefix_format(rest[: separator.start()].strip()):
++        body = rest[separator.end() :].strip()
++        candidates = [m for m in fresh if m.kind == "body" and m.text == body]
++    else:
++        for m in fresh:
++            if m.kind == "quote":
++                for opening, closing in [('"', '"'), ("'", "'"), ("“", "”"), ("‘", "’")]:
++                    literal = opening + m.text + closing
++                    start = rest.find(literal)
++                    if (
++                        start >= 0
++                        and prefix_format(rest[:start].strip())
++                        and formatting(rest[start + len(literal) :])
++                    ):
++                        candidates.append(m)
++            elif m.kind == "literal" and command[1].casefold() == "translate":
++                # Exact text before a simple language destination, not a resource
++                # descriptor, is literal input (including an unquoted phrase).
++                if re.fullmatch(
++                    re.escape(m.text) + r"\s+(?:into|to)\s+[\w-]+(?:\s+[\w-]+)?[.!]?", rest, re.I
++                ):
++                    candidates.append(m)
++    if candidates:
++        by_text = {m.text: m for m in candidates}
++        return tuple(by_text.values()) if len(by_text) == 1 else ()
++    attached = re.fullmatch(
++        r"(?:the |these |this )?(?:attached|uploaded)\s+"
++        r"(documents?|files?|materials?|transcripts?|recordings?)"
++        r"(.*)",
++        rest,
++        re.I,
++    )
++    if attached and formatting(attached[2]):
++        choices = [m for m in fresh if m.kind in ("document", "transcript")]
++        plural = attached[1].casefold().endswith("s")
++        if choices and (plural or len(choices) == 1):
++            return tuple(choices)
++    if RESPONSE_TARGET.search(rest):
++        match = re.fullmatch(
++            r"(?:your|the|that)\s+(?:previous\s+|last\s+|earlier\s+)?"
++            r"(?:answer|response|reply|refusal)(.*)",
++            rest,
++            re.I,
++        )
++        if match and formatting(match[1]):
++            choices = [m for m in available if m.kind == "assistant_response"]
++            if choices:
++                return (max(choices, key=lambda m: int(m.position)),)
++    deictic = re.fullmatch(
++        r"((?:that|this|those|these)(?:\s+[\w-]+){0,3}?|it|them)"
++        r"[\s,.]*(?:" + FORMAT_ATOM + r"[\s,.]*)*[.!]?",
++        rest,
++        re.I,
++    )
++    if deictic:
++        bodies = [
++            m
++            for m in available
++            if m.kind in ("body", "quote", "literal", "document", "transcript")
++            and (current is None or m.position != current)
++        ]
++        choices = bodies or [
++            m
++            for m in available
++            if m.kind == "assistant_response" and not availability_notice(m.text)
++        ]
++        if choices:
++            position = max(int(m.position) for m in choices)
++            nearest = {m.text: m for m in choices if int(m.position) == position}
++            if len(nearest) == 1:
++                return (next(iter(nearest.values())),)
++    return ()
++
++
++def record(mode, reason, references=(), native_reference_valid=False):
++    state = DECISION.get()
++    row = {
++        "mode": mode,
++        "reason": reason,
++        "refs": [m.ref for m in references],
++        "native_reference_valid": native_reference_valid,
++    }
++    if state is not None:
++        state.update(row)
++    if OBSERVER is not None:
++        OBSERVER(row)
++
++
+ async def plan(adapter, model, latest, history, loaded, context, force=False):
+     materials = MATERIALS.get()
++    target = local_target(latest, materials)
++    mixed = external_check(latest)
++    native_task = None
+     transcript = "\n".join(
+         m.role.title() + ": " + re.sub(r"\[\d+\]", "", m.content)[:600]
+         for m in history[-6:]
+@@ -265,8 +448,23 @@ async def plan(adapter, model, latest, history, loaded, context, force=False):
+         reference = raw.pop("input_ref")
+         selection = raw.pop("selection_condition", None)
+         intent = planner.Intent.model_validate(raw, strict=True)
++        native_task = intent.task
++        if target and not force:
++            native_valid = False
++            if intent.task == "transform":
++                try:
++                    verified_input(reference, materials)
++                    native_valid = True
++                except ValueError:
++                    pass
++            record("local", "explicit supplied input", target, native_valid)
++            return planner.Plan(search=False, queries=[], freshness="any"), not native_valid
++        if mixed and intent.task != "lookup":
++            raise ValueError("Independent external checking requested")
+         if intent.task == "transform":
+-            verified_input(reference, materials)
++            material = verified_input(reference, materials)
++            if availability_notice(material.text) and not RESPONSE_TARGET.search(latest):
++                raise ValueError("Availability reply is not the missing material")
+         elif reference is not None:
+             raise ValueError("Only transformations have an input reference")
+         if intent.task != "lookup" and intent.queries:
+@@ -298,8 +496,25 @@ async def plan(adapter, model, latest, history, loaded, context, force=False):
+             result.search = True
+         if result.search and not queries:
+             raise ValueError("No queries")
++        record("lookup" if result.search else "native_local", "native plan accepted")
+         return result, False
+-    except Exception:
++    except Exception as exc:
++        if target and not force:
++            record("local", type(exc).__name__, target)
++            return planner.Plan(search=False, queries=[], freshness="any"), True
++        supplied = any(
++            not availability_notice(m.text) or RESPONSE_TARGET.search(latest)
++            for m, _ in visible(materials)
++        )
++        if (
++            not force
++            and not mixed
++            and supplied
++            and (native_task == "transform" or COMMAND.match(latest))
++        ):
++            record("clarify", type(exc).__name__)
++            return planner.Plan(search=False, queries=[], freshness="any"), True
++        record("lookup", type(exc).__name__)
+         return planner.Plan(
+             search=True,
+             queries=[planner.preserve_source_type(planner.heuristic(latest, history), latest)],
+@@ -314,10 +529,18 @@ def install(pipeline_class):
+     async def with_materials(self, run, request, context, force):
+         assert Path(self.manager.data_dir).name.startswith("workbench-eval-"), "Isolated eval only"
+         token = MATERIALS.set(await inventory(self, run, context))
++        current = CURRENT_TURN.set(str(len(context.messages) - 2))
++        state = {}
++        decision = DECISION.set(state)
+         try:
+-            return await original(self, run, request, context, force)
++            result = await original(self, run, request, context, force)
++            if state.get("mode") == "clarify":
++                request.messages.insert(1, ProviderMessage("system", CLARIFY_PROMPT))
++            return result
+         finally:
+             MATERIALS.reset(token)
++            CURRENT_TURN.reset(current)
++            DECISION.reset(decision)
+ 
+     pipeline_class.__call__ = with_materials
+     planner.SCHEMA = SCHEMA

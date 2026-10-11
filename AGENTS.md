@@ -602,3 +602,16 @@ call, Research, image invocation or W1 action occurred. Stop with H4 at
 `docs/SEARCH-INPUT-CONTRACT-REPORT.md`. Review its proposed host fallback-policy
 correction before another candidate; do not waive original targets or promote
 this four-case improvement as qualification.
+
+**User authorization — 11 October 2026 (isolated Search fallback policy):** Jake
+said “continue going” after the input-contract H4 report and its proposed fallback
+correction. Implement one isolated candidate that binds clear supplied literal
+input locally, uses existing lookup for missing external material and asks for
+clarification of ambiguous transformation targets through the existing answer.
+Preserve valid reference checks, recording protection, ordinary task behavior,
+the one planner/one answer limit, runtime/context/sampling, all original 25 cases,
+24 boundaries, nine supplemental cases, grading, failures and release targets.
+Freeze source/instructions/order before inference; retain every outcome and stop
+at protocol, mandatory candidate/support or G9 failure. No topic rules, downloads,
+dependencies, automatic retry, promotion, Research, image invocation or W1 work.
+Stop with H4 before a further candidate or deployment.

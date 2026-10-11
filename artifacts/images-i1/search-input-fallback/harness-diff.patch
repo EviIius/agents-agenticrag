@@ -1,0 +1,45 @@
+diff --git a/artifacts/images-i1/search-input-contract/experiment.py b/artifacts/images-i1/search-input-fallback/experiment.py
+index b011b4b..1f32450 100644
+--- a/artifacts/images-i1/search-input-contract/experiment.py
++++ b/artifacts/images-i1/search-input-fallback/experiment.py
+@@ -1,4 +1,4 @@
+-"""One frozen prompt candidate, separate boundaries, unchanged full benchmark."""
++"""One frozen fallback candidate, separate boundaries, unchanged full benchmark."""
+ 
+ import argparse
+ import asyncio
+@@ -92,6 +92,13 @@ def child(label, arm, case_id):
+         )
+     folder = OUT / label
+     folder.mkdir(exist_ok=False)
++    if arm == "candidate":
++
++        def observe_decision(row):
++            with (folder / "host-decisions.jsonl").open("a") as handle:
++                handle.write(json.dumps(row) + "\n")
++
++        contract.OBSERVER = observe_decision
+     run_eval.HERE = folder  # Report destination only; explicit case/corpus arguments below.
+     original_app = app_main.create_app
+     holder = {}
+@@ -227,7 +234,7 @@ def child(label, arm, case_id):
+         json.dumps(
+             {
+                 "arm": arm,
+-                "source": "a531a85 unchanged product; isolated input-contract candidate",
++                "source": "a243774 unchanged product; isolated input-fallback candidate",
+                 "case": case_id or "original full suite",
+                 "clock": NOW.isoformat(),
+                 "capacity_enabled": True,
+@@ -237,6 +244,11 @@ def child(label, arm, case_id):
+                 },
+                 "sampling_edit": False,
+                 "schema_edit": arm == "candidate",
++                "clarification_instruction_sha256": hashlib.sha256(
++                    contract.CLARIFY_PROMPT.encode()
++                ).hexdigest()
++                if arm == "candidate"
++                else None,
+                 "seeded_history": bool(
+                     selected and (selected.get("seed_history") or selected.get("seed_attachment"))
+                 ),
