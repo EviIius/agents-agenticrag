@@ -440,3 +440,17 @@ Ollama remains 0.35.0 and no deployment/service restart occurred. H4 report:
 `docs/IMAGE-TRIAL-REPORT.md`. Stop for I0 review before memory-policy inference
 or I1 product integration. Research remains shelved; workflows/agents remain
 later reviewed scope and no factual-answer candidate is qualified by this trial.
+
+
+**User acceptance and authorization — 10 October 2026 (I0 and I1-0):** Jake said
+“Go ahead” after the committed I0 results, sample gallery, quality/memory caveats
+and recommended sequence. Accept I0 for proceeding without inventing per-image
+observations or a physical phone result. Execute the separately frozen bounded
+cache qualification in `docs/IMAGE-MEMORY-PLAN.md`, using the existing pinned
+engine/environment/weights, original photograph/text prompts and seeds, intended
+daily chat residency checks, native cancellation/recovery and before/after chat.
+Keep I0 and all earlier evidence intact. Stop on declared resource/residency/
+latency/failure guards; no fallback, explicit model unload, keep-alive override,
+new package/model, runtime/default/sampling/prompt change or Research restart.
+Retain H4 evidence and stop after I1-0 review before I1 production jobs/Images.
+Ordered workflows/agents remain later reviewed scope.

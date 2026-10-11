@@ -1,0 +1,80 @@
+{
+  "model": "black-forest-labs/FLUX.2-klein-4B",
+  "revision": "e7b7dc27f91deacad38e78976d1f2b499d76a294",
+  "mflux": "0.22.0",
+  "width": 1024,
+  "height": 1024,
+  "steps": 4,
+  "quantization": 8,
+  "guidance": 1.0,
+  "seeds": [
+    42,
+    1337
+  ],
+  "cases": [
+    {
+      "id": "photograph",
+      "prompt": "A realistic photograph of a red ceramic mug on a wooden table beside a closed blue notebook, morning window light, no people."
+    },
+    {
+      "id": "interior",
+      "prompt": "A small reading room with one green armchair to the left of a tall bookcase, a floor lamp behind the chair, and a round rug."
+    },
+    {
+      "id": "illustration",
+      "prompt": "A flat editorial illustration of a small orange fox carrying a purple umbrella in light rain, cream background, simple shapes."
+    },
+    {
+      "id": "text",
+      "prompt": "A simple navy poster with large clearly readable white text exactly saying FIELD NOTES and a small yellow circle below the words."
+    },
+    {
+      "id": "count",
+      "prompt": "Exactly three yellow pears and one green apple on a white plate against a plain grey background, overhead photograph."
+    },
+    {
+      "id": "arrangement",
+      "prompt": "A studio product photograph of a glass water bottle between two small white boxes, soft shadows, plain beige background."
+    }
+  ],
+  "edit": {
+    "id": "mug-edit",
+    "seed": 42,
+    "prompt": "Change the red mug to green. Preserve the blue notebook, wooden table, morning light, camera view, and everything else in the scene."
+  },
+  "measurement": {
+    "sample_interval_seconds": 1,
+    "worker_timeout_seconds": 1200,
+    "terminate_grace_seconds": 10
+  },
+  "chat_probe": {
+    "model": "qwen3:30b-a3b-workbench-32k",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Reply with only the word READY."
+      }
+    ],
+    "stream": false
+  },
+  "resource": {
+    "cache_limit_bytes": 1073741824,
+    "maximum_stage_swap_growth_mib": 512,
+    "maximum_health_seconds": 2,
+    "maximum_generation_seconds": 60,
+    "maximum_chat_seconds": 10,
+    "worker_timeout_seconds": 300,
+    "generation_cases": [
+      "photograph",
+      "text"
+    ],
+    "stage_order": [
+      "chat-before",
+      "cancel-init",
+      "cancel-generation",
+      "recovery-batch",
+      "chat-after"
+    ],
+    "qualification": "One frozen policy; four unchanged generation cases. No fallback, retry, precision/prompt change, explicit unload or keep-alive override."
+  }
+}
