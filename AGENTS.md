@@ -615,3 +615,25 @@ Freeze source/instructions/order before inference; retain every outcome and stop
 at protocol, mandatory candidate/support or G9 failure. No topic rules, downloads,
 dependencies, automatic retry, promotion, Research, image invocation or W1 work.
 Stop with H4 before a further candidate or deployment.
+
+**Search fallback-policy closeout — 11 October 2026:** One isolated candidate was
+frozen at `7c6a2b4`; 41 offline policy/inventory/recording/context checks and three
+rejecting-transport capture arms passed. All 37 executed children have verified
+native planner/answer wire/events. Fresh baseline is 20/24; candidate is 12/13
+executed on the separate boundary suite, not the original 25-case benchmark.
+Seven transformations stay local with actual supplied material; six missing
+native references use host local fallback, repairing the prior translation failure.
+Four external summaries and the explicitly linked identity lookup are supported.
+The unknown-meal case returns native conversation/null reference/empty queries;
+host accepts it and skips required lookup. Its answer correctly declines to guess,
+but search=true and the unchanged abstention regex fail. No hallucinated meal,
+identity substitution, invented citation or automatic regrade is claimed.
+Mandatory stop preserved; 35 later children (eleven original candidate, eighteen
+supplemental, six full runs) remain unexecuted, including all candidate held-out
+and native clarification cases. All 14,555 frozen files and 7,039 prior committed
+evidence files remain intact. Ollama stays 0.35.0 and both health endpoints return
+200; product source/live deployment are unchanged. No release/restart, retry,
+Research, image invocation or W1 action follows. H4 is
+`docs/SEARCH-INPUT-FALLBACK-REPORT.md`. Stop for review before the proposed generic
+non-lookup/conversation admissibility guard or another candidate. Images remains
+held and original release targets are not waived.

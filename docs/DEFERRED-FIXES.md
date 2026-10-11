@@ -161,6 +161,26 @@ retain lookup for absent external content, and clarify ambiguous targets. No
 further experiment is run after the stop. **Images remains unreleased; G9 stays
 open.** The live app remains healthy and unchanged. Research is shelved; W1 waits.
 
+## Isolated Search fallback policy — 11 October 2026
+
+The frozen host fallback candidate repairs the supplied-literal failure in native
+execution: seven transformations stay local, six despite missing native references.
+It supports four external summaries and the explicit-identity lookup. Candidate
+then stops at an unknown-personal-fact case: native conversation classification
+skips required Search. The answer correctly declines to guess; do not describe
+this as an invented meal or silently regrade the failed lookup/wording checks.
+
+Fresh boundary baseline is 20/24; candidate is 12/13 executed. Thirty-five later
+children, including every candidate held-out and supplemental case and the six
+original full runs, remain unexecuted. See `SEARCH-INPUT-FALLBACK-REPORT.md`.
+All prior failures and original targets remain; **Images is still unreleased**.
+
+Next proposed reviewed repair: generic admissibility checks for non-lookup /
+conversation decisions, preserving real small talk, supplied transformations,
+creative work and pure math/code. No topic exception, extra call or broader
+native retry follows this stop. Live app/runtime are healthy and unchanged.
+Research remains shelved and W1 waits for reliability and image release.
+
 ## Image memory checkpoint I1-0 — 10 October 2026
 
 Jake accepted proceeding from I0. The frozen 1 GiB unused-allocation cache policy
