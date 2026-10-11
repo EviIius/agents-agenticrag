@@ -114,6 +114,22 @@ weaknesses. No prompt edit, production restart or W1 work occurred. See
 in `SEARCH-REPAIR-PLAN.md`. Review that repair before further native experiments;
 do not weaken the original cases/targets or deploy around the gate.
 
+## Bounded Search trial — 11 October 2026
+
+The first bounded prompt trial is **invalid for planner qualification**. A harness
+assertion compared the bound request schema with the static schema and blocked
+every planner request. Twenty-nine real answers ran via forced fallback; four
+executed candidate external-resource answers are supported, but the translation
+cites an unrelated page. All reports and the original stop record are preserved.
+No candidate held-out/negative cases or original full runs qualified.
+
+The harness correction passes offline reproduction and protocol-failure checks;
+it is retained as a patch, with the frozen first harness unchanged. The next
+checkpoint is a separately frozen retest of the same candidate/inputs/grading
+with actual planner wire/trace verification. See `SEARCH-REPAIR-REPORT.md`.
+**Images remains unreleased; prior G9 failures remain open.** No production
+prompt change, deployment, service restart, W1 or Research call occurred.
+
 ## Image memory checkpoint I1-0 — 10 October 2026
 
 Jake accepted proceeding from I0. The frozen 1 GiB unused-allocation cache policy

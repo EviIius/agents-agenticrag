@@ -1,0 +1,101 @@
+--- a/artifacts/images-i1/search-repair/experiment.py
++++ b/artifacts/images-i1/search-repair/experiment.py
+@@ -69,6 +69,15 @@
+     assert prompt.PROMPT == prompts["baseline"]["answer"]
+     planner.PROMPT = prompts[arm]["planner"]
+     prompt.PROMPT = prompts[arm]["answer"]
++    original_schema = planner.schema
++    expected_schema = None
++
++    def bound_schema(latest):
++        nonlocal expected_schema
++        expected_schema = original_schema(latest)
++        return expected_schema
++
++    planner.schema = bound_schema  # Observe the unchanged request-specific schema.
+     selected = None
+     if case_id:
+         selected = next(
+@@ -109,14 +118,6 @@
+ 
+     async def captured_stream(self, request):
+         await activity()
+-        assert self.capacity is not None
+-        assert request.model_id == MODEL and request.context_length == 16384
+-        assert request.json_schema is None or request.json_schema == planner.SCHEMA
+-        if request.json_schema:
+-            assert request.params == {"temperature": 0.2, "max_tokens": 256}
+-        else:
+-            assert request.params == {}
+-        assert "tools" not in self.payload(request)
+         entry = {
+             "arm": arm,
+             "capacity_enabled": True,
+@@ -125,8 +126,17 @@
+             "error": None,
+         }
+         clock = monotonic()
+-        stream = original_stream(self, request)
++        stream = None
+         try:
++            assert self.capacity is not None
++            assert request.model_id == MODEL and request.context_length == 16384
++            if request.json_schema is not None:
++                assert expected_schema is not None and request.json_schema == expected_schema
++                assert request.params == {"temperature": 0.2, "max_tokens": 256}
++            else:
++                assert request.params == {}
++            assert "tools" not in entry["payload"]
++            stream = original_stream(self, request)
+             async for event in stream:
+                 entry["events"].append({"type": type(event).__name__, "value": asdict(event)})
+                 yield event
+@@ -134,7 +144,8 @@
+             entry["error"] = type(exc).__name__
+             raise
+         finally:
+-            await stream.aclose()
++            if stream is not None:
++                await stream.aclose()
+             entry["seconds"] = monotonic() - clock
+             with (folder / "trace.jsonl").open("a") as handle:
+                 handle.write(json.dumps(entry) + "\n")
+@@ -241,6 +252,26 @@
+         filter_proof="",
+     )
+     asyncio.run(run_eval.evaluate(args))
++
++
++def protocol_verified(folder, document):
++    """A swallowed instrumentation error must stop before interpreting scores."""
++    traces = [json.loads(line) for line in (folder / "trace.jsonl").read_text().splitlines()]
++    wires = [json.loads(json.loads(line)["body"])
++             for line in (folder / "wire.jsonl").read_text().splitlines()]
++    turns = sum(len(result["turns"]) for result in document["results"])
++    planners = [row for row in traces if row["payload"].get("format") is not None]
++    answers = [row for row in traces if row["payload"].get("format") is None]
++    return (
++        len(planners) == len(answers) == turns
++        and sum(row.get("format") is not None for row in wires) == turns
++        and sum(row.get("stream") is True and row.get("format") is None for row in wires) == turns
++        and all(row["error"] is None and row["capacity_enabled"]
++                and any(event["type"] == "Usage" for event in row["events"])
++                and any(event["type"] == "Finish"
++                        and event["value"]["reason"] != "error" for event in row["events"])
++                for row in traces)
++    )
+ 
+ 
+ def g9(candidate, baseline):
+@@ -321,6 +352,11 @@
+             raise RuntimeError("No valid retained evaluator report: " + label)
+         report = reports[0]
+         document = json.loads(report.read_text())
++        if not protocol_verified(OUT / label, document):
++            result["stop"] = {"label": label, "reason": "protocol/harness failure",
++                              "retained_report": str(report.relative_to(ROOT))}
++            index.write_text(json.dumps(result, indent=2) + "\n")
++            raise RuntimeError("Missing/failed planner or answer trace: " + label)
+         prompts = json.loads((OUT / "prompts.json").read_text())[arm]
+         for kind in ("planner", "answer"):
+             assert (

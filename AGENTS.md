@@ -524,3 +524,21 @@ candidate inference. Stop at a mandatory candidate/support/G9 failure and retain
 unexecuted calls explicitly. No new dependency/model/runtime/default, added call,
 automatic retry, topic rule, Research restart, image invocation or W1 work.
 Stop with the H4 result before release or a larger deterministic repair design.
+
+**Bounded Search trial closeout — 11 October 2026:** The single candidate inputs
+were frozen at `0bd3349`. The first harness incorrectly compared the production
+request-specific planner schema with the static schema, preventing all planner
+native calls and forcing fallback. Preserve all 29 child reports, 29 real answer
+calls, wire bodies and the original automatic stop record. Raw scores 12/24
+baseline and 4/5 executed candidate do not qualify planner behavior. Candidate
+translation cites an unrelated source; four external-resource answers are
+supported under forced fallback. Nineteen candidate cases (including all eight
+held out) and six original full runs remain unexecuted. No original grader/input
+or failed report was changed. A retained harness-only patch passes offline
+schema/failure-detection checks without further inference; the original harness
+stays frozen. All 7,471 frozen inputs and 6,285 prior evidence files are preserved;
+production is healthy, Ollama remains 0.35.0 and Images is not released. No
+production prompt edit, deployment/restart, W1 or Research call occurred. Stop
+with `docs/SEARCH-REPAIR-REPORT.md`; next review is a fresh frozen retest of the
+same candidate with the corrected harness, not a product redesign inferred from
+invalid planner measurements.
