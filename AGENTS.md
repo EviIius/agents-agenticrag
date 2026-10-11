@@ -570,3 +570,17 @@ report's abstention-grading prose without modifying original reports or scores.
 Stop for review before implementing or evaluating the proposed supplied-input
 contract in `docs/SEARCH-INPUT-CONTRACT-PLAN.md`; no further prompt-only trials
 or Images deployment are authorized by this closeout.
+
+**User authorization — 11 October 2026 (isolated Search input contract):** Jake
+said “go ahead” after the corrected retest report and the proposal in
+`docs/SEARCH-INPUT-CONTRACT-PLAN.md`. Implement and test that supplied-material
+inventory/reference/schema contract in isolation, retaining ordinary production
+source and deployment. Use the existing one planner and one answer, existing
+runtime/context/sampling, original 25-case benchmark and 24 boundaries. Freeze
+one candidate, any separate supplemental ambiguity corpus and the complete order
+before inference. Keep all earlier failed trials and thresholds; stop on protocol,
+mandatory candidate/support or G9 failure, with H4 and unexecuted calls recorded.
+No new package/model/runtime/default, repair call, retry, topic rule, Research,
+Images invocation/release or W1 work is authorized. Reference validation is not
+a general semantic guarantee; explicitly test missing material, prior refusals,
+literal transformations, context dropping and attachment/recording protection.

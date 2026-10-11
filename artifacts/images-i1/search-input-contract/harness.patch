@@ -1,0 +1,122 @@
+--- search-repair-v2/experiment.py
++++ search-input-contract/experiment.py
+@@ -69,6 +69,13 @@
+     assert prompt.PROMPT == prompts["baseline"]["answer"]
+     planner.PROMPT = prompts[arm]["planner"]
+     prompt.PROMPT = prompts[arm]["answer"]
++    if arm == "candidate":
++        import contract
++
++        from app.search.pipeline import Pipeline
++
++        contract.datetime = FixedDateTime
++        contract.install(Pipeline)
+     original_schema = planner.schema
+     expected_schema = None
+ 
+@@ -81,7 +88,7 @@
+     selected = None
+     if case_id:
+         selected = next(
+-            c for c in json.loads((OUT / "cases.json").read_text()) if c["id"] == case_id
++            c for c in json.loads((OUT / "boundary-cases.json").read_text()) if c["id"] == case_id
+         )
+     folder = OUT / label
+     folder.mkdir(exist_ok=False)
+@@ -170,7 +177,7 @@
+         nonlocal seeded
+         if (
+             selected
+-            and selected.get("seed_history")
++            and (selected.get("seed_history") or selected.get("seed_attachment"))
+             and not seeded
+             and str(url).startswith("/api/chats/")
+             and str(url).endswith("/messages")
+@@ -179,7 +186,7 @@
+             app = holder["app"]
+             assert app.state.config.data_dir.name.startswith("workbench-eval-")
+             parent = None
+-            for index, message in enumerate(selected["seed_history"]):
++            for index, message in enumerate(selected.get("seed_history", [])):
+                 identifier = "seed-" + selected["id"] + "-" + str(index)
+                 await app.state.store.execute(
+                     "INSERT INTO messages(id,chat_id,parent_id,role,content,created_at,updated_at) "
+@@ -196,6 +203,22 @@
+                 )
+                 parent = identifier
+             kwargs["json"] = {**kwargs["json"], "parent_id": parent}
++            if selected.get("seed_attachment"):
++                attachment_id = "synthetic-document-" + selected["id"]
++                location = app.state.config.data_dir / "attachments" / (attachment_id + ".txt")
++                location.parent.mkdir(exist_ok=True)
++                location.write_text(selected["seed_attachment"])
++                await app.state.store.execute(
++                    "INSERT INTO attachments(id,kind,filename,mime_type,bytes,path,created_at) "
++                    "VALUES (?,'text','synthetic-input.txt','text/plain',?,?,?)",
++                    (
++                        attachment_id,
++                        location.stat().st_size,
++                        str(location.relative_to(app.state.config.data_dir)),
++                        NOW.isoformat(),
++                    ),
++                )
++                kwargs["json"]["attachment_ids"] = [attachment_id]
+             seeded = True
+         return await original_post(self, url, *args, **kwargs)
+ 
+@@ -204,7 +227,7 @@
+         json.dumps(
+             {
+                 "arm": arm,
+-                "source": "ba51370 product tree",
++                "source": "a531a85 unchanged product; isolated input-contract candidate",
+                 "case": case_id or "original full suite",
+                 "clock": NOW.isoformat(),
+                 "capacity_enabled": True,
+@@ -213,8 +236,10 @@
+                     k: hashlib.sha256(v.encode()).hexdigest() for k, v in prompts[arm].items()
+                 },
+                 "sampling_edit": False,
+-                "schema_edit": False,
+-                "seeded_history": bool(selected and selected.get("seed_history")),
++                "schema_edit": arm == "candidate",
++                "seeded_history": bool(
++                    selected and (selected.get("seed_history") or selected.get("seed_attachment"))
++                ),
+                 "seed_note": "Fixed synthetic context; not a claimed tested model answer.",
+                 "report_destination_only": str(folder.relative_to(ROOT)),
+                 "final_unload_skipped": True,
+@@ -230,7 +255,7 @@
+         live=False,
+         record=False,
+         case=case_id,
+-        cases_file=str(OUT / "cases.json")
++        cases_file=str(OUT / "boundary-cases.json")
+         if case_id
+         else str(ROOT / "server/evals/web/cases.yaml"),
+         fixture_root=str(OUT / "fixtures")
+@@ -316,10 +341,11 @@
+         if index.exists():
+             raise RuntimeError("This candidate has retained results; no automatic retry.")
+         result = {"declared_order": declaration["order"], "runs": [], "stop": None}
+-        start, end = 0, 48
++        start, end = 0, declaration["boundary_end"]
+     else:
+         pair = int(phase[-1])
+-        start, end = 48 + 2 * (pair - 1), 48 + 2 * pair
++        base = declaration["boundary_end"]
++        start, end = base + 2 * (pair - 1), base + 2 * pair
+         result = json.loads(index.read_text())
+         assert not result["stop"] and len(result["runs"]) == start
+         previous = "boundary" if pair == 1 else "full-" + str(pair - 1)
+@@ -377,7 +403,9 @@
+         exposure = None
+         if case_id:
+             case = next(
+-                c for c in json.loads((OUT / "cases.json").read_text()) if c["id"] == case_id
++                c
++                for c in json.loads((OUT / "boundary-cases.json").read_text())
++                if c["id"] == case_id
+             )
+             if case.get("attack_marker"):
+                 exposure = any(
