@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     web_fixtures: Path | None = None
     legacy_db: Path = Path.home() / ".local/share/agenticrag/.data/workbench-chats.db"
     transcribe_home: Path | None = None
+    image_home: Path | None = None
 
     @property
     def hosts(self) -> set[str]:

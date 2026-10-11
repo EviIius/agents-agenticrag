@@ -5,6 +5,77 @@ from pydantic import BaseModel, ConfigDict, Field, RootModel
 from .config import VERSION
 
 
+class ImageCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    request_key: str = Field(pattern=r"^[A-Za-z0-9_-]{8,100}$")
+    prompt: str = Field(min_length=1, max_length=4000)
+    seed: int = Field(ge=0, le=4294967295)
+    parent_id: str | None = Field(None, pattern=r"^[a-f0-9]{32}$")
+
+
+class ImageJob(BaseModel):
+    id: str
+    parent_id: str | None = None
+    prompt: str
+    seed: int
+    state: Literal[
+        "queued",
+        "preparing",
+        "running",
+        "cancelling",
+        "cancelled",
+        "complete",
+        "failed",
+        "interrupted",
+    ]
+    stage: str
+    completed_steps: int
+    steps: int = 4
+    error: str | None = None
+    created_at: str
+    updated_at: str
+    image_bytes: int = 0
+    metadata_bytes: int = 0
+    sha256: str | None = None
+
+
+class ImageStorage(BaseModel):
+    outputs: int
+    versions: int
+    image_bytes: int
+    metadata_bytes: int
+    manifest_bytes: int
+    database_bytes: int
+    backup_bytes: int
+    free_bytes: int
+
+
+class ImageStatus(BaseModel):
+    available: bool
+    reason: str | None = None
+    model: str = "FLUX.2 klein 4B"
+    width: int = 1024
+    height: int = 1024
+    steps: int = 4
+    quantization: int = 8
+    cache_limit_bytes: int = 1073741824
+
+
+class ImageSnapshot(BaseModel):
+    jobs: list[ImageJob]
+    storage: ImageStorage
+
+
+class ImageChange(BaseModel):
+    job: ImageJob
+    storage: ImageStorage
+
+
+class ImageClear(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    confirm: Literal[True]
+
+
 class Health(BaseModel):
     ok: bool = True
     version: str = VERSION

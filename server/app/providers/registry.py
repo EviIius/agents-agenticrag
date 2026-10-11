@@ -2,6 +2,7 @@ import asyncio
 import json
 from time import monotonic
 
+from ..capacity import Capacity
 from ..db.connections import list_connections
 from ..db.core import Store
 from ..errors import AppError
@@ -10,8 +11,9 @@ from .ollama import Ollama
 
 
 class Registry:
-    def __init__(self, store: Store) -> None:
+    def __init__(self, store: Store, capacity: Capacity | None = None) -> None:
         self.store = store
+        self.capacity = capacity
         self.adapters: dict[str, Ollama] = {}
         self.cache: list[ModelInfo] = []
         self.updated = 0.0
@@ -36,6 +38,7 @@ class Registry:
             old = Ollama(connection.id, connection.base_url, connection.keep_alive)
             self.adapters[connection_id] = old
         old.keep_alive = connection.keep_alive
+        old.capacity = self.capacity
         return old
 
     async def models(self, refresh: bool = False, include_hidden: bool = False) -> list[ModelInfo]:

@@ -70,10 +70,17 @@ const webMessage: Message = {
     ranking: "keyword",
   },
 };
+const ImagesPreview = lazy(() => import("./ImagesPreview"));
 const Markdown = lazy(() => import("@/components/chat/Markdown"));
 const LibraryAnswersPreview = lazy(() => import("./LibraryAnswersPreview"));
 export function DesignPage() {
   const ui = useUI();
+  if (new URLSearchParams(location.search).has("images"))
+    return (
+      <Suspense fallback={<p>Loading images…</p>}>
+        <ImagesPreview />
+      </Suspense>
+    );
   if (new URLSearchParams(location.search).has("library-answers"))
     return <LibraryAnswersPreview />;
   if (new URLSearchParams(location.search).has("library"))

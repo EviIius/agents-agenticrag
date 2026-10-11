@@ -12,6 +12,13 @@ export const router = createBrowserRouter([
       </p>
     ),
     children: [
+      {
+        path: "/images",
+        lazy: async () => {
+          const { ImagesPage } = await import("@/components/images/ImagesPage");
+          return { Component: ImagesPage };
+        },
+      },
       { path: "/", element: <LiveAppShell /> },
       { path: "/c/:chatId", element: <LiveAppShell /> },
       { path: "/design/chat/:chatId?", element: <AppShell /> },

@@ -3,14 +3,16 @@ import dis
 import json
 import sys
 import types
+import threading
 from pathlib import Path
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "server"))
-TARGETS = [ROOT / 'server/app' / name for name in ('providers', 'runs', 'search', 'transcribe', 'documents', 'library')]
+TARGETS = [ROOT / 'server/app' / name for name in ('providers', 'runs', 'search', 'transcribe', 'documents', 'library', 'images')]
 TARGETS.append(ROOT / 'server/app/backup.py')
+TARGETS.append(ROOT / 'server/app/capacity.py')
 hits: dict[str, set[int]] = {}
 
 def trace(frame, event, arg):
@@ -25,9 +27,11 @@ def executable(code):
         if isinstance(constant, types.CodeType): lines |= executable(constant)
     return lines
 
+threading.settrace(trace)
 sys.settrace(trace)
 result = pytest.main(['-q', *sys.argv[1:]])
 sys.settrace(None)
+threading.settrace(None)
 reports = []
 failed = result != 0
 for folder in TARGETS:

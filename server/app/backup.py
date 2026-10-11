@@ -4,6 +4,13 @@ import asyncio
 import os
 import shutil
 from collections.abc import Callable
+from contextlib import nullcontext
+from typing import TYPE_CHECKING
+
+from .images.backup import companion, prune
+
+if TYPE_CHECKING:
+    from .images.jobs import Images
 from datetime import datetime, time, timedelta
 from pathlib import Path
 
@@ -28,8 +35,10 @@ class Backups:
         data: Path,
         clock: Callable[[], datetime] = datetime.now,
         free: Callable[[Path], int] | None = None,
+        images: "Images | None" = None,
     ) -> None:
         self.store, self.data, self.clock = store, data, clock
+        self.images = images
         self.free = free or (lambda path: shutil.disk_usage(path).free)
         self.folder = data / "backups"
         self.folder.mkdir(mode=0o700, exist_ok=True)
@@ -53,7 +62,7 @@ class Backups:
         )
 
     async def make(self) -> BackupStatus:
-        async with self.lock:
+        async with self.lock, self.images.lock if self.images else nullcontext():
             current = self.clock()
             target = self.folder / current.strftime("auto-%Y%m%d-%H%M.db")
             part = target.with_suffix(".part")
@@ -63,7 +72,11 @@ class Backups:
                     for p in (self.data / "workbench.db", self.data / "workbench.db-wal")
                     if p.exists()
                 )
-                if self.free(self.data) < 2 * size:
+                image_size = 0
+                if self.images:
+                    storage = await self.images.storage()
+                    image_size = storage.image_bytes + storage.metadata_bytes
+                if self.free(self.data) < 2 * size + image_size:
                     self.warning = (
                         "Backup skipped: not enough free disk space. Free space and try again."
                     )
@@ -82,10 +95,19 @@ class Backups:
                     os.fsync(handle.fileno())
                 os.replace(part, target)
                 os.utime(target, (current.timestamp(), current.timestamp()))
+                if self.images:
+                    archiving = asyncio.create_task(asyncio.to_thread(companion, target, self.data))
+                    try:
+                        await asyncio.shield(archiving)
+                    except asyncio.CancelledError:
+                        await archiving
+                        raise
                 for old in self.files()[:-7]:
                     old.unlink()
+                if self.images:
+                    await asyncio.to_thread(prune, self.folder)
                 self.warning = None
-            except (OSError, aiosqlite.Error):
+            except (OSError, aiosqlite.Error, ValueError, KeyError):
                 self.warning = "Couldn't make a backup. Your chats are unchanged. Try again."
             finally:
                 part.unlink(missing_ok=True)

@@ -472,4 +472,16 @@ All 505 installed app files, 5,458 earlier tracked artifacts, 7,296 original inp
 are unchanged. Local and normally verified HTTPS health pass; Ollama stays 0.35.0.
 No deployment/service restart occurs. H4 report: `docs/IMAGE-MEMORY-REPORT.md`.
 Stop for I1-0 review before the proposed I1-A/B durable jobs and Images integration.
+
+**User acceptance and authorization — 10 October 2026 (I1 jobs and Images):**
+Jake asked to continue and verify storage used by generated images and revisions.
+Accept the committed I1-0 resource checkpoint for proceeding, without inventing
+phone or general image-quality acceptance. Implement I1-A/B from
+`docs/IMAGE-INTEGRATION-PLAN.md` using the existing pinned worker environment and
+weights: durable jobs, native admission, SSE, Images, storage/deletion and output
+backup/restore. No new dependency/model download, prompt rewriting, hidden model
+eviction, Research or workflow calls. Keep prior frozen trials intact. Generation
+versions are complete outputs; reference editing remains gated by its file rules.
+Retain native cancellation/recovery and full regression evidence, then stop for
+I1 review before W1.
 Research remains shelved; workflow/agent calls remain separately reviewed scope.

@@ -3,11 +3,13 @@ import base64
 import json
 import re
 from collections.abc import AsyncGenerator
+from contextlib import nullcontext
 from time import monotonic
 from typing import Any
 
 import httpx
 
+from ..capacity import Capacity
 from ..errors import AppError
 from ..schemas import ModelInfo, ReasoningCaps
 from .base import ChatRequest, Finish, ProviderEvent, ReasoningDelta, TextDelta, Timing, Usage
@@ -43,6 +45,7 @@ class Ollama:
         self.shows: dict[str, tuple[float, dict[str, Any]]] = {}
         self.idle_timeout = idle_timeout
         self.models: dict[str, ModelInfo] = {}
+        self.capacity: Capacity | None = None
 
     async def close(self) -> None:
         await self.client.aclose()
@@ -162,16 +165,27 @@ class Ollama:
         }
         if context_length:
             payload["options"] = {"num_ctx": context_length}
-        await self.json("POST", "/api/chat", payload)
+        async with self.capacity.lease() if self.capacity else nullcontext():
+            await self.json("POST", "/api/chat", payload)
 
     async def unload(self, model_id: str) -> None:
-        await self.json(
-            "POST",
-            "/api/chat",
-            {"model": model_id, "messages": [], "keep_alive": 0, "stream": False},
-        )
+        async with self.capacity.lease() if self.capacity else nullcontext():
+            await self.json(
+                "POST",
+                "/api/chat",
+                {"model": model_id, "messages": [], "keep_alive": 0, "stream": False},
+            )
 
     async def stream(self, req: ChatRequest) -> AsyncGenerator[ProviderEvent, None]:
+        async with self.capacity.lease() if self.capacity else nullcontext():
+            stream = self.native_stream(req)
+            try:
+                async for event in stream:
+                    yield event
+            finally:
+                await stream.aclose()
+
+    async def native_stream(self, req: ChatRequest) -> AsyncGenerator[ProviderEvent, None]:
         splitter = ThinkSplitter()
         native = False
         try:
@@ -243,5 +257,6 @@ class Ollama:
         return dict(json.loads(text.strip().removeprefix("```json").removesuffix("```")))
 
     async def embed(self, model_id: str, texts: list[str]) -> list[list[float]]:
-        result = await self.json("POST", "/api/embed", {"model": model_id, "input": texts})
+        async with self.capacity.lease() if self.capacity else nullcontext():
+            result = await self.json("POST", "/api/embed", {"model": model_id, "input": texts})
         return [[float(v) for v in vector] for vector in result["embeddings"]]

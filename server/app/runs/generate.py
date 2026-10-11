@@ -93,6 +93,8 @@ async def generate(
                 await run.emit("search.skipped", {"reason": "recording"})
             elif manager.web_hook and (chat.web_enabled or force_web):
                 await manager.web_hook(run, request, context, force_web)
+            if adapter.capacity and adapter.capacity.busy:
+                await run.emit("run.queued", {"position": 1})
             stream = adapter.stream(request)
             async for event in stream:
                 clock = monotonic()

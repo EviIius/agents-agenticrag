@@ -14,6 +14,7 @@ from .api import (
     chats,
     connections,
     folders,
+    images,
     library,
     messages,
     models,
@@ -25,10 +26,12 @@ from .api import (
 from .api import settings as settings_api
 from .api.health import router as health_router
 from .backup import Backups
+from .capacity import Capacity
 from .config import APP_NAME, VERSION, Settings
 from .db.core import Store, connect
 from .documents.service import Extractor
 from .errors import AppError, register_handlers
+from .images.jobs import Images
 from .library.ingest import Library
 from .library.pipeline import Pipeline as LibraryPipeline
 from .providers.registry import Registry
@@ -52,7 +55,15 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
             app.state.config = config
             app.state.documents = Extractor()
             app.state.documents.recover(config.data_dir / "attachments")
-            app.state.registry = Registry(app.state.store)
+            app.state.capacity = Capacity(
+                config.data_dir / "native.lock" if config.image_home else None
+            )
+            app.state.registry = Registry(
+                app.state.store, app.state.capacity if config.image_home else None
+            )
+            app.state.images = Images(
+                app.state.store, config.data_dir, config.image_home, app.state.capacity
+            )
             app.state.runs = RunManager(app.state.store, app.state.registry, config.data_dir)
             app.state.search = Pipeline(app.state.runs, config.web_fixtures)
             app.state.runs.web_hook = app.state.search
@@ -61,6 +72,8 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
                 app.state.store, config.transcribe_home, config.data_dir
             )
             app.state.cleanup = Cleanups(app.state.transcription, app.state.runs)
+            if config.image_home:
+                app.state.transcription.engine.capacity = app.state.capacity
             app.state.library = Library(app.state.store, app.state.runs, config.data_dir)
             await app.state.library.start()
             app.state.library_search = LibraryPipeline(app.state.runs, app.state.library)
@@ -68,11 +81,17 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
             app.state.runs.library_finalize = app.state.library_search.finalize
             await app.state.runs.recover()
             await app.state.transcription.recover()
-            app.state.backups = Backups(app.state.store, config.data_dir.expanduser().resolve())
+            await app.state.images.recover()
+            app.state.backups = Backups(
+                app.state.store,
+                config.data_dir.expanduser().resolve(),
+                images=app.state.images if config.image_home else None,
+            )
             await app.state.backups.start()
             try:
                 yield
             finally:
+                await app.state.images.close()
                 await app.state.library.close()
                 await app.state.backups.close()
                 await app.state.documents.close()
@@ -103,6 +122,7 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
     for router in (
         attachments.router,
         folders.router,
+        images.router,
         library.router,
         backup.router,
         transcription.router,

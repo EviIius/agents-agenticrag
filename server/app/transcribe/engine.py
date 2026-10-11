@@ -5,10 +5,12 @@ import json
 import os
 import re
 import signal
+from contextlib import nullcontext
 from pathlib import Path
 from time import monotonic
 from typing import Any
 
+from ..capacity import Capacity
 from ..errors import AppError
 from ..schemas import EngineCheck, TranscriptionStatus
 
@@ -36,6 +38,7 @@ AUDIO = {
 class Engine:
     def __init__(self, home: Path | None) -> None:
         self.home = home.expanduser().resolve() if home else None
+        self.capacity: Capacity | None = None
         self.cached: TranscriptionStatus | None = None
         self.checked = 0.0
         self.paths: dict[str, str] = {}
@@ -116,7 +119,11 @@ class Engine:
                 pass
             await child.wait()
 
-    async def run(self, audio: Path, out_dir: Path, channels: str) -> dict[str, Any]:
+    async def run(self, audio: Path, output: Path, channels: str) -> dict[str, Any]:
+        async with self.capacity.lease(background=True) if self.capacity else nullcontext():
+            return await self.native_run(audio, output, channels)
+
+    async def native_run(self, audio: Path, out_dir: Path, channels: str) -> dict[str, Any]:
         if not (await self.status()).ready:
             raise AppError(
                 "transcription_unavailable", "Recordings need the transcription engine", 422

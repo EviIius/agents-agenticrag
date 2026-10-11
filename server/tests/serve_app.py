@@ -35,6 +35,9 @@ async def lifespan(server: FastAPI) -> AsyncIterator[None]:
             ConnectionCreate(name="Fake runtime", base_url="http://127.0.0.1:18080"),
         )
         await settings.patch(server.state.store, {"auto_title": False})
+        from tests.fake_image import FakeImageEngine
+
+        server.state.images.engine = FakeImageEngine()
         yield
 
 
