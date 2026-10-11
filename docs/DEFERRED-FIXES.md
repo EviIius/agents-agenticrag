@@ -200,3 +200,27 @@ or concurrent full-context chat. See `IMAGE-MEMORY-REPORT.md` and retained resul
 
 The original Research failures remain preserved and shelved. Ordered workflows
 follow durable execution and have a separate reviewed call/evaluation scope.
+
+## Isolated Search conversation guard — 11 October 2026
+
+Frozen at `00d36fd1`. All 24 existing boundary cases and nine supplemental cases
+pass with reviewed source support. The new guard actually catches native small-
+talk classification on both unknown-personal-fact requests, performs lookup and
+declines unsupported identities. These are synthetic boundary scores, not the
+original 25-case benchmark or a claim of repeated live-web reliability.
+
+The separately declared ordinary-task cases catch an inherited failure: new
+Python code is labeled transform, and the candidate demands supplied material
+that does not exist. It searches instead and gives no useful function. Baseline
+handles the same native label locally. Candidate ordinary checks are 5/6 executed;
+the mandatory stop leaves two ordinary cases and six original full-suite children
+unexecuted. Preserve the failure and all prior evidence; no favorable retry or
+grader change. See `SEARCH-CONVERSATION-GUARD-REPORT.md`.
+
+Next proposed checkpoint: distinguish creating a self-contained artifact from
+editing supplied material in the generic task contract. Cover new code, edits to
+actual code and code requests requiring external facts. Retain missing-resource
+lookup, small talk, input-reference integrity, source checks, original targets
+and existing call limits. Review and freeze a separate candidate before inference.
+**Images remains unreleased; G9 is open.** Live app/runtime are healthy and
+unchanged. Research stays shelved; W1 waits for reliability and image release.

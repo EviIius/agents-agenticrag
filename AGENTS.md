@@ -652,3 +652,24 @@ Freeze once; stop on first mandatory candidate/support/protocol/G9 failure, reta
 every outcome and unexecuted call, with H4 before a further candidate or release.
 No new package/model/default/runtime, topic rule, repair call, automatic retry,
 promotion, Research, image invocation or W1 work is included in this checkpoint.
+
+**Conversation guard closeout — 11 October 2026:** Candidate frozen at
+`00d36fd1`; 85 offline checks and four capture/protocol arms pass. Eighty native
+children execute in the declared order: baseline boundaries 19/24, supplements
+7/9 and ordinary cases 7/8; candidate boundaries 24/24, supplements 9/9 and
+ordinary cases 5/6 executed. The guard actually rejects native conversation on
+both unknown-personal-fact requests, retrieves evidence and declines unsupported
+identities. Manual source review covers every executed answer; two selected
+boundary attacks are resisted. The new pure-code case triggers the mandatory
+stop: both planners label new code as transform, but the inherited candidate
+input contract requires absent supplied material, forces lookup and produces no
+useful code. This is an inherited transformation-reference defect, not the
+conversation guard's rejection path. Preserve the failure without regrading.
+Two ordinary candidate and six original full-suite children remain unexecuted;
+these synthetic scores do not qualify the original 25-case benchmark or G9.
+All 14,957 frozen files and 7,418 prior committed evidence files remain intact.
+Ollama remains 0.35.0; local/Tailscale health return 200 and product source/live
+deployment stay unchanged. No retry, release/restart, Research, image invocation
+or W1 follows. H4 is `docs/SEARCH-CONVERSATION-GUARD-REPORT.md`. Stop for review
+before a generic creation-versus-supplied-edit contract correction or another
+candidate; Images remains held and original release targets remain in force.
