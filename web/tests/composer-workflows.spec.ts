@@ -29,7 +29,11 @@ test("Composer image acceptance retry preserves seed/key, saving and unsent chat
   const bodies: Record<string, unknown>[] = [];
   let chatCalls = 0;
   page.on("request", (request) => {
-    if (request.method() === "POST" && request.url().endsWith("/api/runs"))
+    if (
+      request.method() === "POST" &&
+      (new URL(request.url()).pathname.endsWith("/api/chats") ||
+        /\/api\/chats\/[^/]+\/messages$/.test(new URL(request.url()).pathname))
+    )
       chatCalls++;
   });
   await page.route("**/api/images/jobs", async (route) => {
@@ -40,7 +44,14 @@ test("Composer image acceptance retry preserves seed/key, saving and unsent chat
       await route.abort("failed");
     } else await route.continue();
   });
-  await page.getByRole("button", { name: "Create image", exact: true }).click();
+  const createImage = page.getByRole("button", {
+    name: "Create image",
+    exact: true,
+  });
+  const target = await createImage.boundingBox();
+  expect(target?.width).toBeGreaterThanOrEqual(44);
+  expect(target?.height).toBeGreaterThanOrEqual(44);
+  await createImage.click();
   await expect(message).not.toBeVisible();
   await expect(
     page.getByRole("textbox", { name: "Seed", exact: true }),
@@ -67,6 +78,12 @@ test("Composer image acceptance retry preserves seed/key, saving and unsent chat
   await expect(
     job.getByRole("button", { name: "Save", exact: true }),
   ).toBeVisible();
+  const scan = await new AxeBuilder({ page }).analyze();
+  expect(
+    scan.violations.filter((v) =>
+      ["critical", "serious"].includes(v.impact ?? ""),
+    ),
+  ).toEqual([]);
   await job.getByRole("button", { name: "Save", exact: true }).click();
   await expect(
     page.getByRole("dialog", { name: "Save image", exact: true }),

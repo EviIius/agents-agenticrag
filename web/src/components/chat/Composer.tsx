@@ -199,7 +199,7 @@ export function Composer({
         <div
           hidden={!imageMode}
           className="mx-auto max-w-[var(--thread-w)] max-h-[65dvh] overflow-y-auto rounded-xl"
-          aria-label="Image workspace"
+          data-slot="image-workspace"
         >
           <Suspense
             fallback={
@@ -448,7 +448,7 @@ export function Composer({
               <Button
                 type="button"
                 variant="ghost"
-                className="h-11 gap-2 px-2"
+                className="h-11 min-w-11 gap-2 px-2"
                 aria-label="Create image"
                 onClick={() => {
                   setImagesOpened(true);
