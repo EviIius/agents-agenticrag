@@ -739,3 +739,15 @@ release/restart, Research/image/W1 action. H4:
 `docs/SEARCH-ABSTENTION-RETEST-REPORT.md`. Review bounded scope-modifier binding
 proposal `docs/SEARCH-SCOPED-INPUT-PLAN.md` before another candidate/inference;
 preserve quantitative requirements and true ambiguity. Images remains held.
+
+**User authorization — 11 October 2026 (scoped supplied-input binding):** Jake
+said “continue going” after the retest closeout and scoped-input proposal. Repair
+bounded leading scope modifiers on explicit supplied transformations in isolation,
+replaying the exact null-reference failure and retaining actual source bodies/
+references, missing-resource lookup, true ambiguity, code/conversation/recording
+guards, approved wording correction and all original numeric/citation/coverage/
+latency gates. No prompt expansion, topic rule, new package/model/runtime/default/
+sampling or extra model call. Freeze one candidate and declared order with an
+early comparison smoke plus existing code smokes/corpus/full comparisons before
+inference; stop on first mandatory/support/protocol/G9 failure, retain every result
+and unexecuted call with H4. No retry, deployment, Research/image/workflow action.

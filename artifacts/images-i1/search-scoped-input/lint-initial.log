@@ -1,0 +1,61 @@
+E501 Line too long (110 > 100)
+   --> artifacts/images-i1/search-scoped-input/contract.py:125:101
+    |
+123 |     if translated:
+124 |         literal = scope_target(translated[1].strip())
+125 |         if literal and not re.match(r"(?:the|this|that|those|these|a|an)\s", literal, re.I) and not re.search(
+    |                                                                                                     ^^^^^^^^^^
+126 |             r"https?://|[\"'“‘]", literal
+127 |         ):
+    |
+
+E501 Line too long (102 > 100)
+  --> artifacts/images-i1/search-scoped-input/test_scope.py:18:101
+   |
+16 |     trace = next(json.loads(line) for line in (prior / "trace.jsonl").read_text().splitlines()
+17 |                  if json.loads(line)["payload"].get("format") is not None)
+18 |     raw = json.loads("".join(e["value"]["text"] for e in trace["events"] if e["type"] == "TextDelta"))
+   |                                                                                                     ^^
+19 |     assert raw["task"] == "transform" and raw["input_ref"] is None
+20 |     supplied = comparison()
+   |
+
+E501 Line too long (105 > 100)
+  --> artifacts/images-i1/search-scoped-input/test_scope.py:80:101
+   |
+78 |     assert not contract.local_target("Summarize only that provided comparison.", [refusal])
+79 |     assert not contract.local_target("Summarize only that provided comparison.", [])
+80 |     assert contract.local_target("Rewrite only your previous refusal politely.", [refusal]) == (refusal,)
+   |                                                                                                     ^^^^^
+
+E501 Line too long (105 > 100)
+  --> artifacts/images-i1/search-scoped-input/test_scope.py:87:101
+   |
+85 |     two = material("document", "Second actual document.", source="two")
+86 |     assert not contract.local_target("Summarize only the attached document.", [one, two])
+87 |     assert set(contract.local_target("Summarize only the attached documents.", [one, two])) == {one, two}
+   |                                                                                                     ^^^^^
+
+E501 Line too long (104 > 100)
+  --> artifacts/images-i1/search-scoped-input/validate_harness.py:42:101
+   |
+40 |         if candidate:
+41 |             raw["input_ref"] = (
+42 |                 None if missing_ref or creation or scoped else {"ref": material.ref, "quote": "bonjour"}
+   |                                                                                                     ^^^^
+43 |             )
+44 |         if rejected_social:
+   |
+
+E501 Line too long (101 > 100)
+   --> artifacts/images-i1/search-scoped-input/validate_harness.py:100:101
+    |
+ 98 |         )
+ 99 |         assert result.search is rejected_social
+100 |         assert fallback is (missing_ref or rejected_social or creation or scoped) and calls == [True]
+    |                                                                                                     ^
+101 |         request = ChatRequest("synthetic", [ProviderMessage("user", "hello")], {}, 16384)
+102 |         _ = [event async for event in adapter.stream(request)]
+    |
+
+Found 6 errors.
