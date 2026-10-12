@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router";
-import { SectionTabs } from "@/components/app/SectionTabs";
+import { Link, useLocation, useParams } from "react-router";
+import { useWorkspace } from "@/components/app/WorkspaceNavigation";
+import { useWorkflowRuns } from "./useWorkflowRuns";
+import { WorkflowStatus, WorkflowRunUnavailable } from "./WorkflowStatus";
+import { WorkflowHome, WorkflowRunRows } from "./WorkflowHome";
 import { WorkflowCanvas, type StepPanel } from "./WorkflowCanvas";
 import { imageSeeds, validImageSeed } from "@/lib/image-seeds";
-import { ArrowLeft } from "lucide-react";
 import { api } from "@/lib/api";
 import { uploadWithProgress } from "@/lib/attachments";
 import type { components } from "@/lib/api-types";
-import { usePreferenceSync } from "@/hooks/usePreferenceSync";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,15 +26,12 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { FileSaveDialog } from "@/components/app/FileSaveDialog";
-import { IconButton } from "@/components/app/IconButton";
 
 export type Workflow = components["schemas"]["WorkflowRun"];
 type Create = components["schemas"]["WorkflowCreate"];
 type Recording = components["schemas"]["WorkflowRecording"];
 type Source = components["schemas"]["WorkflowSource"];
 type Model = components["schemas"]["ModelInfo"];
-type Snapshot = components["schemas"]["WorkflowSnapshot"];
-type Change = components["schemas"]["WorkflowChange"];
 export type Choice = Pick<
   Model,
   "connection_id" | "model_id" | "display_name" | "context_length"
@@ -43,45 +41,46 @@ const key = (model: Choice) => `${model.connection_id}/${model.model_id}`;
 
 export function WorkflowsPage() {
   const location = useLocation();
-  const navigation = location.state as {
-    chatPath?: string;
-    modelKey?: string;
-  } | null;
-  const chatPath = navigation?.chatPath?.startsWith("/c/")
-    ? navigation.chatPath
-    : "/";
-  const [runs, setRuns] = useState<Workflow[]>([]);
+  const navigation = useWorkspace();
+  const builder = location.pathname === "/workflows/new";
+  const allRuns = location.pathname === "/workflows/runs";
+  const { runId } = useParams();
+  const {
+    runs,
+    setRuns,
+    loading,
+    notice,
+    setNotice,
+    connection,
+    retry,
+    attempt,
+  } = useWorkflowRuns();
   const [models, setModels] = useState<Choice[]>([]);
   const [recordings, setRecordings] = useState<Recording[]>([]);
-  const [preferences, setPreferences] = useState<Record<string, unknown>>();
-  const [notice, setNotice] = useState("");
-  const [connection, setConnection] = useState("Connecting…");
-  usePreferenceSync(preferences);
+  const [requested, setRequested] = useState<Workflow>();
   useEffect(() => {
+    if (!builder) return;
     let mounted = true;
     void Promise.all([
       api<Model[]>("/models"),
       api<Recording[]>("/workflows/recordings"),
-      api<Record<string, unknown>>("/settings"),
       api<Record<string, string>[]>("/workflows/image-models").catch(() => []),
     ])
-      .then(([m, r, p, compatible]) => {
-        if (mounted) {
-          setModels(
-            m
-              .filter((value) => value.chat_capable)
-              .map((value) => ({
-                ...value,
-                imageCompatible: compatible.some(
-                  (item) =>
-                    item.connection_id === value.connection_id &&
-                    item.model_id === value.model_id,
-                ),
-              })),
-          );
-          setRecordings(r);
-          setPreferences(p);
-        }
+      .then(([m, r, compatible]) => {
+        if (!mounted) return;
+        setModels(
+          m
+            .filter((value) => value.chat_capable)
+            .map((value) => ({
+              ...value,
+              imageCompatible: compatible.some(
+                (item) =>
+                  item.connection_id === value.connection_id &&
+                  item.model_id === value.model_id,
+              ),
+            })),
+        );
+        setRecordings(r);
       })
       .catch(() => {
         if (mounted)
@@ -89,57 +88,26 @@ export function WorkflowsPage() {
             "Models or recordings could not be loaded. Reload to try again.",
           );
       });
-    const source = new EventSource("/api/workflows/events");
-    let frame = 0;
-    const pending: (
-      { kind: "snapshot"; data: Snapshot } | { kind: "change"; data: Change }
-    )[] = [];
-    const enqueue = (kind: "snapshot" | "change", event: MessageEvent) => {
-      try {
-        pending.push(
-          kind === "snapshot"
-            ? { kind, data: JSON.parse(event.data) as Snapshot }
-            : { kind, data: JSON.parse(event.data) as Change },
-        );
-        if (!frame)
-          frame = requestAnimationFrame(() => {
-            frame = 0;
-            const batch = pending.splice(0);
-            if (!mounted) return;
-            setRuns((current) => {
-              let next = current;
-              for (const item of batch)
-                next =
-                  item.kind === "snapshot"
-                    ? item.data.runs
-                    : [
-                        item.data.run,
-                        ...next.filter((run) => run.id !== item.data.run.id),
-                      ].sort((a, b) =>
-                        b.created_at.localeCompare(a.created_at),
-                      );
-              return next;
-            });
-          });
-      } catch {
-        setNotice("An update could not be read. Reload to reconnect.");
-      }
-    };
-    source.addEventListener("workflow.snapshot", (event) =>
-      enqueue("snapshot", event as MessageEvent),
-    );
-    source.addEventListener("workflow.updated", (event) =>
-      enqueue("change", event as MessageEvent),
-    );
-    source.onopen = () => setConnection("Connected");
-    source.onerror = () =>
-      setConnection("Reconnecting — accepted work continues on your Mac");
     return () => {
       mounted = false;
-      source.close();
-      cancelAnimationFrame(frame);
     };
-  }, []);
+  }, [builder, setNotice, attempt]);
+  useEffect(() => {
+    if (!runId) return;
+    let mounted = true;
+    setRequested(undefined);
+    void api<Workflow>(`/workflows/runs/${runId}`).then(
+      (run) => {
+        if (mounted) setRequested(run);
+      },
+      () => {
+        if (mounted) setNotice("This run could not be opened.");
+      },
+    );
+    return () => {
+      mounted = false;
+    };
+  }, [runId, setNotice, attempt]);
   async function action(
     id: string,
     operation: "cancel" | "resume",
@@ -157,42 +125,64 @@ export function WorkflowsPage() {
       );
     }
   }
+  const template =
+    new URLSearchParams(location.search).get("template") === "meeting_pack"
+      ? "meeting_pack"
+      : "brief_images";
+  const run = runs.find((item) => item.id === runId) ?? requested;
   return (
-    <main className="h-dvh overflow-y-auto bg-bg px-4 pb-[max(24px,env(safe-area-inset-bottom))] pt-[max(16px,env(safe-area-inset-top))]">
-      <div className="mx-auto max-w-4xl">
-        <header className="mb-6 flex min-h-11 items-center gap-3">
-          <IconButton label="Back to chat" asChild>
-            <Link to={chatPath}>
-              <ArrowLeft />
-            </Link>
-          </IconButton>
-          <h1 className="flex-1 text-xl font-semibold">Workflows</h1>
-          <span role="status" className="text-xs text-fg-3">
-            {connection}
-          </span>
-        </header>
-        <SectionTabs active="workflows" chatPath={chatPath} />
-        <div className="mt-5" />
-        {notice && (
-          <p role="status" className="mb-4 text-fg-2">
-            {notice}
-          </p>
+    <section
+      className="min-h-0 flex-1 overflow-y-auto bg-bg px-4 py-6 pb-[max(24px,env(safe-area-inset-bottom))] lg:px-8"
+      aria-label="Workflows"
+    >
+      <div className="mx-auto max-w-[1120px]">
+        <WorkflowStatus connection={connection} notice={notice} retry={retry} />
+        {builder ? (
+          <>
+            <h1 className="mb-6 text-xl font-semibold">Use a template</h1>
+            <WorkflowForm
+              key={template}
+              initialTemplate={template}
+              initialModel={navigation.modelKey}
+              models={models}
+              recordings={recordings}
+              onAccepted={(run) =>
+                setRuns((current) => [
+                  run,
+                  ...current.filter((r) => r.id !== run.id),
+                ])
+              }
+              onNotice={setNotice}
+            />
+            <WorkflowList runs={runs} onAction={action} />
+          </>
+        ) : runId ? (
+          <>
+            <h1 className="mb-6 text-xl font-semibold">Workflow run</h1>
+            {run ? (
+              <WorkflowCard
+                key={run.id}
+                run={run}
+                onAction={action}
+                preview={false}
+              />
+            ) : (
+              <WorkflowRunUnavailable failed={!!notice} />
+            )}
+          </>
+        ) : allRuns ? (
+          <>
+            <h1 className="mb-2 text-2xl font-semibold">Workflow runs</h1>
+            <p className="mb-6 text-sm text-fg-2">
+              The latest 50 runs. Open a run to review its saved results.
+            </p>
+            <WorkflowRunRows runs={runs} loading={loading} />
+          </>
+        ) : (
+          <WorkflowHome runs={runs} loading={loading} />
         )}
-        <WorkflowForm
-          initialModel={navigation?.modelKey}
-          models={models}
-          recordings={recordings}
-          onAccepted={(run) =>
-            setRuns((current) => [
-              run,
-              ...current.filter((r) => r.id !== run.id),
-            ])
-          }
-          onNotice={setNotice}
-        />
-        <WorkflowList runs={runs} onAction={action} />
       </div>
-    </main>
+    </section>
   );
 }
 
@@ -234,6 +224,7 @@ export function WorkflowForm({
   models,
   recordings,
   initialModel,
+  initialTemplate,
   onAccepted,
   onNotice,
   preview = false,
@@ -242,6 +233,7 @@ export function WorkflowForm({
 }: {
   models: Choice[];
   initialModel?: string;
+  initialTemplate?: "brief_images" | "meeting_pack";
   recordings: Recording[];
   onAccepted?: (run: Workflow) => void;
   onNotice?: (text: string) => void;
@@ -250,7 +242,8 @@ export function WorkflowForm({
   previewRecording?: boolean;
 }) {
   const [template, setTemplate] = useState<"brief_images" | "meeting_pack">(
-    preview && previewRecording ? "meeting_pack" : "brief_images",
+    initialTemplate ??
+      (preview && previewRecording ? "meeting_pack" : "brief_images"),
   );
   const [brief, setBrief] = useState("");
   const [model, setModel] = useState(initialModel ?? "");
@@ -651,7 +644,7 @@ export function WorkflowList({
   );
 }
 
-function WorkflowCard({
+export function WorkflowCard({
   run,
   onAction,
   preview,

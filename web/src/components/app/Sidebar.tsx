@@ -13,6 +13,7 @@ import { IconButton } from "./IconButton";
 import { Button } from "@/components/ui/button";
 import { fixtureTitles } from "@/design/fixtures";
 import config from "../../../../shared/config.json";
+import { WorkspaceNavigation } from "./WorkspaceNavigation";
 export type SidebarState = "ready" | "loading" | "empty" | "search" | "error";
 export function Sidebar({
   collapsed = false,
@@ -80,6 +81,9 @@ export function Sidebar({
         </Button>
       )}
       <nav aria-label="Chat history" className="min-h-0 flex-1 overflow-y-auto">
+        {(collapsed || history === undefined) && (
+          <WorkspaceNavigation collapsed={collapsed} close={close} />
+        )}
         {!collapsed && (
           <>
             {history !== undefined ? (

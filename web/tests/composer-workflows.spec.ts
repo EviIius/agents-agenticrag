@@ -2,6 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 import AxeBuilder from "@axe-core/playwright";
 import { settle } from "./helpers";
+import { workspaceLink } from "./workspace-helpers";
 
 async function chatModel(page: Page) {
   await page.getByRole("button", { name: "Choose model", exact: true }).click();
@@ -95,9 +96,9 @@ test("Composer image acceptance retry preserves seed/key, saving and unsent chat
   await expect(message).toHaveValue("Synthetic unsent chat draft");
   await expect(message).toBeFocused();
   expect(chatCalls).toBe(0);
+  await workspaceLink(page, "Workflows");
   await page
-    .getByRole("navigation", { name: "Workspace", exact: true })
-    .getByRole("link", { name: "Workflows", exact: true })
+    .getByRole("link", { name: "Use Brief to images template", exact: true })
     .click();
   await page
     .getByRole("button", { name: "Configure Draft image prompt" })
@@ -105,14 +106,15 @@ test("Composer image acceptance retry preserves seed/key, saving and unsent chat
   await expect(
     page.getByRole("combobox", { name: "Prompt draft model" }),
   ).toContainText("fake-chat");
-  await page.getByRole("link", { name: "Chat", exact: true }).click();
+  await page.goBack();
+  await page.goBack();
   await expect(message).toHaveValue("Synthetic unsent chat draft");
 });
 
 test("Workflow count uses automatic seeds and repeats uncertain acceptance exactly", async ({
   page,
 }) => {
-  await page.goto("/workflows");
+  await page.goto("/workflows/new?template=brief_images");
   await page
     .getByRole("textbox", { name: "Image brief" })
     .fill("Synthetic automatic variants");
@@ -202,14 +204,9 @@ test("Image cancellation stays in composer and Workflows returns to the same sav
     fullPage: true,
   });
   await page.getByRole("button", { name: "Message", exact: true }).click();
-  await page
-    .getByRole("navigation", { name: "Workspace", exact: true })
-    .getByRole("link", { name: "Workflows", exact: true })
-    .click();
-  await expect(
-    page.getByRole("link", { name: "Chat", exact: true }),
-  ).toHaveAttribute("href", `/c/${chat.id}`);
-  await page.getByRole("link", { name: "Chat", exact: true }).click();
+  await workspaceLink(page, "Workflows");
+  await page.goBack();
+  await expect(page).toHaveURL(new RegExp(`/c/${chat.id}$`));
   await expect(message).toHaveValue("Synthetic saved-chat draft");
 });
 

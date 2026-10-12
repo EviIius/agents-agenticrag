@@ -4,6 +4,7 @@ import { useUI } from "@/stores/ui";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ChatList } from "./ChatList";
+import { WorkspaceNavigation } from "./WorkspaceNavigation";
 export function HistoryList({
   folders,
   activeChats,
@@ -45,6 +46,7 @@ export function HistoryList({
           ⌘K
         </kbd>
       </div>
+      <WorkspaceNavigation close={() => ui.set({ sidebar: false })} />
       {!search && folders}
       {history.isLoading ? (
         <div role="status" aria-label="Loading chats" className="space-y-3 p-3">

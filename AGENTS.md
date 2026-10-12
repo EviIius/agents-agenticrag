@@ -949,3 +949,21 @@ seed controls and composer return; no work is accepted or private text captured.
 Jake's earlier overall “It works” remains Images phone acceptance, not a physical
 pass for this new UI. H4: docs/COMPOSER-WORKFLOW-UX-REPORT.md. Stop for UI review;
 configurable additional steps and further inference remain separately scoped.
+
+
+**User authorization — 12 October 2026 (isolated Workflow Studio):** Jake asked
+for Claude's Workflow Studio redesign to be reviewed and implemented in a separate
+GitHub branch and instance. Use `codex/workflow-studio` and its managed worktree;
+retain the current main checkout and installed app. Build
+`docs/next/workflow-studio/WORKFLOW-STUDIO-SPEC.md` checkpoint by checkpoint,
+stopping for review after each. WS-A replaces the top tabs with sidebar navigation
+and a shared shell; the composer image action remains. Jake explicitly approved
+user-authored model calls inside workflow blocks and the named `@xyflow/react`
+dependency on this isolated branch, lazy-loaded in the builder, attribution kept.
+Application-authored prompts remain frozen and require evaluation evidence.
+Install the canvas dependency at WS-C, after the earlier checkpoint reviews.
+GitHub CLI installation and Jake's browser sign-in are approved as local tooling.
+No merge to main, deployment or change to the live app before Jake's final okay.
+Future motion-guard changes, Classify evaluation targets and optional WS-F extras
+retain their specific review gates. Research remains shelved. Private workflow
+inputs, documents, recordings and their filenames follow the existing privacy rule.

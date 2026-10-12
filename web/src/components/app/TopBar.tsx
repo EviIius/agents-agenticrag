@@ -12,7 +12,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { SectionTabs } from "./SectionTabs";
 export function TopBar() {
   const { collapsed, set } = useUI();
   const [current, choose] = useState(fixtureModels[0]);
@@ -70,7 +69,6 @@ export function TopBar() {
           </DropdownMenu>
         </div>
       </header>
-      <SectionTabs active="chat" />
     </>
   );
 }

@@ -31,11 +31,7 @@ export function bytes(value: number) {
 }
 
 export function ImagesPage() {
-  return (
-    <main>
-      <ImagesWorkspace />
-    </main>
-  );
+  return <ImagesWorkspace inShell />;
 }
 
 export function ImagesWorkspace({
@@ -44,12 +40,14 @@ export function ImagesWorkspace({
   onPromptChange,
   onClose,
   preview = false,
+  inShell = false,
 }: {
   embedded?: boolean;
   prompt?: string;
   onPromptChange?: (prompt: string) => void;
   onClose?: () => void;
   preview?: boolean;
+  inShell?: boolean;
 }) {
   const [preferences, setPreferences] = useState<Record<string, unknown>>();
   usePreferenceSync(preferences);
@@ -155,7 +153,9 @@ export function ImagesWorkspace({
       className={
         embedded
           ? "bg-bg"
-          : "h-dvh overflow-y-auto bg-bg px-4 pb-[max(24px,env(safe-area-inset-bottom))] pt-[max(16px,env(safe-area-inset-top))]"
+          : inShell
+            ? "min-h-0 flex-1 overflow-y-auto bg-bg px-4 py-6 pb-[max(24px,env(safe-area-inset-bottom))] lg:px-8"
+            : "h-dvh overflow-y-auto bg-bg px-4 pb-[max(24px,env(safe-area-inset-bottom))] pt-[max(16px,env(safe-area-inset-top))]"
       }
       aria-label={embedded ? "Create images here" : "Images"}
     >
@@ -167,13 +167,13 @@ export function ImagesWorkspace({
             <Button variant="ghost" className="h-11" onClick={onClose}>
               <ArrowLeft className="size-4" /> Message
             </Button>
-          ) : (
+          ) : !inShell ? (
             <IconButton label="Back to chat" asChild>
               <Link to="/">
                 <ArrowLeft />
               </Link>
             </IconButton>
-          )}
+          ) : null}
           <h1 className="flex-1 text-xl font-semibold">Images</h1>
           {embedded && (
             <Link

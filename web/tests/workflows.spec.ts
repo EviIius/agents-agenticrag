@@ -105,7 +105,7 @@ for (const width of [390, 1440])
 test("Creative workflow review, reconnect, variants and cancellable saving", async ({
   page,
 }) => {
-  await page.goto("/workflows");
+  await page.goto("/workflows/new?template=brief_images");
   await page
     .getByRole("textbox", { name: "Image brief" })
     .fill("Synthetic browser workflow: one blue circle on a white background");
@@ -169,7 +169,7 @@ test("Recording workflow retains source and sends only explicit overrides", asyn
     },
   });
   expect(upload.status()).toBe(201);
-  await page.goto("/workflows");
+  await page.goto("/workflows/new?template=brief_images");
   await page
     .getByRole("button", { name: "Recording to meeting pack", exact: true })
     .click();

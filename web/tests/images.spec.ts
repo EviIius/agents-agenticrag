@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir, writeFile } from "node:fs/promises";
 import { settle } from "./helpers";
+import { openSidebar } from "./workspace-helpers";
 const dir = "../artifacts/composer-workflows/browser/images";
 for (const width of [390, 1440])
   for (const theme of ["light", "dark"]) {
@@ -112,7 +113,8 @@ test("Durable Images: close, reconnect, version, exports and removal", async ({
   await expect(
     page.getByRole("status").filter({ hasText: "Image accepted" }),
   ).toBeVisible();
-  await page.getByRole("link", { name: "Back to chat" }).click();
+  await openSidebar(page);
+  await page.getByRole("link", { name: "New chat", exact: true }).click();
   await page.goto("/images");
   const job = page
     .getByRole("article")
