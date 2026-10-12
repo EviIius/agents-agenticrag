@@ -22,6 +22,7 @@ from .api import (
     runs,
     search,
     transcription,
+    workflows,
 )
 from .api import settings as settings_api
 from .api.health import router as health_router
@@ -40,6 +41,7 @@ from .search.pipeline import Pipeline
 from .security import SecurityMiddleware
 from .transcribe.cleanup import Cleanups
 from .transcribe.jobs import TranscriptionManager
+from .workflows.jobs import Workflows
 
 
 def create_app(settings: Settings | None = None, static_dir: Path | None = None) -> FastAPI:
@@ -82,6 +84,14 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
             await app.state.runs.recover()
             await app.state.transcription.recover()
             await app.state.images.recover()
+            app.state.workflows = Workflows(
+                app.state.store,
+                app.state.runs,
+                app.state.images,
+                app.state.transcription,
+                app.state.cleanup,
+            )
+            await app.state.workflows.recover()
             app.state.backups = Backups(
                 app.state.store,
                 config.data_dir.expanduser().resolve(),
@@ -91,6 +101,7 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
             try:
                 yield
             finally:
+                await app.state.workflows.close()
                 await app.state.images.close()
                 await app.state.library.close()
                 await app.state.backups.close()
@@ -126,6 +137,7 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
         library.router,
         backup.router,
         transcription.router,
+        workflows.router,
         chats.router,
         connections.router,
         messages.router,

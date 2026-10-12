@@ -1,6 +1,7 @@
 # Atelier
 
-Local Ollama chat, optional web search, audio transcription and cited Library answers. The build plan is
+Local Ollama chat, optional web search, audio transcription, cited Library answers,
+image generation and ordered workflows. The build plan is
 [docs/SPEC.md](docs/SPEC.md); phase reports and synthetic evidence document verification.
 
 ## Setup and development
@@ -47,6 +48,28 @@ queries to those providers; chats containing recordings block it by default.
 
 **⌘/Ctrl+K** opens chat search and actions. **⌘/Ctrl+/** opens shortcuts. Chat menus
 support rename, pin, title-based Markdown/JSON export and deletion.
+
+## Images and ordered workflows
+
+**Images** in the sidebar uses the approved local FLUX.2 klein 4B worker. Generate
+from a prompt and seed, save/share a PNG, or create a new seeded version while
+preserving the original. The page reports image, metadata and backup storage and
+offers individual/bulk output removal. Weight storage is shared across jobs.
+
+**Workflows** offers two fixed templates: brief → image-prompt draft → one to three
+variants, and recording → transcription → optional guarded clean-up → meeting-pack
+draft. Select each text model explicitly. Runs preserve completed steps when you
+retry, continue after browser closure and offer cancellable Markdown/JSON exports.
+Meeting-pack sources remain saved after successful audio removal; review factual
+drafts against the original transcript. See [the workflow guide](docs/WORKFLOWS.md).
+
+Native steps share capacity with chat and transcription. Image memory admission
+uses the measured model digest/context/size; incompatible resident combinations
+stop with an explanation and never trigger an automatic model eviction.
+
+The 12 October release accepts the specific retained Images/Search gate exception.
+Search quality failures remain documented; no grounding candidate is qualified.
+Research remains shelved. There is no autonomous agent, external action or scheduler.
 
 ## Recordings and storage
 

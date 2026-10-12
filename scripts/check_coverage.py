@@ -10,7 +10,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "server"))
-TARGETS = [ROOT / 'server/app' / name for name in ('providers', 'runs', 'search', 'transcribe', 'documents', 'library', 'images')]
+TARGETS = [ROOT / 'server/app' / name for name in ('providers', 'runs', 'search', 'transcribe', 'documents', 'library', 'images', 'workflows')]
 TARGETS.append(ROOT / 'server/app/backup.py')
 TARGETS.append(ROOT / 'server/app/capacity.py')
 hits: dict[str, set[int]] = {}

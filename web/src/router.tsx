@@ -13,6 +13,14 @@ export const router = createBrowserRouter([
     ),
     children: [
       {
+        path: "/workflows",
+        lazy: async () => {
+          const { WorkflowsPage } =
+            await import("@/components/workflows/WorkflowsPage");
+          return { Component: WorkflowsPage };
+        },
+      },
+      {
         path: "/images",
         lazy: async () => {
           const { ImagesPage } = await import("@/components/images/ImagesPage");

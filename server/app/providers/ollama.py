@@ -176,8 +176,10 @@ class Ollama:
                 {"model": model_id, "messages": [], "keep_alive": 0, "stream": False},
             )
 
-    async def stream(self, req: ChatRequest) -> AsyncGenerator[ProviderEvent, None]:
-        async with self.capacity.lease() if self.capacity else nullcontext():
+    async def stream(
+        self, req: ChatRequest, *, background: bool = False
+    ) -> AsyncGenerator[ProviderEvent, None]:
+        async with self.capacity.lease(background=background) if self.capacity else nullcontext():
             stream = self.native_stream(req)
             try:
                 async for event in stream:
