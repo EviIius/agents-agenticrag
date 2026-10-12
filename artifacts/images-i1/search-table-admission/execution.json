@@ -1,0 +1,99 @@
+{
+  "approval": "Jake: Run the bounded answer comparison, 12 October 2026",
+  "order": [
+    [
+      "pair1-baseline",
+      "baseline"
+    ],
+    [
+      "pair1-candidate",
+      "candidate"
+    ],
+    [
+      "pair2-candidate",
+      "candidate"
+    ],
+    [
+      "pair2-baseline",
+      "baseline"
+    ],
+    [
+      "pair3-baseline",
+      "baseline"
+    ],
+    [
+      "pair3-candidate",
+      "candidate"
+    ]
+  ],
+  "maximum": {
+    "planners": 6,
+    "answers": 6,
+    "empty_message_warm_loads": 6
+  },
+  "model": "qwen3:30b-a3b-instruct-2507-q4_K_M",
+  "context": 16384,
+  "answer_params": {},
+  "utility_params": {
+    "temperature": 0.2,
+    "max_tokens": 256
+  },
+  "utility_reasoning": "off",
+  "answer_reasoning": "unset",
+  "date": "2026-10-12T12:00:00-04:00",
+  "case": {
+    "id": "nba-all-losses",
+    "turns": [
+      {
+        "user": "Give me a comprehensive list of all NBA basketball teams that went to the Finals and lost, including teams that won in other years."
+      }
+    ],
+    "expect": {
+      "search": true,
+      "must_include": [
+        "Lakers",
+        "Knicks",
+        "76ers",
+        "Warriors",
+        "Celtics",
+        "Cavaliers",
+        "Pistons",
+        "Heat",
+        "Suns",
+        "Hawks",
+        "Wizards|Bullets",
+        "Thunder|SuperSonics",
+        "Nets",
+        "Pacers",
+        "Magic",
+        "Jazz",
+        "Mavericks",
+        "Trail Blazers",
+        "Rockets",
+        "Spurs",
+        "Chicago Stags",
+        "Washington Capitols",
+        "Milwaukee Bucks"
+      ],
+      "min_citations": 1,
+      "must_not_match": [
+        "research.{0,25}private",
+        "sheet.pan.nachos",
+        "chicken.alfredo",
+        "(?:^|\\n)\\s*(?:[-*]|\\d+[.)]|\\|(?:\\s*\\d+\\s*\\|)?)\\s*(?:\\*\\*)?(?:Denver Nuggets|Toronto Raptors|Chicago Bulls|Sacramento Kings|Baltimore Bullets)\\b",
+        "\\b(?:this|the) list (?:includes|contains) (?:all )?28 teams\\b",
+        "\\b(?:lost|losing) at least one (?:finals )?game\\b"
+      ],
+      "queries_must_not_match": [
+        "never (?:won|win)",
+        "without (?:a )?(?:title|championship)"
+      ],
+      "cite_each_list_item": true
+    }
+  },
+  "scope": "Current Search vs isolated original-table admission; one original question only",
+  "stopping": "First candidate mandatory/support/citation failure or any protocol failure",
+  "manual_review": "Every executed answer; candidate must pass before another child",
+  "general_qualification": false,
+  "deployment": false
+}

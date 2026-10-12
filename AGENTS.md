@@ -812,3 +812,25 @@ The existing fake settings screenshot loop additionally generates 40 untracked
 captures. They are archived with source provenance/hashes (440 total fresh test
 outputs retained), leaving no new files in historical evidence directories and
 removing no tracked input. Prior 400 generated-file restorations remain unchanged.
+
+**User continuation — 12 October 2026 (measurable reliability feasibility):**
+Jake asked to continue reliability and determine whether it can actually improve,
+noting repeated continuations without visible results. Implement and measure the
+bounded offline table-admission proposal against original evidence, preserving
+all existing source, reports and thresholds. Separate evidence coverage gains
+from answer correctness; retain unsuccessful outcomes and give a candid feasibility
+assessment. No prompt/schema/default/runtime/model/package change or deployment.
+The reviewed table plan's native review gate remains applicable; any further
+model experiment must have a concrete bounded scope before execution.
+
+**User authorization — 12 October 2026 (bounded table answer comparison):** Jake
+approved “Run the bounded answer comparison” in response to the concrete question
+for `docs/SEARCH-TABLE-ANSWER-PROBE-PLAN.md`. Run at most three original-question
+before/after pairs on the installed Qwen with unchanged prompts/settings and the
+frozen public corpus. Order B/C, C/B, B/C; at most six planners, six answers and
+six empty-message warm loads. Freeze the candidate and inputs first, run native
+timings after browser gates, review every claim, and stop at the first candidate
+support/completeness/citation failure or any protocol failure. Preserve baseline
+failures and all unexecuted children. No retry, prompt/schema change, deployment,
+default/runtime/model/package change, Research/image/workflow action or general
+reliability qualification is authorized by this bounded comparison. Stop with H4.
