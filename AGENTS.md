@@ -771,3 +771,44 @@ Ollama 0.35.0, local/verified HTTPS health 200; no Research/image/W1 or release.
 H4: `docs/SEARCH-SCOPED-INPUT-REPORT.md`. Review the offline task/evidence audit
 proposal `docs/SEARCH-TASK-AND-EVIDENCE-AUDIT-PLAN.md` before another experiment.
 Scope recovery and high lexical citation support do not qualify overall reliability.
+
+**User continuation — 11 October 2026 (offline task/evidence audit):** Jake said
+“continue going” after the scoped-input closeout. Execute the retained-failure
+audit in `docs/SEARCH-TASK-AND-EVIDENCE-AUDIT-PLAN.md`: replay task/query
+contradictions without inference, trace original recorded pages through extraction,
+chunking, ranking and actual selection, distinguish missing facets from misread
+evidence, and retain separate diagnostics/negative tests. Preserve all original
+scores, cases, reports, thresholds and prior code. Stop with H4 diagnosis and one
+concrete next correction before another native trial. No prompt/schema/policy
+experiment, model/package/runtime/default/sampling change, deployment or
+Research/image/workflow invocation is part of this audit.
+
+**Offline task/evidence audit closeout — 12 October 2026:** Two exact retained
+creative/query host replays and three source/extraction/rank/selection replays
+complete with zero native inference; all 28 usage/context records reconstruct
+the actual calibrated budgets. A complete relevant 28-row table (23 positive
+counts) is displaced by three introductions despite fitting the existing budget;
+one-caption replacement costs 5,333/5,502 tokens. Raw role tables lose structure
+or repeated headers. New native queries do not change the frozen provider batches;
+question-only ranking selects the same ordinals. Missing currency/time coverage
+and actual unsupported/role-reversed answers remain failures. An unfetched menu
+name is not a supplied country/property assertion. The original comparison rubric
+requires a missing currency token; preserve its score and review separate covered
+evaluation before claiming grounding. Blindly trusting creative labels remains
+unsafe; no prospective grammar or answer repair is qualified. Tests pass:
+29 diagnostic, 508 Python, 39 frontend, 473 browser; three existing browser skips.
+Initial corpus-absence assertion/lint/archive-directory failures remain visible;
+archival prevalidation fails before mutation, v2 retains 400 fresh generated
+records/captures and restores all originals. All 16,675 prior frozen files and
+17,369 committed evidence/eval files verify unchanged. Local/verified HTTPS
+health 200, Ollama 0.35.0, no product change/deployment/restart, native/Research/
+image/W1 calls. H4: `docs/SEARCH-TASK-AND-EVIDENCE-AUDIT-REPORT.md`. Next proposal:
+offline bounded table admission in `docs/SEARCH-TABLE-ADMISSION-PLAN.md`, with H4
+before native inference; preserve roles/budgets and all original targets. Task
+consistency, extraction, corpus coverage and model adherence remain open. Stop
+for review; Images held, Research shelved, W1 unstarted.
+
+The existing fake settings screenshot loop additionally generates 40 untracked
+captures. They are archived with source provenance/hashes (440 total fresh test
+outputs retained), leaving no new files in historical evidence directories and
+removing no tracked input. Prior 400 generated-file restorations remain unchanged.

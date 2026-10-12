@@ -1,0 +1,33 @@
+.......................F...                                              [100%]
+=================================== FAILURES ===================================
+_________ test_full_recorded_comparison_corpus_lacks_missing_currency __________
+
+retained = ({'model': 'qwen3:30b-a3b-instruct-2507-q4_K_M', 'chat_params': {}, 'providers': ['ollama', 'searxng', 'exa', 'ddgs'],...rce>\n</search_results>\n\nWhat is the capital of Australia?'}], 'stream': True, 'keep_alive': '30m', ...}, ...}, ...})
+
+    def test_full_recorded_comparison_corpus_lacks_missing_currency(retained):
+        document, turns = retained
+        with audit.no_network():
+            record, _pages = audit.case_trace(
+                "capital-compare", turns[("capital-compare", 0)], document
+            )
+        readable = [
+            p
+            for p in record["archived_pages"]
+            if "error" not in p and "extraction_error" not in p
+        ]
+>       assert readable and not any(
+            p["australian_currency_literal_present"] for p in readable
+        )
+E       AssertionError: assert ([{'url': 'https://en.wikipedia.org/wiki/Capital_of_Japan', 'raw_sha256': '60bac9778b41570cf8128a2350c2b7d86eca8c40ec69... '884b0fc99a8e98a782adf930618bee0f05cc996499fb0f61fc9a99b222c141aa', 'australian_currency_literal_present': True}, ...] and not True)
+E        +  where True = any(<generator object test_full_recorded_comparison_corpus_lacks_missing_currency.<locals>.<genexpr> at 0x10b800d40>)
+
+artifacts/images-i1/search-task-evidence-audit/test_audit.py:208: AssertionError
+=============================== warnings summary ===============================
+::test_actual_extraction_chunks_and_adaptive_budget_selection_reproduce[table-page]
+  /Users/evilius/Documents/GitHub/agents-agenticrag/server/.venv/lib/python3.14/site-packages/tld/utils.py:209: DeprecationWarning: codecs.open() is deprecated. Use open() instead.
+    local_file = codecs_open(local_path, "r", encoding="utf8")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED server::test_full_recorded_comparison_corpus_lacks_missing_currency - ...
+1 failed, 26 passed, 1 warning in 12.81s

@@ -288,3 +288,35 @@ requested properties and chronology using retained inputs before choosing one
 bounded correction and another reviewed native trial. **Images remains held;
 G9 is open.** Product/live app and runtime are healthy and unchanged. Research
 remains shelved; W1 follows reliability and image release.
+
+## Offline task/evidence audit — 11–12 October 2026
+
+The three retained source selections reproduce exactly with their actual
+calibrated token estimates. A complete 28-row table is fetched/chunked, but its
+page's three slots are introductions. The data costs 463 tokens and fits the 524
+remaining; replacing one caption keeps the current limits. Raw role tables also
+lose structure during extraction or headers during chunking. These mechanics
+do not excuse the actual reversed/unsupported claims.
+
+Fresh query wording cannot repair discovery in the fixed replay, whose provider
+batches ignore new queries. Comparison evidence is missing a requested property;
+an unfetched name in a menu is not a supplied country/property assertion. Recent
+results mix time/granularity; later fetched game chunks are omitted. The creative
+task/query contradiction is reproduced offline, and blindly accepting a creative
+label exposes another factual-intent gap. Original automatic scores remain
+unchanged; there are no new native model results.
+
+H4: `SEARCH-TASK-AND-EVIDENCE-AUDIT-REPORT.md`. Next proposed correction is
+offline **relevant table admission within current limits** in
+`SEARCH-TABLE-ADMISSION-PLAN.md`. Native reruns remain held until known mechanical
+failures have concrete reviewed repairs. **Images remains held; G9 open**.
+Live app/default/runtime remain unchanged; Research shelved and W1 unstarted.
+
+Closeout: 29 diagnostic / 508 Python / 39 frontend / 473 browser tests pass, with
+three existing browser skips. Preserve the initial corpus-absence hypothesis and
+archival guard failures; 400 fresh generated test files are retained separately,
+all prior 16,675 frozen and 17,369 committed evidence/eval files restored/verified.
+Local and normally verified HTTPS health pass; no native inference or deployment.
+
+Forty newly generated fake settings captures are archived too, for 440 fresh test
+outputs retained in total; no tracked original is removed.

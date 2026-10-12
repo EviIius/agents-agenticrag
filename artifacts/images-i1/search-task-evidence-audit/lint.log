@@ -1,0 +1,167 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> artifacts/images-i1/search-task-evidence-audit/audit.py:24:1
+   |
+22 |   sys.path.insert(0, str(ROOT / "server"))
+23 |
+24 | / from app.search.chunk import chunk  # noqa: E402
+25 | | from app.search.extract import extract  # noqa: E402
+26 | | from app.search.fixtures import Fixtures  # noqa: E402
+27 | | from app.search.fetch import RawPage  # noqa: E402
+28 | | from app.search.merge import merge  # noqa: E402
+29 | | from app.search.rank import rank, select  # noqa: E402
+   | |________________________________________^
+help: Organize imports
+   |
+25 | from app.search.extract import extract  # noqa: E402
+26 + from app.search.fetch import RawPage  # noqa: E402
+27 | from app.search.fixtures import Fixtures  # noqa: E402
+   - from app.search.fetch import RawPage  # noqa: E402
+28 | from app.search.merge import merge  # noqa: E402
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> artifacts/images-i1/search-task-evidence-audit/audit.py:24:37
+   |
+22 | sys.path.insert(0, str(ROOT / "server"))
+23 |
+24 | from app.search.chunk import chunk  # noqa: E402
+   |                                     ^^^^^^^^^^^^
+25 | from app.search.extract import extract  # noqa: E402
+26 | from app.search.fixtures import Fixtures  # noqa: E402
+   |
+help: Remove unused `noqa` directive
+   |
+23 |
+   - from app.search.chunk import chunk  # noqa: E402
+24 + from app.search.chunk import chunk
+25 | from app.search.extract import extract  # noqa: E402
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> artifacts/images-i1/search-task-evidence-audit/audit.py:25:41
+   |
+24 | from app.search.chunk import chunk  # noqa: E402
+25 | from app.search.extract import extract  # noqa: E402
+   |                                         ^^^^^^^^^^^^
+26 | from app.search.fixtures import Fixtures  # noqa: E402
+27 | from app.search.fetch import RawPage  # noqa: E402
+   |
+help: Remove unused `noqa` directive
+   |
+24 | from app.search.chunk import chunk  # noqa: E402
+   - from app.search.extract import extract  # noqa: E402
+25 + from app.search.extract import extract
+26 | from app.search.fixtures import Fixtures  # noqa: E402
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> artifacts/images-i1/search-task-evidence-audit/audit.py:26:43
+   |
+24 | from app.search.chunk import chunk  # noqa: E402
+25 | from app.search.extract import extract  # noqa: E402
+26 | from app.search.fixtures import Fixtures  # noqa: E402
+   |                                           ^^^^^^^^^^^^
+27 | from app.search.fetch import RawPage  # noqa: E402
+28 | from app.search.merge import merge  # noqa: E402
+   |
+help: Remove unused `noqa` directive
+   |
+25 | from app.search.extract import extract  # noqa: E402
+   - from app.search.fixtures import Fixtures  # noqa: E402
+26 + from app.search.fixtures import Fixtures
+27 | from app.search.fetch import RawPage  # noqa: E402
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> artifacts/images-i1/search-task-evidence-audit/audit.py:27:39
+   |
+25 | from app.search.extract import extract  # noqa: E402
+26 | from app.search.fixtures import Fixtures  # noqa: E402
+27 | from app.search.fetch import RawPage  # noqa: E402
+   |                                       ^^^^^^^^^^^^
+28 | from app.search.merge import merge  # noqa: E402
+29 | from app.search.rank import rank, select  # noqa: E402
+   |
+help: Remove unused `noqa` directive
+   |
+26 | from app.search.fixtures import Fixtures  # noqa: E402
+   - from app.search.fetch import RawPage  # noqa: E402
+27 + from app.search.fetch import RawPage
+28 | from app.search.merge import merge  # noqa: E402
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> artifacts/images-i1/search-task-evidence-audit/audit.py:28:37
+   |
+26 | from app.search.fixtures import Fixtures  # noqa: E402
+27 | from app.search.fetch import RawPage  # noqa: E402
+28 | from app.search.merge import merge  # noqa: E402
+   |                                     ^^^^^^^^^^^^
+29 | from app.search.rank import rank, select  # noqa: E402
+   |
+help: Remove unused `noqa` directive
+   |
+27 | from app.search.fetch import RawPage  # noqa: E402
+   - from app.search.merge import merge  # noqa: E402
+28 + from app.search.merge import merge
+29 | from app.search.rank import rank, select  # noqa: E402
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> artifacts/images-i1/search-task-evidence-audit/audit.py:29:43
+   |
+27 | from app.search.fetch import RawPage  # noqa: E402
+28 | from app.search.merge import merge  # noqa: E402
+29 | from app.search.rank import rank, select  # noqa: E402
+   |                                           ^^^^^^^^^^^^
+help: Remove unused `noqa` directive
+   |
+28 | from app.search.merge import merge  # noqa: E402
+   - from app.search.rank import rank, select  # noqa: E402
+29 + from app.search.rank import rank, select
+30 |
+   |
+
+FURB167 [*] Use of regular expression alias `re.I`
+   --> artifacts/images-i1/search-task-evidence-audit/audit.py:312:76
+    |
+310 |                 "raw_sha256": hashlib.sha256(raw.data).hexdigest(),
+311 |                 "australian_currency_literal_present": bool(
+312 |                     re.search(r"\bAustralian dollar\b|\bAUD\b", page.text, re.I)
+    |                                                                            ^^^^
+313 |                 ),
+314 |             }
+    |
+help: Replace with `re.IGNORECASE`
+    |
+311 |                 "australian_currency_literal_present": bool(
+    -                     re.search(r"\bAustralian dollar\b|\bAUD\b", page.text, re.I)
+312 +                     re.search(r"\bAustralian dollar\b|\bAUD\b", page.text, re.IGNORECASE)
+313 |                 ),
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> artifacts/images-i1/search-task-evidence-audit/test_audit.py:3:1
+  |
+1 |   """Negative evidence-role/coverage tests and exact retained offline replays."""
+2 |
+3 | / import copy
+4 | | import json
+5 | | import socket
+6 | |
+7 | | import pytest
+8 | |
+9 | | import audit
+  | |____________^
+help: Organize imports
+  |
+6 |
+  - import pytest
+  -
+7 | import audit
+8 + import pytest
+9 |
+  |
+
+Found 9 errors.
+[*] 9 fixable with the `--fix` option.
