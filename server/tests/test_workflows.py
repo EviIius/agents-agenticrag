@@ -350,6 +350,43 @@ async def test_cancel_during_cleanup_acceptance_reaps_owned_job(
     assert (await app.state.workflows.get(run["id"])).state == "cancelled"
 
 
+async def test_cleanup_from_changed_transcript_never_becomes_the_saved_source_aid(
+    chat_app: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    app, client, _ = chat_app
+    original = "The original team agreed to use the blue cover."
+    item = await record(app, client, original)
+
+    async def changed(*args: Any, **kwargs: Any) -> None:
+        await app.state.store.execute(
+            "UPDATE transcripts SET text=?,cleaned_text=?,cleanup_status='ready' "
+            "WHERE attachment_id=?",
+            (
+                "A newer source has different words.",
+                "A newer source has different words.",
+                item["id"],
+            ),
+        )
+
+    monkeypatch.setattr(app.state.cleanup, "start", changed)
+    run = await start(
+        app,
+        client,
+        template="meeting_pack",
+        brief="",
+        attachment_id=item["id"],
+        cleanup_model={"connection_id": app.state.test_connection, "model_id": "fake-chat"},
+    )
+    await finish(app, run["id"])
+    value = await app.state.workflows.get(run["id"])
+    assert value.state == "failed" and "transcript changed" in value.error
+    source = (await client.get(f"/api/workflows/runs/{run['id']}/source")).json()
+    assert source["text"] == original and source["cleaned_text"] is None
+    await app.state.workflows.resume(run["id"], WorkflowResume(skip_cleanup=True))
+    await finish(app, run["id"])
+    assert (await app.state.workflows.get(run["id"])).state == "complete"
+
+
 @pytest.mark.parametrize(
     "change",
     [

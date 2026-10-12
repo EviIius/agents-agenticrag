@@ -386,6 +386,13 @@ class Workflows:
             )
             assert row
             source = json.loads(row["source_json"])
+            if value.text != source["text"]:
+                raise AppError(
+                    "workflow_source_changed",
+                    "This recording's transcript changed after the source was saved. "
+                    "Continue with the saved original or start a new run.",
+                    409,
+                )
             source["cleaned_text"] = value.cleaned_text
             await self.store.execute(
                 "UPDATE workflow_runs SET source_json=? WHERE id=?",
