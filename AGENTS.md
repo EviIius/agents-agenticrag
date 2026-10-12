@@ -716,3 +716,26 @@ with an early native code smoke and declared full order before inference. One
 candidate, existing planner/answer/context/sampling/runtime, immediate mandatory/
 support/protocol/G9 stop and H4 remain. No retries, new models/packages/runtime/
 defaults, deployment, Research/image/workflow invocation or other product scope.
+
+**Abstention retest closeout — 11 October 2026:** Frozen at `0e456fdc`; unchanged
+creation policy and original 49 cases/fixtures, explicit isolated generic wording
+correction. 176 offline checks and five actual native-capture/protocol arms plus
+wording/report bindings pass. Separate 183-answer audit corrects two wording
+false negatives; all 25 historical benchmark lexical scores remain unchanged,
+genuine lookup/code failures and all original reports/scores retained. Native
+baseline/candidate code smokes pass; actual transform/null reference exercises
+`create_local` and returns a working a+b function without Search. Two fresh
+personal-fact declines retrieve/cite correctly and pass equivalent-wording checks.
+Forty-eight children execute: smoke 1/1 each; baseline boundaries 19/24 and
+candidate 21/22 executed. Mandatory stop at `history-06`: actual prior 7 kg/9 kg
+comparison is visible; leading “only” is not bound, missing native ref produces
+false `clarify`. The actual answer wire contains the clarification instruction,
+but answer ignores it and omits both required weights. Original/corrected grading
+both fail; this is binding/completeness, not a wording false negative or invented
+comparison. Fifty-eight later children, including all six full runs, remain
+unexecuted. All 16,110 frozen files and 8,532 prior evidence files preserved;
+product/live unchanged, Ollama 0.35.0, local/verified HTTPS health 200. No retry,
+release/restart, Research/image/W1 action. H4:
+`docs/SEARCH-ABSTENTION-RETEST-REPORT.md`. Review bounded scope-modifier binding
+proposal `docs/SEARCH-SCOPED-INPUT-PLAN.md` before another candidate/inference;
+preserve quantitative requirements and true ambiguity. Images remains held.

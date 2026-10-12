@@ -241,3 +241,25 @@ retained audits and unsafe-answer negatives before re-freezing the same candidat
 and an explicit retest order. No prompt wording workaround or favorable retry.
 See `SEARCH-CREATION-CONTRACT-REPORT.md`. **Images stays unreleased; G9 remains
 open.** Live app/runtime are healthy and unchanged; Research shelved, W1 unstarted.
+
+## Equivalent-decline retest — 11 October 2026
+
+Frozen at `0e456fdc`. The grading-only correction passes 176 offline checks and
+a separate 183-answer audit; two lexical false negatives are corrected separately,
+all 25 historical benchmark lexical scores unchanged, original scores/reports and
+genuine failures retained. Both native code smokes pass and the candidate actually
+uses `create_local` for transform/null-ref to return a working addition function.
+Fresh personal-fact declines now pass with lookup/source-scoped attribution.
+
+The broader run stops at an actual binding/completeness defect: “only that provided
+comparison” is not recognized despite the visible complete comparison. Host
+takes `clarify`; the model ignores its transmitted instruction and drops both
+required weights. Do not classify this as a wording false negative or waive the
+numeric requirements. Baseline boundaries are 19/24; candidate 21/22 executed;
+58 later children, including six full suites, remain unexecuted.
+
+Review `SEARCH-SCOPED-INPUT-PLAN.md` for bounded leading scope-modifier binding
+with real supplied material, missing-source/ambiguity negatives and an early
+comparison smoke. No prompt expansion, retry or release follows the stop.
+H4: `SEARCH-ABSTENTION-RETEST-REPORT.md`. **Images remains held; G9 open**.
+Live app/runtime remain healthy/unchanged; Research shelved and W1 unstarted.
