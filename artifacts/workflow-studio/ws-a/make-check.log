@@ -1,0 +1,61 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+All checks passed!
+. scripts/tool-env.sh; uv run --directory server ruff format --check app tests
+133 files already formatted
+. scripts/tool-env.sh; uv run --directory server mypy app tests
+Success: no issues found in 131 source files
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_coverage.py
+........................................................................ [ 13%]
+........................................................................ [ 27%]
+........................................................................ [ 40%]
+........................................................................ [ 54%]
+........................................................................ [ 67%]
+........................................................................ [ 81%]
+........................................................................ [ 94%]
+............................                                             [100%]
+532 passed in 190.04s (0:03:10)
+providers line coverage: 364/418 = 87.1%
+runs line coverage: 389/435 = 89.4%
+search line coverage: 1564/1741 = 89.8%
+transcribe line coverage: 689/740 = 93.1%
+documents line coverage: 196/203 = 96.6%
+library line coverage: 762/823 = 92.6%
+images line coverage: 624/702 = 88.9%
+workflows line coverage: 602/690 = 87.2%
+backup.py line coverage: 106/113 = 93.8%
+capacity.py line coverage: 55/58 = 94.8%
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_contrast.py
+light: body/background 16.17:1; secondary 6.55:1; tertiary 4.96:1
+dark: body/background 14.34:1; secondary 6.56:1; tertiary 4.88:1
+Contrast: 74 token pairs passed.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/generate_api_types.py --check
+✨ openapi-typescript 7.13.0
+🚀 /var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/tmp7sj1fo80/openapi.json → /var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/tmp7sj1fo80/api-types.ts [70.3ms]
+API contract: up to date.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_api_additive.py
+API additive guard: Phase 3 contract preserved.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_motion.py
+Motion guard: all first-party motion rules pass.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/privacy_audit.py
+{
+  "scanned": 2292,
+  "failures": [],
+  "limits": "Changed files and Phase 4/5/6/7 evidence; images require human review; optional local private-marker file."
+}
+. scripts/tool-env.sh; npm run check --prefix web
+npm notice run workbench-web@1.0.0-alpha.0 check
+npm notice run tsc --noEmit && eslint . && prettier --check src index.html vite.config.ts playwright.config.ts tests && vitest run src
+Checking formatting...
+All matched files use Prettier code style!
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./test-runtime" without a file extension (vite.config.ts:4:28). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.3 /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/web
+
+
+ Test Files  5 passed (5)
+      Tests  39 passed (39)
+   Start at  17:15:23
+   Duration  214ms (tests 44%, transform 38%, import 15%, worker 3%)
+

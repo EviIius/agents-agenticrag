@@ -967,3 +967,21 @@ No merge to main, deployment or change to the live app before Jake's final okay.
 Future motion-guard changes, Classify evaluation targets and optional WS-F extras
 retain their specific review gates. Research remains shelved. Private workflow
 inputs, documents, recordings and their filenames follow the existing privacy rule.
+
+
+**Workflow Studio WS-A closeout — 12 October 2026:** The isolated
+`codex/workflow-studio` branch replaces top tabs with persistent sidebar rows,
+a shared shell, a home with two existing templates/recent runs, the existing
+builder at `/workflows/new` and a saved-run detail page. Composer Images remains.
+No server/API/schema/prompt/sampling/dependency/native or production change.
+Source `ee788832` passes 532 Python / 39 frontend checks and one complete browser
+invocation: 505 passes, three existing skips. Initial JS is 245,249 gzip bytes
+(+1,378); both streaming p95 values are 3 ms. First focused link-label/selector
+failures are retained and corrected before the complete run. Fresh evidence is
+archived separately, historical bytes restored, and provided reference files
+retained exactly. The local preview uses fake data; no physical iPhone pass is
+claimed. Installed 97-file server and 410 current-release static hashes match.
+H4: `docs/WORKFLOW-STUDIO-WS-A-REPORT.md`; engine review:
+`docs/WORKFLOW-STUDIO-REVIEW.md`. Stop for WS-A review before WS-B. User-written
+block calls and lazy canvas dependency approval persist on this branch; the final
+main merge/live deployment still require Jake's okay. Research remains shelved.
