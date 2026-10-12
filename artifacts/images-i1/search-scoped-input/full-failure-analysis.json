@@ -1,0 +1,147 @@
+{
+  "full_report": "artifacts/images-i1/search-scoped-input/full-pair-1-candidate/reports/2026-10-12-023250-qwen3-30b-a3b-instruct-2507-q4_K_M-offline-keyword.json",
+  "full_report_sha256": "3ceeeb80a54a4c97627d15375b9f66cae353b948d2b0909309249898799890ea",
+  "automatic_failed_cases": [
+    "haiku",
+    "nba-all-losses",
+    "fiction"
+  ],
+  "creative_plans": {
+    "haiku": {
+      "native": {
+        "freshness": "any",
+        "input_ref": null,
+        "queries": [
+          "haiku about autumn rain"
+        ],
+        "selection_condition": null,
+        "task": "creative"
+      },
+      "host": {
+        "mode": "lookup",
+        "reason": "ValueError",
+        "refs": [],
+        "native_reference_valid": false
+      }
+    },
+    "fiction": {
+      "native": {
+        "freshness": "any",
+        "input_ref": null,
+        "queries": [
+          "dragon learning to bake story two sentences"
+        ],
+        "selection_condition": null,
+        "task": "creative"
+      },
+      "host": {
+        "mode": "lookup",
+        "reason": "ValueError",
+        "refs": [],
+        "native_reference_valid": false
+      }
+    }
+  },
+  "creative_cause": "Native task=creative with nonempty queries; host rejects contradictory task/query fields and falls back to lookup. Requested creative outputs are still generated, but forbidden lookup occurs.",
+  "nba": {
+    "plan": {
+      "native": {
+        "freshness": "any",
+        "input_ref": null,
+        "queries": [
+          "NBA teams that reached the Finals and lost, including those that won championships in other years",
+          "NBA teams that lost in the Finals and later won the championship"
+        ],
+        "selection_condition": null,
+        "task": "lookup"
+      },
+      "host": {
+        "mode": "lookup",
+        "reason": "native plan accepted",
+        "refs": [],
+        "native_reference_valid": false
+      }
+    },
+    "role_contradictions": [
+      {
+        "year": 2023,
+        "source_champion": "Denver Nuggets",
+        "source_runner_up": "Miami Heat",
+        "source_fragment_sha256": "7ffde3acbca67f6a08638ea7de13f8f4995e73bb5a49c31e0827181ccaccbf85",
+        "answer_error": "Champion incorrectly asserted as Finals loser",
+        "source_n": 6
+      },
+      {
+        "year": 2019,
+        "source_champion": "Toronto Raptors",
+        "source_runner_up": "Golden State Warriors",
+        "source_fragment_sha256": "17c0f9b0e4bb70baa8f4a4d4dca4709c40350c09fa27fdef0795ab8418846b6b",
+        "answer_error": "Champion incorrectly asserted as Finals loser",
+        "source_n": 6
+      },
+      {
+        "year": 2022,
+        "source_champion": "Golden State Warriors",
+        "source_runner_up": "Boston Celtics",
+        "source_fragment_sha256": "79d657d81bfe69ceae340549b5cb1283d20c813fe7a940c78aeb7a21b4b210e6",
+        "answer_error": "Champion incorrectly asserted as Finals loser",
+        "source_n": 6
+      },
+      {
+        "year": 1998,
+        "source_champion": "Chicago Bulls",
+        "source_runner_up": "Utah Jazz",
+        "source_fragment_sha256": "1e9030be4c05d739063adf3ac95302847a095b8d0e1601e9d27c189f3981b452",
+        "answer_error": "Champion incorrectly asserted as Finals loser",
+        "source_n": 6
+      },
+      {
+        "year": 2020,
+        "source_champion": "Los Angeles Lakers",
+        "source_runner_up": "Miami Heat",
+        "source_fragment_sha256": "0bed2ee94d32a8637cecf743a2d13e0abe29855577442af8e053b8ab4fd1fb21",
+        "answer_error": "Champion incorrectly asserted as Finals loser",
+        "source_n": 6
+      }
+    ],
+    "other_wrong_granularity": "A conference semifinal exit is described as a Finals loss.",
+    "coverage": "Requested historical population incomplete; selected champions rows lose repeated role/header context and include only part of historical coverage."
+  },
+  "capital_compare": {
+    "automatic_passed": true,
+    "queries": [
+      "capital and currency of Japan",
+      "capital and currency of Australia"
+    ],
+    "retrieved_australian_currency_evidence": false,
+    "manual_failure": "Explicitly supplies unsupported currency from memory despite source-only rules. Queries request both properties; selected sources cover only one side of requested currency comparison."
+  },
+  "table_page": {
+    "automatic_passed": true,
+    "manual_failure": "Mixes individual games across 2022-2024 as last-five Finals results; wrong granularity/chronology for requested recent series and no complete latest-period coverage."
+  },
+  "stop_reason_note": "Stored final reason is matched G9 aggregate failure because existing orchestrator overwrites the earlier mandatory candidate failure with G9. mandatory_checks_pass=False and all three failed cases remain retained. No later child executed.",
+  "historical_g9_computed": false,
+  "matched_g9": {
+    "search_decision_accuracy": false,
+    "required_fact_case_accuracy": false,
+    "citation_validity": true,
+    "citation_support_mean": true,
+    "successful_web_turns": true,
+    "failed_web_turns": false,
+    "successful_web_ttft_p50_ms": false,
+    "successful_web_ttft_p90_ms": false,
+    "plan.p50": false,
+    "plan.p90": false,
+    "search.p50": false,
+    "search.p90": true,
+    "fetch.p50": true,
+    "fetch.p90": true,
+    "rank.p50": true,
+    "rank.p90": false,
+    "total.p50": false,
+    "total.p90": true
+  },
+  "no_score_or_case_changes": true,
+  "no_inference": true
+}

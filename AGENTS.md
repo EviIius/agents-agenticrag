@@ -751,3 +751,23 @@ sampling or extra model call. Freeze one candidate and declared order with an
 early comparison smoke plus existing code smokes/corpus/full comparisons before
 inference; stop on first mandatory/support/protocol/G9 failure, retain every result
 and unexecuted call with H4. No retry, deployment, Research/image/workflow action.
+
+**Scoped-input closeout — 11 October 2026:** Frozen at `b6326124`; 200 offline
+checks and six actual capture/protocol arms pass. Scope/code smokes pass; the
+repeated native transform/null-ref comparison now binds actual material locally
+and preserves both original weights. Candidate synthetic scores: 24/24 original,
+9/9 supplemental, 8/8 ordinary, 8/8 creation; these are separate from full Web.
+First original matched pair is baseline 24/25 and candidate 22/25. Creative
+haiku/fiction emit task=creative with stray queries; host rejects the contradiction
+and wrongly falls back to lookup. The comprehensive list omits population members
+and reverses cited champion/runner-up roles; targeted review also finds memory-
+filled missing currency and wrong result chronology/granularity in automatic passes.
+Mandatory and matched G9 gates fail; the original final stop label is G9 because
+the existing orchestrator overwrites its earlier mandatory reason. Both failures
+remain visible, no regrade/index edit/retry. 104 of 108 children, 158 planners /
+158 answers / 104 warm loads; four later full children unexecuted. All 16,675
+frozen files and 9,098 prior evidence files preserved. Product/live unchanged,
+Ollama 0.35.0, local/verified HTTPS health 200; no Research/image/W1 or release.
+H4: `docs/SEARCH-SCOPED-INPUT-REPORT.md`. Review the offline task/evidence audit
+proposal `docs/SEARCH-TASK-AND-EVIDENCE-AUDIT-PLAN.md` before another experiment.
+Scope recovery and high lexical citation support do not qualify overall reliability.

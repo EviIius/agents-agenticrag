@@ -263,3 +263,28 @@ with real supplied material, missing-source/ambiguity negatives and an early
 comparison smoke. No prompt expansion, retry or release follows the stop.
 H4: `SEARCH-ABSTENTION-RETEST-REPORT.md`. **Images remains held; G9 open**.
 Live app/runtime remain healthy/unchanged; Research shelved and W1 unstarted.
+
+## Scoped supplied-input checkpoint — 11 October 2026
+
+Frozen at `b6326124`. The bounded leading only/just correction passes 200 offline
+checks and all 49 synthetic candidate cases. The repeated actual native
+transform/null-reference comparison now binds its real supplied material and
+preserves both weights and their relation. New-code smokes remain useful and
+local. These targeted successes do not qualify the full Search pipeline.
+
+The first original matched full pair stops at baseline 24/25 and candidate
+22/25. Two creative native plans include stray queries; the host rejects them
+and wrongly falls back to lookup. A comprehensive answer reverses cited
+champion/runner-up roles and omits required entries. Targeted review also finds
+an unsupported currency supplied from memory and wrong time/granularity in
+automatically passing answers. Higher lexical citation support and valid IDs
+miss these semantic errors. Both mandatory and matched G9 gates fail; no
+original scores, outputs or stop index are edited. Four later full children
+remain unexecuted. See `SEARCH-SCOPED-INPUT-REPORT.md`.
+
+Next proposed checkpoint: offline task/query consistency and evidence coverage
+audit in `SEARCH-TASK-AND-EVIDENCE-AUDIT-PLAN.md`. Trace extraction, table roles,
+requested properties and chronology using retained inputs before choosing one
+bounded correction and another reviewed native trial. **Images remains held;
+G9 is open.** Product/live app and runtime are healthy and unchanged. Research
+remains shelved; W1 follows reliability and image release.
