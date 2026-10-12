@@ -1,0 +1,34 @@
+E501 Line too long (105 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-table-admission/native.py:204:101
+    |
+202 |                 with (folder / "wire.jsonl").open("a") as handle:
+203 |                     handle.write(
+204 |                         json.dumps({"body": body, "sha256": hashlib.sha256(request.content).hexdigest()})
+    |                                                                                                     ^^^^^
+205 |                         + "\n"
+206 |                     )
+    |
+
+E501 Line too long (111 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-table-admission/native.py:260:101
+    |
+258 | def protocol(folder, document):
+259 |     traces = [json.loads(line) for line in (folder / "trace.jsonl").read_text().splitlines()]
+260 |     wires = [json.loads(json.loads(line)["body"]) for line in (folder / "wire.jsonl").read_text().splitlines()]
+    |                                                                                                     ^^^^^^^^^^^
+261 |     planners = [row for row in traces if row["payload"].get("format") is not None]
+262 |     answers = [row for row in traces if row["payload"].get("format") is None]
+    |
+
+E501 Line too long (133 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-table-admission/native.py:276:101
+    |
+274 |             for row in traces),
+275 |         "unchanged_wire": all(row.get("model") == MODEL and "tools" not in row for row in wires),
+276 |         "sampling_context": all(row["payload"]["options"] == expected["utility" if row in planners else "answer"] for row in traces),
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+277 |         "report_original_case": [r["id"] for r in document["results"]] == ["nba-all-losses"],
+278 |         "source_admission_observed": (folder / "admission.jsonl").exists(),
+    |
+
+Found 4 errors (1 fixed, 3 remaining).

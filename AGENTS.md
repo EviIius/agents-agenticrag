@@ -834,3 +834,24 @@ support/completeness/citation failure or any protocol failure. Preserve baseline
 failures and all unexecuted children. No retry, prompt/schema change, deployment,
 default/runtime/model/package change, Research/image/workflow action or general
 reliability qualification is authorized by this bounded comparison. Stop with H4.
+
+**Bounded table comparison closeout — 12 October 2026:** Frozen at `b6dc54b8`.
+Offline admission repairs the omitted seven-column / 28-row table (23 positive
+entries) within 5,337 / 5,502 tokens; only one retained turn changes. 33 admission /
+16 guard checks pass. The first original native pair produces 23/23 entries in
+both arms, with real protocol/source capture, but both plans choose the qualifying
+event and the existing pipeline already supplies the table: the new hook is a
+no-op. Candidate opening adds unsupported “later won” chronology to aggregate
+counts; manual support fails despite the unchanged passing automatic score.
+Stop after two planners / two answers / two empty warm loads, retaining four later
+unexecuted children. No retry, consistency qualification, prompt change or answer
+improvement is claimed. Full checks: 508 Python / 39 frontend / 473 browser,
+three existing skips; 432 fresh fake test outputs retained and historical bytes
+restored. All 7,692 current frozen inputs, 16,675 prior frozen files and 17,861
+earlier committed evidence/eval files verify unchanged; affected installed Search/
+context files and Ollama 0.35.0 unchanged, local/verified HTTPS health 200.
+No product change/deployment/restart, Research/image/W1 action. H4:
+`docs/SEARCH-TABLE-ADMISSION-REPORT.md`. Review the smaller host-only structured
+source proposal in `docs/SEARCH-STRUCTURED-EVIDENCE-NEXT.md` before another native
+trial or release. Images remains held by G9; factual outputs remain drafts for
+human review. VoiceOver remains off the work list.

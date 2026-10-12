@@ -320,3 +320,27 @@ Local and normally verified HTTPS health pass; no native inference or deployment
 
 Forty newly generated fake settings captures are archived too, for 440 fresh test
 outputs retained in total; no tracked original is removed.
+
+## Bounded table admission — 12 October 2026
+
+The isolated selector repairs the retained omission offline: all original seven
+columns / 28 rows / 23 positive entries now fit 5,337 of 5,502 tokens. All 22
+source-bearing original turns replay exactly; only the failing list case changes.
+33 admission and 16 native guard tests pass. No production selector is changed.
+
+Jake approved up to three native pairs on the original question. The first pair
+returns 23/23 entries in both arms because both planners choose the correct
+qualifying event; the existing pipeline already supplies the full table, so the
+new hook is a no-op. The candidate adds an unsupported “later won” relationship
+to aggregate counts. Its automatic score passes, but manual claim review fails
+and stops four later children. No native answer improvement or consistency is
+demonstrated. Two planners / two answers / two warm loads; no retry or new prompt.
+
+**Stop broad prompt continuation.** The concrete next proposal is host-only
+structured extraction/chunking and missing-facet diagnostics, preserving original
+roles/values, reproducing the actual omission branch and retaining all old scores.
+See `SEARCH-TABLE-ADMISSION-REPORT.md` and `SEARCH-STRUCTURED-EVIDENCE-NEXT.md`.
+No further inference or release is authorized by these proposals. 508 Python /
+39 frontend / 473 browser tests pass; three existing browser skips remain.
+Live app unchanged and healthy; Images held, G9 open, Research shelved, W1
+unstarted and VoiceOver off the current list.

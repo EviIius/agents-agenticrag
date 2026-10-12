@@ -1,0 +1,57 @@
+I001 [*] Import block is un-sorted or un-formatted
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-table-admission/native.py:134:5
+    |
+132 |       folder.mkdir(exist_ok=False)
+133 |       sys.path[:0] = [str(ROOT / "server"), str(ROOT / "server/evals/web")]
+134 | /     import run_eval
+135 | |     from app import main as app_main
+136 | |     from app.db import messages
+137 | |     from app.providers.ollama import Ollama
+138 | |     from app.runs import context
+139 | |     from app.search import pipeline, planner, prompt
+    | |____________________________________________________^
+140 |
+141 |       class FixedDateTime(datetime):
+    |
+help: Organize imports
+    |
+134 |     import run_eval
+135 +
+136 |     from app import main as app_main
+    |
+
+E501 Line too long (105 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-table-admission/native.py:203:101
+    |
+201 |                 with (folder / "wire.jsonl").open("a") as handle:
+202 |                     handle.write(
+203 |                         json.dumps({"body": body, "sha256": hashlib.sha256(request.content).hexdigest()})
+    |                                                                                                     ^^^^^
+204 |                         + "\n"
+205 |                     )
+    |
+
+E501 Line too long (111 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-table-admission/native.py:259:101
+    |
+257 | def protocol(folder, document):
+258 |     traces = [json.loads(line) for line in (folder / "trace.jsonl").read_text().splitlines()]
+259 |     wires = [json.loads(json.loads(line)["body"]) for line in (folder / "wire.jsonl").read_text().splitlines()]
+    |                                                                                                     ^^^^^^^^^^^
+260 |     planners = [row for row in traces if row["payload"].get("format") is not None]
+261 |     answers = [row for row in traces if row["payload"].get("format") is None]
+    |
+
+E501 Line too long (133 > 100)
+   --> /Users/evilius/Documents/GitHub/agents-agenticrag/artifacts/images-i1/search-table-admission/native.py:275:101
+    |
+273 |             for row in traces),
+274 |         "unchanged_wire": all(row.get("model") == MODEL and "tools" not in row for row in wires),
+275 |         "sampling_context": all(row["payload"]["options"] == expected["utility" if row in planners else "answer"] for row in traces),
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+276 |         "report_original_case": [r["id"] for r in document["results"]] == ["nba-all-losses"],
+277 |         "source_admission_observed": (folder / "admission.jsonl").exists(),
+    |
+
+Found 4 errors.
+[*] 1 fixable with the `--fix` option.
