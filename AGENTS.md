@@ -925,3 +925,27 @@ durability, human review, saving, cancellation and retry identity. No new native
 calls, arbitrary agent/connector/loop execution, prompts, packages, model/runtime
 or defaults changes. Retain synthetic browser/release evidence; do not claim
 separate physical phone checks from the overall “It works” report.
+
+**Composer/workflow UI closeout — 12 October 2026:** The top Chat / Workflows
+navigation and connected-step builder for the two approved templates are published.
+Image creation, status, cancellation and saved results are available in the message
+box; automatic seeds are resolved before acceptance and retained for uncertain
+retries, with optional advanced repeat controls. Workflow model/count/review
+settings remain explicit; chat drafts and same-chat navigation survive the switch.
+No new template, agent, model, prompt, dependency, sampling/default change, native
+inference or Research restart occurred. Human review of factual drafts remains.
+
+Repository checks pass: 532 Python / 39 frontend; full browser 493 passes, three
+existing skips. The full run precedes two final markup corrections (44 px image
+action and decorative data-slot wrapper), followed by eight focused two-engine
+checks and frontend/build/budget passes. Initial JS is 243,871 gzip bytes. All
+19,485 prior evidence/eval files and 59 historical manifests remain unchanged;
+1,067 fresh generated outputs are retained separately and 1,027 old tracked
+outputs restored. Static-only publication preserves the 97-file installed server,
+settings/data, original service label/bind and verified HTTPS route, without
+restart, with private static/database rollback and old hashed assets retained.
+Codex observes the actual live top tab, five nodes, three count choices, automatic
+seed controls and composer return; no work is accepted or private text captured.
+Jake's earlier overall “It works” remains Images phone acceptance, not a physical
+pass for this new UI. H4: docs/COMPOSER-WORKFLOW-UX-REPORT.md. Stop for UI review;
+configurable additional steps and further inference remain separately scoped.
