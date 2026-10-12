@@ -985,3 +985,13 @@ H4: `docs/WORKFLOW-STUDIO-WS-A-REPORT.md`; engine review:
 `docs/WORKFLOW-STUDIO-REVIEW.md`. Stop for WS-A review before WS-B. User-written
 block calls and lazy canvas dependency approval persist on this branch; the final
 main merge/live deployment still require Jake's okay. Research remains shelved.
+
+**User acceptance and authorization — 12 October 2026 (WS-B):** Jake asked to
+continue to WS-B. Close the WS-A review stop without inventing individual phone
+checks. Build the isolated graph engine, additive storage and APIs, seven initial
+block kinds and exact legacy-template parity gates, applying the corrections in
+`docs/WORKFLOW-STUDIO-REVIEW.md`. Stop for WS-B review before the WS-C canvas.
+The existing main checkout and installed app remain unchanged. Jake also requested
+that image creation use the ordinary chat composer and return progress and image
+results in the conversation; record this in `docs/DEFERRED-FIXES.md` for a later
+concrete chat-artifact scope, rather than expanding this server checkpoint.

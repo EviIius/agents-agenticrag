@@ -363,3 +363,16 @@ exports verified. Research remains shelved; broad reliability experiments end.
 See `PRODUCT-DELIVERY-REPORT.md` for exact calls, retained failures, test layers,
 source preservation, migration verification and image storage measurements.
 VoiceOver remains off the work list; its historical reported failure is retained.
+# Image creation in chat — 12 October 2026
+
+Requested by Jake during the WS-B continuation. Pending:
+
+- Start image creation from the ordinary message composer, with a model-like image choice.
+- Show generation progress, cancellation and generated images as turns in that same conversation.
+- Keep save/share, retry identity and automatic seeds; repeat controls belong in optional advanced settings.
+- Keep the gallery as a secondary place to browse saved images.
+
+This replaces the current embedded Images workspace as the desired creation flow.
+Review the durable chat-artifact/message schema and restoration behavior as a
+separate implementation scope after the Workflow Studio engine checkpoint.
+WS-B remains isolated; this entry does not claim the chat integration is built.

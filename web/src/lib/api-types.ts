@@ -753,7 +753,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Run List */
+        get: operations["run_list_api_workflows_runs_get"];
         put?: never;
         /** Create */
         post: operations["create_api_workflows_runs_post"];
@@ -874,6 +875,281 @@ export interface paths {
         };
         /** Change Schema */
         get: operations["change_schema_api_workflows__schema_change_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workflows/blocks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Catalog */
+        get: operations["catalog_api_workflows_blocks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workflows/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Templates */
+        get: operations["templates_api_workflows_templates_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workflows/defs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Definitions */
+        get: operations["definitions_api_workflows_defs_get"];
+        put?: never;
+        /** Create */
+        post: operations["create_api_workflows_defs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workflows/defs/{identifier}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Definition */
+        get: operations["definition_api_workflows_defs__identifier__get"];
+        /** Save */
+        put: operations["save_api_workflows_defs__identifier__put"];
+        post?: never;
+        /** Archive */
+        delete: operations["archive_api_workflows_defs__identifier__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workflows/defs/{identifier}/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Duplicate */
+        post: operations["duplicate_api_workflows_defs__identifier__duplicate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workflows/defs/{identifier}/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Validation */
+        post: operations["validation_api_workflows_defs__identifier__validate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workflows/defs/{identifier}/snapshots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Snapshots */
+        get: operations["snapshots_api_workflows_defs__identifier__snapshots_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workflows/defs/{identifier}/snapshots/{snapshot_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Label */
+        patch: operations["label_api_workflows_defs__identifier__snapshots__snapshot_id__patch"];
+        trace?: never;
+    };
+    "/api/workflows/defs/{identifier}/runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit */
+        post: operations["submit_api_workflows_defs__identifier__runs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workflows/runs/{identifier}/v2": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Run Detail */
+        get: operations["run_detail_api_workflows_runs__identifier__v2_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workflows/runs/{identifier}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Decision */
+        post: operations["decision_api_workflows_runs__identifier__decision_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workflows/runs/{identifier}/v2/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resume */
+        post: operations["resume_api_workflows_runs__identifier__v2_resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workflows/runs/{identifier}/v2/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel */
+        post: operations["cancel_api_workflows_runs__identifier__v2_cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workflows/runs/{identifier}/v2/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Sources */
+        get: operations["sources_api_workflows_runs__identifier__v2_sources_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workflows/runs/{identifier}/v2/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export */
+        get: operations["export_api_workflows_runs__identifier__v2_export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workflows/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Events */
+        get: operations["events_api_workflows_stream_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1412,6 +1688,24 @@ export interface components {
             /** Warning */
             warning?: string | null;
         };
+        /** BlockCatalog */
+        BlockCatalog: {
+            /** Blocks */
+            blocks: components["schemas"]["BlockEntry"][];
+        };
+        /** BlockEntry */
+        BlockEntry: {
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+            /** Category */
+            category: string;
+            /** Available */
+            available: boolean;
+            /** Reason */
+            reason?: string | null;
+        };
         /** Body_upload_api_attachments_post */
         Body_upload_api_attachments_post: {
             /** File */
@@ -1554,6 +1848,37 @@ export interface components {
             params?: components["schemas"]["Parameters"] | null;
             /** Web Enabled */
             web_enabled?: boolean | null;
+        };
+        /** CleanConfig */
+        CleanConfig: {
+            /** Transcript */
+            transcript: string;
+            /**
+             * Model
+             * @default workflow_default
+             */
+            model: components["schemas"]["ModelRef"] | "workflow_default";
+        };
+        /** CleanNode */
+        CleanNode: {
+            /** Id */
+            id: string;
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+            position?: components["schemas"]["Point"];
+            /**
+             * Disabled
+             * @default false
+             */
+            disabled: boolean;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "clean_transcript";
+            config: components["schemas"]["CleanConfig"];
         };
         /** CleanupInfo */
         CleanupInfo: {
@@ -1720,6 +2045,86 @@ export interface components {
             /** Count */
             count: number;
         };
+        /** Decision */
+        Decision: {
+            /** Node Id */
+            node_id: string;
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "approve" | "reject";
+            /** Value */
+            value?: string | null;
+        };
+        /** DefConflict */
+        DefConflict: {
+            error: components["schemas"]["ErrorDetail"];
+            current: components["schemas"]["Definition"];
+        };
+        /** DefCreate */
+        DefCreate: {
+            /**
+             * Name
+             * @default Untitled workflow
+             */
+            name: string;
+            /** Template Id */
+            template_id?: ("brief_images" | "meeting_pack") | null;
+            graph?: components["schemas"]["GraphDoc"] | null;
+            default_model?: components["schemas"]["ModelRef"] | null;
+        };
+        /** DefSave */
+        DefSave: {
+            /** Name */
+            name: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * Icon
+             * @default workflow
+             * @enum {string}
+             */
+            icon: "workflow" | "image" | "audio";
+            graph: components["schemas"]["GraphDoc"];
+            /** Version */
+            version: number;
+            /**
+             * Force
+             * @default false
+             */
+            force: boolean;
+        };
+        /** Definition */
+        Definition: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /**
+             * Icon
+             * @enum {string}
+             */
+            icon: "workflow" | "image" | "audio";
+            graph: components["schemas"]["GraphDoc"];
+            /** Graph Hash */
+            graph_hash: string;
+            /** Version */
+            version: number;
+            /** Template Id */
+            template_id: string | null;
+            /** Archived At */
+            archived_at: string | null;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+        };
         /** DeleteChats */
         DeleteChats: {
             /**
@@ -1794,6 +2199,27 @@ export interface components {
             type: "message.done";
             data: components["schemas"]["DoneData"];
         };
+        /** Edge */
+        Edge: {
+            /** Id */
+            id: string;
+            /** Source */
+            source: string;
+            /**
+             * Source Port
+             * @default out
+             * @enum {string}
+             */
+            source_port: "out" | "approved" | "rejected";
+            /** Target */
+            target: string;
+            /**
+             * Target Port
+             * @default in
+             * @constant
+             */
+            target_port: "in";
+        };
         /** EngineCheck */
         EngineCheck: {
             /** Name */
@@ -1855,6 +2281,51 @@ export interface components {
             /** Position */
             position?: number | null;
         };
+        /** GenerateConfig */
+        GenerateConfig: {
+            /**
+             * Model
+             * @default workflow_default
+             */
+            model: components["schemas"]["ModelRef"] | "workflow_default";
+            /**
+             * Instructions
+             * @default
+             */
+            instructions: string;
+            /** Prompt */
+            prompt: string;
+            /**
+             * Format
+             * @default text
+             * @enum {string}
+             */
+            format: "text" | "markdown" | "json";
+            /** Json Fields */
+            json_fields?: components["schemas"]["JsonField"][];
+            params?: components["schemas"]["Parameters"];
+        };
+        /** GenerateNode */
+        GenerateNode: {
+            /** Id */
+            id: string;
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+            position?: components["schemas"]["Point"];
+            /**
+             * Disabled
+             * @default false
+             */
+            disabled: boolean;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "generate";
+            config: components["schemas"]["GenerateConfig"];
+        };
         /** Glossary */
         Glossary: {
             /** Text */
@@ -1866,6 +2337,48 @@ export interface components {
         GlossaryRequest: {
             /** Text */
             text: string;
+        };
+        /** GraphDoc */
+        GraphDoc: {
+            /**
+             * Schema
+             * @default atelier.workflow/1
+             * @constant
+             */
+            schema: "atelier.workflow/1";
+            /** Nodes */
+            nodes: (components["schemas"]["StartNode"] | components["schemas"]["GenerateNode"] | components["schemas"]["TranscribeNode"] | components["schemas"]["CleanNode"] | components["schemas"]["ImageNode"] | components["schemas"]["ReviewNode"] | components["schemas"]["OutputNode"])[];
+            /** Edges */
+            edges?: components["schemas"]["Edge"][];
+            /** Notes */
+            notes?: components["schemas"]["Note"][];
+            viewport?: components["schemas"]["Viewport"] | null;
+            settings?: components["schemas"]["GraphSettings"];
+        };
+        /** GraphResume */
+        GraphResume: {
+            /** Skip Node Id */
+            skip_node_id?: string | null;
+            /** Prompt */
+            prompt?: string | null;
+        };
+        /** GraphSettings */
+        GraphSettings: {
+            default_model?: components["schemas"]["ModelRef"] | null;
+            /**
+             * Keep Test Runs Days
+             * @default 7
+             */
+            keep_test_runs_days: number;
+        };
+        /** GraphSubmit */
+        GraphSubmit: {
+            /** Request Key */
+            request_key: string;
+            /** Inputs */
+            inputs?: {
+                [key: string]: unknown;
+            };
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -1897,6 +2410,21 @@ export interface components {
              * @constant
              */
             confirm: true;
+        };
+        /** ImageConfig */
+        ImageConfig: {
+            /** Prompt */
+            prompt: string;
+            /**
+             * Count
+             * @default 1
+             */
+            count: number;
+            /**
+             * Seeds
+             * @default auto
+             */
+            seeds: "auto" | number[];
         };
         /** ImageCreate */
         ImageCreate: {
@@ -1951,6 +2479,27 @@ export interface components {
             metadata_bytes: number;
             /** Sha256 */
             sha256?: string | null;
+        };
+        /** ImageNode */
+        ImageNode: {
+            /** Id */
+            id: string;
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+            position?: components["schemas"]["Point"];
+            /**
+             * Disabled
+             * @default false
+             */
+            disabled: boolean;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "generate_image";
+            config: components["schemas"]["ImageConfig"];
         };
         /** ImageSnapshot */
         ImageSnapshot: {
@@ -2013,6 +2562,36 @@ export interface components {
             backup_bytes: number;
             /** Free Bytes */
             free_bytes: number;
+        };
+        /** Issue */
+        Issue: {
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+            /** Node Id */
+            node_id?: string | null;
+            /**
+             * Severity
+             * @default error
+             * @enum {string}
+             */
+            severity: "error" | "warning" | "info";
+        };
+        /** JsonField */
+        JsonField: {
+            /** Name */
+            name: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "string" | "number" | "boolean";
+            /**
+             * Description
+             * @default
+             */
+            description: string;
         };
         /** LegacyImport */
         LegacyImport: {
@@ -2297,6 +2876,103 @@ export interface components {
             /** Hidden */
             hidden?: boolean | null;
         };
+        /** ModelRef */
+        ModelRef: {
+            /** Connection Id */
+            connection_id: string;
+            /** Model Id */
+            model_id: string;
+        };
+        /** NodeState */
+        NodeState: {
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "pending" | "running" | "paused" | "complete" | "failed" | "cancelled" | "interrupted" | "skipped";
+            /** Attempt */
+            attempt: number;
+            /** Port */
+            port: string | null;
+            /** Output */
+            output: {
+                [key: string]: unknown;
+            } | null;
+            /** Error */
+            error: string | null;
+            /** Started At */
+            started_at: string | null;
+            /** Finished At */
+            finished_at: string | null;
+            /** Reused From */
+            reused_from?: string | null;
+            /** Warnings */
+            warnings?: string[];
+        };
+        /** Note */
+        Note: {
+            /** Id */
+            id: string;
+            position?: components["schemas"]["Point"];
+            /** Size */
+            size: {
+                [key: string]: number;
+            };
+            /**
+             * Tone
+             * @default neutral
+             * @enum {string}
+             */
+            tone: "neutral" | "amber" | "rose" | "teal";
+            /** Text */
+            text: string;
+        };
+        /** OutputConfig */
+        OutputConfig: {
+            /** Include */
+            include?: components["schemas"]["OutputItem"][];
+            /**
+             * Formats
+             * @default [
+             *       "md",
+             *       "json"
+             *     ]
+             */
+            formats: ("md" | "json")[];
+            /**
+             * Include Sources
+             * @default true
+             */
+            include_sources: boolean;
+        };
+        /** OutputItem */
+        OutputItem: {
+            /** Label */
+            label: string;
+            /** Ref */
+            ref: string;
+        };
+        /** OutputNode */
+        OutputNode: {
+            /** Id */
+            id: string;
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+            position?: components["schemas"]["Point"];
+            /**
+             * Disabled
+             * @default false
+             */
+            disabled: boolean;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "output";
+            config: components["schemas"]["OutputConfig"];
+        };
         /** Parameters */
         Parameters: {
             /** Temperature */
@@ -2334,6 +3010,19 @@ export interface components {
              * @default false
              */
             selection_applied: boolean;
+        };
+        /** Point */
+        Point: {
+            /**
+             * X
+             * @default 0
+             */
+            x: number;
+            /**
+             * Y
+             * @default 0
+             */
+            y: number;
         };
         /** Preset */
         Preset: {
@@ -2405,14 +3094,127 @@ export interface components {
              */
             force_web: boolean;
         };
+        /** ResultItem */
+        ResultItem: {
+            /** Label */
+            label: string;
+            /** Type */
+            type: string;
+            /** Value */
+            value: unknown;
+        };
+        /** ResultSection */
+        ResultSection: {
+            /** Node Id */
+            node_id: string;
+            /** Label */
+            label: string;
+            /** Items */
+            items: components["schemas"]["ResultItem"][];
+        };
+        /** ReviewConfig */
+        ReviewConfig: {
+            /** Show */
+            show: string;
+            /**
+             * Editable
+             * @default true
+             */
+            editable: boolean;
+            /**
+             * Message
+             * @default Check this result before continuing.
+             */
+            message: string;
+        };
+        /** ReviewNode */
+        ReviewNode: {
+            /** Id */
+            id: string;
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+            position?: components["schemas"]["Point"];
+            /**
+             * Disabled
+             * @default false
+             */
+            disabled: boolean;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "review";
+            config: components["schemas"]["ReviewConfig"];
+        };
         /** RunEvent */
         RunEvent: components["schemas"]["QueuedEvent"] | components["schemas"]["StartedEvent"] | components["schemas"]["DeltaEvent"] | components["schemas"]["DoneEvent"] | components["schemas"]["ErrorEvent"] | components["schemas"]["TitleEvent"] | components["schemas"]["ClosedEvent"] | components["schemas"]["ToolEvent"] | components["schemas"]["SearchEvent"];
+        /** RunPage */
+        RunPage: {
+            /** Items */
+            items: components["schemas"]["RunV2"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        };
         /** RunResponse */
         RunResponse: {
             /** Run Id */
             run_id: string;
             assistant_message: components["schemas"]["Message"];
             user_message?: components["schemas"]["Message"] | null;
+        };
+        /** RunV2 */
+        RunV2: {
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "template" | "graph";
+            /** Def Id */
+            def_id: string | null;
+            /** Def Name */
+            def_name: string;
+            /** Graph Hash */
+            graph_hash: string | null;
+            /** Snapshot Id */
+            snapshot_id?: string | null;
+            /**
+             * Mode
+             * @default run
+             * @enum {string}
+             */
+            mode: "run" | "test";
+            /** Parent Run Id */
+            parent_run_id?: string | null;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "queued" | "running" | "paused" | "cancelling" | "cancelled" | "complete" | "failed" | "interrupted";
+            /** Stage */
+            stage: string;
+            /** Error */
+            error: string | null;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+            /** Inputs */
+            inputs: {
+                [key: string]: unknown;
+            };
+            graph: components["schemas"]["GraphDoc"];
+            /** Nodes */
+            nodes: {
+                [key: string]: components["schemas"]["NodeState"];
+            };
+            /** Results */
+            results?: components["schemas"]["ResultSection"][];
+            /** Source Available */
+            source_available: boolean;
         };
         /** SearchEvent */
         SearchEvent: {
@@ -2500,6 +3302,30 @@ export interface components {
             /** Library */
             library?: boolean | null;
         };
+        /** Snapshot */
+        Snapshot: {
+            /** Id */
+            id: string;
+            /** Def Id */
+            def_id: string;
+            /** Graph Hash */
+            graph_hash: string;
+            graph: components["schemas"]["GraphDoc"];
+            /** Label */
+            label: string | null;
+            /** Created At */
+            created_at: string;
+            /**
+             * Run Count
+             * @default 0
+             */
+            run_count: number;
+        };
+        /** SnapshotLabel */
+        SnapshotLabel: {
+            /** Label */
+            label?: string | null;
+        };
         /** Source */
         Source: {
             /** N */
@@ -2535,6 +3361,58 @@ export interface components {
              * @default false
              */
             cited: boolean;
+        };
+        /** StartConfig */
+        StartConfig: {
+            /** Fields */
+            fields?: components["schemas"]["StartField"][];
+        };
+        /** StartField */
+        StartField: {
+            /** Name */
+            name: string;
+            /** Label */
+            label: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "short_text" | "long_text" | "number" | "boolean" | "choice" | "recording" | "document" | "image";
+            /**
+             * Required
+             * @default false
+             */
+            required: boolean;
+            /** Default */
+            default?: unknown;
+            /** Choices */
+            choices?: string[];
+            /**
+             * Help
+             * @default
+             */
+            help: string;
+        };
+        /** StartNode */
+        StartNode: {
+            /** Id */
+            id: string;
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+            position?: components["schemas"]["Point"];
+            /**
+             * Disabled
+             * @default false
+             */
+            disabled: boolean;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "start";
+            config: components["schemas"]["StartConfig"];
         };
         /** StartedData */
         StartedData: {
@@ -2607,6 +3485,21 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** Template */
+        Template: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /**
+             * Icon
+             * @enum {string}
+             */
+            icon: "workflow" | "image" | "audio";
+            graph: components["schemas"]["GraphDoc"];
+        };
         /** TitleData */
         TitleData: {
             /** Chat Id */
@@ -2634,6 +3527,32 @@ export interface components {
             data: {
                 [key: string]: unknown;
             };
+        };
+        /** TranscribeConfig */
+        TranscribeConfig: {
+            /** Recording */
+            recording: string;
+        };
+        /** TranscribeNode */
+        TranscribeNode: {
+            /** Id */
+            id: string;
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+            position?: components["schemas"]["Point"];
+            /**
+             * Disabled
+             * @default false
+             */
+            disabled: boolean;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "transcribe";
+            config: components["schemas"]["TranscribeConfig"];
         };
         /** TranscribeRequest */
         TranscribeRequest: {
@@ -2776,6 +3695,10 @@ export interface components {
             /** Audio Extensions */
             audio_extensions?: string[];
         };
+        /** ValidationBody */
+        ValidationBody: {
+            graph?: components["schemas"]["GraphDoc"] | null;
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -2788,6 +3711,29 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** ValidationResult */
+        ValidationResult: {
+            /** Issues */
+            issues: components["schemas"]["Issue"][];
+        };
+        /** Viewport */
+        Viewport: {
+            /**
+             * X
+             * @default 0
+             */
+            x: number;
+            /**
+             * Y
+             * @default 0
+             */
+            y: number;
+            /**
+             * Zoom
+             * @default 1
+             */
+            zoom: number;
         };
         /** WebInfo */
         WebInfo: {
@@ -4482,6 +5428,41 @@ export interface operations {
             };
         };
     };
+    run_list_api_workflows_runs_get: {
+        parameters: {
+            query?: {
+                def_id?: string | null;
+                state?: string | null;
+                mode?: "run";
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     create_api_workflows_runs_post: {
         parameters: {
             query?: never;
@@ -4712,6 +5693,589 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WorkflowChange"] | null;
+                };
+            };
+        };
+    };
+    catalog_api_workflows_blocks_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BlockCatalog"];
+                };
+            };
+        };
+    };
+    templates_api_workflows_templates_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Template"][];
+                };
+            };
+        };
+    };
+    definitions_api_workflows_defs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Definition"][];
+                };
+            };
+        };
+    };
+    create_api_workflows_defs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DefCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Definition"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    definition_api_workflows_defs__identifier__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Definition"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_api_workflows_defs__identifier__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DefSave"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Definition"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DefConflict"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_api_workflows_defs__identifier__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    duplicate_api_workflows_defs__identifier__duplicate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Definition"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    validation_api_workflows_defs__identifier__validate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ValidationBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    snapshots_api_workflows_defs__identifier__snapshots_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Snapshot"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    label_api_workflows_defs__identifier__snapshots__snapshot_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+                snapshot_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SnapshotLabel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Snapshot"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    submit_api_workflows_defs__identifier__runs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GraphSubmit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunV2"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_detail_api_workflows_runs__identifier__v2_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunV2"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    decision_api_workflows_runs__identifier__decision_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Decision"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunV2"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resume_api_workflows_runs__identifier__v2_resume_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GraphResume"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunV2"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_api_workflows_runs__identifier__v2_cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunV2"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    sources_api_workflows_runs__identifier__v2_sources_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_api_workflows_runs__identifier__v2_export_get: {
+        parameters: {
+            query?: {
+                format?: "md" | "json";
+            };
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    events_api_workflows_stream_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
         };
