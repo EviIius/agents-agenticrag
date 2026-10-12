@@ -686,3 +686,21 @@ and complete order before inference; freeze one candidate. Stop on the first
 mandatory candidate/support/protocol/G9 failure and retain unexecuted calls with
 H4 before another candidate or release. No new packages/models/runtime/defaults,
 topic rules, repair calls, retries, deployment, Research, image invocation or W1.
+
+**Creation-contract closeout — 11 October 2026:** Frozen at `a7ea2d9b`; 111 offline
+checks and five capture/protocol arms pass. Thirty-seven native children execute:
+baseline original boundaries 20/24; candidate 12/13 executed. Mandatory stop is
+the unknown-meal case: native conversation is rejected, lookup succeeds, and the
+answer correctly declines the requesting user's identity/fact while citing only
+the source's actual subject. Search/citation checks pass; frozen abstention regex
+rejects equivalent “does not establish” wording. Record the manual semantic
+finding separately; do not silently regrade or describe invented personal facts.
+The new creation branch is not exercised natively; exact failed-plan replay is
+offline evidence only. Sixty-seven later children remain unexecuted, including
+all new ordinary/creation/supplemental and six original full-suite children.
+All 15,672 frozen files and 8,103 prior committed evidence files are preserved;
+live source/deployment unchanged, Ollama 0.35.0 and local/Tailscale health 200.
+No grader change, retry, deployment/restart, Research/image/W1 action follows.
+H4: `docs/SEARCH-CREATION-CONTRACT-REPORT.md`. Review the grading-only proposal
+at `docs/SEARCH-ABSTENTION-GRADING-PLAN.md` before a corrected grader or next native
+trial; preserve genuine failures, original inputs/reports and release targets.

@@ -224,3 +224,20 @@ lookup, small talk, input-reference integrity, source checks, original targets
 and existing call limits. Review and freeze a separate candidate before inference.
 **Images remains unreleased; G9 is open.** Live app/runtime are healthy and
 unchanged. Research stays shelved; W1 waits for reliability and image release.
+
+## Isolated Search creation contract — 11 October 2026
+
+Frozen at `a7ea2d9b`. The exact prior code-failure replay and 111 offline checks
+pass, but the native sequence stops before new-code tests. Baseline boundaries
+are 20/24; candidate 12/13 executed. The stopped answer correctly searches and
+declines the unknown user's personal fact with source-scoped attribution. The
+frozen regex rejects “does not establish”; search/citation checks pass. Preserve
+the original failure score and semantic observation separately. This is a grading
+false negative, not a hallucinated meal or native proof of the code repair.
+
+Sixty-seven later children remain unexecuted; full release qualification is open.
+Review `SEARCH-ABSTENTION-GRADING-PLAN.md` for a grading-only correction with
+retained audits and unsafe-answer negatives before re-freezing the same candidate
+and an explicit retest order. No prompt wording workaround or favorable retry.
+See `SEARCH-CREATION-CONTRACT-REPORT.md`. **Images stays unreleased; G9 remains
+open.** Live app/runtime are healthy and unchanged; Research shelved, W1 unstarted.
