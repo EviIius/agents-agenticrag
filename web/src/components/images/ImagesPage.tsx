@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { FileSaveDialog } from "@/components/app/FileSaveDialog";
 import { IconButton } from "@/components/app/IconButton";
+import { imageSeeds, validImageSeed } from "@/lib/image-seeds";
 
 type Job = components["schemas"]["ImageJob"];
 type Snapshot = components["schemas"]["ImageSnapshot"];
@@ -30,6 +31,26 @@ export function bytes(value: number) {
 }
 
 export function ImagesPage() {
+  return (
+    <main>
+      <ImagesWorkspace />
+    </main>
+  );
+}
+
+export function ImagesWorkspace({
+  embedded = false,
+  prompt,
+  onPromptChange,
+  onClose,
+  preview = false,
+}: {
+  embedded?: boolean;
+  prompt?: string;
+  onPromptChange?: (prompt: string) => void;
+  onClose?: () => void;
+  preview?: boolean;
+}) {
   const [preferences, setPreferences] = useState<Record<string, unknown>>();
   usePreferenceSync(preferences);
   const [snapshot, setSnapshot] = useState<Snapshot>();
@@ -37,6 +58,7 @@ export function ImagesPage() {
   const [connection, setConnection] = useState("Connecting…");
   const [error, setError] = useState("");
   useEffect(() => {
+    if (preview) return;
     let mounted = true;
     void api<Record<string, unknown>>("/settings")
       .then((value) => {
@@ -103,7 +125,7 @@ export function ImagesPage() {
       source.close();
       cancelAnimationFrame(frame);
     };
-  }, []);
+  }, [preview]);
   async function older() {
     try {
       const before = snapshot?.jobs.at(-1)?.created_at;
@@ -129,17 +151,40 @@ export function ImagesPage() {
     }
   }
   return (
-    <main className="h-dvh overflow-y-auto bg-bg px-4 pb-[max(24px,env(safe-area-inset-bottom))] pt-[max(16px,env(safe-area-inset-top))]">
+    <section
+      className={
+        embedded
+          ? "bg-bg"
+          : "h-dvh overflow-y-auto bg-bg px-4 pb-[max(24px,env(safe-area-inset-bottom))] pt-[max(16px,env(safe-area-inset-top))]"
+      }
+      aria-label={embedded ? "Create images here" : "Images"}
+    >
       <div className="mx-auto max-w-5xl">
-        <header className="mb-6 flex min-h-11 items-center gap-3">
-          <IconButton label="Back to chat" asChild>
-            <Link to="/">
-              <ArrowLeft />
-            </Link>
-          </IconButton>
+        <header
+          className={`mb-3 flex min-h-11 items-center gap-3 ${embedded ? "sticky top-0 z-10 bg-bg" : ""}`}
+        >
+          {embedded ? (
+            <Button variant="ghost" className="h-11" onClick={onClose}>
+              <ArrowLeft className="size-4" /> Message
+            </Button>
+          ) : (
+            <IconButton label="Back to chat" asChild>
+              <Link to="/">
+                <ArrowLeft />
+              </Link>
+            </IconButton>
+          )}
           <h1 className="flex-1 text-xl font-semibold">Images</h1>
+          {embedded && (
+            <Link
+              to="/images"
+              className="flex min-h-11 items-center px-2 text-sm text-brand"
+            >
+              Gallery
+            </Link>
+          )}
           <span className="text-xs text-fg-3" role="status">
-            {connection}
+            {preview ? "Design preview" : connection}
           </span>
         </header>
         {error && (
@@ -151,6 +196,10 @@ export function ImagesPage() {
           jobs={snapshot?.jobs ?? []}
           storage={snapshot?.storage}
           status={status}
+          preview={preview}
+          prompt={prompt}
+          onPromptChange={onPromptChange}
+          embedded={embedded}
         />
         {snapshot && snapshot.jobs.length >= 100 && (
           <Button
@@ -162,7 +211,7 @@ export function ImagesPage() {
           </Button>
         )}
       </div>
-    </main>
+    </section>
   );
 }
 
@@ -171,14 +220,22 @@ export function ImagesView({
   storage,
   status,
   preview = false,
+  prompt: controlledPrompt,
+  onPromptChange,
+  embedded = false,
 }: {
   jobs: Job[];
   storage?: Snapshot["storage"];
   status?: Status;
   preview?: boolean;
+  prompt?: string;
+  onPromptChange?: (prompt: string) => void;
+  embedded?: boolean;
 }) {
-  const [prompt, setPrompt] = useState("");
-  const [seed, setSeed] = useState("42");
+  const [ownPrompt, setOwnPrompt] = useState("");
+  const prompt = controlledPrompt ?? ownPrompt;
+  const setPrompt = onPromptChange ?? setOwnPrompt;
+  const [seed, setSeed] = useState("");
   const [parent, setParent] = useState<string>();
   const [filter, setFilter] = useState("all");
   const [saving, setSaving] = useState<Job>();
@@ -186,19 +243,23 @@ export function ImagesView({
   const [removing, setRemoving] = useState<Job | "all">();
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
-  const request = useRef<{ signature: string; key: string } | undefined>(
-    undefined,
-  );
-  async function submit(value: string, number: number, parentId?: string) {
+  const request = useRef<
+    { signature: string; key: string; seed: number } | undefined
+  >(undefined);
+  async function submit(value: string, number?: number, parentId?: string) {
     const signature = JSON.stringify([value, number, parentId]);
     if (!request.current || request.current.signature !== signature)
-      request.current = { signature, key: crypto.randomUUID() };
+      request.current = {
+        signature,
+        key: crypto.randomUUID(),
+        seed: number ?? imageSeeds(1)[0],
+      };
     setBusy(true);
     setNotice("");
     try {
       const job = await api<Job>("/images/jobs", {
         prompt: value,
-        seed: number,
+        seed: request.current.seed,
         parent_id: parentId ?? null,
         request_key: request.current.key,
       });
@@ -253,18 +314,22 @@ export function ImagesView({
       filter === "all" ||
       (filter === "active" ? active.has(job.state) : job.image_bytes > 0),
   );
-  const validSeed = /^\d+$/.test(seed) && Number(seed) <= 4294967295;
+  const validSeed = !seed || validImageSeed(seed);
   return (
     <>
       <section
-        className="rounded-xl border border-line bg-surface p-4 sm:p-5"
+        className={
+          embedded
+            ? "composer"
+            : "rounded-xl border border-line bg-surface p-4 sm:p-5"
+        }
         aria-labelledby="image-create"
       >
         <h2 id="image-create" className="mb-1 font-medium">
           Create an image
         </h2>
         <p className="mb-4 text-sm text-fg-2">
-          FLUX.2 klein 4B · 1024 × 1024 · 4 steps · 8-bit · Guidance 1
+          Describe what you want. Your Mac creates it with FLUX.2 klein 4B.
         </p>
         {status && !status.available && (
           <p className="mb-3 text-sm text-fg-2" role="status">
@@ -283,16 +348,26 @@ export function ImagesView({
           onChange={(event) => setPrompt(event.target.value)}
         />
         <div className="mt-4 flex flex-wrap items-end gap-3">
-          <label className="block text-sm">
-            Seed
-            <Input
-              aria-label="Seed"
-              inputMode="numeric"
-              value={seed}
-              onChange={(event) => setSeed(event.target.value)}
-              className="mt-1 h-11 w-36 bg-surface-2"
-            />
-          </label>
+          <details className="text-sm">
+            <summary className="flex min-h-11 cursor-pointer items-center">
+              Advanced
+            </summary>
+            <label className="block text-sm">
+              Seed (optional)
+              <Input
+                aria-label="Seed"
+                inputMode="numeric"
+                value={seed}
+                onChange={(event) => setSeed(event.target.value)}
+                className="mt-1 h-11 w-36 bg-surface-2"
+                placeholder="Automatic"
+              />
+            </label>
+            <p className="mt-2 max-w-60 text-xs text-fg-3">
+              Leave empty for a new result. Use a saved seed to repeat an image
+              with the same prompt.
+            </p>
+          </details>
           <Button
             className="h-11"
             disabled={
@@ -302,7 +377,8 @@ export function ImagesView({
               (!preview && !status?.available)
             }
             onClick={() =>
-              !preview && void submit(prompt, Number(seed), parent)
+              !preview &&
+              void submit(prompt, seed ? Number(seed) : undefined, parent)
             }
           >
             Generate one image
@@ -333,7 +409,7 @@ export function ImagesView({
           {notice}
         </p>
       )}
-      {storage && (
+      {storage && !embedded && (
         <section
           className="my-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line p-4"
           aria-label="Image storage"
@@ -432,7 +508,7 @@ export function ImagesView({
             <div className="p-4">
               <p className="line-clamp-3 break-words text-sm">{job.prompt}</p>
               <p className="mt-2 text-xs text-fg-3">
-                {job.state} · Seed {job.seed}
+                {job.state}
                 {job.parent_id ? " · Additional version" : ""}
                 {job.image_bytes
                   ? ` · ${bytes(job.image_bytes + job.metadata_bytes)}`
@@ -539,7 +615,7 @@ export function ImagesView({
                   className="h-11"
                   onClick={() => {
                     setPrompt(detail.prompt);
-                    setSeed(String(detail.seed));
+                    setSeed("");
                     setParent(detail.id);
                     setDetail(undefined);
                     document.getElementById("image-prompt")?.focus();

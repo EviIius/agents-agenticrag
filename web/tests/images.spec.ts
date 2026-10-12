@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir, writeFile } from "node:fs/promises";
 import { settle } from "./helpers";
-const dir = "../artifacts/images-i1/browser";
+const dir = "../artifacts/composer-workflows/browser/images";
 for (const width of [390, 1440])
   for (const theme of ["light", "dark"]) {
     test(`Images synthetic states ${width} ${theme}`, async ({
@@ -125,6 +125,7 @@ test("Durable Images: close, reconnect, version, exports and removal", async ({
   await page
     .getByRole("button", { name: "Use prompt for new version" })
     .click();
+  await page.getByText("Advanced", { exact: true }).click();
   await page.getByRole("textbox", { name: "Seed", exact: true }).fill("1337");
   await page.getByRole("button", { name: "Generate one image" }).click();
   const version = page

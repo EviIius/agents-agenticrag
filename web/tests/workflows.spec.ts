@@ -3,7 +3,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { mkdir, writeFile } from "node:fs/promises";
 import { fakeAppURL } from "../test-runtime";
 import { settle } from "./helpers";
-const dir = "../artifacts/product-delivery/workflows/browser";
+const dir = "../artifacts/composer-workflows/browser/workflows";
 
 test.beforeEach(async ({ request }) => {
   const connection = (await (await request.get("/api/connections")).json())[0];
@@ -109,8 +109,15 @@ test("Creative workflow review, reconnect, variants and cancellable saving", asy
   await page
     .getByRole("textbox", { name: "Image brief" })
     .fill("Synthetic browser workflow: one blue circle on a white background");
+  await page
+    .getByRole("button", { name: "Configure Draft image prompt", exact: true })
+    .click();
   await page.getByRole("combobox", { name: "Prompt draft model" }).click();
   await page.getByRole("option").filter({ hasText: "fake-chat" }).click();
+  await page
+    .getByRole("button", { name: "Configure Generate images", exact: true })
+    .click();
+  await page.getByText("Advanced seeds", { exact: true }).click();
   await page
     .getByRole("textbox", { name: "Image variant seeds" })
     .fill("901,902");
@@ -171,6 +178,9 @@ test("Recording workflow retains source and sends only explicit overrides", asyn
     .getByRole("option")
     .filter({ hasText: "Synthetic-workflow.wav" })
     .first()
+    .click();
+  await page
+    .getByRole("button", { name: "Configure Draft meeting pack", exact: true })
     .click();
   await page.getByRole("combobox", { name: "Meeting-pack model" }).click();
   await page.getByRole("option").filter({ hasText: "fake-chat" }).click();

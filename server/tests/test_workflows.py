@@ -132,7 +132,9 @@ async def test_original_source_survives_audio_and_attachment_removal_and_export(
                         "end": 2.0,
                         "speaker": "Synthetic speaker",
                         "text": "Alex will send the draft on Friday. No budget owner was assigned.",
-                        "raw_text": "Alex will send the draft on Friday. No budget owner was assigned.",
+                        "raw_text": (
+                            "Alex will send the draft on Friday. No budget owner was assigned."
+                        ),
                     }
                 ]
             ),

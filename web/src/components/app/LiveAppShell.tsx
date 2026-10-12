@@ -1,4 +1,5 @@
 import { FoldersGroup } from "./FoldersGroup";
+import { SectionTabs } from "./SectionTabs";
 import type { FolderAction } from "./FolderDialog";
 import { lazy, Suspense } from "react";
 import { OfflineNotice } from "./OfflineNotice";
@@ -404,6 +405,8 @@ export function LiveAppShell() {
   const composer = (
     <Composer
       key={chatId ?? "new"}
+      draftKey={chatId ?? "new"}
+      images
       optimistic={Boolean(chatId)}
       suggestions={!chatId}
       audioExtensions={audioExtensions}
@@ -712,6 +715,13 @@ export function LiveAppShell() {
           </IconButton>
           {detail.data && menu(detail.data.chat)}
         </header>
+        <SectionTabs
+          active="chat"
+          chatPath={chatId ? `/c/${chatId}` : "/"}
+          modelKey={
+            current ? `${current.connection_id}/${current.model_id}` : undefined
+          }
+        />
         {bootstrap.isError ? (
           <OfflineNotice
             detail={String(bootstrap.error)}

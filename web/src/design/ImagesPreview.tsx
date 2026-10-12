@@ -3,6 +3,7 @@ import { ImagesView } from "@/components/images/ImagesPage";
 import { Button } from "@/components/ui/button";
 import type { components } from "@/lib/api-types";
 import { useUI } from "@/stores/ui";
+import { Composer } from "@/components/chat/Composer";
 const states = [
   "empty",
   "unavailable",
@@ -90,6 +91,10 @@ export default function ImagesPreview() {
           free_bytes: 150e9,
         }}
       />
+      <section className="mt-6" aria-label="Image composer preview">
+        <h2 className="mb-3 font-medium">Image creation in chat</h2>
+        <Composer images previewImages />
+      </section>
     </div>
   );
 }

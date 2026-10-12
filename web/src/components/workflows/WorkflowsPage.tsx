@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
+import { SectionTabs } from "@/components/app/SectionTabs";
+import { WorkflowCanvas, type StepPanel } from "./WorkflowCanvas";
+import { imageSeeds, validImageSeed } from "@/lib/image-seeds";
 import { ArrowLeft } from "lucide-react";
 import { api } from "@/lib/api";
 import { uploadWithProgress } from "@/lib/attachments";
@@ -39,6 +42,14 @@ const active = new Set(["queued", "running", "cancelling"]);
 const key = (model: Choice) => `${model.connection_id}/${model.model_id}`;
 
 export function WorkflowsPage() {
+  const location = useLocation();
+  const navigation = location.state as {
+    chatPath?: string;
+    modelKey?: string;
+  } | null;
+  const chatPath = navigation?.chatPath?.startsWith("/c/")
+    ? navigation.chatPath
+    : "/";
   const [runs, setRuns] = useState<Workflow[]>([]);
   const [models, setModels] = useState<Choice[]>([]);
   const [recordings, setRecordings] = useState<Recording[]>([]);
@@ -151,7 +162,7 @@ export function WorkflowsPage() {
       <div className="mx-auto max-w-4xl">
         <header className="mb-6 flex min-h-11 items-center gap-3">
           <IconButton label="Back to chat" asChild>
-            <Link to="/">
+            <Link to={chatPath}>
               <ArrowLeft />
             </Link>
           </IconButton>
@@ -160,12 +171,15 @@ export function WorkflowsPage() {
             {connection}
           </span>
         </header>
+        <SectionTabs active="workflows" chatPath={chatPath} />
+        <div className="mt-5" />
         {notice && (
           <p role="status" className="mb-4 text-fg-2">
             {notice}
           </p>
         )}
         <WorkflowForm
+          initialModel={navigation?.modelKey}
           models={models}
           recordings={recordings}
           onAccepted={(run) =>
@@ -219,6 +233,7 @@ function ModelSelect({
 export function WorkflowForm({
   models,
   recordings,
+  initialModel,
   onAccepted,
   onNotice,
   preview = false,
@@ -226,6 +241,7 @@ export function WorkflowForm({
   previewRecording = false,
 }: {
   models: Choice[];
+  initialModel?: string;
   recordings: Recording[];
   onAccepted?: (run: Workflow) => void;
   onNotice?: (text: string) => void;
@@ -237,12 +253,17 @@ export function WorkflowForm({
     preview && previewRecording ? "meeting_pack" : "brief_images",
   );
   const [brief, setBrief] = useState("");
-  const [model, setModel] = useState("");
+  const [model, setModel] = useState(initialModel ?? "");
+  const [panel, setPanel] = useState<StepPanel>("input");
   const [attachment, setAttachment] = useState("");
   const [cleanup, setCleanup] = useState(false);
   const [cleanupModel, setCleanupModel] = useState("");
   const [review, setReview] = useState(true);
-  const [seeds, setSeeds] = useState("42");
+  const [seeds, setSeeds] = useState("");
+  const [count, setCount] = useState(1);
+  const acceptedRequest = useRef<
+    { signature: string; body: Create } | undefined
+  >(undefined);
   const [maximum, setMaximum] = useState("");
   const [temperature, setTemperature] = useState("");
   const [busy, setBusy] = useState(false);
@@ -283,10 +304,11 @@ export function WorkflowForm({
   }
   async function submit() {
     if (!selected || preview) return;
-    const values = seeds.split(",").map((v) => Number(v.trim()));
+    const values = seeds ? seeds.split(",").map((v) => Number(v.trim())) : [];
     if (
       template === "brief_images" &&
-      (seeds.split(",").some((v) => !v.trim()) ||
+      seeds &&
+      (seeds.split(",").some((v) => !validImageSeed(v.trim())) ||
         !values.length ||
         values.length > 3 ||
         values.some((v) => !Number.isInteger(v) || v < 0 || v > 4294967295))
@@ -318,11 +340,30 @@ export function WorkflowForm({
       seeds: template === "brief_images" ? values : [42],
       review_prompt: review,
     };
+    const signature = JSON.stringify([
+      { ...body, request_key: undefined },
+      count,
+    ]);
+    if (
+      !acceptedRequest.current ||
+      acceptedRequest.current.signature !== signature
+    ) {
+      if (acceptedRequest.current) {
+        requestKey.current = crypto.randomUUID();
+        body.request_key = requestKey.current;
+      }
+      if (template === "brief_images" && !seeds) body.seeds = imageSeeds(count);
+      acceptedRequest.current = { signature, body };
+    }
     setBusy(true);
     try {
-      const run = await api<Workflow>("/workflows/runs", body);
+      const run = await api<Workflow>(
+        "/workflows/runs",
+        acceptedRequest.current.body,
+      );
       onAccepted?.(run);
       requestKey.current = crypto.randomUUID();
+      acceptedRequest.current = undefined;
     } catch (error) {
       onNotice?.(
         error instanceof Error ? error.message : "Workflow was not accepted.",
@@ -332,169 +373,213 @@ export function WorkflowForm({
     }
   }
   return (
-    <section className="mb-8 rounded-lg border border-line bg-surface-1 p-4 sm:p-5">
-      <h2 className="mb-3 font-semibold">New workflow</h2>
-      <div className="mb-4 flex flex-wrap gap-2">
-        <Button
-          variant={template === "brief_images" ? "default" : "outline"}
-          aria-pressed={template === "brief_images"}
-          onClick={() => setTemplate("brief_images")}
-        >
-          Brief to images
-        </Button>
-        <Button
-          variant={template === "meeting_pack" ? "default" : "outline"}
-          aria-pressed={template === "meeting_pack"}
-          onClick={() => setTemplate("meeting_pack")}
-        >
-          Recording to meeting pack
-        </Button>
-      </div>
+    <WorkflowCanvas
+      template={template}
+      onTemplate={(value) => {
+        setTemplate(value);
+        setPanel("input");
+      }}
+      panel={panel}
+      onPanel={setPanel}
+      model={selected?.display_name}
+      cleanup={cleanup}
+      review={review}
+      count={seeds ? seeds.split(",").length : count}
+      busy={busy}
+      disabled={
+        busy ||
+        progress !== undefined ||
+        !selected ||
+        (template === "brief_images"
+          ? !brief.trim()
+          : !attachment || (cleanup && !cleaner))
+      }
+      onStart={() => void submit()}
+    >
       <div className="space-y-4">
+        <div hidden={panel !== "input"}>
+          {template === "brief_images" ? (
+            <>
+              <label className="block text-sm">
+                Image brief
+                <Textarea
+                  aria-label="Image brief"
+                  className="mt-2 min-h-28"
+                  value={brief}
+                  onChange={(e) => setBrief(e.target.value)}
+                  placeholder="Describe the image you want…"
+                  maxLength={20000}
+                />
+              </label>
+              <p className="text-sm text-fg-2">
+                Your text model drafts one prompt. FLUX.2 klein 4B generates the
+                images.
+              </p>
+              <p className="text-xs text-fg-3">
+                Choose a model marked “tested with images” for an uninterrupted
+                run. Other loaded combinations can stop the image step; your
+                draft stays saved.
+              </p>
+            </>
+          ) : (
+            <>
+              <label className="block text-sm">
+                Upload a recording
+                <Input
+                  aria-label="Upload workflow recording"
+                  type="file"
+                  accept=".wav,.m4a,.mp3,.aac,.flac,.ogg,.aiff,.aif"
+                  className="mt-2"
+                  disabled={progress !== undefined || preview}
+                  onChange={(e) => {
+                    void addFile(e.target.files?.[0]);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+              {progress !== undefined && (
+                <div className="flex items-center gap-3">
+                  <p role="status">Uploading {progress}%</p>
+                  <Button
+                    variant="outline"
+                    onClick={() => upload.current?.abort()}
+                  >
+                    Cancel upload
+                  </Button>
+                </div>
+              )}
+              <label className="block text-sm">
+                Or use a saved recording
+                <Select value={attachment} onValueChange={setAttachment}>
+                  <SelectTrigger
+                    className="mt-2 w-full"
+                    aria-label="Saved recording"
+                  >
+                    <SelectValue placeholder="Choose a recording" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[
+                      ...(uploaded ? [uploaded] : []),
+                      ...recordings.filter((r) => r.id !== uploaded?.id),
+                    ].map((r) => (
+                      <SelectItem key={r.id} value={r.id}>
+                        {r.filename} · {r.status}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </label>
+              <p className="text-sm text-fg-2">
+                The original transcript is saved. Successful audio follows your
+                existing retention setting.
+              </p>
+            </>
+          )}
+        </div>
+        <div hidden={panel !== "model"}>
+          <ModelSelect
+            value={model}
+            onChange={setModel}
+            models={models}
+            label={
+              template === "brief_images"
+                ? "Prompt draft model"
+                : "Meeting-pack model"
+            }
+          />
+          <details className="rounded-md border border-line p-3">
+            <summary className="cursor-pointer text-sm">
+              Optional model overrides
+            </summary>
+            <p className="my-2 text-xs text-fg-3">
+              Empty fields use your saved model defaults, then runtime defaults.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="text-sm">
+                Output token limit
+                <Input
+                  aria-label="Workflow output token limit"
+                  type="number"
+                  min={1}
+                  max={32768}
+                  value={maximum}
+                  onChange={(e) => setMaximum(e.target.value)}
+                  placeholder="Saved or runtime default"
+                />
+              </label>
+              <label className="text-sm">
+                Temperature
+                <Input
+                  aria-label="Workflow temperature"
+                  type="number"
+                  min={0}
+                  max={2}
+                  step="0.1"
+                  value={temperature}
+                  onChange={(e) => setTemperature(e.target.value)}
+                  placeholder="Saved or runtime default"
+                />
+              </label>
+            </div>
+          </details>
+        </div>
         {template === "brief_images" ? (
           <>
-            <label className="block text-sm">
-              Image brief
-              <Textarea
-                aria-label="Image brief"
-                className="mt-2 min-h-28"
-                value={brief}
-                onChange={(e) => setBrief(e.target.value)}
-                placeholder="Describe the image you want…"
-                maxLength={20000}
-              />
-            </label>
-            <p className="text-sm text-fg-2">
-              Your text model drafts one prompt. FLUX.2 klein 4B generates the
-              images.
-            </p>
-            <p className="text-xs text-fg-3">
-              Choose a model marked “tested with images” for an uninterrupted
-              run. Other loaded combinations can stop the image step; your draft
-              stays saved.
-            </p>
-          </>
-        ) : (
-          <>
-            <label className="block text-sm">
-              Upload a recording
-              <Input
-                aria-label="Upload workflow recording"
-                type="file"
-                accept=".wav,.m4a,.mp3,.aac,.flac,.ogg,.aiff,.aif"
-                className="mt-2"
-                disabled={progress !== undefined || preview}
-                onChange={(e) => {
-                  void addFile(e.target.files?.[0]);
-                  e.target.value = "";
-                }}
-              />
-            </label>
-            {progress !== undefined && (
-              <div className="flex items-center gap-3">
-                <p role="status">Uploading {progress}%</p>
-                <Button
-                  variant="outline"
-                  onClick={() => upload.current?.abort()}
-                >
-                  Cancel upload
-                </Button>
+            <div hidden={panel !== "images"}>
+              <p className="mb-3 text-sm text-fg-2">
+                Choose how many images to compare.
+              </p>
+              <div className="mb-3 flex gap-2" aria-label="Number of images">
+                {[1, 2, 3].map((value) => (
+                  <Button
+                    key={value}
+                    aria-pressed={count === value}
+                    variant={count === value ? "default" : "outline"}
+                    onClick={() => {
+                      setCount(value);
+                      setSeeds("");
+                    }}
+                  >
+                    {value}
+                  </Button>
+                ))}
               </div>
-            )}
-            <label className="block text-sm">
-              Or use a saved recording
-              <Select value={attachment} onValueChange={setAttachment}>
-                <SelectTrigger
-                  className="mt-2 w-full"
-                  aria-label="Saved recording"
-                >
-                  <SelectValue placeholder="Choose a recording" />
-                </SelectTrigger>
-                <SelectContent>
-                  {[
-                    ...(uploaded ? [uploaded] : []),
-                    ...recordings.filter((r) => r.id !== uploaded?.id),
-                  ].map((r) => (
-                    <SelectItem key={r.id} value={r.id}>
-                      {r.filename} · {r.status}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </label>
-            <p className="text-sm text-fg-2">
-              The original transcript is saved. Successful audio follows your
-              existing retention setting.
-            </p>
-          </>
-        )}
-        <ModelSelect
-          value={model}
-          onChange={setModel}
-          models={models}
-          label={
-            template === "brief_images"
-              ? "Prompt draft model"
-              : "Meeting-pack model"
-          }
-        />
-        <details className="rounded-md border border-line p-3">
-          <summary className="cursor-pointer text-sm">
-            Optional model overrides
-          </summary>
-          <p className="my-2 text-xs text-fg-3">
-            Empty fields use your saved model defaults, then runtime defaults.
-          </p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <label className="text-sm">
-              Output token limit
-              <Input
-                aria-label="Workflow output token limit"
-                type="number"
-                min={1}
-                max={32768}
-                value={maximum}
-                onChange={(e) => setMaximum(e.target.value)}
-                placeholder="Saved or runtime default"
-              />
-            </label>
-            <label className="text-sm">
-              Temperature
-              <Input
-                aria-label="Workflow temperature"
-                type="number"
-                min={0}
-                max={2}
-                step="0.1"
-                value={temperature}
-                onChange={(e) => setTemperature(e.target.value)}
-                placeholder="Saved or runtime default"
-              />
-            </label>
-          </div>
-        </details>
-        {template === "brief_images" ? (
-          <>
-            <label className="block text-sm">
-              Image seeds · one to three variants
-              <Input
-                aria-label="Image variant seeds"
-                className="mt-2"
-                value={seeds}
-                onChange={(e) => setSeeds(e.target.value)}
-              />
-            </label>
-            <label className="flex min-h-11 items-center gap-3 text-sm">
-              <input
-                type="checkbox"
-                checked={review}
-                onChange={(e) => setReview(e.target.checked)}
-              />
-              Pause to review the prompt before generating
-            </label>
+              <details>
+                <summary className="flex min-h-11 cursor-pointer items-center text-sm">
+                  Advanced seeds
+                </summary>
+                <p className="my-2 text-xs text-fg-3">
+                  Seeds are automatic. Enter one to three saved seeds only to
+                  repeat exact results.
+                </p>
+                <label className="block text-sm">
+                  Image seeds (optional)
+                  <Input
+                    aria-label="Image variant seeds"
+                    className="mt-2"
+                    placeholder="Automatic"
+                    value={seeds}
+                    onChange={(e) => setSeeds(e.target.value)}
+                  />
+                </label>
+              </details>
+            </div>
+            <div hidden={panel !== "review"}>
+              <label className="flex min-h-11 items-center gap-3 text-sm">
+                <input
+                  type="checkbox"
+                  checked={review}
+                  onChange={(e) => setReview(e.target.checked)}
+                />
+                Pause to review the prompt before generating
+              </label>
+              <p className="mt-3 text-sm text-fg-2">
+                You can edit the model’s prompt before the images start.
+              </p>
+            </div>
           </>
         ) : (
-          <>
+          <div hidden={panel !== "cleanup"}>
             <label className="flex min-h-11 items-center gap-3 text-sm">
               <input
                 type="checkbox"
@@ -515,29 +600,21 @@ export function WorkflowForm({
               The meeting pack is a draft. Check quotations, decisions, owners
               and dates against the saved source.
             </p>
-          </>
+          </div>
         )}
-        <Button
-          onClick={() => {
-            void submit();
-          }}
-          disabled={
-            busy ||
-            progress !== undefined ||
-            !selected ||
-            (template === "brief_images"
-              ? !brief.trim()
-              : !attachment || (cleanup && !cleaner))
-          }
-        >
-          {busy ? "Accepting…" : "Start workflow"}
-        </Button>
-        <p className="text-xs text-fg-3">
-          Accepted steps continue on your Mac when you close the app. The latest
-          50 runs are shown below.
-        </p>
+        <div hidden={panel !== "output"}>
+          <p className="mb-3 text-sm text-fg-2">
+            {template === "brief_images"
+              ? "Your images appear in Saved runs. Compare them and save your favorite."
+              : "Your meeting pack is a draft. Review decisions, owners, dates and quoted speech against the original transcript before saving."}
+          </p>
+          <p className="text-xs text-fg-3">
+            Accepted steps continue on your Mac when you close the app. The
+            latest 50 runs are shown below.
+          </p>
+        </div>
       </div>
-    </section>
+    </WorkflowCanvas>
   );
 }
 

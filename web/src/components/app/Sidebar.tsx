@@ -6,8 +6,6 @@ import {
   SquarePen,
   Ellipsis,
   MessageSquare,
-  ImageIcon,
-  ListOrdered,
 } from "lucide-react";
 import { Link } from "react-router";
 import { useUI } from "@/stores/ui";
@@ -148,36 +146,6 @@ export function Sidebar({
         )}
       </nav>
       <footer className="shrink-0 border-t border-line pt-2">
-        {history !== undefined && (
-          <Button
-            asChild
-            variant="ghost"
-            className={
-              collapsed ? "icon-button" : "h-11 w-full justify-start gap-3"
-            }
-            aria-label="Workflows"
-          >
-            <Link to="/workflows" onClick={close}>
-              <ListOrdered className="size-4" />
-              {!collapsed && "Workflows"}
-            </Link>
-          </Button>
-        )}
-        {history !== undefined && (
-          <Button
-            asChild
-            variant="ghost"
-            className={
-              collapsed ? "icon-button" : "h-11 w-full justify-start gap-3"
-            }
-            aria-label="Images"
-          >
-            <Link to="/images" onClick={close}>
-              <ImageIcon className="size-4" />
-              {!collapsed && "Images"}
-            </Link>
-          </Button>
-        )}
         <Button
           variant="ghost"
           className={

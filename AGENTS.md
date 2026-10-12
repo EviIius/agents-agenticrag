@@ -914,3 +914,14 @@ no new model call or private screenshot. Physical iPhone review remains pending,
 not invented. H4: `docs/PRODUCT-DELIVERY-REPORT.md`. Review this release's retained
 limitations before another template, builder, inference experiment or autonomous
 workflow scope; Research stays shelved and VoiceOver remains off the work list.
+
+**User UI correction — 12 October 2026:** Jake reports Images works on his
+iPhone, without individual checklist results. He requests image creation in the
+message box, automatic seeds and a more approachable workflow interface, then
+specifies a Workflows tab above chat opening a visual step canvas with a settings
+panel like his supplied example. Implement docs/COMPOSER-WORKFLOW-UX-PLAN.md for
+the two already-approved fixed templates. Preserve explicit model choices,
+durability, human review, saving, cancellation and retry identity. No new native
+calls, arbitrary agent/connector/loop execution, prompts, packages, model/runtime
+or defaults changes. Retain synthetic browser/release evidence; do not claim
+separate physical phone checks from the overall “It works” report.

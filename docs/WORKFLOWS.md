@@ -1,26 +1,33 @@
 # Ordered workflows
 
-Open **Workflows** in Atelier's sidebar. Each accepted run saves its selected
+Open the **Workflows** tab above chat. Select a connected step to configure it;
+the settings appear beside the canvas on desktop and below it on phones.
+Each accepted run saves its selected
 models, settings, attempts and outputs on your Mac. Closing the browser does not
 stop it. After an uncertain server interruption, use **Retry unfinished steps**;
 completed drafts and images are reused.
 
 ## Image brief → variants
 
-1. Choose **Brief to images**, enter a brief, and select a prompt-draft model.
+1. Choose **Brief to images**. Select **Start** to enter a brief, then **Draft
+   image prompt** to choose the text model. The model selected in chat is carried
+   into the builder and remains visible and changeable.
    A model marked **tested with images** has the measured compatible digest and
    context. Other loaded combinations may stop at the image memory check.
-2. Enter one to three seeds, separated by commas. Keep prompt review enabled to
-   inspect or edit the draft before generation.
+2. Select **Generate images** and choose one, two or three images. Seeds are
+   automatic; **Advanced seeds** is optional for repeating exact saved results.
+   **Review prompt** controls the approval pause before generation.
 3. Approve the prompt. The pinned FLUX.2 klein 4B worker generates each variant
-   in order. Open **Images** to compare, save/share, create a new seeded version
+   in order. Use the image tool in the chat composer or its **Gallery** to compare,
+   save/share, create a new version
    or remove outputs. Selection is yours; there is no model judge.
 
 ## Recording → meeting-pack draft
 
-1. Choose **Recording to meeting pack** and upload audio or select a saved
+1. Choose **Recording to meeting pack**, select **Start**, and upload audio or select a saved
    recording. A saved transcript also works after its audio was removed.
-2. Select the drafting model. Optional guarded clean-up has its own explicit
+2. Select **Draft meeting pack** to choose the drafting model. The optional
+   **Clean up transcript** step has its own explicit
    model selection and preserves the original transcript.
 3. Check the resulting summary, decisions and action items against **View
    original transcript**. Missing owners and deadlines should remain unstated.
