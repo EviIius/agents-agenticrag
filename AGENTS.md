@@ -673,3 +673,16 @@ deployment stay unchanged. No retry, release/restart, Research, image invocation
 or W1 follows. H4 is `docs/SEARCH-CONVERSATION-GUARD-REPORT.md`. Stop for review
 before a generic creation-versus-supplied-edit contract correction or another
 candidate; Images remains held and original release targets remain in force.
+
+**User authorization — 11 October 2026 (isolated creation contract):** Jake said
+“continue” after the conversation-guard H4 and proposed creation-versus-editing
+repair. Implement one isolated bounded task contract for creating self-contained
+artifacts without treating every native transform label as an edit. Keep supplied
+edits bound to actual material and retain lookup for absent resources/external
+facts. Preserve conversation admission, reference/recording protection, native
+call limits, runtime/context/sampling, global prompts/schema, all previous cases,
+fixtures, grading, failures and release targets. Declare any added regressions
+and complete order before inference; freeze one candidate. Stop on the first
+mandatory candidate/support/protocol/G9 failure and retain unexecuted calls with
+H4 before another candidate or release. No new packages/models/runtime/defaults,
+topic rules, repair calls, retries, deployment, Research, image invocation or W1.
