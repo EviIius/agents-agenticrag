@@ -33,6 +33,12 @@ Meeting packs are drafts. These templates do not establish general factual
 reliability or revive Research. Large inputs are rejected with a context message
 instead of being silently shortened.
 
+The native checks retained two model limitations: a missing action timestamp and
+a quoted instruction misrepresented as an attendee's claim. Check quoted speech
+against the source as well as decisions/owners/dates. **Original source timestamps**
+in the source dialog and Markdown export are copied directly from the saved
+transcript; they remain available when the model omits a draft reference.
+
 ## Controls and storage
 
 - Optional output-limit/temperature fields override only the values you enter.

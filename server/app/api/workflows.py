@@ -104,6 +104,14 @@ async def export(
                     blocks.append("Image job: " + step.output["image_job_id"])
         if source_data:
             blocks.extend(["## Original transcript", source_data["text"]])
+            if source_data["segments"]:
+                blocks.append("## Original source timestamps")
+                blocks.extend(
+                    f"[{segment['start']}s–{segment['end']}s] "
+                    + (f"{segment['speaker']}: " if segment.get("speaker") else "")
+                    + segment["text"]
+                    for segment in source_data["segments"]
+                )
         body = "\n\n".join(blocks)
     return Response(
         body,

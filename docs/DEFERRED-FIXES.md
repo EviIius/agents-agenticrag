@@ -344,3 +344,22 @@ No further inference or release is authorized by these proposals. 508 Python /
 39 frontend / 473 browser tests pass; three existing browser skips remain.
 Live app unchanged and healthy; Images held, G9 open, Research shelved, W1
 unstarted and VoiceOver off the current list.
+
+## Product delivery 1–4 — 12 October 2026
+
+The earlier held/unstarted entries are historical. Jake approved the explicit
+Images release exception and two fixed workflows. Images and Workflows are now
+live, with additive migration, rollback, durable retry/cancel/reconnect and source
+exports verified. Research remains shelved; broad reliability experiments end.
+
+| Remaining item | Measured state | Next action |
+| --- | --- | --- |
+| Ordinary Search/grounding | Existing failures retained; no qualified repair | Keep source review and specific failure evidence; do not restart broad prompt trials |
+| Meeting-pack quote context | Native adversarial case recasts a quoted instruction as an attendee assertion | Human source review required; preserve failure before any separately reviewed refinement |
+| Model timestamp placement / task taxonomy | Budget action lacks its timestamp; a commitment also appears under Decisions | Original source timeline/speakers now displayed/exported directly; model formatting remains imperfect |
+| Physical iPhone Images/workflows | Automated responsive/WebKit and live HTTPS inspection pass; requested device observation pending | Check generation/save/share/cancel on the actual phone without attributing an unperformed pass |
+| Future workflow builder | Two fixed templates only | Use them and collect concrete failures; arbitrary steps, agents, external writes and scheduling need a reviewed scope |
+
+See `PRODUCT-DELIVERY-REPORT.md` for exact calls, retained failures, test layers,
+source preservation, migration verification and image storage measurements.
+VoiceOver remains off the work list; its historical reported failure is retained.

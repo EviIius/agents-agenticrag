@@ -1,0 +1,65 @@
+FF
+=================================== FAILURES ===================================
+____ test_accept_duplicate_conflict_pause_edit_preserves_draft_and_variants ____
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10c43a660>, <httpx.AsyncClient object at 0x10c4a0980>, <fastapi.applications.FastAPI object at 0x10c43a270>)
+
+    async def test_accept_duplicate_conflict_pause_edit_preserves_draft_and_variants(
+        chat_app: Any,
+    ) -> None:
+        app, client, runtime = chat_app
+        run = await start(app, client, seeds=[42, 43])
+        duplicate = await client.post("/api/workflows/runs", json=spec(app, seeds=[42, 43]))
+        assert duplicate.json()["id"] == run["id"]
+        conflict = await client.post("/api/workflows/runs", json=spec(app, seeds=[44]))
+        assert conflict.status_code == 409
+        await finish(app, run["id"])
+        value = await app.state.workflows.get(run["id"])
+        assert value.state == "paused" and value.steps[0].state == "complete"
+        assert app.state.images.engine.calls == 0
+        original = value.steps[0].output
+        await app.state.workflows.resume(
+            run["id"], WorkflowResume(prompt="Two green circles", skip_cleanup=False)
+        )
+        await finish(app, run["id"])
+        value = await app.state.workflows.get(run["id"])
+>       assert value.state == "complete" and len(value.steps) == 3
+E       AssertionError: assert ('failed' == 'complete'
+E         
+E         - complete
+E         + failed)
+
+tests/test_workflows.py:65: AssertionError
+_______ test_retry_image_failure_does_not_repeat_text_or_completed_image _______
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10c4c6120>, <httpx.AsyncClient object at 0x10c1616e0>, <fastapi.applications.FastAPI object at 0x10c43a3c0>)
+
+    async def test_retry_image_failure_does_not_repeat_text_or_completed_image(chat_app: Any) -> None:
+        app, client, runtime = chat_app
+        run = await start(app, client, review_prompt=False, seeds=[42, 43])
+        engine = app.state.images.engine
+        original = engine.run
+    
+        async def second_fails(*args: Any, **kwargs: Any) -> int:
+            engine.fail = engine.calls == 1
+            return int(await original(*args, **kwargs))
+    
+        engine.run = second_fails
+        await finish(app, run["id"])
+        value = await app.state.workflows.get(run["id"])
+>       assert value.state == "failed" and value.steps[1].state == "complete"
+E       AssertionError: assert ('failed' == 'failed'
+E         
+E           failed and 'failed' == 'complete'
+E         
+E         - complete
+E         + failed)
+
+tests/test_workflows.py:88: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_workflows.py::test_accept_duplicate_conflict_pause_edit_preserves_draft_and_variants
+FAILED tests/test_workflows.py::test_retry_image_failure_does_not_repeat_text_or_completed_image
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! KeyboardInterrupt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/Users/evilius/.local/share/workbench/tools/python-library-probe/cpython-3.14.7-macos-aarch64-none/lib/python3.14/asyncio/runners.py:133: KeyboardInterrupt
+(to show a full traceback on KeyboardInterrupt use --full-trace)
+2 failed in 132.86s (0:02:12)

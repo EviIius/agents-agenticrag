@@ -1,0 +1,133 @@
+E501 Line too long (104 > 100)
+   --> app/api/workflows.py:106:101
+    |
+104 |         media_type="application/json" if format == "json" else "text/markdown",
+105 |         headers={
+106 |             "Content-Disposition": f'attachment; filename="Atelier-workflow-{identifier[:8]}.{format}"',
+    |                                                                                                     ^^^^
+107 |             "Cache-Control": "no-store",
+108 |         },
+    |
+
+E501 Line too long (121 > 100)
+   --> app/workflows/jobs.py:101:101
+    |
+ 99 |                     ),
+100 |                     (
+101 |                         "DELETE FROM workflow_events WHERE id <= (SELECT COALESCE(MAX(id),0)-1000 FROM workflow_events)",
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^
+102 |                         (),
+103 |                     ),
+    |
+
+E501 Line too long (157 > 100)
+   --> app/workflows/jobs.py:147:101
+    |
+145 | …[
+146 | …
+147 | …nput_json,state,stage,created_at,updated_at) VALUES(?,?,?,'queued','Waiting for a step',?,?)",
+    |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+148 | …ate, date),
+149 | …
+    |
+
+E501 Line too long (108 > 100)
+   --> app/workflows/jobs.py:182:101
+    |
+180 |             [
+181 |                 (
+182 |                     "UPDATE workflow_steps SET state=?,output_json=?,error=? WHERE run_id=? AND position=?",
+    |                                                                                                     ^^^^^^^^
+183 |                     (state, encoded, error, identifier, step.position),
+184 |                 ),
+    |
+
+E501 Line too long (131 > 100)
+   --> app/workflows/jobs.py:186:101
+    |
+184 |                 ),
+185 |                 (
+186 |                     "UPDATE workflow_attempts SET state=?,output_json=?,finished_at=? WHERE run_id=? AND position=? AND attempt=?",
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+187 |                     (
+188 |                         state,
+    |
+
+E501 Line too long (123 > 100)
+   --> app/workflows/jobs.py:222:101
+    |
+220 |                     [
+221 |                         (
+222 |                             "UPDATE workflow_steps SET state='running',attempt=?,error=NULL WHERE run_id=? AND position=?",
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^
+223 |                             (current.attempt, identifier, current.position),
+224 |                         ),
+    |
+
+E501 Line too long (141 > 100)
+   --> app/workflows/jobs.py:226:101
+    |
+224 | …     ),
+225 | …     (
+226 | …         "INSERT INTO workflow_attempts(run_id,position,attempt,input_json,state,started_at) VALUES(?,?,?,?,'running',?)",
+    |                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+227 | …         (
+228 | …             identifier,
+    |
+
+E501 Line too long (108 > 100)
+   --> app/workflows/jobs.py:343:101
+    |
+341 |                 raise AppError(
+342 |                     "cleanup_failed",
+343 |                     "Clean-up was rejected or interrupted. Retry or continue with the original transcript.",
+    |                                                                                                     ^^^^^^^^
+344 |                     409,
+345 |                 )
+    |
+
+E501 Line too long (165 > 100)
+   --> app/workflows/jobs.py:448:101
+    |
+446 | …
+447 | …
+448 | …tput allowance. Choose a larger context or shorter source in a new run. No source was truncated.",
+    |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+449 | …
+450 | …
+    |
+
+E501 Line too long (127 > 100)
+   --> app/workflows/jobs.py:495:101
+    |
+493 |                         raise AppError(
+494 |                             "workflow_incomplete",
+495 |                             "The model did not finish this draft. Partial output is saved; retry with your selected settings.",
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+496 |                             409,
+497 |                         )
+    |
+
+E501 Line too long (140 > 100)
+   --> app/workflows/jobs.py:558:101
+    |
+556 | …
+557 | …
+558 | …pending',error=NULL WHERE run_id=? AND state IN ('failed','interrupted','cancelled')",
+    |                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+559 | …
+560 | …
+    |
+
+E501 Line too long (101 > 100)
+   --> app/workflows/jobs.py:574:101
+    |
+572 |             elif run.state == "paused":
+573 |                 await self.store.execute(
+574 |                     "UPDATE workflow_steps SET state='cancelled' WHERE run_id=? AND state='pending'",
+    |                                                                                                     ^
+575 |                     (identifier,),
+576 |                 )
+    |
+
+Found 12 errors.

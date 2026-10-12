@@ -1,0 +1,720 @@
+E501 Line too long (110 > 100)
+  --> app/api/workflows.py:66:101
+   |
+64 | async def source(identifier: str, request: Request) -> WorkflowSource:
+65 |     await manager(request).get(identifier)
+66 |     row = await request.app.state.store.one("SELECT source_json FROM workflow_runs WHERE id=?", (identifier,))
+   |                                                                                                     ^^^^^^^^^^
+67 |     if not row or not row["source_json"]:
+68 |         raise AppError("not_found", "The source transcript is not ready.", 404)
+   |
+
+E501 Line too long (102 > 100)
+  --> app/api/workflows.py:73:101
+   |
+72 | @router.get("/runs/{identifier}/export")
+73 | async def export(identifier: str, request: Request, format: Literal["md", "json"] = "md") -> Response:
+   |                                                                                                     ^^
+74 |     run = await manager(request).get(identifier)
+75 |     row = await request.app.state.store.one("SELECT source_json FROM workflow_runs WHERE id=?", (identifier,))
+   |
+
+E501 Line too long (110 > 100)
+  --> app/api/workflows.py:75:101
+   |
+73 | async def export(identifier: str, request: Request, format: Literal["md", "json"] = "md") -> Response:
+74 |     run = await manager(request).get(identifier)
+75 |     row = await request.app.state.store.one("SELECT source_json FROM workflow_runs WHERE id=?", (identifier,))
+   |                                                                                                     ^^^^^^^^^^
+76 |     source_data = json.loads(row["source_json"]) if row and row["source_json"] else None
+77 |     if format == "json":
+   |
+
+E501 Line too long (130 > 100)
+  --> app/api/workflows.py:78:101
+   |
+76 |     source_data = json.loads(row["source_json"]) if row and row["source_json"] else None
+77 |     if format == "json":
+78 |         body = json.dumps({"run": run.model_dump(), "source": source_data, "review_required": True}, ensure_ascii=False, indent=2)
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+79 |     else:
+80 |         blocks = ["# Atelier workflow — draft for review", f"State: {run.state}"]
+   |
+
+E501 Line too long (109 > 100)
+  --> app/api/workflows.py:92:101
+   |
+90 |         body = "\n\n".join(blocks)
+91 |     return Response(body, media_type="application/json" if format == "json" else "text/markdown",
+92 |         headers={"Content-Disposition": f'attachment; filename="Atelier-workflow-{identifier[:8]}.{format}"',
+   |                                                                                                     ^^^^^^^^^
+93 |                  "Cache-Control": "no-store"})
+   |
+
+E501 Line too long (115 > 100)
+   --> app/api/workflows.py:105:101
+    |
+103 |         async for sequence, kind, data in manager(request).tail(after):
+104 |             yield {"id": str(sequence), "event": kind, "data": json.dumps(data)}
+105 |     return EventSourceResponse(stream(), ping=15, headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+    |                                                                                                     ^^^^^^^^^^^^^^^
+
+E501 Line too long (117 > 100)
+  --> app/workflows/jobs.py:49:101
+   |
+47 |         if not row:
+48 |             raise AppError("not_found", "Workflow not found.", 404)
+49 |         steps = await self.store.rows("SELECT * FROM workflow_steps WHERE run_id=? ORDER BY position", (identifier,))
+   |                                                                                                     ^^^^^^^^^^^^^^^^^
+50 |         return WorkflowRun(id=identifier, version=row["version"],
+51 |             input=WorkflowCreate.model_validate_json(row["input_json"]),
+   |
+
+E501 Line too long (115 > 100)
+  --> app/workflows/jobs.py:67:101
+   |
+65 |             run = await self.get(identifier)
+66 |             await self.store.batch([
+67 |                 ("INSERT INTO workflow_events(run_id,data_json) VALUES(?,?)", (identifier, run.model_dump_json())),
+   |                                                                                                     ^^^^^^^^^^^^^^^
+68 |                 ("DELETE FROM workflow_events WHERE id <= (SELECT COALESCE(MAX(id),0)-1000 FROM workflow_events)", ()),
+69 |             ])
+   |
+
+E501 Line too long (119 > 100)
+  --> app/workflows/jobs.py:68:101
+   |
+66 |             await self.store.batch([
+67 |                 ("INSERT INTO workflow_events(run_id,data_json) VALUES(?,?)", (identifier, run.model_dump_json())),
+68 |                 ("DELETE FROM workflow_events WHERE id <= (SELECT COALESCE(MAX(id),0)-1000 FROM workflow_events)", ()),
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^
+69 |             ])
+70 |             self.changed.notify_all()
+   |
+
+E501 Line too long (101 > 100)
+  --> app/workflows/jobs.py:72:101
+   |
+70 |             self.changed.notify_all()
+71 |
+72 |     async def state(self, identifier: str, state: str, stage: str, error: str | None = None) -> None:
+   |                                                                                                     ^
+73 |         await self.store.execute("UPDATE workflow_runs SET state=?,stage=?,error=?,updated_at=? WHERE id=?",
+74 |             (state, stage, error, now(), identifier))
+   |
+
+E501 Line too long (108 > 100)
+  --> app/workflows/jobs.py:73:101
+   |
+72 |     async def state(self, identifier: str, state: str, stage: str, error: str | None = None) -> None:
+73 |         await self.store.execute("UPDATE workflow_runs SET state=?,stage=?,error=?,updated_at=? WHERE id=?",
+   |                                                                                                     ^^^^^^^^
+74 |             (state, stage, error, now(), identifier))
+75 |         await self.emit(identifier)
+   |
+
+E501 Line too long (122 > 100)
+  --> app/workflows/jobs.py:80:101
+   |
+78 |         canonical = spec.model_dump_json()
+79 |         async with self.lock:
+80 |             old = await self.store.one("SELECT id,input_json FROM workflow_runs WHERE request_key=?", (spec.request_key,))
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^
+81 |             if old:
+82 |                 if old["input_json"] != canonical:
+   |
+
+E501 Line too long (117 > 100)
+  --> app/workflows/jobs.py:83:101
+   |
+81 |             if old:
+82 |                 if old["input_json"] != canonical:
+83 |                     raise AppError("request_conflict", "This request key belongs to different workflow inputs.", 409)
+   |                                                                                                     ^^^^^^^^^^^^^^^^^
+84 |                 return await self.get(old["id"])
+85 |             if self.closing or len(self.tasks) >= 20:
+   |
+
+E501 Line too long (111 > 100)
+  --> app/workflows/jobs.py:89:101
+   |
+87 |             await self.runs.registry.resolve(spec.model.connection_id, spec.model.model_id)
+88 |             if spec.cleanup_model:
+89 |                 await self.runs.registry.resolve(spec.cleanup_model.connection_id, spec.cleanup_model.model_id)
+   |                                                                                                     ^^^^^^^^^^^
+90 |             if spec.template == "meeting_pack":
+91 |                 item = await attachments.attachment(self.store, str(spec.attachment_id))
+   |
+
+E501 Line too long (153 > 100)
+   --> app/workflows/jobs.py:98:101
+    |
+ 96 | …
+ 97 | …= [(
+ 98 | …ut_json,state,stage,created_at,updated_at) VALUES(?,?,?,'queued','Waiting for a step',?,?)",
+    |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 99 | …e, date))]
+100 | …s.steps(spec.template, bool(spec.cleanup_model), len(spec.seeds))):
+    |
+
+E501 Line too long (128 > 100)
+   --> app/workflows/jobs.py:100:101
+    |
+ 98 | …         "INSERT INTO workflow_runs(id,request_key,input_json,state,stage,created_at,updated_at) VALUES(?,?,?,'queued','Waiting for …
+ 99 | …         (identifier, spec.request_key, canonical, date, date))]
+100 | …     for position, (kind, label) in enumerate(templates.steps(spec.template, bool(spec.cleanup_model), len(spec.seeds))):
+    |                                                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+101 | …         statements.append(("INSERT INTO workflow_steps(run_id,position,kind,label) VALUES(?,?,?,?)", (identifier, position, kind, l…
+102 | …     await self.store.batch(statements)
+    |
+
+E501 Line too long (146 > 100)
+   --> app/workflows/jobs.py:101:101
+    |
+ 99 | … date, date))]
+100 | …lates.steps(spec.template, bool(spec.cleanup_model), len(spec.seeds))):
+101 | …steps(run_id,position,kind,label) VALUES(?,?,?,?)", (identifier, position, kind, label)))
+    |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+102 | …
+103 | …
+    |
+
+E501 Line too long (144 > 100)
+   --> app/workflows/jobs.py:112:101
+    |
+110 | …identifier, None))
+111 | …
+112 | …kflowStep, state: str, output: dict[str, Any] | None, error: str | None = None) -> None:
+    |                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+113 | …ne else None
+114 | …
+    |
+
+E501 Line too long (154 > 100)
+   --> app/workflows/jobs.py:115:101
+    |
+113 | …se None
+114 | …
+115 | …,error=? WHERE run_id=? AND position=?", (state, encoded, error, identifier, step.position)),
+    |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+116 | …n=?,finished_at=? WHERE run_id=? AND position=? AND attempt=?", (state, encoded, now() if state != "running" else None, identifier, …
+117 | …
+    |
+
+E501 Line too long (223 > 100)
+   --> app/workflows/jobs.py:116:101
+    |
+114 | …
+115 | …on=?", (state, encoded, error, identifier, step.position)),
+116 | …ND position=? AND attempt=?", (state, encoded, now() if state != "running" else None, identifier, step.position, step.attempt)),
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+117 | …
+118 | …
+    |
+
+E501 Line too long (101 > 100)
+   --> app/workflows/jobs.py:131:101
+    |
+129 |                 if current.state != "pending":
+130 |                     return
+131 |                 if current.kind == "image" and run.input.review_prompt and run.edited_prompt is None:
+    |                                                                                                     ^
+132 |                     await self.state(identifier, "paused", "Review the image prompt")
+133 |                     return
+    |
+
+E501 Line too long (166 > 100)
+   --> app/workflows/jobs.py:136:101
+    |
+134 | …
+135 | …
+136 | …empt=?,error=NULL WHERE run_id=? AND position=?", (current.attempt, identifier, current.position)),
+    |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+137 | …,attempt,input_json,state,started_at) VALUES(?,?,?,?,'running',?)", (identifier, current.position, current.attempt, json.dumps({"def…
+138 | …
+    |
+
+E501 Line too long (316 > 100)
+   --> app/workflows/jobs.py:137:101
+    |
+135 | …
+136 | …id=? AND position=?", (current.attempt, identifier, current.position)),
+137 | …arted_at) VALUES(?,?,?,?,'running',?)", (identifier, current.position, current.attempt, json.dumps({"definition": run.input.model_dump(), "edited_prompt": run.edited_prompt, "prompt_version": templates.VERSION}), now())),
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+138 | …
+139 | …
+    |
+
+E501 Line too long (152 > 100)
+   --> app/workflows/jobs.py:145:101
+    |
+143 | …
+144 | …
+145 | …put_json FROM workflow_steps WHERE run_id=? AND position=?", (identifier, current.position))
+    |                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+146 | …ow and row["output_json"] else None
+147 | …
+    |
+
+E501 Line too long (117 > 100)
+   --> app/workflows/jobs.py:148:101
+    |
+146 | …             output = json.loads(row["output_json"]) if row and row["output_json"] else None
+147 | …             if row and row["state"] == "running":
+148 | …                 await self.save_step(identifier, current, "interrupted" if self.closing else "cancelled", output)
+    |                                                                                                   ^^^^^^^^^^^^^^^^^
+149 | …         await self.state(identifier, "interrupted" if self.closing else "cancelled", "Interrupted — retry available" if self.closin…
+150 | …     except Exception as exc:
+    |
+
+E501 Line too long (154 > 100)
+   --> app/workflows/jobs.py:149:101
+    |
+147 | …
+148 | … "interrupted" if self.closing else "cancelled", output)
+149 | …f.closing else "cancelled", "Interrupted — retry available" if self.closing else "Cancelled")
+    |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+150 | …
+151 | …else "This step failed. Earlier outputs are saved. Retry the failed step."
+    |
+
+E501 Line too long (135 > 100)
+   --> app/workflows/jobs.py:151:101
+    |
+149 | …d" if self.closing else "cancelled", "Interrupted — retry available" if self.closing else "Cancelled")
+150 | …
+151 | …ppError) else "This step failed. Earlier outputs are saved. Retry the failed step."
+    |                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+152 | …
+153 | …utput_json FROM workflow_steps WHERE run_id=? AND position=?", (identifier, current.position))
+    |
+
+E501 Line too long (146 > 100)
+   --> app/workflows/jobs.py:153:101
+    |
+151 | …or) else "This step failed. Earlier outputs are saved. Retry the failed step."
+152 | …
+153 | …_json FROM workflow_steps WHERE run_id=? AND position=?", (identifier, current.position))
+    |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+154 | …f row and row["output_json"] else None
+155 | … "failed", output, error)
+    |
+
+E501 Line too long (107 > 100)
+   --> app/workflows/jobs.py:178:101
+    |
+176 |                     job = self.transcription.jobs[item.id]
+177 |                 if job.task:
+178 |                     await asyncio.shield(job.task)  # The attachment's transcription may also serve a chat.
+    |                                                                                                     ^^^^^^^
+179 |             source = await attachments.transcript(self.store, item.id)
+180 |             if not source.attachment.transcript or source.attachment.transcript.status != "ready":
+    |
+
+E501 Line too long (125 > 100)
+   --> app/workflows/jobs.py:181:101
+    |
+179 |             source = await attachments.transcript(self.store, item.id)
+180 |             if not source.attachment.transcript or source.attachment.transcript.status != "ready":
+181 |                 raise AppError("transcript_failed", "Transcription did not finish. Retry or choose a saved transcript.", 409)
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^
+182 |             original = {"attachment_id": item.id, "filename": item.filename,
+183 |                 "text": source.text, "raw_text": source.raw_text,
+    |
+
+E501 Line too long (125 > 100)
+   --> app/workflows/jobs.py:185:101
+    |
+183 |                 "text": source.text, "raw_text": source.raw_text,
+184 |                 "segments": [s.model_dump() for s in source.segments], "cleaned_text": None}
+185 |             await self.store.execute("UPDATE workflow_runs SET source_json=? WHERE id=?", (json.dumps(original), identifier))
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^
+186 |             return {"text": "Original transcript saved", "attachment_id": item.id}
+187 |         if step.kind == "cleanup":
+    |
+
+E501 Line too long (124 > 100)
+   --> app/workflows/jobs.py:189:101
+    |
+187 |         if step.kind == "cleanup":
+188 |             assert spec.cleanup_model is not None
+189 |             await self.cleanup.start(str(spec.attachment_id), spec.cleanup_model.connection_id, spec.cleanup_model.model_id)
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^
+190 |             job = self.transcription.jobs[str(spec.attachment_id)]
+191 |             self.owned_cleanup[identifier] = job
+    |
+
+E501 Line too long (142 > 100)
+   --> app/workflows/jobs.py:196:101
+    |
+194 | …tore, str(spec.attachment_id))
+195 | …
+196 | …-up was rejected or interrupted. Retry or continue with the original transcript.", 409)
+    |                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+197 | …son FROM workflow_runs WHERE id=?", (identifier,))
+198 | …
+    |
+
+E501 Line too long (105 > 100)
+   --> app/workflows/jobs.py:197:101
+    |
+195 | …     if value.cleaned_text is None:
+196 | …         raise AppError("cleanup_failed", "Clean-up was rejected or interrupted. Retry or continue with the original transcript.", 4…
+197 | …     row = await self.store.one("SELECT source_json FROM workflow_runs WHERE id=?", (identifier,))
+    |                                                                                               ^^^^^
+198 | …     assert row
+199 | …     source = json.loads(row["source_json"])
+    |
+
+E501 Line too long (123 > 100)
+   --> app/workflows/jobs.py:201:101
+    |
+199 |             source = json.loads(row["source_json"])
+200 |             source["cleaned_text"] = value.cleaned_text
+201 |             await self.store.execute("UPDATE workflow_runs SET source_json=? WHERE id=?", (json.dumps(source), identifier))
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^
+202 |             return {"text": "Guarded clean-up saved; original transcript retained"}
+203 |         if step.kind == "image":
+    |
+
+E501 Line too long (114 > 100)
+   --> app/workflows/jobs.py:208:101
+    |
+206 | …     prompt = run.edited_prompt or str(draft["text"])
+207 | …     if not prompt.strip() or len(prompt) > 4000:
+208 | …         raise AppError("workflow_prompt", "Review and shorten the image prompt to 4,000 characters.", 409)
+    |                                                                                               ^^^^^^^^^^^^^^
+209 | …     job = await self.images.submit(ImageCreate(request_key=f"workflow:{identifier}:{step.position}:{step.attempt}", prompt=prompt, …
+210 | …     self.owned_images[identifier] = job.id
+    |
+
+E501 Line too long (173 > 100)
+   --> app/workflows/jobs.py:209:101
+    |
+207 | …
+208 | …he image prompt to 4,000 characters.", 409)
+209 | …rkflow:{identifier}:{step.position}:{step.attempt}", prompt=prompt, seed=spec.seeds[step.position-1]))
+    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+210 | …
+211 | …ob_id": job.id})
+    |
+
+E501 Line too long (119 > 100)
+   --> app/workflows/jobs.py:218:101
+    |
+216 |             self.owned_images.pop(identifier, None)
+217 |             if job.state != "complete":
+218 |                 raise AppError("workflow_image", job.error or "Image generation did not finish. Retry this step.", 409)
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^
+219 |             return {"image_job_id": job.id, "sha256": job.sha256}
+220 |         if step.kind == "pack":
+    |
+
+E501 Line too long (121 > 100)
+   --> app/workflows/jobs.py:221:101
+    |
+219 |             return {"image_job_id": job.id, "sha256": job.sha256}
+220 |         if step.kind == "pack":
+221 |             connection = await self.store.one("SELECT base_url FROM connections WHERE id=?", (spec.model.connection_id,))
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^
+222 |             host = urlsplit(str(connection["base_url"])).hostname if connection else None
+223 |             local = host == "localhost"
+    |
+
+E501 Line too long (118 > 100)
+   --> app/workflows/jobs.py:229:101
+    |
+227 |                 pass
+228 |             if not local:
+229 |                 raise AppError("recording_requires_local", "Recording workflows need a local Ollama connection.", 422)
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^
+230 |             row = await self.store.one("SELECT source_json FROM workflow_runs WHERE id=?", (identifier,))
+231 |             assert row and row["source_json"]
+    |
+
+E501 Line too long (105 > 100)
+   --> app/workflows/jobs.py:230:101
+    |
+228 |             if not local:
+229 |                 raise AppError("recording_requires_local", "Recording workflows need a local Ollama connection.", 422)
+230 |             row = await self.store.one("SELECT source_json FROM workflow_runs WHERE id=?", (identifier,))
+    |                                                                                                     ^^^^^
+231 |             assert row and row["source_json"]
+232 |             source = json.loads(row["source_json"])
+    |
+
+E501 Line too long (102 > 100)
+   --> app/workflows/jobs.py:233:101
+    |
+231 |             assert row and row["source_json"]
+232 |             source = json.loads(row["source_json"])
+233 |             material = "<original_transcript>\n" + escape(source["text"]) + "\n</original_transcript>"
+    |                                                                                                     ^^
+234 |             if source["segments"]:
+235 |                 material += "\n<source_segments>\n" + escape(json.dumps(source["segments"])) + "\n</source_segments>"
+    |
+
+E501 Line too long (117 > 100)
+   --> app/workflows/jobs.py:235:101
+    |
+233 |             material = "<original_transcript>\n" + escape(source["text"]) + "\n</original_transcript>"
+234 |             if source["segments"]:
+235 |                 material += "\n<source_segments>\n" + escape(json.dumps(source["segments"])) + "\n</source_segments>"
+    |                                                                                                     ^^^^^^^^^^^^^^^^^
+236 |             if source.get("cleaned_text"):
+237 |                 material += "\n<cleaned_reading_aid>\n" + escape(source["cleaned_text"]) + "\n</cleaned_reading_aid>"
+    |
+
+E501 Line too long (117 > 100)
+   --> app/workflows/jobs.py:237:101
+    |
+235 |                 material += "\n<source_segments>\n" + escape(json.dumps(source["segments"])) + "\n</source_segments>"
+236 |             if source.get("cleaned_text"):
+237 |                 material += "\n<cleaned_reading_aid>\n" + escape(source["cleaned_text"]) + "\n</cleaned_reading_aid>"
+    |                                                                                                     ^^^^^^^^^^^^^^^^^
+238 |             return await self.text(run, step, templates.MEETING_PACK, material)
+239 |         return await self.text(run, step, templates.IMAGE_PROMPT, spec.brief)
+    |
+
+E501 Line too long (109 > 100)
+   --> app/workflows/jobs.py:241:101
+    |
+239 |         return await self.text(run, step, templates.IMAGE_PROMPT, spec.brief)
+240 |
+241 |     async def text(self, run: WorkflowRun, step: WorkflowStep, system: str, material: str) -> dict[str, Any]:
+    |                                                                                                     ^^^^^^^^^
+242 |         selected = run.input.model
+243 |         model = await self.runs.registry.resolve(selected.connection_id, selected.model_id)
+    |
+
+E501 Line too long (102 > 100)
+   --> app/workflows/jobs.py:244:101
+    |
+242 | …     selected = run.input.model
+243 | …     model = await self.runs.registry.resolve(selected.connection_id, selected.model_id)
+244 | …     params = await self.runs.registry.params(model, selected.params.model_dump(exclude_none=True))
+    |                                                                                                   ^^
+245 | …     messages = [ProviderMessage("system", system), ProviderMessage("user", material)]
+246 | …     pref = await self.store.one("SELECT tokens_per_char FROM model_prefs WHERE connection_id=? AND model_id=?", (model.connection_i…
+    |
+
+E501 Line too long (154 > 100)
+   --> app/workflows/jobs.py:246:101
+    |
+244 | …ted.params.model_dump(exclude_none=True))
+245 | …erMessage("user", material)]
+246 | …ROM model_prefs WHERE connection_id=? AND model_id=?", (model.connection_id, model.model_id))
+    |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+247 | … else 0.3
+248 | …
+    |
+
+E501 Line too long (201 > 100)
+   --> app/workflows/jobs.py:252:101
+    |
+250 | …
+251 | …
+252 | …el's input/output allowance. Choose a larger context or shorter source in a new run. No source was truncated.", 422)
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+253 | …
+254 | …reasoning"))
+    |
+
+E501 Line too long (391 > 100)
+   --> app/workflows/jobs.py:255:101
+    |
+253 | …
+254 | …))
+255 | …position=? AND attempt=?", (json.dumps({"model": …ION}), run.id, step.position, step.attempt))
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^…^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+256 | …
+257 | …: params,
+    |
+
+E501 Line too long (104 > 100)
+   --> app/workflows/jobs.py:257:101
+    |
+255 | …     await self.store.execute("UPDATE workflow_attempts SET input_json=? WHERE run_id=? AND position=? AND attempt=?", (json.dumps({…
+256 | …     stream = adapter.stream(request, background=True)
+257 | …     output: dict[str, Any] = {"text": "", "model": selected.model_dump(), "resolved_params": params,
+    |                                                                                                   ^^^^
+258 | …         "context_length": maximum, "prompt_version": templates.VERSION,
+259 | …         "prompt_sha256": hashlib.sha256(system.encode()).hexdigest(), "draft": True}
+    |
+
+E501 Line too long (166 > 100)
+   --> app/workflows/jobs.py:272:101
+    |
+270 | …
+271 | …
+272 | …model did not finish this draft. Partial output is saved; retry with your selected settings.", 409)
+    |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+273 | …
+274 | …
+    |
+
+E501 Line too long (111 > 100)
+   --> app/workflows/jobs.py:275:101
+    |
+273 |                     finished = True
+274 |             if not finished or not output["text"].strip():
+275 |                 raise AppError("workflow_empty", "The model returned no complete draft. Retry this step.", 409)
+    |                                                                                                     ^^^^^^^^^^^
+276 |             return output
+277 |         finally:
+    |
+
+E501 Line too long (153 > 100)
+   --> app/workflows/jobs.py:290:101
+    |
+288 | …
+289 | …
+290 | …"failed", "interrupted", "cancelled"} and prior.output and prior.output.get("image_job_id"):
+    |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+291 | …t["image_job_id"])
+292 | …a256:
+    |
+
+E501 Line too long (127 > 100)
+   --> app/workflows/jobs.py:293:101
+    |
+291 |                     image = await self.images.get(prior.output["image_job_id"])
+292 |                     if image.state == "complete" and image.sha256:
+293 |                         await self.save_step(identifier, prior, "complete", {"image_job_id": image.id, "sha256": image.sha256})
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+294 |             run = await self.get(identifier)
+295 |             if all(s.state == "complete" for s in run.steps):
+    |
+
+E501 Line too long (131 > 100)
+   --> app/workflows/jobs.py:302:101
+    |
+300 |                 if step.kind != "cleanup":
+301 |                     raise AppError("workflow_step", "Only optional clean-up can be skipped.", 422)
+302 |                 await self.save_step(identifier, step, "complete", {"text": "User chose the original transcript", "skipped": True})
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+303 |             elif step.kind == "image" and run.state == "paused":
+304 |                 draft = run.steps[0].output
+    |
+
+E501 Line too long (104 > 100)
+   --> app/workflows/jobs.py:308:101
+    |
+306 |                 prompt = body.prompt if body.prompt is not None else str(draft["text"])
+307 |                 if not prompt.strip() or len(prompt) > 4000:
+308 |                     raise AppError("workflow_prompt", "Use an image prompt of 1–4,000 characters.", 422)
+    |                                                                                                     ^^^^
+309 |                 await self.store.execute("UPDATE workflow_runs SET edited_prompt=? WHERE id=?", (prompt, identifier))
+310 |             else:
+    |
+
+E501 Line too long (117 > 100)
+   --> app/workflows/jobs.py:309:101
+    |
+307 | …         if not prompt.strip() or len(prompt) > 4000:
+308 | …             raise AppError("workflow_prompt", "Use an image prompt of 1–4,000 characters.", 422)
+309 | …         await self.store.execute("UPDATE workflow_runs SET edited_prompt=? WHERE id=?", (prompt, identifier))
+    |                                                                                               ^^^^^^^^^^^^^^^^^
+310 | …     else:
+311 | …         await self.store.execute("UPDATE workflow_steps SET state='pending',error=NULL WHERE run_id=? AND state IN ('failed','inter…
+    |
+
+E501 Line too long (176 > 100)
+   --> app/workflows/jobs.py:311:101
+    |
+309 | …d_prompt=? WHERE id=?", (prompt, identifier))
+310 | …
+311 | …e='pending',error=NULL WHERE run_id=? AND state IN ('failed','interrupted','cancelled')", (identifier,))
+    |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+312 | …
+313 | …
+    |
+
+E501 Line too long (137 > 100)
+   --> app/workflows/jobs.py:324:101
+    |
+322 | …
+323 | …
+324 | …flow_steps SET state='cancelled' WHERE run_id=? AND state='pending'", (identifier,))
+    |                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+325 | …ed", "Cancelled")
+326 | …
+    |
+
+E501 Line too long (103 > 100)
+   --> app/workflows/jobs.py:331:101
+    |
+330 |     async def recover(self) -> None:
+331 |         await self.store.execute("UPDATE workflow_steps SET state='interrupted' WHERE state='running'")
+    |                                                                                                     ^^^
+332 |         await self.store.execute("UPDATE workflow_attempts SET state='interrupted',finished_at=? WHERE state='running'", (now(),))
+333 |         for row in await self.store.rows("SELECT id,state FROM workflow_runs WHERE state IN ('queued','running','cancelling')"):
+    |
+
+E501 Line too long (130 > 100)
+   --> app/workflows/jobs.py:332:101
+    |
+330 |     async def recover(self) -> None:
+331 |         await self.store.execute("UPDATE workflow_steps SET state='interrupted' WHERE state='running'")
+332 |         await self.store.execute("UPDATE workflow_attempts SET state='interrupted',finished_at=? WHERE state='running'", (now(),))
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+333 |         for row in await self.store.rows("SELECT id,state FROM workflow_runs WHERE state IN ('queued','running','cancelling')"):
+334 |             # Reconcile a committed image that finished before the workflow commit.
+    |
+
+E501 Line too long (128 > 100)
+   --> app/workflows/jobs.py:333:101
+    |
+331 |         await self.store.execute("UPDATE workflow_steps SET state='interrupted' WHERE state='running'")
+332 |         await self.store.execute("UPDATE workflow_attempts SET state='interrupted',finished_at=? WHERE state='running'", (now(),))
+333 |         for row in await self.store.rows("SELECT id,state FROM workflow_runs WHERE state IN ('queued','running','cancelling')"):
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+334 |             # Reconcile a committed image that finished before the workflow commit.
+335 |             run = await self.get(row["id"])
+    |
+
+E501 Line too long (124 > 100)
+   --> app/workflows/jobs.py:337:101
+    |
+335 |             run = await self.get(row["id"])
+336 |             for step in run.steps:
+337 |                 if step.state == "interrupted" and step.kind == "image" and step.output and step.output.get("image_job_id"):
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^
+338 |                     job = await self.images.get(step.output["image_job_id"])
+339 |                     if job.state == "complete":
+    |
+
+E501 Line too long (118 > 100)
+   --> app/workflows/jobs.py:340:101
+    |
+338 |                     job = await self.images.get(step.output["image_job_id"])
+339 |                     if job.state == "complete":
+340 |                         await self.save_step(run.id, step, "complete", {"image_job_id": job.id, "sha256": job.sha256})
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^
+341 |             if row["state"] == "queued":
+342 |                 self.schedule(row["id"])
+    |
+
+E501 Line too long (124 > 100)
+   --> app/workflows/jobs.py:355:101
+    |
+353 |         while True:
+354 |             async with self.changed:
+355 |                 records = await self.store.rows("SELECT id,data_json FROM workflow_events WHERE id>? ORDER BY id", (after,))
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^
+356 |                 while not records:
+357 |                     await self.changed.wait()
+    |
+
+E501 Line too long (128 > 100)
+   --> app/workflows/jobs.py:358:101
+    |
+356 |                 while not records:
+357 |                     await self.changed.wait()
+358 |                     records = await self.store.rows("SELECT id,data_json FROM workflow_events WHERE id>? ORDER BY id", (after,))
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+359 |             for record in records:
+360 |                 after = record["id"]
+    |
+
+Found 67 errors (1 fixed, 66 remaining).

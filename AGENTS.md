@@ -881,3 +881,36 @@ automatic routing, arbitrary tools, external writes, scheduling, branching,
 reference-image editing, autonomous agents or Research restart. Preserve original
 recordings/document privacy and successful-audio removal. Existing release gates
 remain for all unrelated features; VoiceOver remains off the current work list.
+
+**Product delivery 1–4 closeout — 12 October 2026:** Images and the two explicitly
+approved fixed workflows are installed on the original service/route. Private
+I1 and pre-workflow app/plist/database fallbacks remain. All 35 previous tables
+are byte-equivalent; four workflow tables are additive. All 98 installed server/
+source files match the release manifest; 14 Search modules and ordinary native
+payload/stream construction remain unchanged. Ollama remains 0.35.0. No default,
+model, dependency, runtime or Research change occurred.
+
+The bounded native demonstrations use exactly three draft calls, one existing
+clean-up call, two images and one ASR invocation, with no warm/judge/retry call.
+Creative prompt fidelity, two outputs, persisted review and backup pass. The
+ordinary spoken case preserves the required facts and unstated owner/date, but
+omits a budget-action timestamp and duplicates a commitment under Decisions.
+The adversarial quotation case fails semantic review: a quoted instruction becomes
+an attendee claim with unsupported consensus/confirmation framing. Preserve all
+outputs, frozen prompts/source and manual failures; native inference is stopped.
+No factual automation is qualified. The delivered meeting workflow is only the
+explicitly approved human-reviewed draft tool, with original source preserved and
+its actual timeline/speaker fields visible and exported; no automatic factual
+verification or external action follows. Do not claim every task check passed.
+
+Repository checks pass: 532 Python, 39 frontend; complete browser run 485 passes /
+three existing skips, followed by 12 final workflow/source-timeline checks and
+24 targeted source/speaker/recovery tests. The full browser run precedes the final
+source-identity/export deltas; retain their separately recorded focused evidence.
+Initial JS is 243,462 gzip bytes. Earlier 18,544 committed evidence/eval objects
+remain unchanged, with regenerated outputs retained separately. Corrected live
+HTTPS UI inspection sees the workflow heading and seven explicit model choices;
+no new model call or private screenshot. Physical iPhone review remains pending,
+not invented. H4: `docs/PRODUCT-DELIVERY-REPORT.md`. Review this release's retained
+limitations before another template, builder, inference experiment or autonomous
+workflow scope; Research stays shelved and VoiceOver remains off the work list.

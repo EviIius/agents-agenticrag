@@ -122,6 +122,23 @@ async def test_original_source_survives_audio_and_attachment_removal_and_export(
     item = await record(
         app, client, "Alex will send the draft on Friday. No budget owner was assigned."
     )
+    await app.state.store.execute(
+        "UPDATE transcripts SET segments_json=? WHERE attachment_id=?",
+        (
+            json.dumps(
+                [
+                    {
+                        "start": 0.25,
+                        "end": 2.0,
+                        "speaker": "Synthetic speaker",
+                        "text": "Alex will send the draft on Friday. No budget owner was assigned.",
+                        "raw_text": "Alex will send the draft on Friday. No budget owner was assigned.",
+                    }
+                ]
+            ),
+            item["id"],
+        ),
+    )
     await app.state.transcription.release_audio(item["id"])
     run = await start(app, client, template="meeting_pack", brief="", attachment_id=item["id"])
     await finish(app, run["id"])
@@ -133,6 +150,8 @@ async def test_original_source_survives_audio_and_attachment_removal_and_export(
     assert response.json()["source"] == source and response.json()["review_required"] is True
     response = await client.get(f"/api/workflows/runs/{run['id']}/export?format=md")
     assert "Original transcript" in response.text and source["text"] in response.text
+    assert "Original source timestamps" in response.text
+    assert "[0.25s–2.0s] Synthetic speaker: Alex will send the draft on Friday." in response.text
     body = [r for r in runtime.state.captures if r.get("messages")][-1]
     assert (
         source["text"] in body["messages"][-1]["content"]

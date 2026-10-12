@@ -1,0 +1,40 @@
+....F...........                                                         [100%]
+=================================== FAILURES ===================================
+_______ test_saved_defaults_explicit_override_and_actual_attempt_inputs ________
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10d354440>, <httpx.AsyncClient object at 0x10d32a890>, <fastapi.applications.FastAPI object at 0x10d356120>)
+
+    async def test_saved_defaults_explicit_override_and_actual_attempt_inputs(chat_app: Any) -> None:
+        app, client, runtime = chat_app
+        await app.state.store.execute(
+            "INSERT INTO model_prefs(connection_id,model_id,params_json) VALUES(?,?,?) ON CONFLICT(connection_id,model_id) DO UPDATE SET params_json=excluded.params_json",
+            (app.state.test_connection, "fake-chat", json.dumps({"top_p": 0.8, "temperature": 0.7})),
+        )
+        run = await start(
+            app,
+            client,
+            model={
+                "connection_id": app.state.test_connection,
+                "model_id": "fake-chat",
+                "params": {"temperature": 0.4, "max_tokens": 128},
+            },
+        )
+        await finish(app, run["id"])
+        body = [r for r in runtime.state.captures if r.get("messages")][-1]
+>       assert body["options"] == {
+            "top_p": 0.8,
+            "temperature": 0.4,
+            "num_predict": 128,
+            "num_ctx": 8192,
+        }
+E       AssertionError: assert {'top_p': 0.8...m_ctx': 16384} == {'top_p': 0.8...um_ctx': 8192}
+E         
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'num_ctx': 16384} != {'num_ctx': 8192}
+E         Use -v to get more diff
+
+tests/test_workflows.py:161: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_workflows.py::test_saved_defaults_explicit_override_and_actual_attempt_inputs
+1 failed, 15 passed in 3.65s

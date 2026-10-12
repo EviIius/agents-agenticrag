@@ -512,8 +512,8 @@ export function WorkflowForm({
               />
             )}
             <p className="text-sm text-fg-2">
-              The meeting pack is a draft. Check decisions, owners and dates
-              against the saved source.
+              The meeting pack is a draft. Check quotations, decisions, owners
+              and dates against the saved source.
             </p>
           </>
         )}
@@ -609,7 +609,14 @@ function WorkflowCard({
       setSource({
         text: "Synthetic source: Mina will send the draft on Friday.",
         raw_text: "Synthetic source",
-        segments: [],
+        segments: [
+          {
+            start: 0.2,
+            end: 2.8,
+            text: "Synthetic source: Mina will send the draft on Friday.",
+            raw_text: "Synthetic source: Mina will send the draft on Friday.",
+          },
+        ],
         attachment_id: "synthetic",
         filename: "Synthetic.wav",
       });
@@ -810,6 +817,26 @@ function WorkflowCard({
           <pre className="whitespace-pre-wrap break-words font-sans text-sm">
             {source?.text}
           </pre>
+          {!!source?.segments.length && (
+            <details className="rounded-md border border-line p-3">
+              <summary className="cursor-pointer text-sm">
+                Original source timestamps
+              </summary>
+              <ol className="mt-3 space-y-3 text-sm">
+                {source.segments.map((segment, index) => (
+                  <li key={index} className="break-words">
+                    <p className="text-xs text-fg-3">
+                      {String(segment.start)}s–{String(segment.end)}s
+                      {segment.speaker ? ` · ${String(segment.speaker)}` : ""}
+                    </p>
+                    <p className="whitespace-pre-wrap">
+                      {String(segment.text)}
+                    </p>
+                  </li>
+                ))}
+              </ol>
+            </details>
+          )}
         </DialogContent>
       </Dialog>
     </article>

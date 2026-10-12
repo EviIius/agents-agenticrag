@@ -1,0 +1,27 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+I001 [*] Import block is un-sorted or un-formatted
+   --> tests/test_workflows.py:414:5
+    |
+413 |   async def test_qualification_depends_on_digest_and_context_not_name() -> None:
+414 | /     from types import SimpleNamespace
+415 | |
+416 | |     from app.images.engine import QUALIFIED_DIGEST
+417 | |     from app.runs.registry import Registry
+418 | |     from app.workflows.qualification import image_models
+    | |________________________________________________________^
+419 |
+420 |       name = "arbitrary-user-alias"
+    |
+help: Organize imports
+    |
+415 |
+    -     from app.images.engine import QUALIFIED_DIGEST
+416 |     from app.runs.registry import Registry
+417 +
+418 +     from app.images.engine import QUALIFIED_DIGEST
+419 |     from app.workflows.qualification import image_models
+    |
+
+Found 1 error.
+[*] 1 fixable with the `--fix` option.
+make: *** [check] Error 1

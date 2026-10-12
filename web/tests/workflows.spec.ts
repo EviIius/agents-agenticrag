@@ -71,6 +71,14 @@ for (const width of [390, 1440])
       await expect(
         page.getByRole("dialog", { name: "Original transcript" }),
       ).toContainText("Synthetic source");
+      await page
+        .getByText("Original source timestamps", { exact: true })
+        .click();
+      await expect(page.getByText("0.2s–2.8s", { exact: true })).toBeVisible();
+      await page.screenshot({
+        path: `${dir}/source-timeline-${width}-${theme}-${browserName}-fake.png`,
+        fullPage: true,
+      });
       await page.keyboard.press("Escape");
       await page.getByRole("button", { name: "Save outputs" }).click();
       const dialog = page.getByRole("dialog", {

@@ -1,0 +1,22 @@
+..................F..                                                    [100%]
+=================================== FAILURES ===================================
+________________ test_empty_transcript_never_invokes_pack_model ________________
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10f8ff380>, <httpx.AsyncClient object at 0x10f8e53d0>, <fastapi.applications.FastAPI object at 0x10f8ff230>)
+
+    async def test_empty_transcript_never_invokes_pack_model(chat_app: Any) -> None:
+        app, client, runtime = chat_app
+        item = await record(app, client, "")
+        run = await start(app, client, template="meeting_pack", brief="", attachment_id=item["id"])
+        await finish(app, run["id"])
+        value = await app.state.workflows.get(run["id"])
+>       assert value.state == "failed" and "No speech" in value.error
+E       AssertionError: assert ('complete' == 'failed'
+E         
+E         - failed
+E         + complete)
+
+tests/test_workflows.py:372: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_workflows.py::test_empty_transcript_never_invokes_pack_model
+1 failed, 20 passed in 4.40s
