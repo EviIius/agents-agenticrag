@@ -855,3 +855,29 @@ No product change/deployment/restart, Research/image/W1 action. H4:
 source proposal in `docs/SEARCH-STRUCTURED-EVIDENCE-NEXT.md` before another native
 trial or release. Images remains held by G9; factual outputs remain drafts for
 human review. VoiceOver remains off the work list.
+
+**User authorization — 12 October 2026 (product delivery 1–4):** Jake said
+“Do 1 to 4 going forward now” to the recommendation to release Images, explicitly
+resolve its existing G9 hold, build brief-to-image fixed workflows, then recording-
+to-meeting-pack drafts. Close the reliability campaign without qualifying its
+failed candidates. Approve the narrow I1 release exception for the retained
+existing Search failures/variance in the matched diagnosis; this is not a Search
+pass or a general G9 waiver. Preserve chat/Search/Library prompts, sampling and
+payloads and verify shared capacity, service identity, backups and recovery.
+Deploy the already-tested image feature with rollback, then proceed in this order
+without an intermediate approval stop. Retain H4 evidence at each checkpoint and
+request physical phone observations without inventing a pass.
+
+Two fixed, durable workflows are authorized: selected text model → image prompt
+draft → one to three pinned image generations → human selection; recording →
+existing transcription → optional existing guarded clean-up → selected text model
+meeting-pack draft → Markdown/JSON. Explicit model/step assignments, saved inputs/
+outputs, review pauses, cancellation, idempotent acceptance, restart reconciliation
+and retry of failed steps are in scope. Fixed workflow text calls are authorized
+only for the user-defined steps, with frozen generic prompts and bounded synthetic
+task evaluations; no automatic judge/repair calls or factual reliability claim.
+Human review remains required for factual drafts. No new dependency/model/runtime,
+automatic routing, arbitrary tools, external writes, scheduling, branching,
+reference-image editing, autonomous agents or Research restart. Preserve original
+recordings/document privacy and successful-audio removal. Existing release gates
+remain for all unrelated features; VoiceOver remains off the current work list.
