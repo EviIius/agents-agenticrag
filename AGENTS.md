@@ -704,3 +704,15 @@ No grader change, retry, deployment/restart, Research/image/W1 action follows.
 H4: `docs/SEARCH-CREATION-CONTRACT-REPORT.md`. Review the grading-only proposal
 at `docs/SEARCH-ABSTENTION-GRADING-PLAN.md` before a corrected grader or next native
 trial; preserve genuine failures, original inputs/reports and release targets.
+
+**User authorization — 11 October 2026 (abstention grader and fixed retest):**
+Jake said “continue” after the creation-contract closeout and grading-only
+proposal. Correct equivalent decline wording in isolation, with positive/negative
+tests and separate retained-answer audits/regrades; preserve original scores,
+answers, cases, corpus, genuine failures and release thresholds. No prompt
+workaround or semantic truth claim based on regex. If offline parity/negative
+checks pass, freeze the same creation-contract policy and corrected evaluator
+with an early native code smoke and declared full order before inference. One
+candidate, existing planner/answer/context/sampling/runtime, immediate mandatory/
+support/protocol/G9 stop and H4 remain. No retries, new models/packages/runtime/
+defaults, deployment, Research/image/workflow invocation or other product scope.

@@ -1,0 +1,146 @@
+F401 [*] `re` imported but unused
+ --> artifacts/images-i1/search-abstention-retest/audit.py:6:8
+  |
+4 | import importlib.util
+5 | import json
+6 | import re
+  |        ^^
+7 | import sys
+8 | from pathlib import Path
+  |
+help: Remove unused import: `re`
+  |
+5 | import json
+  - import re
+6 | import sys
+  |
+
+E501 Line too long (103 > 100)
+  --> artifacts/images-i1/search-abstention-retest/audit.py:15:101
+   |
+13 | OUT = Path(__file__).resolve().parent
+14 | sys.path.insert(0, str(ROOT / "server"))
+15 | spec = importlib.util.spec_from_file_location("original_grading", ROOT / "server/evals/web/grading.py")
+   |                                                                                                     ^^^
+16 | original = importlib.util.module_from_spec(spec)
+17 | spec.loader.exec_module(original)
+   |
+
+E501 Line too long (105 > 100)
+  --> artifacts/images-i1/search-abstention-retest/audit.py:70:101
+   |
+68 | …                     "original_required_facts": old, "corrected_required_facts": new,
+69 | …                     "original_case_passed": row["passed"],
+70 | …                     "corrected_case_assertions_passed": bool(new and other_checks(row, expect)),
+   |                                                                                              ^^^^^
+71 | …                     "other_case_checks_pass": bool(other_checks(row, expect)),
+72 | …                     "reason": "Equivalent decline wording; manual support remains required"
+   |
+
+E501 Line too long (105 > 100)
+  --> artifacts/images-i1/search-abstention-retest/audit.py:93:101
+   |
+91 |             for key, value in case["expect"].items():
+92 |                 if key.startswith("must_include"):
+93 |                     patterns = [p for group in value for p in group] if key.endswith("one_of") else value
+   |                                                                                                     ^^^^^
+94 |                     signatures.extend({"file": str(path.relative_to(ROOT)), "case": case["id"],
+95 |                                        "pattern": p, "decline_signature": p in wording.PATTERNS}
+   |
+
+E501 Line too long (108 > 100)
+   --> artifacts/images-i1/search-abstention-retest/audit.py:103:101
+    |
+101 |          "manual_failure": "Unsupported date reassignment; lexical decline is insufficient"},
+102 |         {"answer": "The provided sources do not establish the value. The value is 900 units [99].",
+103 |          "manual_failure": "Fabricated value/citation; existing citation validity and manual support fail"},
+    |                                                                                                     ^^^^^^^^
+104 |     ]
+105 |     for example in unsafe:
+    |
+
+E501 Line too long (110 > 100)
+   --> artifacts/images-i1/search-abstention-retest/audit.py:106:101
+    |
+104 |     ]
+105 |     for example in unsafe:
+106 |         example["wording_match"] = wording.required_facts(example["answer"], {"must_include": [wording.BASE]})
+    |                                                                                                     ^^^^^^^^^^
+107 |         example["qualified"] = False
+108 |     for name, expected in originals.items():
+    |
+
+E501 Line too long (118 > 100)
+   --> artifacts/images-i1/search-abstention-retest/audit.py:117:101
+    |
+115 |               "rows": rows, "historical_25_case_lexical_scores_unchanged": historical_rows,
+116 |               "patterns": signatures, "unsafe_counterexamples": unsafe,
+117 |               "limits": "Wording/case assertions only; no semantic, aggregate, native-code or release qualification."}
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^
+118 |     with (OUT / "retained-answer-audit.json").open("x") as handle:
+119 |         handle.write(json.dumps(record, indent=2) + "\n")
+    |
+
+E501 Line too long (101 > 100)
+   --> artifacts/images-i1/search-abstention-retest/closeout.py:103:101
+    |
+101 |         ]
+102 |         totals[arm] = {
+103 |             "smoke_executed": sum(r["arm"] == arm and r["label"].startswith("smoke-") for r in rows),
+    |                                                                                                     ^
+104 |             "smoke_passed": sum(r["passed"] for r in rows if r["arm"] == arm and r["label"].startswith("smoke-")),
+105 |             "original_executed": len(original),
+    |
+
+E501 Line too long (114 > 100)
+   --> artifacts/images-i1/search-abstention-retest/closeout.py:104:101
+    |
+102 |         totals[arm] = {
+103 |             "smoke_executed": sum(r["arm"] == arm and r["label"].startswith("smoke-") for r in rows),
+104 |             "smoke_passed": sum(r["passed"] for r in rows if r["arm"] == arm and r["label"].startswith("smoke-")),
+    |                                                                                                     ^^^^^^^^^^^^^^
+105 |             "original_executed": len(original),
+106 |             "original_passed": sum(r["passed"] for r in original),
+    |
+
+E501 Line too long (107 > 100)
+  --> artifacts/images-i1/search-abstention-retest/test_audit.py:49:101
+   |
+47 |     run = json.loads((prior / "ordered-results.json").read_text())["runs"][-1]
+48 |     row = json.loads((audit.ROOT / run["report"]).read_text())["results"][0]
+49 |     case = next(c for c in json.loads((prior / "ordinary-cases.json").read_text()) if c["id"] == row["id"])
+   |                                                                                                     ^^^^^^^
+50 |     assert not wording.required_facts(row["turns"][-1]["message"]["content"], case["expect"])
+51 |     assert not audit.other_checks(row, case["expect"])
+   |
+
+E501 Line too long (110 > 100)
+  --> artifacts/images-i1/search-abstention-retest/test_audit.py:56:101
+   |
+54 |     assert len(record["wording_changes"]) == len(record["case_assertion_changes"]) == 2
+55 |     assert len(record["historical_25_case_lexical_scores_unchanged"]) == 25
+56 |     assert all(r["original"] == r["corrected"] for r in record["historical_25_case_lexical_scores_unchanged"])
+   |                                                                                                     ^^^^^^^^^^
+57 |     assert all(not r["qualified"] for r in record["unsafe_counterexamples"])
+   |
+
+E501 Line too long (103 > 100)
+  --> artifacts/images-i1/search-abstention-retest/test_wording.py:10:101
+   |
+ 9 | ROOT = Path(__file__).resolve().parents[3]
+10 | spec = importlib.util.spec_from_file_location("original_grading", ROOT / "server/evals/web/grading.py")
+   |                                                                                                     ^^^
+11 | original = importlib.util.module_from_spec(spec)
+12 | spec.loader.exec_module(original)
+   |
+
+E501 Line too long (101 > 100)
+  --> artifacts/images-i1/search-abstention-retest/test_wording.py:64:101
+   |
+62 | def test_equivalent_decline_does_not_waive_other_required_values():
+63 |     expect = {"must_include": [wording.BASE, "372"]}
+64 |     assert not wording.required_facts("The provided evidence does not establish the answer.", expect)
+   |                                                                                                     ^
+
+Found 13 errors.
+[*] 1 fixable with the `--fix` option.

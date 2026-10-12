@@ -1,0 +1,102 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task",
+    "queries",
+    "freshness",
+    "selection_condition",
+    "input_ref"
+  ],
+  "properties": {
+    "task": {
+      "type": "string",
+      "enum": [
+        "lookup",
+        "transform",
+        "creative",
+        "calculate",
+        "conversation"
+      ]
+    },
+    "queries": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 120
+      }
+    },
+    "freshness": {
+      "type": "string",
+      "enum": [
+        "any",
+        "day",
+        "week",
+        "month",
+        "year"
+      ]
+    },
+    "selection_condition": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "property_word",
+        "operator",
+        "value"
+      ],
+      "properties": {
+        "property_word": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "pattern": "^[a-zA-Z]+$"
+        },
+        "operator": {
+          "type": "string",
+          "enum": [
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "eq",
+            "ne",
+            "occurred",
+            "not_occurred"
+          ]
+        },
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "input_ref": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "ref",
+        "quote"
+      ],
+      "properties": {
+        "ref": {
+          "type": "string"
+        },
+        "quote": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        }
+      }
+    }
+  }
+}
