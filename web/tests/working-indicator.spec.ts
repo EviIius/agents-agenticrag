@@ -112,8 +112,23 @@ for (const mode of ["always", "system"] as const)
     if (mode === "always")
       await page.getByRole("button", { name: "Reduce motion" }).click();
     const first = await word(page).textContent();
+    await line(page).evaluate((el) => {
+      const outgoing: string[] = [];
+      Object.assign(window, { reducedWordOpacity: outgoing });
+      new MutationObserver(() => {
+        const old = el.querySelector(".word-out");
+        if (old) outgoing.push(getComputedStyle(old).opacity);
+      }).observe(el, { childList: true, subtree: true });
+    });
     await page.clock.runFor(2800);
     await expect(word(page)).not.toHaveText(first!);
+    const outgoingOpacity = await page.evaluate(
+      () =>
+        (window as unknown as { reducedWordOpacity: string[] })
+          .reducedWordOpacity,
+    );
+    expect(outgoingOpacity.length).toBeGreaterThan(0);
+    expect(new Set(outgoingOpacity)).toEqual(new Set(["0"]));
     const styles = await line(page).evaluate((el) => {
       const mark = el.querySelector(".mark-a")!,
         dot = el.querySelector(".mark-dot")!,
