@@ -1,0 +1,80 @@
+npm notice run workbench-web@1.0.0-alpha.0 npx
+npm notice run 'playwright' test composer-workflows.spec.ts workflow-studio-editor.spec.ts --max-failures=1
+[WebServer] INFO:     Started server process [27144]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:18080 (Press CTRL+C to quit)
+[WebServer] INFO:     Started server process [27147]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:18787 (Press CTRL+C to quit)
+[WebServer] npm notice run workbench-web@1.0.0-alpha.0 dev
+[WebServer] npm notice run vite --host 127.0.0.1 --port 5173 --strictPort
+[WebServer] (node:27190) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "./test-runtime" without a file extension (vite.config.ts:4:28). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+Running 32 tests using 1 worker
+
+(node:27191) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] INFO httpx: HTTP Request: GET http://127.0.0.1:18080/api/tags "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: GET http://127.0.0.1:18080/api/ps "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/show "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/show "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/show "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/show "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/show "HTTP/1.1 200 OK"
+  ✓   1 [chromium] › tests/composer-workflows.spec.ts:25:1 › Composer image acceptance retry preserves seed/key, saving and unsent chat (3.6s)
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/chat "HTTP/1.1 200 OK"
+  ✓   2 [chromium] › tests/composer-workflows.spec.ts:117:1 › Workflow count uses automatic seeds and repeats uncertain acceptance exactly (3.7s)
+  ✓   3 [chromium] › tests/composer-workflows.spec.ts:193:1 › Image cancellation stays in composer and Workflows returns to the same saved chat (2.0s)
+  ✘   4 [chromium] › tests/composer-workflows.spec.ts:236:1 › Visual builder reflows and every node opens its settings with keyboard (5.7s)
+Testing stopped early after 1 maximum allowed failures.
+
+
+  1) [chromium] › tests/composer-workflows.spec.ts:236:1 › Visual builder reflows and every node opens its settings with keyboard 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('.wf-studio')
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeVisible" locator('.wf-studio') with timeout 5000ms
+      - waiting for locator('.wf-studio')
+        14 × locator resolved to <div tabindex="-1" class="wf-studio">…</div>
+           - unexpected value "hidden"
+
+
+       at studio-helpers.ts:4
+
+      2 | import { settle } from "./helpers";
+      3 | export async function configureStudioBlock(page: Page, title: string) {
+    > 4 |   await expect(page.locator(".wf-studio")).toBeVisible();
+        |                                            ^
+      5 |   await settle(page);
+      6 |   const close = page.getByRole("button", {
+      7 |     name: "Close Inspector",
+        at configureStudioBlock (/Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/web/tests/studio-helpers.ts:4:44)
+        at /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/web/tests/composer-workflows.spec.ts:247:13
+
+    Error Context: test-results/composer-workflows-Visual--630e1--its-settings-with-keyboard-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/composer-workflows-Visual--630e1--its-settings-with-keyboard-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/composer-workflows-Visual--630e1--its-settings-with-keyboard-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/composer-workflows.spec.ts:236:1 › Visual builder reflows and every node opens its settings with keyboard 
+  28 did not run
+  3 passed (17.1s)
+  1 error was not a part of any test, see above for details

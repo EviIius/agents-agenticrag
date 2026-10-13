@@ -1,0 +1,117 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> app/api/workflow_graphs.py:3:1
+   |
+ 1 |   """Additive definition/graph APIs; original workflow endpoints stay frozen."""
+ 2 |
+ 3 | / import json
+ 4 | | from typing import Any, Literal, cast
+ 5 | |
+ 6 | | from fastapi import APIRouter, Query, Request
+ 7 | | from fastapi.responses import JSONResponse, Response
+ 8 | | from sse_starlette import EventSourceResponse
+ 9 | |
+10 | | from ..workflows.blocks import check_models
+11 | | from ..workflows.defs import Conflict
+12 | | from ..workflows.engine import GraphRunner
+13 | | from ..workflows.graph import validate
+14 | | from ..workflows.graph_schemas import (
+15 | |     BlockCatalog,
+16 | |     BlockEntry,
+17 | |     Decision,
+18 | |     DefConflict,
+19 | |     DefCreate,
+20 | |     Definition,
+21 | |     DefSave,
+22 | |     GraphResume,
+23 | |     GraphSubmit,
+24 | |     RunPage,
+25 | |     ReusePlan,
+26 | |     RunV2,
+27 | |     Snapshot,
+28 | |     SnapshotLabel,
+29 | |     Template,
+30 | |     ValidationBody,
+31 | |     ValidationResult,
+32 | | )
+33 | | from ..workflows.template_graphs import template_list
+34 | | from ..workflows.views import detail, page, stream
+   | |__________________________________________________^
+35 |
+36 |   router = APIRouter(prefix="/api/workflows")
+   |
+help: Organize imports
+   |
+23 |     GraphSubmit,
+24 +     ReusePlan,
+25 |     RunPage,
+   -     ReusePlan,
+26 |     RunV2,
+   |
+
+E501 Line too long (159 > 100)
+   --> app/workflows/engine.py:326:101
+    |
+324 | …
+325 | …
+326 | …,node_id,state,port,output_json,reused_from,guard_json,warnings_json) VALUES(?,?,?,?,?,?,?,?)",
+    |                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+327 | …
+328 | …
+    |
+
+E501 Line too long (120 > 100)
+   --> app/workflows/engine.py:350:101
+    |
+348 |                         statements.append(
+349 |                             (
+350 |                                 "INSERT INTO workflow_graph_sources(run_id,node_id,source_json,sha256) VALUES(?,?,?,?)",
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^
+351 |                                 (
+352 |                                     identifier,
+    |
+
+E501 Line too long (144 > 100)
+   --> app/workflows/engine.py:701:101
+    |
+699 | …moves an image output.
+700 | …
+701 | …de='test' AND expires_at<? AND state NOT IN ('queued','running','paused','cancelling')",
+    |                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+702 | …
+703 | …
+    |
+
+E501 Line too long (108 > 100)
+   --> app/workflows/reuse.py:205:101
+    |
+203 |             raise AppError(
+204 |                 "workflow_sample",
+205 |                 "Use a saved run for file, transcript or image inputs; text samples must match their type.",
+    |                                                                                                     ^^^^^^^^
+206 |                 422,
+207 |             )
+    |
+
+E501 Line too long (105 > 100)
+   --> tests/test_workflow_graph_engine.py:114:101
+    |
+112 |     ).status_code == 409
+113 |     assert len((await client.get("/api/workflows/blocks")).json()["blocks"]) == 8
+114 |     assert any(b["kind"] == "pick" for b in (await client.get("/api/workflows/blocks")).json()["blocks"])
+    |                                                                                                     ^^^^^
+115 |     assert len((await client.get("/api/workflows/templates")).json()) == 2
+    |
+
+E501 Line too long (167 > 100)
+  --> tests/test_workflow_run_modes.py:62:101
+   |
+60 | …
+61 | …
+62 | …) VALUES(?,?,?) ON CONFLICT(connection_id,model_id) DO UPDATE SET params_json=excluded.params_json",
+   |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+63 | …7}'),
+64 | …
+   |
+
+Found 7 errors.
+[*] 1 fixable with the `--fix` option.

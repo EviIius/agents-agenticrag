@@ -1,0 +1,255 @@
+diff --git a/server/app/workflows/reuse.py b/server/app/workflows/reuse.py
+index 30652dd6..867f7bd0 100644
+--- a/server/app/workflows/reuse.py
++++ b/server/app/workflows/reuse.py
+@@ -21,7 +21,7 @@ async def guard(manager: "GraphRunner", doc: GraphDoc, node: Node, inputs: dict[
+ 
+     config = node.config.model_dump(by_alias=True)
+     model = None
+-    if isinstance(node, (GenerateNode, CleanNode)):
++    if not node.disabled and isinstance(node, (GenerateNode, CleanNode)):
+         selected = model_ref(doc, node.config.model)
+         reported = await manager.legacy.runs.registry.resolve(
+             selected.connection_id, selected.model_id
+diff --git a/server/tests/test_workflow_run_modes.py b/server/tests/test_workflow_run_modes.py
+index 57ab3392..337d5da1 100644
+--- a/server/tests/test_workflow_run_modes.py
++++ b/server/tests/test_workflow_run_modes.py
+@@ -6,8 +6,8 @@ from typing import Any
+ import pytest
+ 
+ from app.errors import AppError
+-from app.workflows.graph import GraphDoc
+-from app.workflows.graph_schemas import Decision, DefSave, GraphSubmit
++from app.workflows.graph import GenerateNode, GraphDoc, ModelRef
++from app.workflows.graph_schemas import Decision, DefCreate, DefSave, GraphSubmit
+ from app.workflows.reuse import plan
+ from app.workflows.template_graphs import template_graph
+ from app.workflows.views import page
+@@ -70,6 +70,28 @@ async def test_changed_saved_defaults_and_inputs_refuse_reuse(chat_app: Any) ->
+     assert not (await plan(manager, definition.id, "n_images", original.id)).eligible
+ 
+ 
++async def test_disabled_cleanup_needs_no_model_and_still_qualifies_saved_upstream(
++    chat_app: Any,
++) -> None:
++    app, client, runtime = chat_app
++    item = await record(app, client, "Synthetic original meeting.")
++    graph = template_graph("meeting_pack", cleanup=False)
++    assert graph.settings.default_model is None
++    pack = next(node for node in graph.nodes if isinstance(node, GenerateNode))
++    pack.config.model = ModelRef(connection_id=app.state.test_connection, model_id="fake-chat")
++    manager = app.state.workflow_graphs
++    definition = await manager.defs.create(
++        DefCreate(name="Synthetic disabled cleanup", graph=graph)
++    )
++    run = await submit(app, definition, inputs={"recording": item["id"]})
++    result = await finish(app, run.id)
++    assert result.state == "complete"
++    assert result.nodes["n_clean"].state == "skipped"
++    assert len([c for c in runtime.state.captures if c.get("messages")]) == 1
++    reuse = await plan(manager, definition.id, "n_pack", result.id)
++    assert reuse.eligible and "n_clean" in reuse.node_ids
++
++
+ async def test_single_block_samples_and_saved_upstream_are_hidden_and_durable(
+     chat_app: Any,
+ ) -> None:
+diff --git a/web/src/components/app/CommandPalette.tsx b/web/src/components/app/CommandPalette.tsx
+index 4b1c4722..9f9d3406 100644
+--- a/web/src/components/app/CommandPalette.tsx
++++ b/web/src/components/app/CommandPalette.tsx
+@@ -156,6 +156,7 @@ export function CommandPalette({
+     ...workflowActivity
+       .filter((run) => run.state === "paused")
+       .map((run) => ({
++        id: `resume:${run.id}`,
+         label: `Resume ${run.name}`,
+         icon: Pause,
+         action: () =>
+@@ -214,17 +215,21 @@ export function CommandPalette({
+           <CommandList className="min-h-0 max-h-[min(380px,45dvh)] p-2">
+             {destinations.length > 0 && (
+               <CommandGroup heading="Go to">
+-                {destinations.map(({ label, icon: Icon, action }) => (
+-                  <CommandItem
+-                    key={label}
+-                    value={label}
+-                    className="min-h-11"
+-                    onSelect={() => choose(action!)}
+-                  >
+-                    <Icon className="size-4" />
+-                    {label}
+-                  </CommandItem>
+-                ))}
++                {destinations.map((item) => {
++                  const { label, icon: Icon, action } = item;
++                  const identity = "id" in item ? item.id : label;
++                  return (
++                    <CommandItem
++                      key={identity}
++                      value={identity}
++                      className="min-h-11"
++                      onSelect={() => choose(action!)}
++                    >
++                      <Icon className="size-4" />
++                      {label}
++                    </CommandItem>
++                  );
++                })}
+               </CommandGroup>
+             )}
+             {commands.length > 0 && (
+diff --git a/web/src/components/chat/Markdown.tsx b/web/src/components/chat/Markdown.tsx
+index 59a70d1d..cf2d3da2 100644
+--- a/web/src/components/chat/Markdown.tsx
++++ b/web/src/components/chat/Markdown.tsx
+@@ -17,10 +17,12 @@ export default function Markdown({
+   text,
+   streaming = false,
+   sources,
++  copyFeedbackRole = "status",
+ }: {
+   text: string;
+   streaming?: boolean;
+   sources?: Source[];
++  copyFeedbackRole?: "status" | "none";
+ }) {
+   const feedback = useCopyFeedback();
+   const reduceMotion = useReducedMotion();
+@@ -57,7 +59,7 @@ export default function Markdown({
+       data-code-copied={feedback.copied || undefined}
+       className="min-w-0"
+     >
+-      <span role="status" aria-live="polite" className="sr-only">
++      <span role={copyFeedbackRole} aria-live="polite" className="sr-only">
+         {feedback.failed ? "Couldn't copy. Try again." : ""}
+       </span>
+       <Streamdown
+diff --git a/web/src/components/workflows/WorkflowNotifier.tsx b/web/src/components/workflows/WorkflowNotifier.tsx
+index f90654d5..93638439 100644
+--- a/web/src/components/workflows/WorkflowNotifier.tsx
++++ b/web/src/components/workflows/WorkflowNotifier.tsx
+@@ -40,7 +40,7 @@ export default function WorkflowNotifier() {
+       ) {
+         initialNoticeShown = true;
+         toast(`${run.def_name} is waiting for you.`, {
+-          id: `workflow-pause-${run.id}`,
++          id: "workflow-paused",
+           action: {
+             label: "Open",
+             onClick: () =>
+diff --git a/web/src/components/workflows/studio/RunCard.tsx b/web/src/components/workflows/studio/RunCard.tsx
+index a23aa1d4..4507e9a4 100644
+--- a/web/src/components/workflows/studio/RunCard.tsx
++++ b/web/src/components/workflows/studio/RunCard.tsx
+@@ -144,6 +144,7 @@ export function RunCard({
+                   <Markdown
+                     text={state.output.text}
+                     streaming={state.state === "running"}
++                    copyFeedbackRole="none"
+                   />
+                 </div>
+               )}
+@@ -299,14 +300,14 @@ export function RunCard({
+                           onClick={() => setSavingImage(image.id)}
+                         >
+                           <img
+-                            alt={`Saved result ${i + 1}`}
++                            alt={`Workflow generated image ${i + 1}`}
+                             src={`/api/images/jobs/${image.id}/output/png`}
+                           />
+                         </button>
+                       ))}
+                     </div>
+                   ) : typeof item.value === "string" ? (
+-                    <Markdown text={item.value} />
++                    <Markdown text={item.value} copyFeedbackRole="none" />
+                   ) : (
+                     <pre className="wf-output-text">
+                       {JSON.stringify(item.value, null, 2)}
+diff --git a/web/src/components/workflows/studio/RunView.tsx b/web/src/components/workflows/studio/RunView.tsx
+index bed5274f..c0b1a9f5 100644
+--- a/web/src/components/workflows/studio/RunView.tsx
++++ b/web/src/components/workflows/studio/RunView.tsx
+@@ -1,6 +1,8 @@
+ import { useMemo, useRef, useState } from "react";
+ import { Link } from "react-router";
+ import { Button } from "@/components/ui/button";
++import { IconButton } from "@/components/app/IconButton";
++import { X } from "lucide-react";
+ import { useMediaQuery } from "@/hooks/useMediaQuery";
+ import {
+   Drawer,
+@@ -110,9 +112,17 @@ export function RunView({
+           )}
+         </div>
+         {phone && (
+-          <Drawer open={open} onOpenChange={setOpen}>
++          <Drawer open={open} onOpenChange={setOpen} modal={!legacyPanel}>
+             <DrawerContent className="max-h-[95dvh]">
+-              <DrawerTitle className="sr-only">Run details</DrawerTitle>
++              <header className="wf-panel-head">
++                <DrawerTitle>Run details</DrawerTitle>
++                <IconButton
++                  label="Close Run details"
++                  onClick={() => setOpen(false)}
++                >
++                  <X />
++                </IconButton>
++              </header>
+               <DrawerDescription className="sr-only">
+                 Saved states and results for this run.
+               </DrawerDescription>
+diff --git a/web/tests/workflow-studio-running.spec.ts b/web/tests/workflow-studio-running.spec.ts
+index 41c4b43f..e81e9134 100644
+--- a/web/tests/workflow-studio-running.spec.ts
++++ b/web/tests/workflow-studio-running.spec.ts
+@@ -412,6 +412,47 @@ test("Failed image block retries without repeating the finished text and shows p
+   await done(page);
+ });
+ 
++test("Palette selects the correct paused run when workflow names repeat", async ({
++  page,
++  request,
++}) => {
++  const first = await create(request);
++  const second = await create(request);
++  const runs = [await start(request, first), await start(request, second)];
++  const duplicateKeys: string[] = [];
++  page.on("console", (message) => {
++    if (message.type() === "error" && message.text().includes("same key"))
++      duplicateKeys.push(message.text());
++  });
++  await page.goto("/");
++  await expect(
++    page.locator(
++      'nav[aria-label="Workspace"] [aria-label="A workflow is waiting for you"]',
++    ),
++  ).toBeVisible();
++  await page.keyboard.press("ControlOrMeta+k");
++  await page
++    .getByRole("combobox", { name: "Search chats and actions" })
++    .fill("Resume Synthetic running workflow");
++  const options = page.getByRole("option", {
++    name: "Resume Synthetic running workflow",
++    exact: true,
++  });
++  await expect(options).toHaveCount(2);
++  const values = await options.evaluateAll((items) =>
++    items.map((item) => item.getAttribute("data-value")),
++  );
++  expect(new Set(values).size).toBe(2);
++  const selected = values[1]!.slice("resume:".length);
++  expect(runs.map((run) => run.id)).toContain(selected);
++  await options.nth(1).click();
++  await expect(page).toHaveURL(new RegExp(`/runs/${selected}$`));
++  await expect(
++    page.getByRole("textbox", { name: "Review result", exact: true }),
++  ).toBeVisible();
++  expect(duplicateKeys).toEqual([]);
++});
++
+ test("Full application lifecycle restart preserves completed blocks and resumes unfinished work", async ({
+   page,
+   request,

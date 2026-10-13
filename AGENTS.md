@@ -1065,3 +1065,30 @@ from text context, J-I5 prompt-derived titles without a model call. No new packa
 model, runtime, sampling default, application-authored prompt or native trial is
 authorized. WS-E/WS-F and CI-D extras remain gated. Main and the installed app
 stay intact; merge and live publication still require Jake's final okay.
+
+**Workflow Studio WS-D closeout — 13 October 2026:** Source `a9a77bdd` implements
+Claude's run canvas/timeline, truthful streaming/progress and Follow, approvals,
+favorites, retry, provenance-checked reuse, durable isolated block tests, named
+versions, immutable run views, history and paused notifications. Additive migration
+012 preserves existing rows. The approved CSS connection pulse respects both
+reduced-motion triggers. Legacy phone controls retain navigation; ordinary chat,
+native performers, prompts and user sampling behavior remain unchanged.
+
+Final checks pass: 646 Python / 94 frontend, workflows 89.2% coverage and 110
+contrast pairs. One complete browser invocation passes 555 cases with three
+existing skips in 56.3 minutes. All 112 new-state axe checks pass. The earlier
+interrupted invocation and eight-failure complete run (545 passes) remain retained;
+their regressions are fixed without weakening original tests. Initial JS is
+242,270 gzip bytes, 612 above WS-C. Copied synthetic rollback restores the exact
+backup and starts prior schema-11 source. Historical 24,444 evidence/eval/fixture
+blobs, 15 workflow references, 17 supplied chat-image files and 529 source/test/
+config files verify preserved; installed 97 server / 410 static files and main
+are unchanged. 1,168 fresh outputs are archived separately and 320 final/available
+synthetic recordings remain outside Git, with earlier attempts separately retained.
+
+No native inference, new dependency/model/runtime, Research restart, main merge,
+live publication or physical iPhone/VoiceOver pass is claimed. The lifecycle
+restart test is in process, not a launchd/process restart. H4:
+`docs/WORKFLOW-STUDIO-WS-D-REPORT.md`. Stop for WS-D review before CI-A. Claude's
+chat-image plan and recommended defaults are retained for CI-A/B/C; image chat
+turns are not implemented by WS-D. Final merge/publication still need Jake's okay.

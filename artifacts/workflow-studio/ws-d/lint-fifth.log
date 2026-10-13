@@ -1,0 +1,63 @@
+E501 Line too long (253 > 100)
+ --> tests/test_api_union_guard.py:9:101
+  |
+8 | …
+9 | …ertyName":"kind","mapping":{tag:"#/schemas/"+tag for tag in tags}}},"schemas":{tag:{"required":["kind"],"properties":{"kind":{"const":tag}}} for tag in tags}}
+  |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+E702 Multiple statements on one line (semicolon)
+  --> tests/test_api_union_guard.py:17:27
+   |
+15 |     assert not compare(before,after)
+16 |     assert compare(before,document(["one","three"]))
+17 |     broken=deepcopy(after);broken["schemas"]["one"]["properties"]["kind"]["const"]="changed"
+   |                           ^
+18 |     assert compare(before,broken)
+19 |     ambiguous=deepcopy(after);ambiguous["schemas"]["three"]["properties"]["kind"]={"type":"string"}
+   |
+
+E702 Multiple statements on one line (semicolon)
+  --> tests/test_api_union_guard.py:19:30
+   |
+17 |     broken=deepcopy(after);broken["schemas"]["one"]["properties"]["kind"]["const"]="changed"
+18 |     assert compare(before,broken)
+19 |     ambiguous=deepcopy(after);ambiguous["schemas"]["three"]["properties"]["kind"]={"type":"string"}
+   |                              ^
+20 |     assert compare(before,ambiguous)
+21 |     duplicate=deepcopy(after);duplicate["union"]["oneOf"].append({"$ref":"#/schemas/one"})
+   |
+
+E702 Multiple statements on one line (semicolon)
+  --> tests/test_api_union_guard.py:21:30
+   |
+19 |     ambiguous=deepcopy(after);ambiguous["schemas"]["three"]["properties"]["kind"]={"type":"string"}
+20 |     assert compare(before,ambiguous)
+21 |     duplicate=deepcopy(after);duplicate["union"]["oneOf"].append({"$ref":"#/schemas/one"})
+   |                              ^
+22 |     assert compare(before,duplicate)
+23 |     missing_required=deepcopy(after);missing_required["schemas"]["three"]["required"]=[]
+   |
+
+E702 Multiple statements on one line (semicolon)
+  --> tests/test_api_union_guard.py:23:37
+   |
+21 |     duplicate=deepcopy(after);duplicate["union"]["oneOf"].append({"$ref":"#/schemas/one"})
+22 |     assert compare(before,duplicate)
+23 |     missing_required=deepcopy(after);missing_required["schemas"]["three"]["required"]=[]
+   |                                     ^
+24 |     assert compare(before,missing_required)
+25 |     no_discriminator=deepcopy(after);del no_discriminator["union"]["discriminator"]
+   |
+
+E702 Multiple statements on one line (semicolon)
+  --> tests/test_api_union_guard.py:25:37
+   |
+23 |     missing_required=deepcopy(after);missing_required["schemas"]["three"]["required"]=[]
+24 |     assert compare(before,missing_required)
+25 |     no_discriminator=deepcopy(after);del no_discriminator["union"]["discriminator"]
+   |                                     ^
+26 |     assert compare(before,no_discriminator)
+27 |     assert compare({"oneOf":[{"type":"string"}]},{"oneOf":[{"type":"string"},{"type":"number"}]})
+   |
+
+Found 7 errors (1 fixed, 6 remaining).

@@ -1,0 +1,162 @@
+..F...                                                                   [100%]
+=================================== FAILURES ===================================
+_____ test_single_block_samples_and_saved_upstream_are_hidden_and_durable ______
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10cab12b0>, <httpx.AsyncClient object at 0x10cd846b0>, <fastapi.applications.FastAPI object at 0x10cab0830>)
+
+    async def test_single_block_samples_and_saved_upstream_are_hidden_and_durable(
+        chat_app: Any,
+    ) -> None:
+        app, _, runtime = chat_app
+        manager = app.state.workflow_graphs
+        definition = await create(app, template_graph("brief_images", review=False, seeds=[19]))
+>       tested = await manager.submit(
+            definition.id,
+            GraphSubmit(
+                request_key="fake-sample-test",
+                mode="test",
+                node_id="n_draft",
+                samples={"start.brief": "Synthetic blue square"},
+            ),
+        )
+
+tests/test_workflow_run_modes.py:74: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.workflows.engine.GraphRunner object at 0x10caab4d0>
+def_id = '8dce83a8aa09493dab10d6421430d77a'
+body = GraphSubmit(request_key='fake-sample-test', inputs={}, mode='test', node_id='n_draft', source_run_id=None, samples={'start.brief': 'Synthetic blue square'})
+
+    async def submit(self, def_id: str, body: GraphSubmit) -> RunV2:
+        from .blocks import check_models, checked_inputs
+        from .reuse import guard, plan, rebind, sample_outputs
+    
+        request = canonical({"def_id": def_id, **body.model_dump()})
+        async with self.lock:
+            existing = await self.store.one(
+                "SELECT id,request_json FROM workflow_graph_runs WHERE request_key=?",
+                (body.request_key,),
+            )
+            if existing:
+                if existing["request_json"] != request:
+                    raise AppError(
+                        "workflow_conflict", "This request key belongs to different inputs.", 409
+                    )
+                return await self.get(existing["id"])
+            if self.closing or len(self.tasks) >= 20:
+                raise AppError(
+                    "workflow_queue", "The workflow queue is full. Try again shortly.", 409
+                )
+            definition = await self.defs.get(def_id)
+            if definition.archived_at:
+                raise AppError(
+                    "workflow_archived", "Duplicate this archived workflow to run it.", 409
+                )
+            doc = definition.graph.model_copy(deep=True)
+            issues = [issue for issue in validate(doc) if issue.severity == "error"]
+            if issues:
+                raise AppError("workflow_invalid", issues[0].message, 422)
+            previous = None
+            reused: list[str] = []
+            samples: dict[str, dict[str, Any]] = {}
+            if body.node_id:
+                if not any(n.id == body.node_id and not n.disabled for n in doc.nodes):
+                    raise AppError("workflow_reuse", "Choose an enabled block.", 422)
+                if body.mode == "test" and (body.samples or not body.source_run_id):
+                    samples = sample_outputs(doc, body.node_id, body.samples)
+                    inputs = body.inputs
+                    # Samples are explicit user data; media cannot be fabricated here.
+                    if any(
+                        f.type in {"recording", "document", "image"}
+                        for n in doc.nodes
+                        if isinstance(n, StartNode)
+                        for f in n.config.fields
+                    ):
+                        inputs = await checked_inputs(self, doc, body.inputs)
+                else:
+                    reuse = await plan(
+                        self,
+                        def_id,
+                        body.node_id,
+                        body.source_run_id,
+                        body.mode,
+                        body.inputs or None,
+                    )
+                    if not reuse.eligible or not reuse.source_run_id:
+                        raise AppError("workflow_reuse", reuse.reason or "No reusable run.", 409)
+                    previous = await self.get(reuse.source_run_id)
+                    reused = reuse.node_ids
+                    inputs = previous.inputs
+            else:
+                if body.mode == "test" or body.source_run_id or body.samples:
+                    raise AppError("workflow_test", "Choose the block to test or rerun.", 422)
+                inputs = await checked_inputs(self, doc, body.inputs)
+            await check_models(self, doc)
+            guards = {node.id: await guard(self, doc, node, inputs) for node in doc.nodes}
+    
+            for node in doc.nodes:
+                if isinstance(node, ImageNode) and node.config.seeds == "auto":
+                    node.config.seeds = [secrets.randbits(32) for _ in range(node.config.count)]
+            identifier, snapshot_id, clock = uuid4().hex, uuid4().hex, now()
+            hashed = execution_hash(doc)
+            statements: list[tuple[str, tuple[object, ...]]] = [
+                (
+                    (
+                        "INSERT INTO workflow_def_snapshots(id,def_id,graph_hash,graph_jso"
+                        "n,created_at) VALUES(?,?,?,?,?)"
+                    ),
+                    (snapshot_id, def_id, hashed, canonical(doc.model_dump(by_alias=True)), clock),
+                ),
+                (
+                    (
+                        "INSERT INTO workflow_graph_runs(id,request_key,request_json,def_i"
+                        "d,def_name,snapshot_id,graph_hash,inputs_json,state,stage,created"
+                        "_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)"
+                    ),
+                    (
+                        identifier,
+                        body.request_key,
+                        request,
+                        def_id,
+                        definition.name,
+                        snapshot_id,
+                        hashed,
+                        canonical(inputs),
+                        "queued",
+                        "Waiting for a block",
+                        clock,
+                        clock,
+                    ),
+                ),
+            ]
+            expires = (
+                (
+                    datetime.now(timezone.utc) + timedelta(days=doc.settings.keep_test_runs_days)
+                ).isoformat()
+                if body.mode == "test"
+                else None
+            )
+            statements.append(
+                (
+                    "UPDATE workflow_graph_runs SET mode=?,parent_run_id=?,expires_at=? WHERE id=?",
+                    (body.mode, previous.id if previous else None, expires, identifier),
+                )
+            )
+            for node in doc.nodes:
+                old = previous.nodes[node.id] if previous and node.id in reused else None
+                state = (
+                    old.state
+                    if old
+                    else "skipped"
+                    if node.disabled or body.mode == "test" and node.id != body.node_id
+                    else "pending"
+                )
+                output = rebind(old.output, previous.id, identifier) if old and previous else None
+>               if body.mode == "test" and not previous and node.id in ancestors(doc, body.node_id):
+                                                                       ^^^^^^^^^
+E               NameError: name 'ancestors' is not defined
+
+app/workflows/engine.py:309: NameError
+=========================== short test summary info ============================
+FAILED tests/test_workflow_run_modes.py::test_single_block_samples_and_saved_upstream_are_hidden_and_durable
+1 failed, 5 passed in 2.01s
