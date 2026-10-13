@@ -179,6 +179,27 @@ export function SettingsDialog({
                     ))}
                   </div>
                 </fieldset>
+                <fieldset>
+                  <legend className="mb-2 font-medium">Status words</legend>
+                  <div className="flex flex-wrap gap-2">
+                    {(["playful", "plain"] as const).map((statusWords) => (
+                      <Button
+                        key={statusWords}
+                        variant={
+                          statusWords === ui.statusWords
+                            ? "secondary"
+                            : "outline"
+                        }
+                        data-slot="segmented-choice"
+                        className="min-h-11 capitalize"
+                        aria-pressed={statusWords === ui.statusWords}
+                        onClick={() => ui.set({ statusWords })}
+                      >
+                        {statusWords === "playful" ? "Playful" : "Plain"}
+                      </Button>
+                    ))}
+                  </div>
+                </fieldset>
                 <label className="block space-y-2">
                   <span className="font-medium">Reduce motion</span>
                   <Select

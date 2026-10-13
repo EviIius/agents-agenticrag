@@ -1092,3 +1092,13 @@ restart test is in process, not a launchd/process restart. H4:
 `docs/WORKFLOW-STUDIO-WS-D-REPORT.md`. Stop for WS-D review before CI-A. Claude's
 chat-image plan and recommended defaults are retained for CI-A/B/C; image chat
 turns are not implemented by WS-D. Final merge/publication still need Jake's okay.
+
+**User acceptance and continuation — 13 October 2026 (CI-A):** After the WS-D
+report, Jake asked to continue, then mesh the builder and test an actual local LLM.
+Close WS-D's review stop without inventing phone results. Build CI-A of Claude's
+chat-image plan on the isolated branch, preserving the approved Playful default
+and closed live reasoning ticker. Web only: no server source, native inference,
+new dependency/model/runtime, prompt or sampling change. Retain the H4/QA report
+and stop after CI-A. Prepare a concrete bounded local-LLM workflow test proposal
+for the later integrated builder; this continuation does not run that trial now.
+Main and the installed app stay intact; final merge/publication remain gated.

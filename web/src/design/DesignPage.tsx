@@ -74,9 +74,16 @@ const ImagesPreview = lazy(() => import("./ImagesPreview"));
 const WorkflowsPreview = lazy(() => import("./WorkflowsPreview"));
 const WorkflowHomePreview = lazy(() => import("./WorkflowHomePreview"));
 const WorkflowStudioPreview = lazy(() => import("./WorkflowStudioPreview"));
+const WorkingPreview = lazy(() => import("./WorkingPreview"));
 const Markdown = lazy(() => import("@/components/chat/Markdown"));
 const LibraryAnswersPreview = lazy(() => import("./LibraryAnswersPreview"));
 export function DesignPage() {
+  if (new URLSearchParams(location.search).has("indicator"))
+    return (
+      <Suspense fallback={<p>Loading indicator…</p>}>
+        <WorkingPreview />
+      </Suspense>
+    );
   if (new URLSearchParams(location.search).has("studio"))
     return (
       <Suspense fallback={<p>Loading Studio…</p>}>

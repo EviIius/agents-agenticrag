@@ -9,6 +9,57 @@ afterEach(() => {
   useRuns.setState({ runs: {} });
 });
 
+it("batches literal reasoning deltas in one animation frame and flushes them before an answer", () => {
+  const listeners = new Map<string, (event: { data: string }) => void>();
+  let paint: FrameRequestCallback | undefined;
+  const raf = vi.fn((callback: FrameRequestCallback) => {
+    paint = callback;
+    return 1;
+  });
+  vi.stubGlobal("requestAnimationFrame", raf);
+  vi.stubGlobal("cancelAnimationFrame", vi.fn());
+  vi.stubGlobal(
+    "EventSource",
+    class {
+      addEventListener(
+        type: string,
+        callback: (event: { data: string }) => void,
+      ) {
+        listeners.set(type, callback);
+      }
+      close() {}
+    },
+  );
+  const message = {
+    id: "indicator-batch",
+    chat_id: "indicator-batch",
+    status: "streaming",
+    content: "",
+    reasoning: null,
+  } as Message;
+  attachRun("indicator-batch", message.chat_id, message, new QueryClient());
+  const emit = (type: string, data: unknown) =>
+    listeners.get(type)!({ data: JSON.stringify(data) });
+  for (const text of ["Original ", "reasoning\n", "<literal>"])
+    emit("reasoning.delta", { text });
+  expect(raf).toHaveBeenCalledOnce();
+  expect(
+    useRuns.getState().runs["indicator-batch"].message.reasoning,
+  ).toBeNull();
+  paint!(0);
+  expect(useRuns.getState().runs["indicator-batch"]).toMatchObject({
+    stage: "reasoning",
+    message: { reasoning: "Original reasoning\n<literal>", content: "" },
+  });
+  emit("text.delta", { text: "Answer" });
+  paint!(16);
+  expect(useRuns.getState().runs["indicator-batch"]).toMatchObject({
+    stage: "streaming",
+    message: { reasoning: "Original reasoning\n<literal>", content: "Answer" },
+  });
+  emit("run.closed", {});
+});
+
 it("a stale active-run snapshot cannot restart a completed stream", async () => {
   const listeners = new Map<string, (event: { data: string }) => void>();
   const close = vi.fn();

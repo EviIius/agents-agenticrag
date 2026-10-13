@@ -1,4 +1,6 @@
-import { WaitingDots } from "./WaitingDots";
+import { WorkingLine } from "./WorkingLine";
+import { Thinking } from "./Thinking";
+import { workingPhase } from "@/lib/status-words";
 import { useFreshRows } from "@/stores/fresh";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { DocumentChip } from "./DocumentChip";
@@ -16,12 +18,7 @@ import {
   useState,
   type RefObject,
 } from "react";
-import { Brain, ChevronDown, LoaderCircle, TriangleAlert } from "lucide-react";
-import {
-  Collapsible,
-  CollapsibleTrigger,
-  CollapsibleContent,
-} from "@/components/ui/collapsible";
+import { TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { Message, Source, WebRead, Model, Bootstrap } from "@/lib/api";
@@ -31,48 +28,6 @@ import { SearchActivity } from "./SearchActivity";
 import { messageError } from "@/lib/errors";
 import { SourcesSheet } from "./SourcesSheet";
 const Markdown = lazy(() => import("./Markdown"));
-function Thinking({
-  text,
-  live,
-  duration,
-}: {
-  text: string;
-  live: boolean;
-  duration?: number | null;
-}) {
-  const [open, setOpen] = useState(live),
-    [elapsed, setElapsed] = useState(0);
-  const began = useRef(Date.now());
-  useEffect(() => {
-    setOpen(live);
-    if (!live) return;
-    const timer = setInterval(
-      () => setElapsed(Math.floor((Date.now() - began.current) / 1000)),
-      1000,
-    );
-    return () => clearInterval(timer);
-  }, [live]);
-  return (
-    <Collapsible
-      open={open}
-      onOpenChange={setOpen}
-      className="mb-4 rounded-lg border border-line"
-    >
-      <CollapsibleTrigger className="flex min-h-11 w-full items-center gap-2 px-3 text-sm text-fg-2">
-        <Brain className="size-4" />
-        <span data-slot="activity-label" data-live={live || undefined}>
-          {live
-            ? `Thinking… ${elapsed}s`
-            : `Thought for ${Math.round((duration ?? elapsed * 1000) / 1000)}s`}
-        </span>
-        <ChevronDown className="ml-auto size-4" />
-      </CollapsibleTrigger>
-      <CollapsibleContent className="max-h-72 overflow-y-auto whitespace-pre-wrap px-4 pb-4 text-sm leading-6 text-fg-2">
-        {text}
-      </CollapsibleContent>
-    </Collapsible>
-  );
-}
 type LiveThreadProps = {
   pending?: Message | null;
   position?: number;
@@ -300,7 +255,11 @@ function OptimisticRow({ message }: { message: Message }) {
           ))}
         </div>
       </article>
-      <WaitingDots />
+      <WorkingLine
+        id={message.id}
+        began={Date.parse(message.created_at)}
+        phase={{ kind: "working", label: "Working", announcement: "Working" }}
+      />
     </div>
   );
 }
@@ -426,23 +385,13 @@ export const MessageRow = memo(function MessageRow({
           <p className="mb-4 text-xs text-fg-3 break-all">
             {message.model?.display_name}
           </p>
-          {message.status === "streaming" &&
-            stage !== "search" &&
-            !message.content &&
-            !message.reasoning &&
-            (stage === "queued" || stage === "loading-model" ? (
-              <p
-                className="flex min-h-12 items-center gap-2 text-sm text-fg-2"
-                role="status"
-              >
-                <LoaderCircle data-activity="spin" className="size-4" />
-                {stage === "queued"
-                  ? `Waiting for ${message.model?.display_name ?? "model"}…${position ? ` (#${position} in line)` : ""}`
-                  : "Loading model…"}
-              </p>
-            ) : (
-              <WaitingDots />
-            ))}
+          {!message.reasoning && (
+            <WorkingLine
+              id={message.id}
+              began={Date.parse(message.created_at)}
+              phase={workingPhase(message, stage, steps, position)}
+            />
+          )}
           <SearchActivity
             message={message}
             sources={sources ?? []}
@@ -451,6 +400,8 @@ export const MessageRow = memo(function MessageRow({
           />
           {message.reasoning && (
             <Thinking
+              id={message.id}
+              phase={workingPhase(message, stage, steps, position) ?? undefined}
               text={message.reasoning}
               duration={message.stats?.reasoning_ms}
               live={message.status === "streaming" && !message.content}
