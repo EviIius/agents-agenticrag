@@ -1,0 +1,33 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/test_workflow_editor_validation.py:2:1
+  |
+1 |   """The browser and server share literal validation vectors."""
+2 | / import json
+3 | | from pathlib import Path
+4 | | import pytest
+5 | | from app.workflows.graph import GraphDoc, validate
+  | |__________________________________________________^
+6 |
+7 |   CASES = json.loads((Path(__file__).resolve().parents[2] / "shared/workflow_graph_cases.json").read_text())
+  |
+help: Organize imports
+  |
+3 | from pathlib import Path
+4 +
+5 | import pytest
+6 +
+7 | from app.workflows.graph import GraphDoc, validate
+  |
+
+E501 Line too long (106 > 100)
+ --> tests/test_workflow_editor_validation.py:7:101
+  |
+5 | from app.workflows.graph import GraphDoc, validate
+6 |
+7 | CASES = json.loads((Path(__file__).resolve().parents[2] / "shared/workflow_graph_cases.json").read_text())
+  |                                                                                                     ^^^^^^
+
+Found 2 errors.
+[*] 1 fixable with the `--fix` option.
+make: *** [check] Error 1

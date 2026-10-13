@@ -1028,3 +1028,26 @@ edit through Outline and templates become editable copies. Preserve ordinary
 keyboard/label semantics and current APIs/prompts/model settings. Stop for WS-C
 review before WS-D, merge or live publication. The image-in-chat request remains
 tracked separately. Main and the installed app remain unchanged.
+
+
+**Workflow Studio WS-C closeout — 13 October 2026:** Claude's reviewed layout
+now edits real definitions on the isolated branch: seven kinds, native drag/
+connect/insert, typed references, Inspector/Connections, autosave/conflicts,
+history/copy/notes/tidy/minimap and phone Outline. Templates create editable
+copies; basic input/run/approval/retry/source/export paths retain legacy behavior.
+The exact approved lazy `@xyflow/react@12.12.0` keeps attribution and its license.
+No native inference, application-authored prompt, model/default/sampling/runtime
+change, main merge or live publication occurs. Research remains shelved.
+
+Source `62a822e4` retains the initial-fit dirty-state and redundant preference
+hydration fixes. Both failed full-suite attempts/traces and earlier sources are
+retained. Final make check passes 630 Python / 87 frontend, workflows 89.2%
+coverage and 110 contrast pairs; one complete browser invocation passes 529
+checks with three existing skips in 48.7 minutes. Initial JS is 241,658 gzip
+bytes (3,591 below WS-B); Studio is 77,306 gzip bytes. Historical 23,116 blobs,
+15 references, 509 source/config/test files, main and installed 97 server / 410
+static files verify preserved. 1,037 fresh outputs are archived separately and
+182 synthetic videos remain outside Git. Local/verified HTTPS health passes.
+H4: `docs/WORKFLOW-STUDIO-WS-C-REPORT.md`. Stop for WS-C review before WS-D.
+No physical phone/VoiceOver pass is claimed. The image-in-conversation request
+remains tracked separately; future motion/Classify/optional gates persist.

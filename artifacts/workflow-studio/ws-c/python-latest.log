@@ -1,0 +1,22 @@
+..........................E............................................  [100%]
+==================================== ERRORS ====================================
+____ ERROR at setup of test_template_copy_keeps_public_description_and_icon ____
+file /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/server/tests/test_workflow_graph_engine.py, line 652
+  async def test_template_copy_keeps_public_description_and_icon(app: Any) -> None:
+      from app.workflows.template_graphs import template_list
+
+      for template in template_list():
+          copied = await app.state.workflow_graphs.defs.create(
+              DefCreate(name="Synthetic template copy", template_id=template.id)
+          )
+          assert copied.description == template.description
+          assert copied.icon == template.icon
+          assert copied.graph == template.graph
+E       fixture 'app' not found
+>       available fixtures: _asyncio_loop_factory, _class_scoped_runner, _function_scoped_runner, _module_scoped_runner, _package_scoped_runner, _session_scoped_runner, anyio_backend, anyio_backend_name, anyio_backend_options, cache, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, chat_app, doctest_namespace, event_loop_policy, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, respx_mock, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, unused_tcp_port, unused_tcp_port_factory, unused_udp_port, unused_udp_port_factory
+>       use 'pytest --fixtures [testpath]' for help on them.
+
+/Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/server/tests/test_workflow_graph_engine.py:652
+=========================== short test summary info ============================
+ERROR tests/test_workflow_graph_engine.py::test_template_copy_keeps_public_description_and_icon
+70 passed, 1 error in 9.80s
