@@ -98,6 +98,11 @@ const FlowCanvas = forwardRef<CanvasActions, Props>(function FlowCanvas(
     end = useStudio((s) => s.endDrag);
   const root = useRef<HTMLDivElement>(null);
   const flow = useReactFlow();
+  const viewportIntent = useRef(false);
+  const moveView = (change: () => unknown) => {
+    viewportIntent.current = true;
+    void change();
+  };
   const viewport = useViewport();
   const reduced = useReducedMotion(),
     large = useMediaQuery("(min-width:1280px)");
@@ -133,22 +138,24 @@ const FlowCanvas = forwardRef<CanvasActions, Props>(function FlowCanvas(
     edit((d) => ({ ...d, graph: layout(d.graph) }));
     timer.current = setTimeout(() => {
       setArranging(false);
-      void flow.fitView({ duration, padding: 0.15 });
+      moveView(() => flow.fitView({ duration, padding: 0.15 }));
     }, duration);
   };
   useImperativeHandle(ref, () => ({
     center,
-    fit: () => void flow.fitView({ duration, padding: 0.15 }),
+    fit: () => moveView(() => flow.fitView({ duration, padding: 0.15 })),
     problem: (id) => {
       const n = flow.getNode(id);
       if (n)
-        void flow.setCenter(n.position.x + 144, n.position.y + 64, {
-          zoom: 1,
-          duration,
-        });
+        moveView(() =>
+          flow.setCenter(n.position.x + 144, n.position.y + 64, {
+            zoom: 1,
+            duration,
+          }),
+        );
     },
     tidy,
-    zoom100: () => void flow.zoomTo(1, { duration }),
+    zoom100: () => moveView(() => flow.zoomTo(1, { duration })),
     added: () => setHint(false),
   }));
   const nodes = useMemo<(BlockFlowNode | NoteFlowNode)[]>(
@@ -403,12 +410,15 @@ const FlowCanvas = forwardRef<CanvasActions, Props>(function FlowCanvas(
             isValidConnection={(c) =>
               canConnect(doc, c.source, c.target, c.sourceHandle ?? "out")
             }
-            onMoveEnd={(_, v) => {
-              if (!readonly)
+            onMoveEnd={(event, v) => {
+              // Initial fit is presentation, not a user edit. Explicit controls
+              // and real pan/zoom gestures still persist the chosen viewport.
+              if (!readonly && (event || viewportIntent.current))
                 edit(
                   (d) => ({ ...d, graph: { ...d.graph, viewport: v } }),
                   "viewport",
                 );
+              viewportIntent.current = false;
             }}
           >
             <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
@@ -434,26 +444,28 @@ const FlowCanvas = forwardRef<CanvasActions, Props>(function FlowCanvas(
           <div className="wf-canvas-controls">
             <IconButton
               label="Zoom out"
-              onClick={() => void flow.zoomOut({ duration })}
+              onClick={() => moveView(() => flow.zoomOut({ duration }))}
             >
               <Minus />
             </IconButton>
             <Button
               variant="ghost"
               aria-label="Zoom 100%"
-              onClick={() => void flow.zoomTo(1, { duration })}
+              onClick={() => moveView(() => flow.zoomTo(1, { duration }))}
             >
               {Math.round(viewport.zoom * 100)}%
             </Button>
             <IconButton
               label="Zoom in"
-              onClick={() => void flow.zoomIn({ duration })}
+              onClick={() => moveView(() => flow.zoomIn({ duration }))}
             >
               <Plus />
             </IconButton>
             <IconButton
               label="Fit view"
-              onClick={() => void flow.fitView({ duration, padding: 0.15 })}
+              onClick={() =>
+                moveView(() => flow.fitView({ duration, padding: 0.15 }))
+              }
             >
               <Maximize />
             </IconButton>
@@ -482,7 +494,7 @@ const FlowCanvas = forwardRef<CanvasActions, Props>(function FlowCanvas(
                   Tidy up
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => void flow.fitView({ duration })}
+                  onClick={() => moveView(() => flow.fitView({ duration }))}
                 >
                   Fit view
                 </DropdownMenuItem>
@@ -535,7 +547,9 @@ const FlowCanvas = forwardRef<CanvasActions, Props>(function FlowCanvas(
               Add note
             </ContextMenuItem>
             <ContextMenuItem onSelect={tidy}>Tidy up</ContextMenuItem>
-            <ContextMenuItem onSelect={() => void flow.fitView({ duration })}>
+            <ContextMenuItem
+              onSelect={() => moveView(() => flow.fitView({ duration }))}
+            >
               Fit view
             </ContextMenuItem>
           </>

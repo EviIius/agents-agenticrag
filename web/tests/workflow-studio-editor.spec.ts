@@ -625,3 +625,30 @@ test("Runtime availability errors are server-owned and lead to workflow settings
     page.getByRole("combobox", { name: "Default text model", exact: true }),
   ).toBeVisible();
 });
+
+test("Opening and fitting a template does not create an unsaved edit; explicit zoom still persists", async ({
+  page,
+  request,
+}) => {
+  const d = await create(request, "brief_images");
+  await page.goto("/workflows");
+  await page.goto(`/workflows/${d.id}`);
+  await expect(page.locator(".react-flow__node-block")).toHaveCount(5);
+  await settle(page);
+  await saved(page);
+  expect((await def(request, d.id)).version).toBe(1);
+  expect((await def(request, d.id)).graph.viewport).toBeNull();
+  await page.goBack();
+  await expect(
+    page.getByRole("heading", { name: "Workflows", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("dialog", { name: "Leave with unsaved changes?" }),
+  ).not.toBeVisible();
+  await page.goto(`/workflows/${d.id}`);
+  await page.getByRole("button", { name: "Zoom in", exact: true }).click();
+  await saved(page);
+  await expect
+    .poll(async () => (await def(request, d.id)).graph.viewport)
+    .not.toBeNull();
+});
