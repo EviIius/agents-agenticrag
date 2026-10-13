@@ -20,3 +20,11 @@ prompt-preview units, native drag/insertion, keyboard wiring, phone reorder/bran
 conflicts, server-authoritative availability, and the production design-state sweep.
 Focused failed development attempts and traces are retained under
 `artifacts/workflow-studio/ws-c/attempts/`; they are not counted as final passes.
+
+The second full invocation retained 528 passes, three existing skips and one new
+WebKit reduced-motion failure. Initial preference hydration was publishing the
+old UI values 300 ms later, overwriting the externally saved Always setting.
+`usePreferenceSync` now hydrates before enabling write-back. The new motion test
+forces a differing saved/local theme, asserts hydration sends no settings PATCH,
+checks the saved Always response and verifies reload. Existing phone settings
+assertions are unchanged; three repeats in each engine pass (12 checks).

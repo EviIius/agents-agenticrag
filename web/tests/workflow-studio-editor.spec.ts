@@ -317,6 +317,17 @@ test("Both reduced-motion triggers remove Studio motion; dragging never gets a t
   request,
 }) => {
   const d = await create(request, "brief_images");
+  await request.patch("/api/settings", {
+    data: { "appearance.theme": "dark", "appearance.reduce_motion": "system" },
+  });
+  await page.addInitScript(() =>
+    localStorage.setItem("workbench-theme", "light"),
+  );
+  const preferenceWrites: unknown[] = [];
+  page.on("request", (r) => {
+    if (r.method() === "PATCH" && new URL(r.url()).pathname === "/api/settings")
+      preferenceWrites.push(r.postDataJSON());
+  });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(`/workflows/${d.id}`);
   await block(page, "n_draft");
@@ -325,10 +336,14 @@ test("Both reduced-motion triggers remove Studio motion; dragging never gets a t
       .locator(".wf-right")
       .evaluate((e) => getComputedStyle(e).animationName),
   ).toBe("none");
+  await settle(page);
+  expect(preferenceWrites).toEqual([]);
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await request.patch("/api/settings", {
+  const response = await request.patch("/api/settings", {
     data: { "appearance.reduce_motion": "always" },
   });
+  expect(response.ok()).toBeTruthy();
+  expect((await response.json())["appearance.reduce_motion"]).toBe("always");
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute(
     "data-reduce-motion",

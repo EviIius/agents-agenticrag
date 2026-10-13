@@ -8,7 +8,6 @@ export function usePreferenceSync(settings?: Record<string, unknown>) {
   const hydrated = useRef(false);
   useEffect(() => {
     if (!settings || hydrated.current) return;
-    hydrated.current = true;
     const patch: Parameters<ReturnType<typeof useUI.getState>["set"]>[0] = {};
     const theme = settings["appearance.theme"];
     if (theme === "light" || theme === "dark" || theme === "system")
@@ -20,7 +19,10 @@ export function usePreferenceSync(settings?: Record<string, unknown>) {
     const motion = settings["appearance.reduce_motion"];
     if (motion === "system" || motion === "always") patch.reduceMotion = motion;
     if (typeof settings.user_name === "string") patch.name = settings.user_name;
+    // Hydration is a read, so the subscriber must not write these old values
+    // back over a newer saved preference while the page is starting.
     useUI.getState().set(patch);
+    hydrated.current = true;
   }, [settings]);
   useEffect(() => {
     const preferences = (state: ReturnType<typeof useUI.getState>) => ({
