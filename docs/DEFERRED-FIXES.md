@@ -376,3 +376,10 @@ This replaces the current embedded Images workspace as the desired creation flow
 Review the durable chat-artifact/message schema and restoration behavior as a
 separate implementation scope after the Workflow Studio engine checkpoint.
 WS-B remains isolated; this entry does not claim the chat integration is built.
+
+13 October: Jake authorized Claude's supplied `docs/next/chat-images/` plan after
+WS-D, with its recommended defaults. The references and prototype are preserved;
+`docs/CHAT-IMAGES-IMPLEMENTATION-REVIEW.md` records the implementation corrections.
+Next checkpoints are CI-A (waiting/reasoning indicator), CI-B (saved image turns
+in the composer), and CI-C (viewer, iteration and exports), each with review.
+The chat integration remains pending; no merge or live publication is authorized.

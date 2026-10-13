@@ -14,6 +14,7 @@ export function BlockRunInputs({
   mode,
   beforeRun,
   accepted,
+  previewPlan,
 }: {
   doc: Doc;
   defId: string;
@@ -21,6 +22,7 @@ export function BlockRunInputs({
   mode: "run" | "test";
   beforeRun: () => Promise<boolean>;
   accepted: (r: Run) => void;
+  previewPlan?: components["schemas"]["ReusePlan"];
 }) {
   const [samples, setSamples] = useState<Record<string, string>>({}),
     [notice, setNotice] = useState(""),
@@ -28,12 +30,14 @@ export function BlockRunInputs({
   const request = useRef<{ body: string; key: string }>(undefined);
   const reuse = useQuery({
     queryKey: ["workflow-reuse", defId, nodeId, mode, doc],
+    enabled: previewPlan === undefined,
     queryFn: () =>
       api<components["schemas"]["ReusePlan"]>(
         `/workflows/defs/${defId}/reuse?node_id=${encodeURIComponent(nodeId)}&mode=${mode}`,
       ),
   });
   const node = doc.nodes.find((n) => n.id === nodeId)!;
+  const plan = previewPlan ?? reuse.data;
   const refs = Array.from(
     new Map(
       fields(node)
@@ -52,8 +56,9 @@ export function BlockRunInputs({
       "boolean",
     ].includes(outputs(doc.nodes.find((n) => n.key === r.key)!)[r.field]),
   );
-  const useSamples = mode === "test" && !reuse.data?.eligible;
+  const useSamples = mode === "test" && !plan?.eligible;
   const start = async () => {
+    if (previewPlan) return;
     setBusy(true);
     setNotice("");
     try {
@@ -81,7 +86,7 @@ export function BlockRunInputs({
                 }),
               ),
             }
-          : { source_run_id: reuse.data?.source_run_id }),
+          : { source_run_id: plan?.source_run_id }),
       };
       const body = JSON.stringify(material);
       if (request.current?.body !== body)
@@ -103,12 +108,10 @@ export function BlockRunInputs({
       <h2 className="font-semibold">
         {mode === "test" ? "Test this block" : "Run from here"} · {node.title}
       </h2>
-      {reuse.data?.eligible ? (
+      {plan?.eligible ? (
         <p className="wf-help">Verified earlier outputs will be reused.</p>
       ) : (
-        <p className="wf-help">
-          {reuse.data?.reason ?? "Checking earlier outputs…"}
-        </p>
+        <p className="wf-help">{plan?.reason ?? "Checking earlier outputs…"}</p>
       )}
       {useSamples &&
         canSample &&
@@ -137,8 +140,8 @@ export function BlockRunInputs({
         onClick={() => void start()}
         disabled={
           busy ||
-          reuse.isPending ||
-          (!reuse.data?.eligible && (!useSamples || !canSample))
+          (previewPlan === undefined && reuse.isPending) ||
+          (!plan?.eligible && (!useSamples || !canSample))
         }
       >
         {busy ? "Starting…" : mode === "test" ? "Test block" : "Run from here"}

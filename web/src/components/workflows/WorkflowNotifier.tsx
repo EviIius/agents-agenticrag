@@ -40,7 +40,7 @@ export default function WorkflowNotifier() {
       ) {
         initialNoticeShown = true;
         toast(`${run.def_name} is waiting for you.`, {
-          id: `workflow-pause-${run.id}`,
+          id: "workflow-paused",
           action: {
             label: "Open",
             onClick: () =>

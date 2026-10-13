@@ -39,3 +39,32 @@ The fourth running attempt's log is retained; its trace was replaced during a
 failed archive/setup script before the fifth attempt. Do not claim that trace was
 preserved. Every supplied design/reference byte remains preserved independently.
 No failed full regression invocation is silently combined with focused passes.
+
+The initial complete browser invocation was intentionally interrupted after 17
+passes to replace the inherited boxed timeline with Claude's flat timeline and
+collapsed completed outputs. Its interruption and source are retained. The first
+flat-timeline check selected a block before asserting automatic Follow resumption;
+selection itself correctly pans and pauses Follow, so that assertion was reordered.
+The output-content assertion remains and now uses the specified explicit selection.
+
+The next complete invocation is retained under `attempts/e2e-second-failed/`:
+545 passes, eight failures and three existing skips in 57.7 minutes. Two cases
+in each engine found nested Markdown copy status regions, one in each engine
+found provenance capture requiring a model for the disabled clean-up block, and
+WebKit found the phone run sheet blocking legacy navigation and stacked paused
+toasts intercepting their Open actions. None of these original tests is changed.
+The repair skips model resolution for disabled blocks, keeps ordinary chat copy
+feedback unchanged while embedding workflow copy feedback without an extra
+status role, preserves the existing generated-image labels, retains inline
+legacy phone controls with an optional saved Outline, and updates one paused
+notification instead of stacking hidden actions. Graph-run sheets have an
+explicit Close control. Palette run identities now use their actual run IDs.
+
+The first focused repair pass retains ten passes and two failures. Vaul's
+`modal=false` removed its overlay but left the underlying Radix modal semantics,
+so the legacy phone display now stays inline. The new palette case initially
+reused the same synthetic name across both browser projects in the shared fake
+database and correctly saw four rows; it now creates an isolated repeated name
+for each case. Its two-row, unique-identity, correct-navigation and no-duplicate-
+key assertions are retained. The failed log, trace and exact source delta are
+preserved separately; these focused passes do not count as a complete QA run.

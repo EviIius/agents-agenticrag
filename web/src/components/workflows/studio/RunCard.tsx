@@ -144,6 +144,7 @@ export function RunCard({
                   <Markdown
                     text={state.output.text}
                     streaming={state.state === "running"}
+                    copyFeedbackRole="none"
                   />
                 </div>
               )}
@@ -299,14 +300,14 @@ export function RunCard({
                           onClick={() => setSavingImage(image.id)}
                         >
                           <img
-                            alt={`Saved result ${i + 1}`}
+                            alt={`Workflow generated image ${i + 1}`}
                             src={`/api/images/jobs/${image.id}/output/png`}
                           />
                         </button>
                       ))}
                     </div>
                   ) : typeof item.value === "string" ? (
-                    <Markdown text={item.value} />
+                    <Markdown text={item.value} copyFeedbackRole="none" />
                   ) : (
                     <pre className="wf-output-text">
                       {JSON.stringify(item.value, null, 2)}

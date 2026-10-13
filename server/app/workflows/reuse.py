@@ -21,7 +21,7 @@ async def guard(manager: "GraphRunner", doc: GraphDoc, node: Node, inputs: dict[
 
     config = node.config.model_dump(by_alias=True)
     model = None
-    if isinstance(node, (GenerateNode, CleanNode)):
+    if not node.disabled and isinstance(node, (GenerateNode, CleanNode)):
         selected = model_ref(doc, node.config.model)
         reported = await manager.legacy.runs.registry.resolve(
             selected.connection_id, selected.model_id

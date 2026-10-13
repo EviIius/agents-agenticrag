@@ -156,6 +156,7 @@ export function CommandPalette({
     ...workflowActivity
       .filter((run) => run.state === "paused")
       .map((run) => ({
+        id: `resume:${run.id}`,
         label: `Resume ${run.name}`,
         icon: Pause,
         action: () =>
@@ -214,17 +215,21 @@ export function CommandPalette({
           <CommandList className="min-h-0 max-h-[min(380px,45dvh)] p-2">
             {destinations.length > 0 && (
               <CommandGroup heading="Go to">
-                {destinations.map(({ label, icon: Icon, action }) => (
-                  <CommandItem
-                    key={label}
-                    value={label}
-                    className="min-h-11"
-                    onSelect={() => choose(action!)}
-                  >
-                    <Icon className="size-4" />
-                    {label}
-                  </CommandItem>
-                ))}
+                {destinations.map((item) => {
+                  const { label, icon: Icon, action } = item;
+                  const identity = "id" in item ? item.id : label;
+                  return (
+                    <CommandItem
+                      key={identity}
+                      value={identity}
+                      className="min-h-11"
+                      onSelect={() => choose(action!)}
+                    >
+                      <Icon className="size-4" />
+                      {label}
+                    </CommandItem>
+                  );
+                })}
               </CommandGroup>
             )}
             {commands.length > 0 && (

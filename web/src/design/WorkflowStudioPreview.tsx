@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useUI } from "@/stores/ui";
 import cases from "../../../shared/workflow_graph_cases.json";
 import { StudioEditor } from "@/components/workflows/studio/Studio";
+import { RunView } from "@/components/workflows/studio/RunView";
 import {
   StudioContext,
   createStudioStore,
@@ -31,6 +32,10 @@ const states = [
   "run-skipped",
   "pick-paused",
   "block-test",
+  "run-view",
+  "versions",
+  "run-from-here",
+  "test-inputs",
   "cards",
   "home-cards",
   "quick-add",
@@ -297,6 +302,8 @@ export default function WorkflowStudioPreview() {
               />
             </div>
           </div>
+        ) : state === "run-view" ? (
+          <RunView key={state} run={previewRun} preview />
         ) : state === "cards" ? (
           <div
             className="flex flex-1 flex-wrap items-start gap-6 overflow-y-auto p-6"
@@ -325,6 +332,14 @@ export default function WorkflowStudioPreview() {
             store={store}
             preview
             previewRun={runStates ? previewRun : undefined}
+            initialBlockRun={
+              state === "run-from-here" || state === "test-inputs"
+                ? {
+                    mode: state === "test-inputs" ? "test" : "run",
+                    nodeId: "n_draft",
+                  }
+                : undefined
+            }
             initialQuick={state === "quick-add"}
             initialView={
               state === "outline" || state === "non-nestable"
@@ -336,9 +351,13 @@ export default function WorkflowStudioPreview() {
                 ? "problems"
                 : state === "settings"
                   ? "settings"
-                  : state === "run-inputs" || runStates
-                    ? "run"
-                    : undefined
+                  : state === "versions"
+                    ? "versions"
+                    : state === "run-inputs" ||
+                        runStates ||
+                        state === "test-inputs"
+                      ? "run"
+                      : undefined
             }
           />
         )}

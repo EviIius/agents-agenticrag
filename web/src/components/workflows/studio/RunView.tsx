@@ -1,6 +1,8 @@
 import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/app/IconButton";
+import { X } from "lucide-react";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import {
   Drawer,
@@ -19,9 +21,11 @@ import "./studio.css";
 export function RunView({
   run,
   legacyPanel,
+  preview = false,
 }: {
   run: Run;
   legacyPanel?: React.ReactNode;
+  preview?: boolean;
 }) {
   const store = useMemo(
     () =>
@@ -48,12 +52,13 @@ export function RunView({
   const q = useQuery({
     queryKey: ["workflow-definition", run.def_id],
     queryFn: () => api<Definition>(`/workflows/defs/${run.def_id}`),
-    enabled: !!run.def_id,
+    enabled: !!run.def_id && !preview,
   });
   const panel = legacyPanel ?? (
     <RunCard
       key={run.id}
       run={run}
+      preview={preview}
       selected={selected}
       onSelect={(id) => {
         setSelected(id);
@@ -81,7 +86,9 @@ export function RunView({
               <Link to={`/workflows/${run.def_id}`}>Edit workflow</Link>
             </Button>
           )}
-          {phone && <Button onClick={() => setOpen(true)}>Run details</Button>}
+          {phone && !legacyPanel && (
+            <Button onClick={() => setOpen(true)}>Run details</Button>
+          )}
         </header>
         <div className="wf-run-view-banner">
           Viewing a run from {new Date(run.created_at).toLocaleString()}.{" "}
@@ -90,7 +97,17 @@ export function RunView({
             : "This saved version is read-only."}
         </div>
         <div className="wf-studio-body">
-          {phone || outline ? (
+          {phone && legacyPanel ? (
+            <div className="wf-panel-body min-w-0 flex-1 overflow-y-auto">
+              {panel}
+              <details className="mt-6">
+                <summary className="min-h-11 cursor-pointer">
+                  Saved workflow
+                </summary>
+                <Outline run={run} add={() => {}} />
+              </details>
+            </div>
+          ) : phone || outline ? (
             <Outline run={run} add={() => {}} />
           ) : (
             <Canvas
@@ -109,10 +126,18 @@ export function RunView({
             </aside>
           )}
         </div>
-        {phone && (
+        {phone && !legacyPanel && (
           <Drawer open={open} onOpenChange={setOpen}>
             <DrawerContent className="max-h-[95dvh]">
-              <DrawerTitle className="sr-only">Run details</DrawerTitle>
+              <header className="wf-panel-head">
+                <DrawerTitle>Run details</DrawerTitle>
+                <IconButton
+                  label="Close Run details"
+                  onClick={() => setOpen(false)}
+                >
+                  <X />
+                </IconButton>
+              </header>
               <DrawerDescription className="sr-only">
                 Saved states and results for this run.
               </DrawerDescription>

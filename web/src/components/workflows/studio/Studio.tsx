@@ -102,6 +102,7 @@ export function StudioEditor({
   initialPanel,
   initialQuick = false,
   previewRun,
+  initialBlockRun,
 }: {
   store: StudioStore;
   preview?: boolean;
@@ -109,6 +110,7 @@ export function StudioEditor({
   initialPanel?: "inspector" | "settings" | "problems" | "run" | "versions";
   initialQuick?: boolean;
   previewRun?: import("./types").Run;
+  initialBlockRun?: { mode: "run" | "test"; nodeId: string };
 }) {
   const draft = useStudio((s) => s.draft),
     selection = useStudio((s) => s.selection),
@@ -155,10 +157,13 @@ export function StudioEditor({
       undefined,
   );
   const [showInputs, setShowInputs] = useState(false);
-  const [blockRun, setBlockRun] = useState<{
-    mode: "run" | "test";
-    nodeId: string;
-  }>();
+  const [blockRun, setBlockRun] = useState<
+    | {
+        mode: "run" | "test";
+        nodeId: string;
+      }
+    | undefined
+  >(initialBlockRun);
   const autosave = useAutosave(store, !preview);
   const { runs, accepted, connection } = useGraphRuns(selectedRunId);
   const latest =
@@ -600,7 +605,24 @@ export function StudioEditor({
   }
   const panelContent =
     panel === "versions" ? (
-      <VersionsPanel close={close} />
+      <VersionsPanel
+        close={close}
+        previewSnapshots={
+          preview
+            ? [
+                {
+                  id: "synthetic-version",
+                  def_id: store.getState().id,
+                  graph_hash: "synthetic",
+                  graph: draft.graph,
+                  label: "Synthetic named version",
+                  created_at: "2026-10-13T12:00:00Z",
+                  run_count: 2,
+                },
+              ]
+            : undefined
+        }
+      />
     ) : panel === "inspector" || panel === "settings" ? (
       <Inspector
         structureDisabled={phone && !outlineTree(draft.graph)}
@@ -680,6 +702,17 @@ export function StudioEditor({
               mode={blockRun.mode}
               beforeRun={autosave.flush}
               accepted={acceptRun}
+              previewPlan={
+                preview
+                  ? {
+                      eligible: blockRun.mode === "run",
+                      reason: "Run the workflow once first.",
+                      source_run_id:
+                        blockRun.mode === "run" ? "synthetic-source-run" : null,
+                      node_ids: [],
+                    }
+                  : undefined
+              }
             />
           ) : !latest || showInputs ? (
             <RunInputs

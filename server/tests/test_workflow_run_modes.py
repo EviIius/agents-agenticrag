@@ -6,8 +6,8 @@ from typing import Any
 import pytest
 
 from app.errors import AppError
-from app.workflows.graph import GraphDoc
-from app.workflows.graph_schemas import Decision, DefSave, GraphSubmit
+from app.workflows.graph import GenerateNode, GraphDoc, ModelRef
+from app.workflows.graph_schemas import Decision, DefCreate, DefSave, GraphSubmit
 from app.workflows.reuse import plan
 from app.workflows.template_graphs import template_graph
 from app.workflows.views import page
@@ -68,6 +68,28 @@ async def test_changed_saved_defaults_and_inputs_refuse_reuse(chat_app: Any) -> 
         (app.state.test_connection, "fake-chat", '{"temperature":0.7}'),
     )
     assert not (await plan(manager, definition.id, "n_images", original.id)).eligible
+
+
+async def test_disabled_cleanup_needs_no_model_and_still_qualifies_saved_upstream(
+    chat_app: Any,
+) -> None:
+    app, client, runtime = chat_app
+    item = await record(app, client, "Synthetic original meeting.")
+    graph = template_graph("meeting_pack", cleanup=False)
+    assert graph.settings.default_model is None
+    pack = next(node for node in graph.nodes if isinstance(node, GenerateNode))
+    pack.config.model = ModelRef(connection_id=app.state.test_connection, model_id="fake-chat")
+    manager = app.state.workflow_graphs
+    definition = await manager.defs.create(
+        DefCreate(name="Synthetic disabled cleanup", graph=graph)
+    )
+    run = await submit(app, definition, inputs={"recording": item["id"]})
+    result = await finish(app, run.id)
+    assert result.state == "complete"
+    assert result.nodes["n_clean"].state == "skipped"
+    assert len([c for c in runtime.state.captures if c.get("messages")]) == 1
+    reuse = await plan(manager, definition.id, "n_pack", result.id)
+    assert reuse.eligible and "n_clean" in reuse.node_ids
 
 
 async def test_single_block_samples_and_saved_upstream_are_hidden_and_durable(

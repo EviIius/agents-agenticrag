@@ -8,11 +8,18 @@ import { X } from "lucide-react";
 import { TextField } from "./fields";
 import { useStudio } from "./store";
 import type { Doc } from "./types";
-export function VersionsPanel({ close }: { close: () => void }) {
+export function VersionsPanel({
+  close,
+  previewSnapshots,
+}: {
+  close: () => void;
+  previewSnapshots?: components["schemas"]["Snapshot"][];
+}) {
   const id = useStudio((s) => s.id),
     edit = useStudio((s) => s.edit);
   const q = useQuery({
     queryKey: ["workflow-versions", id],
+    enabled: previewSnapshots === undefined,
     queryFn: () =>
       api<components["schemas"]["Snapshot"][]>(
         `/workflows/defs/${id}/snapshots`,
@@ -20,6 +27,8 @@ export function VersionsPanel({ close }: { close: () => void }) {
   });
   const [names, setNames] = useState<Record<string, string>>({}),
     [error, setError] = useState("");
+  const snapshots = previewSnapshots ?? q.data;
+  const loading = previewSnapshots === undefined && q.isPending;
   return (
     <div className="wf-inspector">
       <header className="wf-panel-head">
@@ -29,8 +38,8 @@ export function VersionsPanel({ close }: { close: () => void }) {
         </IconButton>
       </header>
       <div className="wf-panel-body wf-field-stack">
-        {q.isPending && <p role="status">Loading saved versions…</p>}
-        {q.isError && (
+        {loading && <p role="status">Loading saved versions…</p>}
+        {previewSnapshots === undefined && q.isError && (
           <p role="alert">
             Versions couldn't be loaded.{" "}
             <Button variant="ghost" onClick={() => void q.refetch()}>
@@ -38,12 +47,12 @@ export function VersionsPanel({ close }: { close: () => void }) {
             </Button>
           </p>
         )}
-        {!q.isPending && !q.data?.length && (
+        {!loading && !snapshots?.length && (
           <p className="wf-help">
             Run this workflow to save its first version.
           </p>
         )}
-        {q.data?.map((snapshot) => (
+        {snapshots?.map((snapshot) => (
           <section key={snapshot.id} className="wf-version">
             <h3>
               {snapshot.label || new Date(snapshot.created_at).toLocaleString()}
@@ -61,6 +70,7 @@ export function VersionsPanel({ close }: { close: () => void }) {
               <Button
                 variant="outline"
                 onClick={async () => {
+                  if (previewSnapshots) return;
                   try {
                     await api(
                       `/workflows/defs/${id}/snapshots/${snapshot.id}`,

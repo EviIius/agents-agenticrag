@@ -24,6 +24,7 @@ test.use({
 async function create(
   request: APIRequestContext,
   options: {
+    name?: string;
     review?: boolean;
     prompt?: string;
     count?: number;
@@ -34,7 +35,7 @@ async function create(
   const d: Definition = await (
     await request.post("/api/workflows/defs", {
       data: {
-        name: "Synthetic running workflow",
+        name: options.name ?? "Synthetic running workflow",
         template_id: "brief_images",
         default_model: { connection_id: c.id, model_id: "fake-chat" },
       },
@@ -412,6 +413,48 @@ test("Failed image block retries without repeating the finished text and shows p
   await done(page);
 });
 
+test("Palette selects the correct paused run when workflow names repeat", async ({
+  page,
+  request,
+}) => {
+  const name = `Synthetic repeated palette ${crypto.randomUUID()}`;
+  const first = await create(request, { name });
+  const second = await create(request, { name });
+  const runs = [await start(request, first), await start(request, second)];
+  const duplicateKeys: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" && message.text().includes("same key"))
+      duplicateKeys.push(message.text());
+  });
+  await page.goto("/");
+  await expect(
+    page.locator(
+      'nav[aria-label="Workspace"] [aria-label="A workflow is waiting for you"]',
+    ),
+  ).toBeVisible();
+  await page.keyboard.press("ControlOrMeta+k");
+  await page
+    .getByRole("combobox", { name: "Search chats and actions" })
+    .fill(`Resume ${name}`);
+  const options = page.getByRole("option", {
+    name: `Resume ${name}`,
+    exact: true,
+  });
+  await expect(options).toHaveCount(2);
+  const values = await options.evaluateAll((items) =>
+    items.map((item) => item.getAttribute("data-value")),
+  );
+  expect(new Set(values).size).toBe(2);
+  const selected = values[1]!.slice("resume:".length);
+  expect(runs.map((run) => run.id)).toContain(selected);
+  await options.nth(1).click();
+  await expect(page).toHaveURL(new RegExp(`/runs/${selected}$`));
+  await expect(
+    page.getByRole("textbox", { name: "Review result", exact: true }),
+  ).toBeVisible();
+  expect(duplicateKeys).toEqual([]);
+});
+
 test("Full application lifecycle restart preserves completed blocks and resumes unfinished work", async ({
   page,
   request,
@@ -482,6 +525,10 @@ for (const width of [390, 1440])
         "pick-paused",
         "block-test",
         "setup-pick",
+        "run-view",
+        "versions",
+        "run-from-here",
+        "test-inputs",
       ]) {
         await page.goto("/design?studio");
         await page.getByRole("button", { name: theme, exact: true }).click();
