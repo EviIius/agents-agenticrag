@@ -93,6 +93,11 @@ export function RunCard({
         {order.map((id) => {
           const n = run.graph.nodes.find((n) => n.id === id)!;
           const state = run.nodes[n.id];
+          const visible =
+            selected === n.id ||
+            ["running", "failed", "interrupted", "cancelled"].includes(
+              state?.state ?? "",
+            );
           return (
             <li
               key={n.id}
@@ -103,6 +108,7 @@ export function RunCard({
                 className="wf-run-step-head text-sm"
                 onClick={() => onSelect?.(n.id)}
                 aria-label={`View result for ${n.title}`}
+                aria-expanded={visible}
               >
                 {state?.reused_from ? (
                   <RotateCcw className="size-4" />
@@ -133,7 +139,7 @@ export function RunCard({
                   {w}
                 </p>
               ))}
-              {typeof state?.output?.text === "string" && (
+              {visible && typeof state?.output?.text === "string" && (
                 <div className="wf-stream-preview">
                   <Markdown
                     text={state.output.text}
@@ -141,7 +147,7 @@ export function RunCard({
                   />
                 </div>
               )}
-              {Array.isArray(state?.output?.images) && (
+              {visible && Array.isArray(state?.output?.images) && (
                 <div className="grid grid-cols-2 gap-3">
                   {(state.output.images as { id: string }[]).map((image, i) => (
                     <button

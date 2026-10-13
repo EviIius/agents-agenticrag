@@ -163,13 +163,19 @@ test("Run canvas streams truthful text, follows and yields to manual zoom, and s
   await expect(page.locator('.wf-block[data-run="paused"]')).toContainText(
     "Waiting for you",
   );
+  await expect(
+    page.getByRole("button", { name: "Following run", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await page
+    .getByRole("button", {
+      name: "View result for Draft image prompt",
+      exact: true,
+    })
+    .click();
   await expect(page.locator(".wf-stream-preview").first()).toContainText(
     "token15",
   );
   expect(detailReads).toBeLessThanOrEqual(1);
-  await expect(
-    page.getByRole("button", { name: "Following run", exact: true }),
-  ).toHaveAttribute("aria-pressed", "true");
   await page
     .getByRole("textbox", { name: "Review result" })
     .fill("Synthetic approved blue circle");
