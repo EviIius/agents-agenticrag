@@ -49,6 +49,16 @@ it("counts actual unique active pages and distinguishes library search", () => {
     })),
   );
   expect(workingPhase(message, "search", steps)?.label).toBe("Read 4 pages");
+  const failed = [
+    { label: "reading", detail: "failed", status: "ok" },
+    { label: "read", detail: "failed", status: "failed" },
+  ];
+  expect(workingPhase(message, "search", failed)?.label).toBe(
+    "Pages couldn't be read",
+  );
+  expect(workingPhase(message, "search", [...failed, ...steps])?.label).toBe(
+    "Read 4 pages",
+  );
   expect(
     workingPhase(
       { ...message, library: {} as Message["library"] },

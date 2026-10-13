@@ -157,6 +157,7 @@ for (const width of [390, 1440])
         "Loading",
         "Web search",
         "Reading pages",
+        "Unreadable pages",
         "Library search",
         "Thinking",
         "Answer",
@@ -170,6 +171,8 @@ for (const width of [390, 1440])
         await settle(page);
         if (state === "Reading pages")
           await expect(word(page)).toHaveText("Reading 4 pages");
+        if (state === "Unreadable pages")
+          await expect(word(page)).toHaveText("Pages couldn't be read");
         if (state === "Library search")
           await expect(word(page)).toHaveText("Searching your files");
         if (["Stopped", "Error"].includes(state))

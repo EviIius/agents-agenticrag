@@ -111,9 +111,17 @@ export function workingPhase(
           .map((s) => s.detail),
       );
       const active = [...started].filter((url) => !finished.has(url)).length;
+      const readable = new Set(
+        steps
+          .filter(
+            (s) => s.label === "read" && s.status !== "failed" && s.detail,
+          )
+          .map((s) => s.detail),
+      );
       if (active) label = `Reading ${active} page${active === 1 ? "" : "s"}`;
-      else if (finished.size)
-        label = `Read ${finished.size} page${finished.size === 1 ? "" : "s"}`;
+      else if (readable.size)
+        label = `Read ${readable.size} page${readable.size === 1 ? "" : "s"}`;
+      else if (finished.size) label = "Pages couldn't be read";
     }
     return {
       kind: "search",

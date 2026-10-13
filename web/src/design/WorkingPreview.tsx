@@ -10,6 +10,7 @@ const states = [
   "Loading",
   "Web search",
   "Reading pages",
+  "Unreadable pages",
   "Library search",
   "Thinking",
   "Answer",
@@ -69,7 +70,12 @@ export default function WorkingPreview() {
       ? "queued"
       : state === "Loading"
         ? "loading-model"
-        : ["Web search", "Reading pages", "Library search"].includes(state)
+        : [
+              "Web search",
+              "Reading pages",
+              "Unreadable pages",
+              "Library search",
+            ].includes(state)
           ? "search"
           : "waiting";
   const steps =
@@ -79,7 +85,20 @@ export default function WorkingPreview() {
           detail: `https://example.org/page-${n}`,
           status: "ok",
         }))
-      : [];
+      : state === "Unreadable pages"
+        ? [
+            {
+              label: "reading",
+              detail: "https://example.org/unreadable",
+              status: "ok",
+            },
+            {
+              label: "read",
+              detail: "https://example.org/unreadable",
+              status: "failed",
+            },
+          ]
+        : [];
   return (
     <main className="design-page">
       <h1 className="font-serif text-3xl">Working indicator</h1>
