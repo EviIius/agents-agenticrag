@@ -995,3 +995,27 @@ The existing main checkout and installed app remain unchanged. Jake also request
 that image creation use the ordinary chat composer and return progress and image
 results in the conversation; record this in `docs/DEFERRED-FIXES.md` for a later
 concrete chat-artifact scope, rather than expanding this server checkpoint.
+
+
+**Workflow Studio WS-B closeout — 12 October 2026:** Source `ebc7f41e` adds
+seven strict graph block contracts, additive migration 011, definitions/snapshots,
+durable execution/attempts/original sources, approvals, retry and v2 APIs/stream.
+Legacy request parity passes six fake-runtime cases; model settings, sources and
+failed/skipped legacy states/results are faithfully projected. Canvas-independent
+ordering and snapshot identities, persisted automatic seeds, owned-job acceptance
+cancellation and per-run 10 Hz event limits follow the reviewed corrections.
+Autosave keeps the current draft; immutable full snapshots are created per run.
+
+Final checks pass: 591 Python / 39 frontend, workflows 88.4% coverage and 74 contrast
+pairs. One complete browser invocation passes 505 cases with three existing skips
+in 43.4 minutes. A retained cold-start fixture failure is fixed by starting the fake
+runtime before its dependent app; no production provider/prompt changes or weakened
+assertions/timeouts. Initial JS stays 245,249 gzip bytes. Copied synthetic-data
+rollback restores the exact backup and starts previous schema-10 source. Fresh
+outputs are archived separately, old bytes restored, 22,069 historical blobs and
+15 references verified; installed 97-file server and 410 current-release static
+hashes and main remain unchanged. No real model inference/dependency installation,
+merge, live publication or physical phone pass is claimed. The requested image
+creation/results inside chat remains a tracked follow-up. H4:
+`docs/WORKFLOW-STUDIO-WS-B-REPORT.md`. Stop for WS-B review before WS-C. Research
+remains shelved; named canvas/call approvals persist on this isolated branch.

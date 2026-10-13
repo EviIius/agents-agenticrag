@@ -1,0 +1,63 @@
+..........................................................F............. [ 12%]
+........................................................................ [ 25%]
+.................................................................F...... [ 38%]
+........................................................................ [ 50%]
+........................................................................ [ 63%]
+........................................................................ [ 76%]
+........................................................................ [ 88%]
+...............................................................          [100%]
+=================================== FAILURES ===================================
+____________ test_phase5a_rows_and_meta_nullable_survive_migration _____________
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-80/test_phase5a_rows_and_meta_nul0')
+
+    async def test_phase5a_rows_and_meta_nullable_survive_migration(tmp_path: Path) -> None:
+        target = tmp_path / "phase5a.db"
+        shutil.copyfile(Path(__file__).parent / "fixtures/db/phase3.db", target)
+        async with aiosqlite.connect(target) as db:
+            await db.executescript(
+                (MIGRATIONS / "005_presets.sql").read_text() + "PRAGMA user_version=5;"
+            )
+            await db.execute(
+                "INSERT INTO presets VALUES ('fake','Invented preset',NULL,'{}',0,"
+                "'2026-10-05','2026-10-05')"
+            )
+            await db.commit()
+        columns, before = snapshot(target)
+        async with aiosqlite.connect(target) as db:
+            await migrate(db)
+            version = await (await db.execute("PRAGMA user_version")).fetchone()
+>           assert version and version[0] == 10
+E           assert ((11,) and 11 == 10)
+
+tests/test_documents.py:308: AssertionError
+___________________ test_migration_is_idempotent_and_private ___________________
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-80/test_migration_is_idempotent_a0')
+
+    @pytest.mark.asyncio
+    async def test_migration_is_idempotent_and_private(tmp_path: Path) -> None:
+        for _ in range(2):
+            async with connect(tmp_path) as db:
+                async with db.execute("PRAGMA user_version") as cursor:
+>                   assert await cursor.fetchone() == (10,)
+E                   assert (11,) == (10,)
+E                     
+E                     At index 0 diff: 11 != 10
+E                     Use -v to get more diff
+
+tests/test_foundation.py:18: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_documents.py::test_phase5a_rows_and_meta_nullable_survive_migration
+FAILED tests/test_foundation.py::test_migration_is_idempotent_and_private - a...
+2 failed, 565 passed in 231.15s (0:03:51)
+providers line coverage: 364/418 = 87.1%
+runs line coverage: 389/435 = 89.4%
+search line coverage: 1564/1741 = 89.8%
+transcribe line coverage: 690/740 = 93.2%
+documents line coverage: 196/203 = 96.6%
+library line coverage: 762/823 = 92.6%
+images line coverage: 625/702 = 89.0%
+workflows line coverage: 1893/2497 = 75.8%
+backup.py line coverage: 106/113 = 93.8%
+capacity.py line coverage: 55/58 = 94.8%
