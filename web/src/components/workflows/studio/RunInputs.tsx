@@ -12,15 +12,19 @@ export function RunInputs({
   beforeRun,
   accepted,
   preview = false,
+  previous,
 }: {
   doc: Doc;
   defId: string;
   beforeRun: () => Promise<boolean>;
   accepted: (run: Run) => void;
   preview?: boolean;
+  previous?: Run;
 }) {
   const start = doc.nodes.find((n) => n.kind === "start");
-  const [values, setValues] = useState<Record<string, unknown>>({}),
+  const [values, setValues] = useState<Record<string, unknown>>(
+      () => previous?.inputs ?? {},
+    ),
     [busy, setBusy] = useState(false),
     [notice, setNotice] = useState("");
   const [recordings, setRecordings] = useState<

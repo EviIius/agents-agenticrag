@@ -13,6 +13,7 @@ export type Flow = Edge<
     remove: (id: string) => void;
     readonly: boolean;
     hovered: boolean;
+    runState?: string;
   },
   "flow"
 >;
@@ -25,6 +26,7 @@ export function FlowEdge(props: EdgeProps<Flow>) {
         path={path}
         className="wf-edge-path"
         interactionWidth={24}
+        data-run={props.data?.runState}
       />
       <EdgeLabelRenderer>
         {!props.data?.readonly && (

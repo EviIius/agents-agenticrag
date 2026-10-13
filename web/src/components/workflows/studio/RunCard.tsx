@@ -11,6 +11,10 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { FileSaveDialog } from "@/components/app/FileSaveDialog";
+import { Check, Pause, Circle, CircleAlert, RotateCcw } from "lucide-react";
+import Markdown from "@/components/chat/Markdown";
+import { topoOrder } from "./graph";
+import { runLabel } from "./run-state";
 import { registry } from "./registry";
 type Original = {
   node_id: string;
@@ -19,16 +23,31 @@ type Original = {
 export function RunCard({
   run,
   preview = false,
+  selected,
+  onSelect,
 }: {
   run: Run;
   preview?: boolean;
+  selected?: string;
+  onSelect?: (nodeId: string) => void;
 }) {
   const [save, setSave] = useState(false),
     [source, setSource] = useState<Original[]>(),
     [sourceOpen, setSourceOpen] = useState(false),
-    [notice, setNotice] = useState("");
+    [notice, setNotice] = useState(""),
+    [savingImage, setSavingImage] = useState<string>(),
+    [favorites, setFavorites] = useState<{
+      nodeId: string;
+      indices: number[];
+    }>();
   const [editValue, setEdited] = useState<{ nodeId: string; value: string }>(),
     [acting, setActing] = useState(false);
+  let order: string[];
+  try {
+    order = topoOrder(run.graph);
+  } catch {
+    order = run.graph.nodes.map((n) => n.id);
+  }
   const paused = run.graph.nodes.find(
     (n) => run.nodes[n.id]?.state === "paused",
   );
@@ -71,26 +90,71 @@ export function RunCard({
         </p>
       )}
       <ol className="wf-run-steps">
-        {run.graph.nodes.map((n) => {
+        {order.map((id) => {
+          const n = run.graph.nodes.find((n) => n.id === id)!;
           const state = run.nodes[n.id];
           return (
-            <li key={n.id}>
-              <div className="flex justify-between gap-2 text-sm">
+            <li
+              key={n.id}
+              data-selected={selected === n.id}
+              data-state={state?.state}
+            >
+              <button
+                className="wf-run-step-head text-sm"
+                onClick={() => onSelect?.(n.id)}
+                aria-label={`View result for ${n.title}`}
+              >
+                {state?.reused_from ? (
+                  <RotateCcw className="size-4" />
+                ) : state?.state === "complete" ? (
+                  <Check className="size-4 text-success" />
+                ) : state?.state === "paused" ? (
+                  <Pause className="size-4 text-warning" />
+                ) : state?.state === "failed" ? (
+                  <CircleAlert className="size-4 text-danger" />
+                ) : (
+                  <Circle
+                    className={`size-4 ${state?.state === "running" ? "activity-spin text-brand" : ""}`}
+                  />
+                )}
                 <span>{n.title}</span>
-                <span className="text-fg-3">{state?.state ?? "pending"}</span>
-              </div>
+                <span className="wf-help">{runLabel(run, n.id)}</span>
+              </button>
+              {state?.progress && (
+                <progress
+                  className="w-full"
+                  aria-label={`Progress for ${n.title}`}
+                  value={Number(state.progress.done) || 0}
+                  max={Number(state.progress.total) || 1}
+                />
+              )}
+              {state?.warnings?.map((w, i) => (
+                <p key={i} className="wf-help">
+                  {w}
+                </p>
+              ))}
               {typeof state?.output?.text === "string" && (
-                <pre className="wf-output-text">{state.output.text}</pre>
+                <div className="wf-stream-preview">
+                  <Markdown
+                    text={state.output.text}
+                    streaming={state.state === "running"}
+                  />
+                </div>
               )}
               {Array.isArray(state?.output?.images) && (
                 <div className="grid grid-cols-2 gap-3">
                   {(state.output.images as { id: string }[]).map((image, i) => (
-                    <img
+                    <button
                       key={image.id}
-                      className="rounded-lg"
-                      alt={`Workflow generated image ${i + 1}`}
-                      src={`/api/images/jobs/${image.id}/output/png`}
-                    />
+                      aria-label={`Save workflow image ${i + 1}`}
+                      onClick={() => setSavingImage(image.id)}
+                    >
+                      <img
+                        className="rounded-lg"
+                        alt={`Workflow generated image ${i + 1}`}
+                        src={`/api/images/jobs/${image.id}/output/png`}
+                      />
+                    </button>
                   ))}
                   <Button variant="outline" asChild>
                     <Link to="/images">View and save in Images</Link>
@@ -101,7 +165,7 @@ export function RunCard({
           );
         })}
       </ol>
-      {run.state === "paused" && paused && (
+      {run.state === "paused" && paused && paused.kind !== "pick" && (
         <div className="my-4 space-y-3">
           <label className="wf-field">
             Review {paused.kind === "review" ? paused.title : "image prompt"}
@@ -153,6 +217,101 @@ export function RunCard({
           </div>
         </div>
       )}
+      {run.state === "paused" && paused?.kind === "pick" && (
+        <section className="my-4 space-y-3" aria-label="Pick favorites">
+          <h3>Pick up to {paused.config.maximum}</h3>
+          <div className="grid grid-cols-2 gap-2">
+            {(
+              (pauseState?.output?.choices ?? []) as (string | { id: string })[]
+            ).map((choice, index) => {
+              const indices =
+                favorites?.nodeId === paused.id ? favorites.indices : [];
+              return (
+                <button
+                  key={index}
+                  className="wf-pick"
+                  aria-label={`Pick result ${index + 1}`}
+                  aria-pressed={indices.includes(index)}
+                  disabled={
+                    !indices.includes(index) &&
+                    indices.length >= paused.config.maximum
+                  }
+                  onClick={() =>
+                    setFavorites({
+                      nodeId: paused.id,
+                      indices: indices.includes(index)
+                        ? indices.filter((i) => i !== index)
+                        : [...indices, index],
+                    })
+                  }
+                >
+                  {typeof choice === "string" ? (
+                    <p className="p-2 text-sm">{choice}</p>
+                  ) : (
+                    <img
+                      alt={`Choice ${index + 1}`}
+                      src={`/api/images/jobs/${choice.id}/output/png`}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          <Button
+            disabled={
+              acting ||
+              favorites?.nodeId !== paused.id ||
+              !favorites?.indices.length
+            }
+            onClick={() =>
+              void act("decision", {
+                node_id: paused.id,
+                decision: "approve",
+                chosen: favorites!.indices,
+              })
+            }
+          >
+            Keep favorites
+          </Button>
+        </section>
+      )}
+      {run.state === "complete" && (run.results ?? []).length > 0 && (
+        <section className="wf-run-results" aria-label="Workflow results">
+          <h3 className="mb-3 font-semibold">Results</h3>
+          {(run.results ?? []).map((section) => (
+            <section key={section.node_id} className="space-y-3">
+              <h4>{section.label}</h4>
+              {section.items.map((item, index) => (
+                <div key={index}>
+                  <p className="wf-help">{item.label}</p>
+                  {item.type === "image_list" && Array.isArray(item.value) ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      {(item.value as { id: string }[]).map((image, i) => (
+                        <button
+                          key={image.id}
+                          aria-label={`Save result image ${i + 1}`}
+                          onClick={() => setSavingImage(image.id)}
+                        >
+                          <img
+                            alt={`Saved result ${i + 1}`}
+                            src={`/api/images/jobs/${image.id}/output/png`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  ) : typeof item.value === "string" ? (
+                    <Markdown text={item.value} />
+                  ) : (
+                    <pre className="wf-output-text">
+                      {JSON.stringify(item.value, null, 2)}
+                    </pre>
+                  )}
+                </div>
+              ))}
+            </section>
+          ))}
+        </section>
+      )}
       <div className="my-4 flex flex-wrap gap-2">
         {["running", "queued", "paused", "cancelling"].includes(run.state) && (
           <Button
@@ -165,7 +324,7 @@ export function RunCard({
         )}
         {["failed", "interrupted", "cancelled"].includes(run.state) && (
           <Button disabled={acting} onClick={() => void act("v2/resume")}>
-            Retry unfinished steps
+            {run.state === "failed" ? "Retry block" : "Retry unfinished steps"}
           </Button>
         )}
         {run.state === "failed" &&
@@ -227,6 +386,29 @@ export function RunCard({
               label: "Details and source (.json)",
               url: `/api/workflows/runs/${run.id}/v2/export?format=json`,
               filename: `Atelier-workflow-${run.id.slice(0, 8)}.json`,
+            },
+          ]}
+        />
+      )}
+      {savingImage && (
+        <FileSaveDialog
+          title="Save image"
+          closeLabel="Close image save"
+          initial="png"
+          onClose={() => setSavingImage(undefined)}
+          preview={preview ? "ready" : undefined}
+          options={[
+            {
+              format: "png",
+              label: "Image (.png)",
+              url: `/api/images/jobs/${savingImage}/output/png`,
+              filename: `Atelier-${savingImage.slice(0, 8)}.png`,
+            },
+            {
+              format: "json",
+              label: "Details (.json)",
+              url: `/api/images/jobs/${savingImage}/output/json`,
+              filename: `Atelier-${savingImage.slice(0, 8)}.json`,
             },
           ]}
         />

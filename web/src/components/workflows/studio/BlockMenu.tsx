@@ -1,3 +1,8 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import type { components } from "@/lib/api-types";
+import { useRunActions } from "./RunActions";
 import {
   Copy,
   MoreHorizontal,
@@ -29,8 +34,23 @@ export function BlockMenu({
   const edit = useStudio((s) => s.edit),
     select = useStudio((s) => s.select),
     doc = useStudio((s) => s.draft.graph);
+  const runActions = useRunActions();
+  const [open, setOpen] = useState(false);
+  const reuse = useQuery({
+    queryKey: [
+      "workflow-reuse-menu",
+      runActions?.defId,
+      node.id,
+      runActions?.revision,
+    ],
+    enabled: open && !!runActions && node.kind !== "start",
+    queryFn: () =>
+      api<components["schemas"]["ReusePlan"]>(
+        `/workflows/defs/${runActions!.defId}/reuse?node_id=${encodeURIComponent(node.id)}`,
+      ),
+  });
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <IconButton
           className="nodrag nopan wf-more"
@@ -40,6 +60,24 @@ export function BlockMenu({
         </IconButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        {runActions && node.kind !== "start" && (
+          <>
+            <DropdownMenuItem
+              disabled={!reuse.data?.eligible}
+              title={reuse.data?.reason ?? "Checking earlier outputs…"}
+              onClick={() => runActions.act("run", node.id)}
+            >
+              Run from here
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={node.disabled}
+              onClick={() => runActions.act("test", node.id)}
+            >
+              Test this block
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem
           onClick={() => {
             select([node.id]);

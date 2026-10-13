@@ -55,6 +55,9 @@ import { availability, type CatalogKind } from "./registry";
 import { StudioTopBar } from "./StudioTopBar";
 import { Inspector } from "./Inspector";
 import { Outline } from "./Outline";
+import { RunActions } from "./RunActions";
+import { BlockRunInputs } from "./BlockRunInputs";
+import { VersionsPanel } from "./VersionsPanel";
 import { RunInputs } from "./RunInputs";
 import { RunCard } from "./RunCard";
 import { useGraphRuns } from "./useGraphRuns";
@@ -98,12 +101,14 @@ export function StudioEditor({
   initialView,
   initialPanel,
   initialQuick = false,
+  previewRun,
 }: {
   store: StudioStore;
   preview?: boolean;
   initialView?: "canvas" | "outline";
-  initialPanel?: "inspector" | "settings" | "problems" | "run";
+  initialPanel?: "inspector" | "settings" | "problems" | "run" | "versions";
   initialQuick?: boolean;
+  previewRun?: import("./types").Run;
 }) {
   const draft = useStudio((s) => s.draft),
     selection = useStudio((s) => s.selection),
@@ -121,7 +126,7 @@ export function StudioEditor({
       initialView,
     ),
     [panel, setPanel] = useState<
-      "inspector" | "settings" | "problems" | "run" | null
+      "inspector" | "settings" | "problems" | "run" | "versions" | null
     >(
       initialPanel ??
         (search.has("run") ||
@@ -144,9 +149,29 @@ export function StudioEditor({
   const copied = useRef<Pick<Doc, "nodes" | "edges" | "notes"> | undefined>(
     undefined,
   );
+  const [selectedRunId, setSelectedRunId] = useState<string | undefined>(
+    () =>
+      sessionStorage.getItem("atelier.studio-run:" + store.getState().id) ??
+      undefined,
+  );
+  const [showInputs, setShowInputs] = useState(false);
+  const [blockRun, setBlockRun] = useState<{
+    mode: "run" | "test";
+    nodeId: string;
+  }>();
   const autosave = useAutosave(store, !preview);
-  const { runs, accepted } = useGraphRuns();
-  const latest = runs.find((r) => r.def_id === store.getState().id);
+  const { runs, accepted, connection } = useGraphRuns(selectedRunId);
+  const latest =
+    previewRun ??
+    runs.find((r) => r.id === selectedRunId) ??
+    runs.find((r) => r.def_id === store.getState().id && r.mode !== "test");
+  const acceptRun = (r: import("./types").Run) => {
+    accepted(r);
+    setSelectedRunId(r.id);
+    sessionStorage.setItem("atelier.studio-run:" + store.getState().id, r.id);
+    setShowInputs(false);
+    setBlockRun(undefined);
+  };
   const outline = view === "outline" || (!view && phone);
   const structural = validate(draft.graph);
   const issues = [
@@ -171,7 +196,10 @@ export function StudioEditor({
         .set({ collapsed: before, collapsedBeforeStudio: undefined });
   }, []);
   useEffect(() => {
-    if (selection.some((id) => draft.graph.nodes.some((n) => n.id === id)))
+    if (
+      panel !== "run" &&
+      selection.some((id) => draft.graph.nodes.some((n) => n.id === id))
+    )
       setPanel("inspector");
     else if (panel === "inspector") setPanel(null);
   }, [selection]);
@@ -287,6 +315,11 @@ export function StudioEditor({
     return () => element.removeEventListener("studio:add", listener);
   }, []);
   const run = () => {
+    setShowInputs(
+      !latest ||
+        !["queued", "running", "paused", "cancelling"].includes(latest.state),
+    );
+    setBlockRun(undefined);
     if (errors.length) setPanel("problems");
     else setPanel("run");
   };
@@ -335,8 +368,11 @@ export function StudioEditor({
       );
     } else if (name === "add-note")
       add("note", { point: canvas.current?.center() });
-    else if (["settings", "problems"].includes(name))
-      setPanel(name as "settings" | "problems");
+    else if (name === "run-workflow") run();
+    else if (name === "cancel-run" && latest)
+      void api(`/workflows/runs/${latest.id}/v2/cancel`, {});
+    else if (["settings", "problems", "versions"].includes(name))
+      setPanel(name as "settings" | "problems" | "versions");
     else if (name === "view") {
       setView(outline ? "canvas" : "outline");
       select([]);
@@ -379,11 +415,21 @@ export function StudioEditor({
       }
     }
   };
+  const actionRef = useRef(action);
+  actionRef.current = action;
+  useEffect(() => {
+    const listener = (event: Event) =>
+      void actionRef.current((event as CustomEvent<string>).detail);
+    window.addEventListener("studio:command", listener);
+    return () => window.removeEventListener("studio:command", listener);
+  }, []);
   const onKey = (e: React.KeyboardEvent) => {
     const form = (e.target as HTMLElement).closest(
-      "input,textarea,select,[contenteditable=true],[role=combobox],[role=dialog]",
+      "input,textarea,select,[contenteditable=true],[role=combobox],[role=dialog],[role=menu],[role=listbox]",
     );
     if (form) return;
+    if (panel === "run" && !["escape", "f"].includes(e.key.toLowerCase()))
+      return;
     const mod = e.metaKey || e.ctrlKey;
     const key = e.key.toLowerCase();
     const s = store.getState();
@@ -553,7 +599,9 @@ export function StudioEditor({
     }
   }
   const panelContent =
-    panel === "inspector" || panel === "settings" ? (
+    panel === "versions" ? (
+      <VersionsPanel close={close} />
+    ) : panel === "inspector" || panel === "settings" ? (
       <Inspector
         structureDisabled={phone && !outlineTree(draft.graph)}
         settings={panel === "settings"}
@@ -623,222 +671,268 @@ export function StudioEditor({
           </IconButton>
         </header>
         <div className="wf-panel-body">
-          <RunInputs
-            doc={draft.graph}
-            defId={store.getState().id}
-            beforeRun={autosave.flush}
-            accepted={accepted}
-            preview={preview}
-          />
-          {latest && <RunCard run={latest} preview={preview} />}
+          {blockRun ? (
+            <BlockRunInputs
+              key={blockRun.nodeId + blockRun.mode}
+              doc={draft.graph}
+              defId={store.getState().id}
+              nodeId={blockRun.nodeId}
+              mode={blockRun.mode}
+              beforeRun={autosave.flush}
+              accepted={acceptRun}
+            />
+          ) : !latest || showInputs ? (
+            <RunInputs
+              doc={draft.graph}
+              defId={store.getState().id}
+              beforeRun={autosave.flush}
+              accepted={acceptRun}
+              previous={latest}
+              preview={preview}
+            />
+          ) : null}
+          {connection !== "Connected" && (
+            <p role="status" className="wf-help">
+              {connection}
+            </p>
+          )}
+          {latest && (
+            <RunCard
+              key={latest.id}
+              run={latest}
+              preview={preview}
+              selected={selection[0]}
+              onSelect={(id) => {
+                select([id]);
+                canvas.current?.problem(id);
+              }}
+            />
+          )}
         </div>
       </div>
     ) : null;
   return (
-    <div className="wf-studio" ref={root} onKeyDown={onKey} tabIndex={-1}>
-      <StudioTopBar
-        problems={errors.length}
-        run={run}
-        action={(name) => void action(name)}
-        outline={outline}
-        minimap={minimap}
-        retry={autosave.retry}
-      />
-      {saveState === "conflict" && conflict && (
-        <div className="wf-conflict" role="alert">
-          <span>This workflow changed on another device.</span>
-          <Button
-            variant="outline"
-            onClick={() => store.getState().loaded(conflict)}
-          >
-            Load latest
-          </Button>
-          <Button onClick={() => void autosave.keepMine()}>Keep mine</Button>
-        </div>
-      )}
-      {notice && (
-        <p role="alert" className="wf-editor-notice">
-          {notice}
-          <Button variant="ghost" onClick={() => setNotice("")}>
-            Dismiss
-          </Button>
-        </p>
-      )}
-      {resourceError && (
-        <p role="alert" className="wf-editor-notice">
-          Block availability couldn't be loaded. Check your connection.
-        </p>
-      )}
-      <div className="wf-studio-body">
-        {!outline && !phone && (
-          <BlocksPanel catalog={catalog} add={(kind) => add(kind, {})} />
-        )}
-        {outline ? (
-          <Outline add={openAdd} />
-        ) : (
-          <Canvas
-            ref={canvas}
-            action={(name) => void action(name)}
-            issues={issues}
-            add={openAdd}
-            outline={() => setView("outline")}
-            readonly={phone}
-            minimap={minimap}
-          />
-        )}
-        {!phone && !tablet && panelContent && (
-          <aside
-            className="wf-right"
-            aria-label={
-              panel === "inspector" ? "Inspector" : (panel ?? undefined)
-            }
-          >
-            {panelContent}
-          </aside>
-        )}
-      </div>
-      {phone && (
-        <Drawer
-          open={!!panelContent}
-          onOpenChange={(v) => !v && close()}
-          snapPoints={[0.6, 0.95]}
-          activeSnapPoint={0.95}
-        >
-          <DrawerContent className="wf-phone-panel">
-            <DrawerTitle className="sr-only">
-              {panel === "inspector" ? (node?.title ?? "Inspector") : panel}
-            </DrawerTitle>
-            <DrawerDescription className="sr-only">
-              Edit this workflow's settings.
-            </DrawerDescription>
-            {panelContent}
-          </DrawerContent>
-        </Drawer>
-      )}
-      {tablet && (
-        <Sheet open={!!panelContent} onOpenChange={(v) => !v && close()}>
-          <SheetContent className="wf-tablet-panel" side="right">
-            <SheetTitle className="sr-only">
-              {panel === "inspector" ? "Inspector" : panel}
-            </SheetTitle>
-            <SheetDescription className="sr-only">
-              Edit this workflow's settings.
-            </SheetDescription>
-            {panelContent}
-          </SheetContent>
-        </Sheet>
-      )}
-      <QuickAdd
-        open={quickOpen}
-        close={() => setQuickOpen(false)}
-        add={(kind) => add(kind)}
-        catalog={catalog}
-        anchor={quick?.anchor}
-      />
-      <input
-        ref={importFile}
-        aria-label="Import workflow JSON"
-        className="sr-only"
-        type="file"
-        accept=".json"
-        onChange={async (e) => {
-          const file = e.target.files?.[0];
-          if (!file) return;
-          e.target.value = "";
-          if (file.size > 512 * 1024) {
-            setNotice("Choose JSON smaller than 512 KB.");
-            return;
+    <RunActions.Provider
+      value={{
+        defId: store.getState().id,
+        revision: store.getState().revision,
+        act: (mode, nodeId) => {
+          setBlockRun({ mode, nodeId });
+          setPanel("run");
+        },
+      }}
+    >
+      <div className="wf-studio" ref={root} onKeyDown={onKey} tabIndex={-1}>
+        <StudioTopBar
+          problems={errors.length}
+          run={run}
+          action={(name) => void action(name)}
+          outline={outline}
+          minimap={minimap}
+          retry={autosave.retry}
+          running={
+            !!latest &&
+            ["queued", "running", "cancelling"].includes(latest.state)
           }
-          try {
-            const imported = JSON.parse(await file.text()) as
-              Doc | { graph: Doc };
-            const graph = "graph" in imported ? imported.graph : imported;
-            const response = await api<
-              components["schemas"]["ValidationResult"]
-            >(`/workflows/defs/${store.getState().id}/validate`, { graph });
-            if (response.issues.some((i) => i.code === "settings"))
-              throw new Error();
-            if (!response.graph) throw new Error();
-            edit((d) => ({ ...d, graph: response.graph as Doc }));
-          } catch {
-            setNotice(
-              "This JSON isn't a supported workflow. Check its blocks and settings.",
-            );
-          }
-        }}
-      />
-      <Dialog open={json} onOpenChange={setJson}>
-        <DialogContent className="max-h-[85dvh] overflow-y-auto">
-          <DialogTitle>
-            {node?.kind === "generate" ? "Preview prompt" : "Workflow JSON"}
-          </DialogTitle>
-          <DialogDescription>
-            {node?.kind === "generate"
-              ? "These are your exact message templates. Variables use the previous blocks' values when the workflow runs; no hidden text is added."
-              : "The current workflow definition."}
-          </DialogDescription>
-          {previewNotice && (
-            <p role="status" className="wf-help">
-              {previewNotice} The unfilled templates are shown below.
-            </p>
-          )}
-          <pre className="wf-output-text">
-            {JSON.stringify(
-              node?.kind === "generate"
-                ? (previewMessages ?? [
-                    { role: "system", content: node.config.instructions },
-                    { role: "user", content: node.config.prompt },
-                  ])
-                : draft.graph,
-              null,
-              2,
-            )}
-          </pre>
-        </DialogContent>
-      </Dialog>
-      {save && (
-        <FileSaveDialog
-          initial="json"
-          title="Save workflow"
-          closeLabel="Close workflow save"
-          preview={preview ? "ready" : undefined}
-          onClose={() => setSave(false)}
-          options={[
-            {
-              format: "json",
-              label: "Workflow (.json)",
-              url: `/api/workflows/defs/${store.getState().id}`,
-              filename: `Atelier-workflow-${store.getState().id.slice(0, 8)}.json`,
-            },
-          ]}
         />
-      )}
-      <Dialog
-        open={blocker.state === "blocked"}
-        onOpenChange={(v) => {
-          if (!v && blocker.state === "blocked") blocker.reset();
-        }}
-      >
-        <DialogContent>
-          <DialogTitle>Leave with unsaved changes?</DialogTitle>
-          <DialogDescription>
-            Your current changes haven't been saved. Stay here to retry saving.
-          </DialogDescription>
-          <div className="flex gap-2">
-            <Button
-              onClick={() => blocker.state === "blocked" && blocker.reset()}
-            >
-              Stay here
-            </Button>
+        {saveState === "conflict" && conflict && (
+          <div className="wf-conflict" role="alert">
+            <span>This workflow changed on another device.</span>
             <Button
               variant="outline"
-              onClick={() => blocker.state === "blocked" && blocker.proceed()}
+              onClick={() => store.getState().loaded(conflict)}
             >
-              Leave without saving
+              Load latest
             </Button>
+            <Button onClick={() => void autosave.keepMine()}>Keep mine</Button>
           </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+        )}
+        {notice && (
+          <p role="alert" className="wf-editor-notice">
+            {notice}
+            <Button variant="ghost" onClick={() => setNotice("")}>
+              Dismiss
+            </Button>
+          </p>
+        )}
+        {resourceError && (
+          <p role="alert" className="wf-editor-notice">
+            Block availability couldn't be loaded. Check your connection.
+          </p>
+        )}
+        <div className="wf-studio-body">
+          {!outline && !phone && (
+            <BlocksPanel catalog={catalog} add={(kind) => add(kind, {})} />
+          )}
+          {outline ? (
+            <Outline add={openAdd} run={panel === "run" ? latest : undefined} />
+          ) : (
+            <Canvas
+              ref={canvas}
+              action={(name) => void action(name)}
+              issues={issues}
+              add={openAdd}
+              outline={() => setView("outline")}
+              readonly={phone}
+              minimap={minimap}
+              run={panel === "run" ? latest : undefined}
+            />
+          )}
+          {!phone && !tablet && panelContent && (
+            <aside
+              className="wf-right"
+              aria-label={
+                panel === "inspector" ? "Inspector" : (panel ?? undefined)
+              }
+            >
+              {panelContent}
+            </aside>
+          )}
+        </div>
+        {phone && (
+          <Drawer
+            open={!!panelContent}
+            onOpenChange={(v) => !v && close()}
+            snapPoints={[0.6, 0.95]}
+            activeSnapPoint={0.95}
+          >
+            <DrawerContent className="wf-phone-panel">
+              <DrawerTitle className="sr-only">
+                {panel === "inspector" ? (node?.title ?? "Inspector") : panel}
+              </DrawerTitle>
+              <DrawerDescription className="sr-only">
+                Edit this workflow's settings.
+              </DrawerDescription>
+              {panelContent}
+            </DrawerContent>
+          </Drawer>
+        )}
+        {tablet && (
+          <Sheet open={!!panelContent} onOpenChange={(v) => !v && close()}>
+            <SheetContent className="wf-tablet-panel" side="right">
+              <SheetTitle className="sr-only">
+                {panel === "inspector" ? "Inspector" : panel}
+              </SheetTitle>
+              <SheetDescription className="sr-only">
+                Edit this workflow's settings.
+              </SheetDescription>
+              {panelContent}
+            </SheetContent>
+          </Sheet>
+        )}
+        <QuickAdd
+          open={quickOpen}
+          close={() => setQuickOpen(false)}
+          add={(kind) => add(kind)}
+          catalog={catalog}
+          anchor={quick?.anchor}
+        />
+        <input
+          ref={importFile}
+          aria-label="Import workflow JSON"
+          className="sr-only"
+          type="file"
+          accept=".json"
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            e.target.value = "";
+            if (file.size > 512 * 1024) {
+              setNotice("Choose JSON smaller than 512 KB.");
+              return;
+            }
+            try {
+              const imported = JSON.parse(await file.text()) as
+                Doc | { graph: Doc };
+              const graph = "graph" in imported ? imported.graph : imported;
+              const response = await api<
+                components["schemas"]["ValidationResult"]
+              >(`/workflows/defs/${store.getState().id}/validate`, { graph });
+              if (response.issues.some((i) => i.code === "settings"))
+                throw new Error();
+              if (!response.graph) throw new Error();
+              edit((d) => ({ ...d, graph: response.graph as Doc }));
+            } catch {
+              setNotice(
+                "This JSON isn't a supported workflow. Check its blocks and settings.",
+              );
+            }
+          }}
+        />
+        <Dialog open={json} onOpenChange={setJson}>
+          <DialogContent className="max-h-[85dvh] overflow-y-auto">
+            <DialogTitle>
+              {node?.kind === "generate" ? "Preview prompt" : "Workflow JSON"}
+            </DialogTitle>
+            <DialogDescription>
+              {node?.kind === "generate"
+                ? "These are your exact message templates. Variables use the previous blocks' values when the workflow runs; no hidden text is added."
+                : "The current workflow definition."}
+            </DialogDescription>
+            {previewNotice && (
+              <p role="status" className="wf-help">
+                {previewNotice} The unfilled templates are shown below.
+              </p>
+            )}
+            <pre className="wf-output-text">
+              {JSON.stringify(
+                node?.kind === "generate"
+                  ? (previewMessages ?? [
+                      { role: "system", content: node.config.instructions },
+                      { role: "user", content: node.config.prompt },
+                    ])
+                  : draft.graph,
+                null,
+                2,
+              )}
+            </pre>
+          </DialogContent>
+        </Dialog>
+        {save && (
+          <FileSaveDialog
+            initial="json"
+            title="Save workflow"
+            closeLabel="Close workflow save"
+            preview={preview ? "ready" : undefined}
+            onClose={() => setSave(false)}
+            options={[
+              {
+                format: "json",
+                label: "Workflow (.json)",
+                url: `/api/workflows/defs/${store.getState().id}`,
+                filename: `Atelier-workflow-${store.getState().id.slice(0, 8)}.json`,
+              },
+            ]}
+          />
+        )}
+        <Dialog
+          open={blocker.state === "blocked"}
+          onOpenChange={(v) => {
+            if (!v && blocker.state === "blocked") blocker.reset();
+          }}
+        >
+          <DialogContent>
+            <DialogTitle>Leave with unsaved changes?</DialogTitle>
+            <DialogDescription>
+              Your current changes haven't been saved. Stay here to retry
+              saving.
+            </DialogDescription>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => blocker.state === "blocked" && blocker.reset()}
+              >
+                Stay here
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => blocker.state === "blocked" && blocker.proceed()}
+              >
+                Leave without saving
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </RunActions.Provider>
   );
 }

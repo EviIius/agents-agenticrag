@@ -26,6 +26,7 @@ import {
   LayoutGrid,
   List,
   StickyNote,
+  LocateFixed,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,6 +51,8 @@ import { registry } from "./registry";
 import { BlockNode, type BlockFlowNode } from "./BlockNode";
 import { NoteNode, type NoteFlowNode } from "./NoteNode";
 import { FlowEdge, type Flow } from "./FlowEdge";
+import { edgeState } from "./run-state";
+import type { Run } from "./types";
 import type { Issue, Point } from "./types";
 export type AddContext = {
   point?: Point;
@@ -73,6 +76,7 @@ type Props = {
   readonly?: boolean;
   minimap?: boolean;
   action: (name: string) => void;
+  run?: Run;
 };
 const nodeTypes = { block: BlockNode, note: NoteNode };
 const edgeTypes = { flow: FlowEdge };
@@ -86,20 +90,31 @@ export const Canvas = forwardRef<CanvasActions, Props>(
   },
 );
 const FlowCanvas = forwardRef<CanvasActions, Props>(function FlowCanvas(
-  { issues, add, outline, readonly = false, minimap = true, action },
+  { issues, add, outline, readonly = false, minimap = true, action, run },
   ref,
 ) {
-  const doc = useStudio((s) => s.draft.graph),
+  const draftDoc = useStudio((s) => s.draft.graph),
     selection = useStudio((s) => s.selection),
     select = useStudio((s) => s.select),
     edit = useStudio((s) => s.edit),
     begin = useStudio((s) => s.beginDrag),
     drag = useStudio((s) => s.drag),
     end = useStudio((s) => s.endDrag);
+  const doc = run?.graph ?? draftDoc;
+  readonly = readonly || !!run;
   const root = useRef<HTMLDivElement>(null);
+  const [following, setFollowing] = useState(true);
+  const followTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const pauseFollow = () => {
+    if (!run) return;
+    setFollowing(false);
+    clearTimeout(followTimer.current);
+    followTimer.current = setTimeout(() => setFollowing(true), 5000);
+  };
   const flow = useReactFlow();
   const viewportIntent = useRef(false);
   const moveView = (change: () => unknown) => {
+    pauseFollow();
     viewportIntent.current = true;
     void change();
   };
@@ -115,6 +130,7 @@ const FlowCanvas = forwardRef<CanvasActions, Props>(function FlowCanvas(
     {},
   );
   const [measurement, measured] = useState(0);
+  const measureFrame = useRef(0);
   const [hoveredEdge, setHoveredEdge] = useState<string>();
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => {
@@ -122,9 +138,31 @@ const FlowCanvas = forwardRef<CanvasActions, Props>(function FlowCanvas(
     return () => {
       clearTimeout(t);
       clearTimeout(timer.current);
+      clearTimeout(followTimer.current);
+      cancelAnimationFrame(measureFrame.current);
     };
   }, []);
   const duration = reduced ? 0 : 320;
+  const runningId = run?.graph.nodes.find(
+    (n) =>
+      run.nodes[n.id]?.state === "running" ||
+      run.nodes[n.id]?.state === "paused",
+  )?.id;
+  useEffect(() => {
+    if (!following || !runningId) return;
+    const node = flow.getNode(runningId),
+      bounds = root.current?.getBoundingClientRect();
+    if (!node || !bounds) return;
+    const point = { x: node.position.x + 144, y: node.position.y + 64 },
+      screen = flow.flowToScreenPosition(point);
+    if (
+      screen.x < bounds.left + 64 ||
+      screen.x > bounds.right - 64 ||
+      screen.y < bounds.top + 64 ||
+      screen.y > bounds.bottom - 64
+    )
+      void flow.setCenter(point.x, point.y, { zoom: flow.getZoom(), duration });
+  }, [runningId, run?.id, following, measurement, duration, flow]);
   const center = () => {
     const r = root.current!.getBoundingClientRect();
     return flow.screenToFlowPosition({
@@ -174,6 +212,7 @@ const FlowCanvas = forwardRef<CanvasActions, Props>(function FlowCanvas(
           index,
           defaultName: doc.settings.default_model?.model_id,
           readonly,
+          run,
         },
       })),
       ...doc.notes.map((note) => ({
@@ -187,7 +226,7 @@ const FlowCanvas = forwardRef<CanvasActions, Props>(function FlowCanvas(
         ariaLabel: "Canvas note",
       })),
     ],
-    [doc, selection, issues, readonly, measurement],
+    [doc, selection, issues, readonly, measurement, run],
   );
   const edges = useMemo<Flow[]>(
     () =>
@@ -220,9 +259,10 @@ const FlowCanvas = forwardRef<CanvasActions, Props>(function FlowCanvas(
             })),
           readonly,
           hovered: hoveredEdge === edge.id,
+          runState: run ? edgeState(run, edge) : undefined,
         },
       })),
-    [doc, selection, add, edit, readonly, hoveredEdge],
+    [doc, selection, add, edit, readonly, hoveredEdge, run],
   );
   const connectEnd: OnConnectEnd = (event, state) => {
     if (
@@ -283,9 +323,13 @@ const FlowCanvas = forwardRef<CanvasActions, Props>(function FlowCanvas(
         dimensions.current[c.id] = c.dimensions;
         updated = true;
       }
-    if (updated) measured((v) => v + 1);
-    if (readonly) return;
+    if (updated && !measureFrame.current)
+      measureFrame.current = requestAnimationFrame(() => {
+        measureFrame.current = 0;
+        measured((v) => v + 1);
+      });
     selectedChanges(changes);
+    if (readonly) return;
     const positions = Object.fromEntries(
       changes
         .filter((c) => c.type === "position" && c.position)
@@ -410,6 +454,9 @@ const FlowCanvas = forwardRef<CanvasActions, Props>(function FlowCanvas(
             isValidConnection={(c) =>
               canConnect(doc, c.source, c.target, c.sourceHandle ?? "out")
             }
+            onMoveStart={(event) => {
+              if (event) pauseFollow();
+            }}
             onMoveEnd={(event, v) => {
               // Initial fit is presentation, not a user edit. Explicit controls
               // and real pan/zoom gestures still persist the chosen viewport.
@@ -442,6 +489,18 @@ const FlowCanvas = forwardRef<CanvasActions, Props>(function FlowCanvas(
             </p>
           )}
           <div className="wf-canvas-controls">
+            {run && (
+              <IconButton
+                label={following ? "Following run" : "Resume following run"}
+                aria-pressed={following}
+                onClick={() => {
+                  clearTimeout(followTimer.current);
+                  setFollowing((v) => !v);
+                }}
+              >
+                <LocateFixed />
+              </IconButton>
+            )}
             <IconButton
               label="Zoom out"
               onClick={() => moveView(() => flow.zoomOut({ duration }))}

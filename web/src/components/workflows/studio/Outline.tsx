@@ -6,11 +6,20 @@ import { outlineTree, topoOrder, type OutlineEntry } from "./graph";
 import { registry, summary } from "./registry";
 import { BlockMenu } from "./BlockMenu";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { runLabel } from "./run-state";
+import type { Run } from "./types";
 import type { AddContext } from "./Canvas";
-export function Outline({ add }: { add: (context?: AddContext) => void }) {
-  const doc = useStudio((s) => s.draft.graph),
+export function Outline({
+  add,
+  run,
+}: {
+  add: (context?: AddContext) => void;
+  run?: Run;
+}) {
+  const draftDoc = useStudio((s) => s.draft.graph),
     select = useStudio((s) => s.select),
     selection = useStudio((s) => s.selection);
+  const doc = run?.graph ?? draftDoc;
   const tree = outlineTree(doc);
   const phone = useMediaQuery("(max-width:767px)");
   let order: string[];
@@ -29,6 +38,11 @@ export function Outline({ add }: { add: (context?: AddContext) => void }) {
           {entry.then && <p className="wf-lane-label">Then</p>}
           <div
             className="wf-outline-row"
+            data-run={
+              run?.nodes[node.id]?.reused_from
+                ? "reused"
+                : run?.nodes[node.id]?.state
+            }
             data-disabled={node.disabled}
             data-selected={selection.includes(node.id)}
           >
@@ -44,16 +58,20 @@ export function Outline({ add }: { add: (context?: AddContext) => void }) {
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-medium">{node.title}</span>
                 <span className="wf-summary">
-                  {summary(node, doc.settings.default_model?.model_id)}
+                  {run
+                    ? runLabel(run, node.id)
+                    : summary(node, doc.settings.default_model?.model_id)}
                 </span>
               </span>
               <ChevronRight className="size-4 shrink-0" />
             </Button>
-            <BlockMenu
-              node={node}
-              outline={Boolean(tree)}
-              structureDisabled={phone && !tree}
-            />
+            {!run && (
+              <BlockMenu
+                node={node}
+                outline={Boolean(tree)}
+                structureDisabled={phone && !tree}
+              />
+            )}
           </div>
           {entry.branches
             ? entry.branches.map((lane) => (
@@ -64,7 +82,7 @@ export function Outline({ add }: { add: (context?: AddContext) => void }) {
                   ) : (
                     <Button
                       variant="ghost"
-                      disabled={!tree}
+                      disabled={!tree || !!run}
                       onClick={() =>
                         add({
                           source: lane.source,
@@ -82,7 +100,7 @@ export function Outline({ add }: { add: (context?: AddContext) => void }) {
                 <div className="wf-outline-insert">
                   <IconButton
                     label={`Insert after ${node.title}`}
-                    disabled={!tree}
+                    disabled={!tree || !!run}
                     onClick={() =>
                       add({
                         edgeId: edge?.id,

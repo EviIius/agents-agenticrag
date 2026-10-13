@@ -19,6 +19,7 @@ from .graph import (
     ModelRef,
     Node,
     OutputNode,
+    PickNode,
     ReviewNode,
     StartNode,
     TranscribeNode,
@@ -46,7 +47,9 @@ def model_ref(doc: GraphDoc, choice: ModelChoice) -> ModelRef:
     return value
 
 
-async def check_models(manager: "GraphRunner", doc: GraphDoc) -> None:
+async def check_models(
+    manager: "GraphRunner", doc: GraphDoc, selected_ids: set[str] | None = None
+) -> None:
     private: set[str] = set()
     for node in doc.nodes:
         if (
@@ -56,7 +59,7 @@ async def check_models(manager: "GraphRunner", doc: GraphDoc) -> None:
         ):
             private.add(node.id)
     for node in doc.nodes:
-        if node.disabled:
+        if node.disabled or selected_ids is not None and node.id not in selected_ids:
             continue
         if isinstance(node, ImageNode) and not manager.legacy.images.engine.status().available:
             raise AppError(
@@ -146,6 +149,7 @@ class GraphTextHost:
         self.manager, self.node, self.run, self.warnings = manager, node, run, warnings
         self.store, self.runs = manager.store, manager.legacy.runs
         self.pending = ""
+        self.full_text = ""
         self.last = 0.0
 
     async def state(
@@ -188,6 +192,7 @@ class GraphTextHost:
 
     async def text_delta(self, identifier: str, step: WorkflowStep, text: str) -> None:
         self.pending += text
+        self.full_text += text
         clock = asyncio.get_running_loop().time()
         if clock - self.last >= 0.1:
             await self.flush()
@@ -196,7 +201,14 @@ class GraphTextHost:
     async def flush(self) -> None:
         if self.pending:
             await self.manager.ephemeral(
-                "node.text", {"run_id": self.run.id, "node_id": self.node.id, "delta": self.pending}
+                "node.text",
+                {
+                    "run_id": self.run.id,
+                    "node_id": self.node.id,
+                    "attempt": self.run.nodes[self.node.id].attempt,
+                    "delta": self.pending,
+                    "text": self.full_text,
+                },
             )
             self.pending = ""
 
@@ -424,6 +436,26 @@ async def perform(manager: "GraphRunner", run: RunV2, node: Node) -> None:
         await manager.save(
             run.id, node.id, "paused", {"value": text(node.config.show, True)}, warnings=warnings
         )
+        return
+    elif isinstance(node, PickNode):
+        choices: list[Any] = []
+        for reference in node.config.from_:
+            value = typed(reference)
+            if node.config.type == "image_list":
+                if not isinstance(value, list) or any(
+                    not isinstance(i, dict) or not i.get("id") for i in value
+                ):
+                    raise AppError(
+                        "workflow_pick", "Choose an image list from an earlier block.", 422
+                    )
+                choices.extend(value)
+            elif isinstance(value, str):
+                choices.append(value)
+            else:
+                raise AppError("workflow_pick", "Choose text outputs from earlier blocks.", 422)
+        if not choices:
+            raise AppError("workflow_pick", "There are no results to choose from.", 409)
+        await manager.save(run.id, node.id, "paused", {"choices": choices}, warnings=warnings)
         return
     elif isinstance(node, ImageNode):
         output = await create_images(manager, run, node, text(node.config.prompt, True), warnings)

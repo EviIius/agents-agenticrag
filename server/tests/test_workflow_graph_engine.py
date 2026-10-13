@@ -110,7 +110,10 @@ async def test_definition_api_concurrency_archive_and_immutable_layout_snapshots
             path + "/runs", json={"request_key": "fake-archived", "inputs": {"brief": "x"}}
         )
     ).status_code == 409
-    assert len((await client.get("/api/workflows/blocks")).json()["blocks"]) == 7
+    assert len((await client.get("/api/workflows/blocks")).json()["blocks"]) == 8
+    assert any(
+        b["kind"] == "pick" for b in (await client.get("/api/workflows/blocks")).json()["blocks"]
+    )
     assert len((await client.get("/api/workflows/templates")).json()) == 2
 
 

@@ -1169,3 +1169,139 @@
 .wf-outline-row[data-disabled="true"] .wf-tile {
   opacity: 0.5;
 }
+
+.wf-block[data-run="running"] {
+  position: relative;
+  padding: 1.5px;
+  overflow: hidden;
+  border-color: var(--brand);
+}
+.wf-block[data-run="running"]::before {
+  content: "";
+  position: absolute;
+  inset: -100%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0 62%,
+    var(--brand) 82%,
+    transparent 100%
+  );
+}
+.wf-block[data-run="running"] .wf-block-body {
+  position: relative;
+  background: var(--surface);
+  border-radius: calc(var(--radius-lg) - 1.5px);
+}
+.wf-block[data-run="running"] .wf-summary {
+  color: var(--brand);
+}
+.wf-block[data-run="paused"],
+.wf-outline-row[data-run="paused"] {
+  box-shadow: 0 0 0 2px var(--warning);
+}
+.wf-block[data-run="failed"],
+.wf-outline-row[data-run="failed"] {
+  box-shadow: 0 0 0 2px var(--danger);
+}
+.wf-block[data-run="skipped"] {
+  border-style: dashed;
+}
+.wf-block[data-run="pending"] .wf-tile,
+.wf-block[data-run="skipped"] .wf-tile,
+.wf-block[data-run="cancelled"] .wf-tile {
+  opacity: 0.6;
+}
+.wf-run-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface-3);
+  display: grid;
+  place-items: center;
+  z-index: 1;
+}
+.wf-run-badge[data-state="complete"] {
+  background: var(--success);
+  color: var(--bg);
+}
+.wf-run-badge[data-state="paused"] {
+  background: var(--warning);
+  color: var(--bg);
+}
+.wf-run-badge[data-state="failed"] {
+  background: var(--danger);
+  color: var(--bg);
+}
+.wf-edge-path[data-run="active"] {
+  stroke: var(--brand);
+  stroke-width: 2;
+  stroke-dasharray: 6 6;
+}
+.wf-edge-path[data-run="done"] {
+  stroke: var(--brand);
+  opacity: 0.55;
+}
+.wf-edge-path[data-run="not-taken"] {
+  stroke-dasharray: 4 4;
+  opacity: 0.45;
+}
+.wf-run-step-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 0;
+  min-height: 44px;
+}
+.wf-run-step-head .wf-help {
+  margin-left: auto;
+}
+.wf-run-steps li[data-selected="true"] {
+  background: var(--brand-soft);
+  border-radius: var(--radius-md);
+}
+.wf-run-results {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.wf-stream-preview {
+  font-family: var(--font-answer);
+  font-size: 15px;
+  margin: 8px 0;
+}
+.wf-version {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+.wf-pick {
+  border: 2px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 4px;
+  text-align: left;
+}
+.wf-pick[aria-pressed="true"] {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+}
+.wf-run-view-banner {
+  padding: 12px 20px;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+
+.wf-block[data-run="paused"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--warning);
+  border-radius: var(--radius-lg);
+  pointer-events: none;
+}

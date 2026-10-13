@@ -62,15 +62,19 @@ import { useAppEntrance } from "@/hooks/useAppEntrance";
 import { useLibraryIndex } from "@/hooks/useLibraryIndex";
 import type { Scope } from "@/components/chat/LibraryControl";
 const FolderDialog = lazy(() => import("./FolderDialog"));
+const WorkflowNotifier = lazy(
+  () => import("@/components/workflows/WorkflowNotifier"),
+);
 export function LiveAppShell() {
   const ui = useUI(),
     navigate = useNavigate();
   const { pathname } = useLocation();
   const routeChatId = useMatch("/c/:chatId")?.params.chatId;
   const workspace = pathname.startsWith("/workflows") || pathname === "/images";
-  const studio = /^\/workflows\/(?!runs(?:\/|$)|new(?:\/|$))[^/]+$/.test(
-    pathname,
-  );
+  const studio =
+    /^\/workflows\/(?!runs(?:\/|$)|new(?:\/|$))[^/]+(?:\/runs\/[^/]+)?$/.test(
+      pathname,
+    );
   const lastChat = useRef<string | undefined>(routeChatId);
   if (!workspace) lastChat.current = routeChatId;
   // Keep the current chat state alive while a workspace child occupies the main pane.
@@ -896,6 +900,9 @@ export function LiveAppShell() {
             />
           )}
         />
+        <Suspense fallback={null}>
+          <WorkflowNotifier />
+        </Suspense>
         <CommandPalette
           chatActionsDisabled={workspace}
           open={ui.command}
@@ -906,6 +913,22 @@ export function LiveAppShell() {
           actions={{
             newChat: () => navigate("/"),
             workflows: () => navigate("/workflows"),
+            ...(studio && !pathname.includes("/runs/")
+              ? {
+                  runWorkflow: () =>
+                    window.dispatchEvent(
+                      new CustomEvent("studio:command", {
+                        detail: "run-workflow",
+                      }),
+                    ),
+                  cancelWorkflow: () =>
+                    window.dispatchEvent(
+                      new CustomEvent("studio:command", {
+                        detail: "cancel-run",
+                      }),
+                    ),
+                }
+              : {}),
             images: () => navigate("/images"),
             switchModel: () =>
               window.dispatchEvent(new Event("workbench:choose-model")),

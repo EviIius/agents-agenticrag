@@ -619,6 +619,40 @@ article[data-fresh="true"] {
   transform: translate(-50%, -50%) scale(1.4);
 }
 
+/* Workflow Studio WS-D activity indicators, driven by server states. */
+@keyframes wf-sweep {
+  to {
+    transform: rotate(1turn);
+  }
+}
+@keyframes wf-flow {
+  to {
+    stroke-dashoffset: -12;
+  }
+}
+@keyframes wf-badge {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.wf-block[data-run="running"]::before {
+  animation: wf-sweep 1.6s linear infinite;
+}
+.wf-block[data-run="paused"]::after {
+  animation: breathe 1.5s var(--ease) infinite;
+}
+.wf-edge-path[data-run="active"] {
+  animation: wf-flow 800ms linear infinite;
+}
+.wf-run-badge[data-state="complete"] {
+  animation: wf-badge 200ms var(--ease-pop) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -661,4 +695,13 @@ article[data-fresh="true"] {
 [data-reduce-motion="always"] [data-sd-animate],
 [data-reduce-motion="always"] [data-sd-animate-marker]::marker {
   animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wf-edge-path[data-run="active"] {
+    stroke-dasharray: none;
+  }
+}
+[data-reduce-motion="always"] .wf-edge-path[data-run="active"] {
+  stroke-dasharray: none;
 }

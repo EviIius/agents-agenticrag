@@ -67,6 +67,8 @@ export function fields(node: Block): [string, boolean][] {
       return [[node.config.prompt, false]];
     case "review":
       return [[node.config.show, false]];
+    case "pick":
+      return node.config.from.map((value) => [value, true]);
     case "output":
       return node.config.include.map((i) => [i.ref, true]);
     default:
@@ -137,6 +139,12 @@ export function validate(doc: Doc): Issue[] {
         node.config.fields.length
     )
       add("duplicate_field", "Start input names must be unique.", node.id);
+    if (node.kind === "pick" && !node.config.from.length && !node.disabled)
+      add(
+        "required_setting",
+        "Choose a result source for this block.",
+        node.id,
+      );
     if (node.kind === "generate") {
       const names = node.config.json_fields.map((f) => f.name);
       if (
@@ -220,7 +228,9 @@ export function validate(doc: Doc): Issue[] {
               ? "recording"
               : node.kind === "clean_transcript"
                 ? "transcript"
-                : null;
+                : node.kind === "pick"
+                  ? node.config.type
+                  : null;
           if (expected && outputs(source)[ref.field] !== expected)
             add(
               "reference_type",

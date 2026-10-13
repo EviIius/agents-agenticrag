@@ -1,3 +1,4 @@
+import { BlockOutput } from "./BlockOutput";
 import { useState } from "react";
 import { X, Copy } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -98,7 +99,8 @@ export function Inspector({
             }
           />
           <p className="wf-help">
-            Test runs and version history aren’t available yet.
+            Test runs are hidden from Recent runs. Saved versions can be
+            restored from the workflow menu.
           </p>
         </div>
       </div>
@@ -164,7 +166,7 @@ export function Inspector({
     );
   if (!node) return null;
   const meta = registry[node.kind];
-  const output = latest?.nodes[node.id]?.output;
+
   return (
     <div className="wf-inspector" key={node.id}>
       <header className="wf-panel-head">
@@ -228,17 +230,7 @@ export function Inspector({
           <ReferenceName node={node} />
         </TabsContent>
         <TabsContent value="output" className="wf-panel-body">
-          {output ? (
-            <pre className="wf-output-text">
-              {typeof output.text === "string"
-                ? output.text
-                : JSON.stringify(output, null, 2)}
-            </pre>
-          ) : (
-            <p className="wf-empty-output">
-              Run the workflow or test this block to see its output.
-            </p>
-          )}
+          <BlockOutput nodeId={node.id} latest={latest} />
         </TabsContent>
       </Tabs>
     </div>

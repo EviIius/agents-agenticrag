@@ -1051,3 +1051,17 @@ static files verify preserved. 1,037 fresh outputs are archived separately and
 H4: `docs/WORKFLOW-STUDIO-WS-C-REPORT.md`. Stop for WS-C review before WS-D.
 No physical phone/VoiceOver pass is claimed. The image-in-conversation request
 remains tracked separately; future motion/Classify/optional gates persist.
+
+**User authorization — 13 October 2026 (WS-D, followed by chat images):** Jake
+asked to execute WS-D and then Claude's `docs/next/chat-images/` plan, retaining
+Claude's UI. Close the WS-C review stop without inventing phone checks. Implement
+WS-D's server-driven run canvas, approvals, provenance-checked reuse, single-block
+tests, favorites and history on `codex/workflow-studio`. The requested motion
+includes J-W6's CSS connection pulse; allow `stroke-dashoffset` in the guard.
+Retain checkpoint reports and stop for review after WS-D and each CI checkpoint.
+For the ensuing CI plan use its recommended decisions: J-I1 Playful by default,
+J-I2 reasoning ticker, J-I3 saved image chat turns, J-I4 exclude both image roles
+from text context, J-I5 prompt-derived titles without a model call. No new package,
+model, runtime, sampling default, application-authored prompt or native trial is
+authorized. WS-E/WS-F and CI-D extras remain gated. Main and the installed app
+stay intact; merge and live publication still require Jake's final okay.

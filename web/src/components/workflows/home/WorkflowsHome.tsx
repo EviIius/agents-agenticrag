@@ -265,7 +265,7 @@ export function WorkflowHomeContent({
             <Link to="/workflows/runs">View all runs</Link>
           </Button>
         </div>
-        <RunsList runs={runs.slice(0, 10)} />
+        <RunsList runs={runs.filter((r) => r.mode !== "test").slice(0, 10)} />
       </section>
     </section>
   );
@@ -439,7 +439,11 @@ export function RunsList({ runs }: { runs: Run[] }) {
       {runs.map((run) => (
         <Link
           key={run.id}
-          to={`/workflows/runs/${run.id}`}
+          to={
+            run.def_id
+              ? `/workflows/${run.def_id}/runs/${run.id}`
+              : `/workflows/runs/${run.id}`
+          }
           className="wf-run-row"
           aria-label={`${run.def_name} — ${run.state} · ${run.stage}`}
         >

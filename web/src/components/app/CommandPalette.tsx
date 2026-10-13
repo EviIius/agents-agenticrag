@@ -14,6 +14,9 @@ import {
   Images,
   Workflow,
 } from "lucide-react";
+import { useNavigate } from "react-router";
+import { useWorkflowActivity } from "@/stores/workflow-activity";
+import { Play, Square, Pause } from "lucide-react";
 import { api, type Chat } from "@/lib/api";
 import type { components } from "@/lib/api-types";
 import {
@@ -32,6 +35,8 @@ import {
 import { IconButton } from "./IconButton";
 import { Button } from "@/components/ui/button";
 export type PaletteActions = {
+  runWorkflow?: () => void;
+  cancelWorkflow?: () => void;
   workflows?: () => void;
   images?: () => void;
   toggleLibrary?: () => void;
@@ -65,6 +70,8 @@ export function CommandPalette({
   previewState?: "loading" | "error" | "empty";
   chatActionsDisabled?: boolean;
 }) {
+  const workflowActivity = useWorkflowActivity((s) => s.active);
+  const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState("");
   const [query, setQuery] = useState("");
@@ -144,6 +151,20 @@ export function CommandPalette({
   const destinations = [
     { label: "Workflows", icon: Workflow, action: actions.workflows },
     { label: "Images", icon: Images, action: actions.images },
+    { label: "Run workflow", icon: Play, action: actions.runWorkflow },
+    { label: "Cancel workflow", icon: Square, action: actions.cancelWorkflow },
+    ...workflowActivity
+      .filter((run) => run.state === "paused")
+      .map((run) => ({
+        label: `Resume ${run.name}`,
+        icon: Pause,
+        action: () =>
+          navigate(
+            run.defId
+              ? `/workflows/${run.defId}/runs/${run.id}`
+              : `/workflows/runs/${run.id}`,
+          ),
+      })),
   ].filter(
     (item) =>
       item.action &&

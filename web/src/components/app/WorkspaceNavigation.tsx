@@ -1,4 +1,5 @@
 import { createContext, useContext } from "react";
+import { useWorkflowActivity } from "@/stores/workflow-activity";
 import { Link, useLocation } from "react-router";
 import { Images, Workflow } from "lucide-react";
 import { IconButton } from "./IconButton";
@@ -18,6 +19,7 @@ export function WorkspaceNavigation({
 }) {
   const { pathname } = useLocation();
   const navigation = useWorkspace();
+  const paused = useWorkflowActivity((s) => s.pausedCount > 0);
   return (
     <nav aria-label="Workspace" className="mb-4 space-y-1">
       {[
@@ -31,6 +33,7 @@ export function WorkspaceNavigation({
         const link = (
           <Link
             to={path}
+            aria-label={label}
             state={navigation}
             onClick={close}
             aria-current={active ? "page" : undefined}
@@ -38,6 +41,13 @@ export function WorkspaceNavigation({
           >
             <Icon className="size-4 shrink-0" />
             {!collapsed && label}
+            {path === "/workflows" && paused && (
+              <span
+                className="size-1.5 rounded-full bg-warning"
+                role="img"
+                aria-label="A workflow is waiting for you"
+              />
+            )}
           </Link>
         );
         return collapsed ? (

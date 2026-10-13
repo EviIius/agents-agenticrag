@@ -2,6 +2,9 @@ import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import { useStudio } from "./store";
 import { outputs, ports, registry, summary } from "./registry";
 import { BlockMenu } from "./BlockMenu";
+import { Check, Pause, RotateCcw, CircleAlert, Minus, X } from "lucide-react";
+import { runLabel } from "./run-state";
+import type { Run } from "./types";
 import type { Block, Issue } from "./types";
 import type { CSSProperties } from "react";
 export type BlockFlowNode = Node<
@@ -11,6 +14,7 @@ export type BlockFlowNode = Node<
     index: number;
     defaultName?: string;
     readonly: boolean;
+    run?: Run;
   },
   "block"
 >;
@@ -20,21 +24,38 @@ export function BlockCard({
   issues = [],
   defaultName,
   children,
+  run,
 }: {
   block: Block;
   selected?: boolean;
   issues?: Issue[];
   defaultName?: string;
   children?: React.ReactNode;
+  run?: Run;
 }) {
   const meta = registry[node.kind];
   const problem =
     issues.find((i) => i.node_id === node.id && i.severity === "error") ??
     issues.find((i) => i.node_id === node.id && i.severity === "warning");
   const fields = Object.keys(outputs(node));
+  const step = run?.nodes[node.id];
+  const state = step?.reused_from ? "reused" : step?.state;
+  const Badge =
+    state === "complete"
+      ? Check
+      : state === "paused"
+        ? Pause
+        : state === "reused"
+          ? RotateCcw
+          : state === "failed"
+            ? CircleAlert
+            : state === "skipped"
+              ? Minus
+              : X;
   return (
     <div
       className="wf-block"
+      data-run={state}
       data-selected={selected}
       data-disabled={node.disabled}
     >
@@ -50,7 +71,7 @@ export function BlockCard({
           {children}
         </div>
         <p className="wf-summary" data-problem={problem?.severity}>
-          {summary(node, defaultName)}
+          {run ? runLabel(run, node.id) : summary(node, defaultName)}
         </p>
         {fields.length > 0 && (
           <div className="wf-chips">
@@ -63,6 +84,16 @@ export function BlockCard({
               <span className="wf-chip">+{fields.length - 2}</span>
             )}
           </div>
+        )}
+        {step && !["pending", "running"].includes(step.state) && (
+          <span
+            className="wf-run-badge"
+            data-state={state}
+            role="img"
+            aria-label={state}
+          >
+            <Badge className="size-3" />
+          </span>
         )}
         {problem && (
           <span
@@ -107,6 +138,7 @@ export function BlockNode({ data, selected }: NodeProps<BlockFlowNode>) {
         selected={selected}
         issues={data.issues}
         defaultName={data.defaultName}
+        run={data.run}
       >
         {!data.readonly && <BlockMenu node={node} />}
       </BlockCard>

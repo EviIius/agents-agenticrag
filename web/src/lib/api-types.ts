@@ -1039,6 +1039,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workflows/defs/{identifier}/reuse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reuse Plan */
+        get: operations["reuse_plan_api_workflows_defs__identifier__reuse_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workflows/runs/{identifier}/v2": {
         parameters: {
             query?: never;
@@ -1150,6 +1167,23 @@ export interface paths {
         };
         /** Events */
         get: operations["events_api_workflows_stream_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workflows/defs/{identifier}/tests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Test Runs */
+        get: operations["test_runs_api_workflows_defs__identifier__tests_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2056,6 +2090,8 @@ export interface components {
             decision: "approve" | "reject";
             /** Value */
             value?: string | null;
+            /** Chosen */
+            chosen?: number[] | null;
         };
         /** DefConflict */
         DefConflict: {
@@ -2347,7 +2383,7 @@ export interface components {
              */
             schema: "atelier.workflow/1";
             /** Nodes */
-            nodes: (components["schemas"]["StartNode"] | components["schemas"]["GenerateNode"] | components["schemas"]["TranscribeNode"] | components["schemas"]["CleanNode"] | components["schemas"]["ImageNode"] | components["schemas"]["ReviewNode"] | components["schemas"]["OutputNode"])[];
+            nodes: (components["schemas"]["StartNode"] | components["schemas"]["GenerateNode"] | components["schemas"]["TranscribeNode"] | components["schemas"]["CleanNode"] | components["schemas"]["ImageNode"] | components["schemas"]["ReviewNode"] | components["schemas"]["PickNode"] | components["schemas"]["OutputNode"])[];
             /** Edges */
             edges?: components["schemas"]["Edge"][];
             /** Notes */
@@ -2377,6 +2413,20 @@ export interface components {
             request_key: string;
             /** Inputs */
             inputs?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Mode
+             * @default run
+             * @enum {string}
+             */
+            mode: "run" | "test";
+            /** Node Id */
+            node_id?: string | null;
+            /** Source Run Id */
+            source_run_id?: string | null;
+            /** Samples */
+            samples?: {
                 [key: string]: unknown;
             };
         };
@@ -2908,6 +2958,10 @@ export interface components {
             reused_from?: string | null;
             /** Warnings */
             warnings?: string[];
+            /** Progress */
+            progress?: {
+                [key: string]: unknown;
+            } | null;
         };
         /** Note */
         Note: {
@@ -3011,6 +3065,43 @@ export interface components {
              */
             selection_applied: boolean;
         };
+        /** PickConfig */
+        PickConfig: {
+            /** From */
+            from?: string[];
+            /**
+             * Type
+             * @default image_list
+             * @enum {string}
+             */
+            type: "image_list" | "text";
+            /**
+             * Maximum
+             * @default 1
+             */
+            maximum: number;
+        };
+        /** PickNode */
+        PickNode: {
+            /** Id */
+            id: string;
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+            position?: components["schemas"]["Point"];
+            /**
+             * Disabled
+             * @default false
+             */
+            disabled: boolean;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "pick";
+            config: components["schemas"]["PickConfig"];
+        };
         /** Point */
         Point: {
             /**
@@ -3112,6 +3203,17 @@ export interface components {
             /** Items */
             items: components["schemas"]["ResultItem"][];
         };
+        /** ReusePlan */
+        ReusePlan: {
+            /** Eligible */
+            eligible: boolean;
+            /** Reason */
+            reason?: string | null;
+            /** Source Run Id */
+            source_run_id?: string | null;
+            /** Node Ids */
+            node_ids?: string[];
+        };
         /** ReviewConfig */
         ReviewConfig: {
             /** Show */
@@ -3152,6 +3254,11 @@ export interface components {
         RunEvent: components["schemas"]["QueuedEvent"] | components["schemas"]["StartedEvent"] | components["schemas"]["DeltaEvent"] | components["schemas"]["DoneEvent"] | components["schemas"]["ErrorEvent"] | components["schemas"]["TitleEvent"] | components["schemas"]["ClosedEvent"] | components["schemas"]["ToolEvent"] | components["schemas"]["SearchEvent"];
         /** RunPage */
         RunPage: {
+            /**
+             * Paused Count
+             * @default 0
+             */
+            paused_count: number;
             /** Items */
             items: components["schemas"]["RunV2"][];
             /** Next Cursor */
@@ -6063,6 +6170,40 @@ export interface operations {
             };
         };
     };
+    reuse_plan_api_workflows_defs__identifier__reuse_get: {
+        parameters: {
+            query: {
+                node_id: string;
+                mode?: "run" | "test";
+            };
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReusePlan"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     run_detail_api_workflows_runs__identifier__v2_get: {
         parameters: {
             query?: never;
@@ -6277,6 +6418,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    test_runs_api_workflows_defs__identifier__tests_get: {
+        parameters: {
+            query: {
+                node_id: string;
+            };
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunV2"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

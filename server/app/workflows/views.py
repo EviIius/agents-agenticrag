@@ -179,6 +179,14 @@ async def detail(manager: GraphRunner, identifier: str) -> RunV2:
     )
 
 
+async def paused_count(manager: GraphRunner) -> int:
+    graph = await manager.store.one(
+        "SELECT COUNT(*) n FROM workflow_graph_runs WHERE mode='run' AND state='paused'"
+    )
+    legacy = await manager.store.one("SELECT COUNT(*) n FROM workflow_runs WHERE state='paused'")
+    return int(graph["n"] if graph else 0) + int(legacy["n"] if legacy else 0)
+
+
 async def page(
     manager: GraphRunner,
     def_id: str | None = None,
@@ -195,9 +203,10 @@ async def page(
                 raise ValueError("cursor")
         except (ValueError, KeyError, TypeError):
             raise AppError("workflow_cursor", "This run-list cursor is invalid.", 422) from None
+    await manager.expire_tests()
     rows = await manager.store.rows(
         (
-            "SELECT id,created_at FROM workflow_graph_runs WHERE (? IS NULL OR"
+            "SELECT id,created_at FROM workflow_graph_runs WHERE mode='run' AND (? IS NULL OR"
             " def_id=?) AND (? IS NULL OR state=?) AND (created_at<? OR (creat"
             "ed_at=? AND id<?)) ORDER BY created_at DESC,id DESC LIMIT ?"
         ),
@@ -222,7 +231,9 @@ async def page(
         else None
     )
     return RunPage(
-        items=[await detail(manager, row["id"]) for row in selected], next_cursor=next_cursor
+        paused_count=await paused_count(manager),
+        items=[await detail(manager, row["id"]) for row in selected],
+        next_cursor=next_cursor,
     )
 
 
@@ -274,15 +285,28 @@ async def stream(manager: GraphRunner, cursor: str) -> AsyncGenerator[dict[str, 
 
     tasks = [asyncio.create_task(fn()) for fn in [legacy_events, graph_events, ephemeral_events]]
     try:
+        # Freeze journal emission while collecting the snapshot. A pending
+        # producer emits its latest state afterward, rather than replaying an
+        # intermediate state over a fresher snapshot.
+        async with manager.changed, manager.legacy.changed:
+            snapshot = await page(manager)
+            lmax = await manager.store.one("SELECT COALESCE(MAX(id),0) n FROM workflow_events")
+            gmax = await manager.store.one(
+                "SELECT COALESCE(MAX(id),0) n FROM workflow_graph_events"
+            )
+            assert lmax is not None and gmax is not None
+            snapshot_cursor = f"{lmax['n']}:{gmax['n']}"
         yield {
-            "id": f"{legacy_after}:{graph_after}",
+            "id": snapshot_cursor,
             "event": "run.snapshot",
-            "data": (await page(manager)).model_dump_json(by_alias=True),
+            "data": snapshot.model_dump_json(by_alias=True),
         }
         while True:
             kind, value = await queue.get()
             if kind == "ephemeral":
                 event, data = value
+                if event == "server.closed":
+                    return
                 yield {"event": event, "data": canonical(data)}
             else:
                 sequence, run = value
@@ -293,10 +317,17 @@ async def stream(manager: GraphRunner, cursor: str) -> AsyncGenerator[dict[str, 
                 yield {
                     "id": f"{legacy_after}:{graph_after}",
                     "event": "run.updated",
-                    "data": canonical({"run": run.model_dump(by_alias=True)}),
+                    "data": canonical(
+                        {
+                            "run": run.model_dump(by_alias=True),
+                            "paused_count": await paused_count(manager),
+                        }
+                    ),
                 }
     finally:
         manager.listeners.discard(live)
+        async with manager.streams_closed:
+            manager.streams_closed.notify_all()
         for task in tasks:
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)

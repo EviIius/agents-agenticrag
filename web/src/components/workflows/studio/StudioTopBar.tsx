@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router";
 import {
+  LoaderCircle,
   ArrowLeft,
   Play,
   Undo2,
@@ -27,6 +28,7 @@ export function StudioTopBar({
   outline,
   minimap,
   retry,
+  running = false,
 }: {
   problems: number;
   run: () => void;
@@ -34,6 +36,7 @@ export function StudioTopBar({
   outline: boolean;
   minimap: boolean;
   retry: () => void;
+  running?: boolean;
 }) {
   const name = useStudio((s) => s.draft.name),
     status = useStudio((s) => s.saveState),
@@ -150,6 +153,9 @@ export function StudioTopBar({
           <DropdownMenuItem onClick={() => action("settings")}>
             Workflow settings
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => action("versions")}>
+            Versions
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => action("problems")}>
             Problems
           </DropdownMenuItem>
@@ -188,7 +194,11 @@ export function StudioTopBar({
         title={problems ? `Fix ${problems} problems to run` : "Run workflow"}
         onClick={run}
       >
-        <Play className="size-4" />
+        {running ? (
+          <LoaderCircle className="size-4 activity-spin" />
+        ) : (
+          <Play className="size-4" />
+        )}
         Run
       </Button>
     </header>

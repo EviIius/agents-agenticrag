@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/components/app/WorkspaceNavigation";
 import { WorkflowsHome, RunsList } from "./home/WorkflowsHome";
 import { useGraphRuns } from "./studio/useGraphRuns";
-import { RunCard } from "./studio/RunCard";
+import { RunView } from "./studio/RunView";
+import { RunHistoryList } from "./home/RunHistoryList";
 import { WorkflowCard, type Workflow } from "./LegacyRun";
 import type { Definition } from "./studio/types";
 import { blankDoc } from "./studio/graph";
@@ -113,6 +114,17 @@ function RunHistory() {
       "POST",
     );
   };
+  if (!runId) return <RunHistoryList />;
+  if (run && run.kind === "graph") return <RunView run={run} />;
+  if (run && legacy)
+    return (
+      <RunView
+        run={run}
+        legacyPanel={
+          <WorkflowCard run={legacy} preview={false} onAction={act} />
+        }
+      />
+    );
   return (
     <section className="wf-home" aria-label="Workflow runs">
       <div>
@@ -127,7 +139,7 @@ function RunHistory() {
         {runId ? (
           run ? (
             run.kind === "graph" ? (
-              <RunCard run={run} />
+              <RunView run={run} />
             ) : legacy ? (
               <WorkflowCard run={legacy} preview={false} onAction={act} />
             ) : (

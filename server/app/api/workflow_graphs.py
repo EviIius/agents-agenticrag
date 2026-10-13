@@ -21,6 +21,7 @@ from ..workflows.graph_schemas import (
     DefSave,
     GraphResume,
     GraphSubmit,
+    ReusePlan,
     RunPage,
     RunV2,
     Snapshot,
@@ -71,6 +72,7 @@ async def catalog(request: Request) -> BlockCatalog:
                 ("clean_transcript", "Clean up transcript", "Media"),
                 ("generate_image", "Create images", "Media"),
                 ("review", "Approve or edit", "Review"),
+                ("pick", "Pick favorites", "Review"),
                 ("output", "Save results", "Output"),
             ]
         ]
@@ -154,6 +156,15 @@ async def label(
 @router.post("/defs/{identifier}/runs", status_code=202)
 async def submit(identifier: str, body: GraphSubmit, request: Request) -> RunV2:
     return await manager(request).submit(identifier, body)
+
+
+@router.get("/defs/{identifier}/reuse")
+async def reuse_plan(
+    identifier: str, request: Request, node_id: str, mode: Literal["run", "test"] = "run"
+) -> ReusePlan:
+    from ..workflows.reuse import plan
+
+    return await plan(manager(request), identifier, node_id, mode=mode)
 
 
 @router.get("/runs")
@@ -253,3 +264,17 @@ async def events(request: Request) -> EventSourceResponse:
         ping=15,
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+@router.get("/defs/{identifier}/tests")
+async def test_runs(identifier: str, request: Request, node_id: str) -> list[RunV2]:
+    engine = manager(request)
+    await engine.defs.get(identifier)
+    await engine.expire_tests()
+    rows = await engine.store.rows(
+        "SELECT r.id FROM workflow_graph_runs r JOIN workflow_graph_steps s ON s.run_id=r.id "
+        "WHERE r.def_id=? AND r.mode='test' AND s.node_id=? AND s.attempt>0 "
+        "ORDER BY r.created_at DESC,r.id DESC LIMIT 20",
+        (identifier, node_id),
+    )
+    return [await engine.get(row["id"]) for row in rows]

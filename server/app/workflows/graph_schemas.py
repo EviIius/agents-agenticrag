@@ -84,12 +84,24 @@ class ValidationResult(Input):
 class GraphSubmit(Input):
     request_key: str = Field(min_length=1, max_length=160)
     inputs: dict[str, Any] = Field(default_factory=dict)
+    mode: Literal["run", "test"] = "run"
+    node_id: str | None = None
+    source_run_id: str | None = None
+    samples: dict[str, Any] = Field(default_factory=dict)
+
+
+class ReusePlan(Input):
+    eligible: bool
+    reason: str | None = None
+    source_run_id: str | None = None
+    node_ids: list[str] = Field(default_factory=list)
 
 
 class Decision(Input):
     node_id: str
     decision: Literal["approve", "reject"]
-    value: str | None = Field(None, max_length=20000)
+    value: str | None = Field(default=None, max_length=20000)
+    chosen: list[int] | None = Field(default=None, max_length=20)
 
 
 class GraphResume(Input):
@@ -109,6 +121,7 @@ class NodeState(Input):
     finished_at: str | None
     reused_from: str | None = None
     warnings: list[str] = Field(default_factory=list)
+    progress: dict[str, Any] | None = None
 
 
 class ResultItem(Input):
@@ -154,6 +167,7 @@ class RunV2(Input):
 
 
 class RunPage(Input):
+    paused_count: int = 0
     items: list[RunV2]
     next_cursor: str | None = None
 

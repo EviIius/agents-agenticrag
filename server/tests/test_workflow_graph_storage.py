@@ -45,7 +45,7 @@ async def test_workflow_graph_migration_preserves_every_preexisting_column(tmp_p
         integrity = await (await db.execute("PRAGMA integrity_check")).fetchone()
         version = await (await db.execute("PRAGMA user_version")).fetchone()
         assert integrity and integrity[0] == "ok"
-        assert version and version[0] == 11
+        assert version and version[0] == 12
     assert snapshot(target, columns)[1] == before
     with sqlite3.connect(target) as db:
         assert db.execute("SELECT COUNT(*) FROM workflow_graph_runs").fetchone()[0] == 0

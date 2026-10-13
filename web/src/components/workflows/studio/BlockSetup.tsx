@@ -518,6 +518,75 @@ export function BlockSetup({
           />
         </>
       );
+    case "pick":
+      return (
+        <>
+          <Choice
+            label="Choose from"
+            value={node.config.type}
+            choices={[
+              { value: "image_list", label: "Images" },
+              { value: "text", label: "Text outputs" },
+            ]}
+            onChange={(type) =>
+              set({
+                ...node.config,
+                type: type as "text" | "image_list",
+                from: [],
+              })
+            }
+          />
+          {node.config.from.map((value, index) => (
+            <div key={index} className="wf-field">
+              <VariableField
+                nodeId={node.id}
+                label={`From ${index + 1}`}
+                value={value}
+                typed={node.config.type}
+                onChange={(v) =>
+                  set({
+                    ...node.config,
+                    from: node.config.from.map((old, i) =>
+                      i === index ? v : old,
+                    ),
+                  })
+                }
+              />
+              <Button
+                variant="ghost"
+                onClick={() =>
+                  set({
+                    ...node.config,
+                    from: node.config.from.filter((_, i) => i !== index),
+                  })
+                }
+              >
+                Remove choice source {index + 1}
+              </Button>
+            </div>
+          ))}
+          <Button
+            variant="outline"
+            onClick={() =>
+              set({ ...node.config, from: [...node.config.from, ""] })
+            }
+            disabled={node.config.from.length >= 20}
+          >
+            Add choice source
+          </Button>
+          <TextField
+            label="Maximum favorites"
+            type="number"
+            value={String(node.config.maximum)}
+            onChange={(v) =>
+              set({
+                ...node.config,
+                maximum: Math.max(1, Math.min(20, Number(v) || 1)),
+              })
+            }
+          />
+        </>
+      );
     case "output":
       return (
         <>

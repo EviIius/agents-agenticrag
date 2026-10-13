@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEAD = re.compile(
     r"(?<![\w-])(?:animate-(?:in|out)|(?:fade|zoom)-(?:in|out)(?:-\d+)?|slide-(?:in-from|out-to)-[\w-]+|transition-all)(?![\w-])"
 )
-ALLOWED = {"opacity", "transform", "height", "width", "stroke-dasharray"}
+ALLOWED = {"opacity", "transform", "height", "width", "stroke-dasharray", "stroke-dashoffset"}
 
 
 def violations(source: Path, allow_globals: bool = False) -> list[str]:

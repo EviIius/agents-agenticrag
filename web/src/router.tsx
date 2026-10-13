@@ -22,6 +22,7 @@ export const router = createBrowserRouter([
             "/workflows/new",
             "/workflows/runs",
             "/workflows/runs/:runId",
+            "/workflows/:workflowId/runs/:runId",
           ].map((path) => ({
             path,
             lazy: async () => {

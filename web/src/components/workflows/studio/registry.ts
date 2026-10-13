@@ -106,7 +106,7 @@ export const registry = {
     category: "Review",
     tone: "review",
     Icon: Star,
-    description: "Choose results. This block isn’t available yet.",
+    description: "Pause to choose your favorite images or text.",
   },
   output: {
     label: "Save results",
@@ -170,6 +170,7 @@ export function outputs(node: Block): Record<string, string> {
     clean_transcript: { text: "text" },
     generate_image: { images: "image_list", prompt: "text" },
     review: { value: "text" },
+    pick: { chosen: node.kind === "pick" ? node.config.type : "text" },
     output: {},
   }[node.kind];
 }
@@ -205,6 +206,8 @@ export function summary(node: Block, defaultName?: string): string {
       return `${node.config.count} ${node.config.count === 1 ? "image" : "images"} · FLUX.2 klein`;
     case "review":
       return `Review ${node.config.show || "an output"}${node.config.editable ? " · editable" : ""}`;
+    case "pick":
+      return `Choose up to ${node.config.maximum} · ${node.config.type === "image_list" ? "images" : "texts"}`;
     case "output":
       return (
         node.config.formats
@@ -238,6 +241,8 @@ export function defaults(kind: Kind): Block["config"] {
         editable: true,
         message: "Check this result before continuing.",
       };
+    case "pick":
+      return { from: [], type: "image_list", maximum: 1 };
     case "output":
       return { include: [], formats: ["md", "json"], include_sources: true };
   }

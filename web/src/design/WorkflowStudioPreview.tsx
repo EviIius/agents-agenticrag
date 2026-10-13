@@ -11,7 +11,7 @@ import { blankDoc, clone, newId } from "@/components/workflows/studio/graph";
 import { BlockCard } from "@/components/workflows/studio/BlockNode";
 import { registry } from "@/components/workflows/studio/registry";
 import { WorkflowCard } from "@/components/workflows/home/WorkflowsHome";
-import type { Definition, Doc } from "@/components/workflows/studio/types";
+import type { Definition, Doc, Run } from "@/components/workflows/studio/types";
 const states = [
   "canvas",
   "empty",
@@ -22,6 +22,15 @@ const states = [
   "non-nestable",
   "settings",
   "run-inputs",
+  "run-running",
+  "run-paused",
+  "run-complete",
+  "run-failed",
+  "run-interrupted",
+  "run-reused",
+  "run-skipped",
+  "pick-paused",
+  "block-test",
   "cards",
   "home-cards",
   "quick-add",
@@ -32,6 +41,7 @@ const states = [
     "clean_transcript",
     "generate_image",
     "review",
+    "pick",
     "output",
   ].map((k) => "setup-" + k),
 ];
@@ -45,6 +55,24 @@ export default function WorkflowStudioPreview() {
       state === "empty" ? blankDoc() : (clone(cases[0].graph) as Doc);
     if (["setup-transcribe", "setup-clean_transcript"].includes(state)) {
       Object.assign(graph, clone(cases[1].graph));
+    }
+    if (state === "setup-pick" || state === "pick-paused") {
+      graph.nodes.push({
+        id: "n_pick",
+        key: "favorites",
+        kind: "pick",
+        title: "Pick favorites",
+        disabled: false,
+        position: { x: 320, y: 860 },
+        config: { from: ["{{draft.text}}"], type: "text", maximum: 1 },
+      });
+      graph.edges.push({
+        id: "e_pick",
+        source: "n_draft",
+        source_port: "out",
+        target: "n_pick",
+        target_port: "in",
+      });
     }
     graph.settings.default_model = {
       connection_id: "fake",
@@ -109,9 +137,124 @@ export default function WorkflowStudioPreview() {
       });
     return s;
   }, [state]);
+  const graph = store.getState().draft.graph;
+  const runStates =
+    (state.startsWith("run-") && state !== "run-inputs") ||
+    ["pick-paused", "block-test"].includes(state);
+  const status =
+    state === "run-running"
+      ? "running"
+      : state === "run-paused" || state === "pick-paused"
+        ? "paused"
+        : state === "run-failed"
+          ? "failed"
+          : state === "run-interrupted"
+            ? "interrupted"
+            : "complete";
+  const previewRun: Run = {
+    id: "synthetic-design-run",
+    kind: "graph",
+    mode: state === "block-test" ? "test" : "run",
+    def_id: "synthetic-design",
+    def_name: "Synthetic image workflow",
+    graph_hash: "fake",
+    snapshot_id: null,
+    parent_run_id: null,
+    state: status,
+    stage:
+      status === "paused"
+        ? "Waiting for you"
+        : status === "running"
+          ? "Writing"
+          : "Ready for review",
+    error:
+      status === "failed"
+        ? "Synthetic failure. Earlier outputs are saved."
+        : null,
+    created_at: "2026-10-13T12:00:00Z",
+    updated_at: "2026-10-13T12:00:02Z",
+    inputs: { brief: "Synthetic blue circle" },
+    graph,
+    nodes: Object.fromEntries(
+      graph.nodes.map((n) => {
+        const active =
+          n.id ===
+          (state === "pick-paused"
+            ? "n_pick"
+            : status === "paused"
+              ? "n_review"
+              : "n_draft");
+        const nodeState = active
+          ? status
+          : status === "complete"
+            ? "complete"
+            : n.kind === "start"
+              ? "complete"
+              : "pending";
+        return [
+          n.id,
+          {
+            state:
+              state === "run-skipped" && n.kind !== "start"
+                ? "skipped"
+                : nodeState,
+            attempt: active ? 1 : 0,
+            port: nodeState === "complete" ? "out" : null,
+            output:
+              n.kind === "generate"
+                ? {
+                    text: "A synthetic blue circle on a warm paper background.",
+                  }
+                : n.kind === "review"
+                  ? { value: "A synthetic blue circle." }
+                  : n.kind === "pick"
+                    ? {
+                        choices: [
+                          "Synthetic choice one",
+                          "Synthetic choice two",
+                        ],
+                      }
+                    : n.kind === "start"
+                      ? { brief: "Synthetic blue circle" }
+                      : null,
+            error: active && status === "failed" ? "Synthetic failure" : null,
+            started_at: active ? "2026-10-13T12:00:00Z" : null,
+            finished_at: status === "complete" ? "2026-10-13T12:00:02Z" : null,
+            reused_from:
+              state === "run-reused" && n.kind !== "output"
+                ? "synthetic-earlier"
+                : null,
+            warnings: [],
+          },
+        ];
+      }),
+    ),
+    results:
+      status === "complete"
+        ? [
+            {
+              node_id: "n_save",
+              label: "Save results",
+              items: [
+                {
+                  label: "Synthetic draft",
+                  type: "text",
+                  value: "A synthetic blue circle on a warm paper background.",
+                },
+              ],
+            },
+          ]
+        : [],
+    source_available: false,
+  };
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex flex-wrap items-center gap-2 p-3">
+      <div
+        className="flex max-h-44 shrink-0 flex-wrap items-center gap-2 overflow-y-auto p-3"
+        tabIndex={0}
+        role="region"
+        aria-label="Synthetic Studio states"
+      >
         <p className="text-xs text-fg-3">
           Workflow Studio · fake runtime states
         </p>
@@ -181,6 +324,7 @@ export default function WorkflowStudioPreview() {
             key={state}
             store={store}
             preview
+            previewRun={runStates ? previewRun : undefined}
             initialQuick={state === "quick-add"}
             initialView={
               state === "outline" || state === "non-nestable"
@@ -192,7 +336,7 @@ export default function WorkflowStudioPreview() {
                 ? "problems"
                 : state === "settings"
                   ? "settings"
-                  : state === "run-inputs"
+                  : state === "run-inputs" || runStates
                     ? "run"
                     : undefined
             }

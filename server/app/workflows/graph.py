@@ -85,6 +85,12 @@ class ReviewConfig(Input):
     message: str = Field("Check this result before continuing.", max_length=1000)
 
 
+class PickConfig(Input):
+    from_: list[Text] = Field(default_factory=list, alias="from", max_length=20)
+    type: Literal["image_list", "text"] = "image_list"
+    maximum: int = Field(1, ge=1, le=20)
+
+
 class OutputItem(Input):
     label: str = Field(min_length=1, max_length=80)
     ref: Text
@@ -134,13 +140,25 @@ class ReviewNode(NodeBase):
     config: ReviewConfig
 
 
+class PickNode(NodeBase):
+    kind: Literal["pick"]
+    config: PickConfig
+
+
 class OutputNode(NodeBase):
     kind: Literal["output"]
     config: OutputConfig
 
 
 Node = Annotated[
-    StartNode | GenerateNode | TranscribeNode | CleanNode | ImageNode | ReviewNode | OutputNode,
+    StartNode
+    | GenerateNode
+    | TranscribeNode
+    | CleanNode
+    | ImageNode
+    | ReviewNode
+    | PickNode
+    | OutputNode,
     Field(discriminator="kind"),
 ]
 
@@ -240,6 +258,8 @@ def outputs(node: Node) -> dict[str, str]:
         return {f.name: f.type for f in node.config.fields}
     if isinstance(node, GenerateNode):
         return {"text": "text", **{f.name: f.type for f in node.config.json_fields}}
+    if isinstance(node, PickNode):
+        return {"chosen": node.config.type}
     return {
         "generate": {"text": "text"},
         "transcribe": {
@@ -332,6 +352,10 @@ def validate(doc: GraphDoc) -> list[Issue]:
             text_fields = [(node.config.recording, True)]
         elif isinstance(node, CleanNode):
             text_fields = [(node.config.transcript, True)]
+        elif isinstance(node, PickNode):
+            if not node.config.from_ and not node.disabled:
+                add("required_setting", "Choose a result source for this block.", node.id)
+            text_fields = [(value, True) for value in node.config.from_]
         elif isinstance(node, OutputNode):
             text_fields = [(i.ref, True) for i in node.config.include]
         if not node.disabled and isinstance(node, (GenerateNode, ImageNode, ReviewNode)):
@@ -379,6 +403,8 @@ def validate(doc: GraphDoc) -> list[Issue]:
                         if isinstance(node, TranscribeNode)
                         else "transcript"
                         if isinstance(node, CleanNode)
+                        else node.config.type
+                        if isinstance(node, PickNode)
                         else None
                     )
                     if expected and outputs(source)[ref.field] != expected:

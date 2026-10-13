@@ -4,6 +4,7 @@ import asyncio
 import json
 import secrets
 from collections.abc import AsyncIterator
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
@@ -11,10 +12,12 @@ from ..db.core import Store
 from ..errors import AppError
 from .defs import Definitions
 from .graph import (
+    GenerateNode,
     GraphDoc,
     ImageNode,
     Node,
     StartNode,
+    ancestors,
     canonical,
     digest,
     execution_hash,
@@ -33,6 +36,7 @@ class GraphRunner:
         self.defs = Definitions(store)
         self.lock = asyncio.Lock()
         self.changed = asyncio.Condition()
+        self.streams_closed = asyncio.Condition()
         self.tasks: dict[str, asyncio.Task[None]] = {}
         self.owned_images: dict[str, str] = {}
         self.owned_cleanup: dict[str, Any] = {}
@@ -40,6 +44,7 @@ class GraphRunner:
         self.emission_locks: dict[str, asyncio.Lock] = {}
         self.last_emission: dict[str, float] = {}
         self.closing = False
+        self.live: dict[str, dict[str, dict[str, Any]]] = {}
 
     async def get(self, identifier: str) -> RunV2:
         row = await self.store.one(
@@ -59,12 +64,20 @@ class GraphRunner:
             "SELECT * FROM workflow_graph_steps WHERE run_id=?", (identifier,)
         ):
             output = json.loads(step["output_json"]) if step["output_json"] else None
+            if step["state"] == "running":
+                live = self.live.get(identifier, {}).get(step["node_id"], {})
+                if "text" in live:
+                    output = {**(output or {}), "text": live["text"]}
+            else:
+                live = {}
             nodes[step["node_id"]] = NodeState(
                 **{
                     k: step[k]
                     for k in ["state", "attempt", "port", "error", "started_at", "finished_at"]
                 },
                 output=output,
+                reused_from=step["reused_from"],
+                progress=live.get("progress"),
                 warnings=json.loads(step["warnings_json"]),
             )
             if step["state"] == "complete" and output and "items" in output:
@@ -95,6 +108,8 @@ class GraphRunner:
                 ]
             },
             kind="graph",
+            mode=row["mode"],
+            parent_run_id=row["parent_run_id"],
             inputs=json.loads(row["inputs_json"]),
             graph=graph,
             nodes=nodes,
@@ -112,9 +127,15 @@ class GraphRunner:
             self.changed.notify_all()
 
     async def ephemeral(self, kind: str, data: dict[str, Any]) -> None:
+        identifier = str(data["run_id"])
+        node_id = str(data["node_id"])
+        live = self.live.setdefault(identifier, {}).setdefault(node_id, {})
+        if kind == "node.text" and "text" in data:
+            live["text"] = data["text"]
+        elif kind == "node.progress" and all(k in data for k in ["done", "total", "label"]):
+            live["progress"] = {k: data[k] for k in ["done", "total", "label"]}
         if not self.listeners:
             return
-        identifier = str(data["run_id"])
         async with self.emission_locks.setdefault(identifier, asyncio.Lock()):
             clock = asyncio.get_running_loop()
             remaining = 0.1 - (clock.time() - self.last_emission.get(identifier, 0))
@@ -179,6 +200,7 @@ class GraphRunner:
 
     async def submit(self, def_id: str, body: GraphSubmit) -> RunV2:
         from .blocks import check_models, checked_inputs
+        from .reuse import guard, plan, rebind, sample_outputs
 
         request = canonical({"def_id": def_id, **body.model_dump()})
         async with self.lock:
@@ -202,13 +224,65 @@ class GraphRunner:
                     "workflow_archived", "Duplicate this archived workflow to run it.", 409
                 )
             doc = definition.graph.model_copy(deep=True)
-            issues = [issue for issue in validate(doc) if issue.severity == "error"]
+            issues = [
+                issue
+                for issue in validate(doc)
+                if issue.severity == "error"
+                and (body.mode != "test" or issue.node_id is None or issue.node_id == body.node_id)
+            ]
             if issues:
                 raise AppError("workflow_invalid", issues[0].message, 422)
-            inputs = await checked_inputs(self, doc, body.inputs)
-            await check_models(self, doc)
+            if body.samples and (body.mode != "test" or body.source_run_id):
+                raise AppError("workflow_test", "Choose saved outputs or samples, not both.", 422)
+            previous = None
+            reused: list[str] = []
+            samples: dict[str, dict[str, Any]] = {}
+            if body.node_id:
+                if not any(n.id == body.node_id and not n.disabled for n in doc.nodes):
+                    raise AppError("workflow_reuse", "Choose an enabled block.", 422)
+                if body.mode == "test" and (body.samples or not body.source_run_id):
+                    samples = sample_outputs(doc, body.node_id, body.samples)
+                    inputs = body.inputs
+                    # Samples are explicit user data; media cannot be fabricated here.
+                    if any(
+                        f.type in {"recording", "document", "image"}
+                        for n in doc.nodes
+                        if isinstance(n, StartNode)
+                        for f in n.config.fields
+                    ):
+                        inputs = await checked_inputs(self, doc, body.inputs)
+                else:
+                    reuse = await plan(
+                        self,
+                        def_id,
+                        body.node_id,
+                        body.source_run_id,
+                        body.mode,
+                        body.inputs or None,
+                    )
+                    if not reuse.eligible or not reuse.source_run_id:
+                        raise AppError("workflow_reuse", reuse.reason or "No reusable run.", 409)
+                    previous = await self.get(reuse.source_run_id)
+                    reused = reuse.node_ids
+                    inputs = previous.inputs
+            else:
+                if body.mode == "test" or body.source_run_id or body.samples:
+                    raise AppError("workflow_test", "Choose the block to test or rerun.", 422)
+                inputs = await checked_inputs(self, doc, body.inputs)
+            selected_ids = {body.node_id} if body.mode == "test" and body.node_id else None
+            await check_models(self, doc, selected_ids)
+            guards = {
+                node.id: await guard(self, doc, node, inputs)
+                for node in doc.nodes
+                if selected_ids is None or node.id in selected_ids or node.id in reused
+            }
+
             for node in doc.nodes:
-                if isinstance(node, ImageNode) and node.config.seeds == "auto":
+                if isinstance(node, ImageNode) and previous and node.id in reused:
+                    old_image = next(n for n in previous.graph.nodes if n.id == node.id)
+                    assert isinstance(old_image, ImageNode)
+                    node.config.seeds = old_image.config.seeds
+                elif isinstance(node, ImageNode) and node.config.seeds == "auto":
                     node.config.seeds = [secrets.randbits(32) for _ in range(node.config.count)]
             identifier, snapshot_id, clock = uuid4().hex, uuid4().hex, now()
             hashed = execution_hash(doc)
@@ -242,13 +316,75 @@ class GraphRunner:
                     ),
                 ),
             ]
+            expires = (
+                (datetime.now(UTC) + timedelta(days=doc.settings.keep_test_runs_days)).isoformat()
+                if body.mode == "test"
+                else None
+            )
+            statements.append(
+                (
+                    "UPDATE workflow_graph_runs SET mode=?,parent_run_id=?,expires_at=? WHERE id=?",
+                    (body.mode, previous.id if previous else None, expires, identifier),
+                )
+            )
             for node in doc.nodes:
+                old = previous.nodes[node.id] if previous and node.id in reused else None
+                state = (
+                    old.state
+                    if old
+                    else "skipped"
+                    if node.disabled or body.mode == "test" and node.id != body.node_id
+                    else "pending"
+                )
+                output = rebind(old.output, previous.id, identifier) if old and previous else None
+                if (
+                    body.mode == "test"
+                    and not previous
+                    and body.node_id
+                    and node.id in ancestors(doc, body.node_id)
+                ):
+                    state, output = "complete", samples.get(node.id, {})
                 statements.append(
                     (
-                        "INSERT INTO workflow_graph_steps(run_id,node_id,state) VALUES(?,?,?)",
-                        (identifier, node.id, "skipped" if node.disabled else "pending"),
+                        (
+                            "INSERT INTO workflow_graph_steps(run_id,node_id,state,port,output_"
+                            "json,reused_from,guard_json,warnings_json) VALUES(?,?,?,?,?,?,?,?)"
+                        ),
+                        (
+                            identifier,
+                            node.id,
+                            state,
+                            old.port if old else "out" if state == "complete" else None,
+                            canonical(output) if output is not None else None,
+                            previous.id
+                            if old and previous
+                            else "sample"
+                            if node.id in samples
+                            else None,
+                            canonical(guards.get(node.id)),
+                            canonical(old.warnings if old else []),
+                        ),
                     )
                 )
+            if previous:
+                for source in await self.store.rows(
+                    "SELECT * FROM workflow_graph_sources WHERE run_id=?", (previous.id,)
+                ):
+                    if source["node_id"] in reused:
+                        statements.append(
+                            (
+                                (
+                                    "INSERT INTO workflow_graph_sources(run_id,"
+                                    "node_id,source_json,sha256) VALUES(?,?,?,?)"
+                                ),
+                                (
+                                    identifier,
+                                    source["node_id"],
+                                    source["source_json"],
+                                    source["sha256"],
+                                ),
+                            )
+                        )
             await self.store.batch(statements)
             await self.emit(identifier)
             self.schedule(identifier)
@@ -298,6 +434,7 @@ class GraphRunner:
                     return
                 order = topo_order(run.graph)
                 current = min(ready, key=lambda n: order.index(n.id))
+                self.live.get(identifier, {}).pop(current.id, None)
                 clock = now()
                 attempt = run.nodes[current.id].attempt + 1
                 lineage = {
@@ -339,6 +476,12 @@ class GraphRunner:
                         ),
                     ]
                 )
+                if isinstance(current, GenerateNode):
+                    await self.store.execute(
+                        "UPDATE workflow_graph_steps SET output_json=NULL "
+                        "WHERE run_id=? AND node_id=?",
+                        (identifier, current.id),
+                    )
                 await self.state(identifier, "running", current.title)
                 await perform(self, await self.get(identifier), current)
                 run = await self.get(identifier)
@@ -377,6 +520,8 @@ class GraphRunner:
             await self.state(identifier, "failed", "Retry available", message)
         finally:
             await self.stop_owned(identifier)
+            if (await self.get(identifier)).state not in {"running", "queued"}:
+                self.live.pop(identifier, None)
 
     async def stop_owned(self, identifier: str) -> None:
         # Acceptance may commit a child immediately before its await is cancelled.
@@ -395,16 +540,51 @@ class GraphRunner:
             await asyncio.gather(job.task, return_exceptions=True)
 
     async def decision(self, identifier: str, body: Decision) -> RunV2:
-        from .graph import ReviewNode
+        from .graph import PickNode, ReviewNode
 
         async with self.lock:
             run = await self.get(identifier)
             node = next((n for n in run.graph.nodes if n.id == body.node_id), None)
-            if not isinstance(node, ReviewNode):
+            if not isinstance(node, (ReviewNode, PickNode)):
                 raise AppError(
                     "workflow_decision", "Choose a review block awaiting your decision.", 422
                 )
             step = run.nodes[node.id]
+            if isinstance(node, PickNode):
+                choices = (step.output or {}).get("choices", [])
+                chosen = body.chosen or []
+                if (
+                    body.decision != "approve"
+                    or not chosen
+                    or len(set(chosen)) != len(chosen)
+                    or len(chosen) > node.config.maximum
+                    or any(i < 0 or i >= len(choices) for i in chosen)
+                ):
+                    raise AppError(
+                        "workflow_pick",
+                        "Choose at least one result within this block's limit.",
+                        422,
+                    )
+                selected = [choices[i] for i in chosen]
+                result = {
+                    "chosen": selected
+                    if node.config.type == "image_list"
+                    else "\n\n".join(selected),
+                    "choices": choices,
+                    "indices": chosen,
+                }
+                if step.state == "complete" and (step.output or {}).get("indices") == chosen:
+                    return run
+                if run.state != "paused" or step.state != "paused":
+                    raise AppError(
+                        "workflow_pick", "This block is not waiting for a selection.", 409
+                    )
+                await self.save(
+                    identifier, node.id, "complete", result, port="out", warnings=step.warnings
+                )
+                await self.state(identifier, "queued", "Waiting for a block")
+                self.schedule(identifier)
+                return await self.get(identifier)
             value = body.value if body.value is not None else (step.output or {}).get("value", "")
             port = "approved" if body.decision == "approve" else "rejected"
             if (
@@ -417,7 +597,11 @@ class GraphRunner:
                 raise AppError(
                     "workflow_decision", "This block is not awaiting your decision.", 409
                 )
-            if body.value is not None and not node.config.editable:
+            if (
+                body.value is not None
+                and value != (step.output or {}).get("value", "")
+                and not node.config.editable
+            ):
                 raise AppError("workflow_decision", "This review does not allow editing.", 422)
             await self.save(
                 identifier, node.id, "complete", {"value": value}, port=port, warnings=step.warnings
@@ -496,6 +680,7 @@ class GraphRunner:
     async def recover(self) -> None:
         from .blocks import reconcile_images
 
+        await self.expire_tests()
         await self.store.execute(
             "UPDATE workflow_graph_steps SET state='interrupted' WHERE state='running'"
         )
@@ -544,9 +729,53 @@ class GraphRunner:
                 after = record["id"]
                 yield after, RunV2.model_validate_json(record["data_json"])
 
+    async def expire_tests(self) -> None:
+        # Called on startup and run-list reads. No timer or polling loop. Image files
+        # remain Gallery-owned; removing a test never removes an image output.
+        rows = await self.store.rows(
+            (
+                "SELECT id,snapshot_id FROM workflow_graph_runs WHERE mode='test' AND"
+                " expires_at<? AND state NOT IN ('queued','running','paused','cancelling')"
+            ),
+            (now(),),
+        )
+        for row in rows:
+            identifier = row["id"]
+            if identifier in self.tasks:
+                continue
+            await self.store.batch(
+                [
+                    (f"DELETE FROM {table} WHERE run_id=?", (identifier,))
+                    for table in [
+                        "workflow_graph_events",
+                        "workflow_graph_sources",
+                        "workflow_graph_attempts",
+                        "workflow_graph_steps",
+                    ]
+                ]
+                + [
+                    ("DELETE FROM workflow_graph_runs WHERE id=?", (identifier,)),
+                    (
+                        "DELETE FROM workflow_def_snapshots WHERE id=? AND label IS NULL "
+                        "AND NOT EXISTS (SELECT 1 FROM workflow_graph_runs WHERE snapshot_id=?)",
+                        (row["snapshot_id"], row["snapshot_id"]),
+                    ),
+                ]
+            )
+
     async def close(self) -> None:
         self.closing = True
         tasks = list(self.tasks.values())
         for task in tasks:
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
+        for queue in tuple(self.listeners):
+            if queue.full():
+                queue.get_nowait()
+            queue.put_nowait(("server.closed", {}))
+        # Let SSE producers release this store before the database closes.
+        try:
+            async with asyncio.timeout(1), self.streams_closed:
+                await self.streams_closed.wait_for(lambda: not self.listeners)
+        except TimeoutError:
+            pass  # A blocked client cannot delay shutdown; reconnect uses SQLite.

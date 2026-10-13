@@ -11,6 +11,9 @@ from tests.test_images import output
 
 
 class FakeImageEngine:
+    def __init__(self) -> None:
+        self.failed_once: set[tuple[str, int]] = set()
+
     def status(self) -> ImageStatus:
         return ImageStatus(available=True)
 
@@ -22,11 +25,21 @@ class FakeImageEngine:
     ) -> int:
         expected = json.loads(manifest.read_text())
         await asyncio.sleep(0.1)
-        if "#fail" in expected["prompt"]:
+        key = (expected["prompt"], expected["seed"])
+        if "#fail-once" in expected["prompt"] and key not in self.failed_once:
+            self.failed_once.add(key)
+            raise ValueError("Synthetic failure")
+        if "#fail" in expected["prompt"] and "#fail-once" not in expected["prompt"]:
             raise ValueError("Synthetic failure")
         for i in range(4):
             await progress({"type": "denoising", "completed_steps": i + 1})
-            await asyncio.sleep(0.4 if "#slow" in expected["prompt"] else 0.02)
+            await asyncio.sleep(
+                1
+                if "#restart" in expected["prompt"]
+                else 0.4
+                if "#slow" in expected["prompt"]
+                else 0.02
+            )
         await progress({"type": "decoding"})
         output(scratch, expected)
         return 0
