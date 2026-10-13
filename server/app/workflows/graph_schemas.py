@@ -7,6 +7,21 @@ from pydantic import Field
 from ..schemas import ErrorDetail, Input
 from .graph import GraphDoc, Issue, ModelRef
 
+DefIcon = Literal[
+    "workflow",
+    "image",
+    "audio",
+    "library",
+    "file",
+    "sparkles",
+    "globe",
+    "mail",
+    "calendar",
+    "star",
+    "briefcase",
+    "folder",
+]
+
 
 class DefCreate(Input):
     name: str = Field("Untitled workflow", min_length=1, max_length=80)
@@ -18,7 +33,7 @@ class DefCreate(Input):
 class DefSave(Input):
     name: str = Field(min_length=1, max_length=80)
     description: str = Field("", max_length=1000)
-    icon: Literal["workflow", "image", "audio"] = "workflow"
+    icon: DefIcon = "workflow"
     graph: GraphDoc
     version: int = Field(ge=1)
     force: bool = False
@@ -28,7 +43,7 @@ class Definition(Input):
     id: str
     name: str
     description: str
-    icon: Literal["workflow", "image", "audio"]
+    icon: DefIcon
     graph: GraphDoc
     graph_hash: str
     version: int
@@ -63,6 +78,7 @@ class ValidationBody(Input):
 
 class ValidationResult(Input):
     issues: list[Issue]
+    graph: GraphDoc | None = None
 
 
 class GraphSubmit(Input):

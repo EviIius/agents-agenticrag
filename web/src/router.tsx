@@ -31,6 +31,14 @@ export const router = createBrowserRouter([
             },
           })),
           {
+            path: "/workflows/:workflowId",
+            lazy: async () => {
+              const { Studio } =
+                await import("@/components/workflows/studio/Studio");
+              return { Component: Studio };
+            },
+          },
+          {
             path: "/images",
             lazy: async () => {
               const { ImagesPage } =

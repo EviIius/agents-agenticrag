@@ -647,3 +647,18 @@ async def test_legacy_skipped_cleanup_and_results_are_faithfully_projected(chat_
     assert isinstance(adapted.graph.nodes[2].config.model, ModelRef)
     assert adapted.graph.nodes[2].config.model.model_id == "fake-reasoning"
     assert adapted.results[0].items[0].value == legacy.steps[-1].output["text"]
+
+
+async def test_template_copy_keeps_public_description_and_icon(chat_app: Any) -> None:
+    from app.workflows.template_graphs import template_list
+
+    app, _, _ = chat_app
+    for template in template_list():
+        copied = await app.state.workflow_graphs.defs.create(
+            DefCreate.model_validate(
+                {"name": "Synthetic template copy", "template_id": template.id}
+            )
+        )
+        assert copied.description == template.description
+        assert copied.icon == template.icon
+        assert copied.graph == template.graph

@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 export async function openSidebar(page: Page) {
   if (
@@ -16,4 +16,7 @@ export async function workspaceLink(page: Page, label: "Workflows" | "Images") {
     .getByRole("navigation", { name: "Workspace", exact: true })
     .getByRole("link", { name: label, exact: true })
     .click();
+  await expect(page).toHaveURL(
+    label === "Workflows" ? /\/workflows$/ : /\/images$/,
+  );
 }

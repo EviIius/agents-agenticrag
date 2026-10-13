@@ -136,7 +136,7 @@ async def validation(identifier: str, body: ValidationBody, request: Request) ->
             await check_models(manager(request), graph)
         except AppError as exc:
             issues.append(Issue(code=exc.code, message=exc.message))
-    return ValidationResult(issues=issues)
+    return ValidationResult(issues=issues, graph=graph)
 
 
 @router.get("/defs/{identifier}/snapshots")

@@ -2088,7 +2088,7 @@ export interface components {
              * @default workflow
              * @enum {string}
              */
-            icon: "workflow" | "image" | "audio";
+            icon: "workflow" | "image" | "audio" | "library" | "file" | "sparkles" | "globe" | "mail" | "calendar" | "star" | "briefcase" | "folder";
             graph: components["schemas"]["GraphDoc"];
             /** Version */
             version: number;
@@ -2110,7 +2110,7 @@ export interface components {
              * Icon
              * @enum {string}
              */
-            icon: "workflow" | "image" | "audio";
+            icon: "workflow" | "image" | "audio" | "library" | "file" | "sparkles" | "globe" | "mail" | "calendar" | "star" | "briefcase" | "folder";
             graph: components["schemas"]["GraphDoc"];
             /** Graph Hash */
             graph_hash: string;
@@ -3716,6 +3716,7 @@ export interface components {
         ValidationResult: {
             /** Issues */
             issues: components["schemas"]["Issue"][];
+            graph?: components["schemas"]["GraphDoc"] | null;
         };
         /** Viewport */
         Viewport: {

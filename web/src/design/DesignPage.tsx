@@ -73,9 +73,16 @@ const webMessage: Message = {
 const ImagesPreview = lazy(() => import("./ImagesPreview"));
 const WorkflowsPreview = lazy(() => import("./WorkflowsPreview"));
 const WorkflowHomePreview = lazy(() => import("./WorkflowHomePreview"));
+const WorkflowStudioPreview = lazy(() => import("./WorkflowStudioPreview"));
 const Markdown = lazy(() => import("@/components/chat/Markdown"));
 const LibraryAnswersPreview = lazy(() => import("./LibraryAnswersPreview"));
 export function DesignPage() {
+  if (new URLSearchParams(location.search).has("studio"))
+    return (
+      <Suspense fallback={<p>Loading Studio…</p>}>
+        <WorkflowStudioPreview />
+      </Suspense>
+    );
   if (new URLSearchParams(location.search).has("workflow-home"))
     return (
       <Suspense fallback={<p>Loading workflows home…</p>}>

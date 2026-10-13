@@ -9,7 +9,7 @@ from ..errors import AppError
 from .graph import GraphDoc, StartConfig, StartNode, canonical, execution_hash
 from .graph_schemas import DefCreate, Definition, DefSave, Snapshot
 from .jobs import now
-from .template_graphs import template_graph
+from .template_graphs import template_graph, template_list
 
 
 class Conflict(AppError):
@@ -71,14 +71,17 @@ class Definitions:
             graph.settings.default_model = body.default_model
         check_size(graph)
         identifier, clock = uuid4().hex, now()
+        template = next((t for t in template_list() if t.id == body.template_id), None)
         await self.store.execute(
             (
-                "INSERT INTO workflow_defs(id,name,graph_json,graph_hash,template_"
-                "id,created_at,updated_at) VALUES(?,?,?,?,?,?,?)"
+                "INSERT INTO workflow_defs(id,name,description,icon,graph_json,graph_hash,template_"
+                "id,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)"
             ),
             (
                 identifier,
                 body.name,
+                template.description if template else "",
+                template.icon if template else "workflow",
                 canonical(graph.model_dump(by_alias=True)),
                 execution_hash(graph),
                 body.template_id,

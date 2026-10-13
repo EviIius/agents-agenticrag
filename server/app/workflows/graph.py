@@ -334,6 +334,10 @@ def validate(doc: GraphDoc) -> list[Issue]:
             text_fields = [(node.config.transcript, True)]
         elif isinstance(node, OutputNode):
             text_fields = [(i.ref, True) for i in node.config.include]
+        if not node.disabled and isinstance(node, (GenerateNode, ImageNode, ReviewNode)):
+            required = node.config.show if isinstance(node, ReviewNode) else node.config.prompt
+            if not required.strip():
+                add("required_setting", "Add the required text for this block.", node.id)
         for text, typed in text_fields:
             try:
                 refs = references(text)
@@ -381,6 +385,15 @@ def validate(doc: GraphDoc) -> list[Issue]:
                         add(
                             "reference_type", "Choose an output of the required file type.", node.id
                         )
+                if source and source.disabled and not ref.tag:
+                    issues.append(
+                        Issue(
+                            code="empty_reference",
+                            message="This output is empty while its block is disabled.",
+                            node_id=node.id,
+                            severity="warning",
+                        )
+                    )
         if node.disabled:
             issues.append(
                 Issue(

@@ -70,9 +70,9 @@ test("Shared sidebar, rail and palette navigate real workspaces without tabs", a
   await expect(
     page.getByRole("link", { name: "Chat", exact: true }),
   ).toHaveCount(0);
-  await expect(page.getByRole("link", { name: /Use .* template/ })).toHaveCount(
-    2,
-  );
+  await expect(
+    page.getByRole("button", { name: /Use .* template/ }),
+  ).toHaveCount(2);
   await page
     .getByRole("button", { name: "Collapse sidebar", exact: true })
     .click();
@@ -160,13 +160,14 @@ test("Home opens template and persisted run detail, reconnects through existing 
   ).toBeVisible();
   await workspaceLink(page, "Workflows");
   await page
-    .getByRole("link", {
+    .getByRole("button", {
       name: "Use Recording to meeting pack template",
       exact: true,
     })
     .click();
-  await expect(page).toHaveURL(/\/workflows\/new\?template=meeting_pack$/);
+  await expect(page).toHaveURL(/\/workflows\/[a-z0-9]+$/);
+  await page.getByRole("button", { name: "Run", exact: true }).click();
   await expect(
-    page.getByRole("combobox", { name: "Saved recording" }),
+    page.getByRole("combobox", { name: "Saved recording", exact: true }),
   ).toBeVisible();
 });

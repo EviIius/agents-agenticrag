@@ -559,6 +559,66 @@ article[data-fresh="true"] {
 [data-slot="model-action"] {
   transition: opacity var(--dur-fast) var(--ease);
 }
+[data-slot="context-menu-content"][data-state="open"] {
+  animation: opacity-in var(--dur-fast) var(--ease-out) both;
+}
+/* Workflow Studio editing; run loops remain the next checkpoint. */
+.wf-drag-ghost[data-reduced="false"] .wf-block {
+  transform: scale(1.02);
+}
+@keyframes wf-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes wf-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.wf-canvas[data-entrance="true"] .react-flow__node-block > div {
+  animation: wf-enter var(--dur-med) var(--ease-out) both;
+}
+.wf-canvas[data-entrance="true"] .react-flow__node-block > div {
+  animation-delay: calc(var(--wf-index) * 24ms);
+}
+.wf-right {
+  animation: wf-panel-enter var(--dur-med) var(--ease-sheet) both;
+}
+.wf-canvas[data-arranging="true"] .react-flow__node {
+  transition: transform var(--dur-slow) var(--ease-sheet);
+}
+.wf-block,
+.wf-definition-card {
+  transition:
+    transform var(--dur-fast) var(--ease),
+    opacity var(--dur-fast) var(--ease);
+}
+.wf-definition-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-md);
+}
+.wf-edge-tools {
+  transition: opacity var(--dur-fast) var(--ease);
+}
+.wf-port.react-flow__handle {
+  transition: transform var(--dur-instant) var(--ease);
+}
+.wf-port.react-flow__handle:hover {
+  transform: translate(-50%, -50%) scale(1.4);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

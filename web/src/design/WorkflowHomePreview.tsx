@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { WorkflowHome } from "@/components/workflows/WorkflowHome";
-import type { Workflow } from "@/components/workflows/WorkflowsPage";
+import { WorkflowHomeContent } from "@/components/workflows/home/WorkflowsHome";
+import cases from "../../../shared/workflow_graph_cases.json";
+import type {
+  Definition,
+  Doc,
+  Run,
+  Template,
+} from "@/components/workflows/studio/types";
 import {
   WorkflowStatus,
   WorkflowRunUnavailable,
@@ -11,7 +17,27 @@ import { useUI } from "@/stores/ui";
 export default function WorkflowHomePreview() {
   const [state, setState] = useState("populated");
   const ui = useUI();
-  const runs: Workflow[] = [
+  const definitions: Definition[] = cases.slice(0, 2).map((c, i) => ({
+    id: "synthetic-home-" + i,
+    name: i ? "Recording to meeting pack" : "Brief to images",
+    description: "Synthetic editable workflow",
+    icon: i ? "audio" : "image",
+    graph: c.graph as Doc,
+    version: 1,
+    template_id: null,
+    graph_hash: "fake",
+    archived_at: null,
+    created_at: "2026-10-12",
+    updated_at: "2026-10-12",
+  }));
+  const templates: Template[] = definitions.map((d, i) => ({
+    id: i ? "meeting_pack" : "brief_images",
+    name: d.name,
+    description: d.description,
+    icon: i ? "audio" : "image",
+    graph: d.graph,
+  }));
+  const runs = [
     "paused",
     "running",
     "queued",
@@ -20,28 +46,18 @@ export default function WorkflowHomePreview() {
     "interrupted",
     "cancelled",
     "cancelling",
-  ].map((status, index) => ({
-    id: `fake-home-run-${index}`,
-    version: 1,
-    input: {
-      request_key: `fake-home-${index}`,
-      template: index % 2 ? "brief_images" : "meeting_pack",
-      model: { connection_id: "fake", model_id: "fake-chat", params: {} },
-      brief: "Synthetic brief",
-      attachment_id: null,
-      cleanup_model: null,
-      review_prompt: true,
-      seeds: [42],
-    },
-    state: status,
-    stage: status === "paused" ? "Review the image prompt" : status,
-    steps: [],
-    source_available: false,
-    error: null,
-    edited_prompt: null,
-    created_at: "2026-10-12T12:00:00Z",
-    updated_at: "2026-10-12T12:01:00Z",
-  }));
+  ].map(
+    (status, i) =>
+      ({
+        id: "fake-home-run-" + i,
+        def_name: definitions[i % 2].name,
+        state: status,
+        stage: "Synthetic saved run",
+        created_at: "2026-10-12T12:00:00Z",
+        updated_at: "2026-10-12T12:01:00Z",
+        def_id: definitions[i % 2].id,
+      }) as Run,
+  );
   return (
     <div className="mx-auto max-w-[1120px] space-y-6 p-4 lg:p-8">
       <p className="text-sm text-fg-3">Workflows home · synthetic states</p>
@@ -86,9 +102,22 @@ export default function WorkflowHomePreview() {
       {state.startsWith("run-") ? (
         <WorkflowRunUnavailable failed={state === "run-unavailable"} />
       ) : (
-        <WorkflowHome
+        <WorkflowHomeContent
+          definitions={{
+            data: state === "populated" ? definitions : [],
+            isLoading: state === "loading",
+            isError: state === "error",
+            refetch: () => setState("populated"),
+          }}
+          templates={{ data: templates }}
           runs={state === "populated" ? runs : []}
-          loading={state === "loading"}
+          connection="Connected"
+          error=""
+          notice=""
+          setNotice={() => {}}
+          busy={false}
+          create={async () => {}}
+          refresh={() => {}}
         />
       )}
     </div>

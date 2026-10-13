@@ -1019,3 +1019,12 @@ merge, live publication or physical phone pass is claimed. The requested image
 creation/results inside chat remains a tracked follow-up. H4:
 `docs/WORKFLOW-STUDIO-WS-B-REPORT.md`. Stop for WS-B review before WS-C. Research
 remains shelved; named canvas/call approvals persist on this isolated branch.
+
+**User acceptance and authorization — 12 October 2026 (WS-C):** Jake asked to
+continue and keep Claude's UI, implementing it so it works. Close WS-B's review
+stop and build Studio editing per the supplied spec/prototype/references. The
+approved exact-pinned lazy `@xyflow/react` dependency retains attribution; phones
+edit through Outline and templates become editable copies. Preserve ordinary
+keyboard/label semantics and current APIs/prompts/model settings. Stop for WS-C
+review before WS-D, merge or live publication. The image-in-chat request remains
+tracked separately. Main and the installed app remain unchanged.

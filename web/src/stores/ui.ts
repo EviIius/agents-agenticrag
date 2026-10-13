@@ -4,6 +4,7 @@ type UI = {
   theme: ThemePreference;
   sidebar: boolean;
   collapsed: boolean;
+  collapsedBeforeStudio?: boolean;
   panel: boolean;
   settings: boolean;
   settingsPane: string;

@@ -68,6 +68,9 @@ export function LiveAppShell() {
   const { pathname } = useLocation();
   const routeChatId = useMatch("/c/:chatId")?.params.chatId;
   const workspace = pathname.startsWith("/workflows") || pathname === "/images";
+  const studio = /^\/workflows\/(?!runs(?:\/|$)|new(?:\/|$))[^/]+$/.test(
+    pathname,
+  );
   const lastChat = useRef<string | undefined>(routeChatId);
   if (!workspace) lastChat.current = routeChatId;
   // Keep the current chat state alive while a workspace child occupies the main pane.
@@ -679,40 +682,42 @@ export function LiveAppShell() {
             </div>
           )}
           {workspace ? (
-            <header className="topbar">
-              {(!desktop || ui.collapsed) && (
-                <IconButton
-                  label="Open sidebar"
-                  onClick={() =>
-                    ui.set(desktop ? { collapsed: false } : { sidebar: true })
-                  }
-                >
-                  <PanelLeftOpen />
-                </IconButton>
-              )}
-              {pathname === "/images" ? (
-                <span className="text-sm font-medium">Images</span>
-              ) : (
-                <>
-                  <Link
-                    to="/workflows"
-                    className="flex min-h-11 items-center text-sm text-fg-2"
+            studio ? null : (
+              <header className="topbar">
+                {(!desktop || ui.collapsed) && (
+                  <IconButton
+                    label="Open sidebar"
+                    onClick={() =>
+                      ui.set(desktop ? { collapsed: false } : { sidebar: true })
+                    }
                   >
-                    Workflows
-                  </Link>
-                  {pathname !== "/workflows" && (
-                    <span className="text-sm text-fg-2">
-                      /{" "}
-                      {pathname === "/workflows/new"
-                        ? "Use a template"
-                        : pathname === "/workflows/runs"
-                          ? "Runs"
-                          : "Run"}
-                    </span>
-                  )}
-                </>
-              )}
-            </header>
+                    <PanelLeftOpen />
+                  </IconButton>
+                )}
+                {pathname === "/images" ? (
+                  <span className="text-sm font-medium">Images</span>
+                ) : (
+                  <>
+                    <Link
+                      to="/workflows"
+                      className="flex min-h-11 items-center text-sm text-fg-2"
+                    >
+                      Workflows
+                    </Link>
+                    {pathname !== "/workflows" && (
+                      <span className="text-sm text-fg-2">
+                        /{" "}
+                        {pathname === "/workflows/new"
+                          ? "Use a template"
+                          : pathname === "/workflows/runs"
+                            ? "Runs"
+                            : "Run"}
+                      </span>
+                    )}
+                  </>
+                )}
+              </header>
+            )
           ) : (
             <header data-scrolled={scrolled || undefined} className="topbar">
               <div className="flex min-w-0 flex-1 items-center">
