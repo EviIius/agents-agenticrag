@@ -91,7 +91,7 @@ export function fixtureMessage(
             : state === "interrupted"
               ? "interrupted"
               : "error",
-    created_at: "2026-10-03T12:00:00Z",
+    created_at: early ? new Date().toISOString() : "2026-10-03T12:00:00Z",
     model:
       role === "assistant"
         ? {

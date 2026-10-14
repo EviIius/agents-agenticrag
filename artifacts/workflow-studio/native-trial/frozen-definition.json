@@ -1,0 +1,178 @@
+{
+  "id": "d15d4a58dbc34f678a73b66334bd3ce4",
+  "name": "Synthetic native Cobalt Saturday trial",
+  "description": "",
+  "icon": "workflow",
+  "graph": {
+    "schema": "atelier.workflow/1",
+    "nodes": [
+      {
+        "id": "n_start",
+        "key": "start",
+        "title": "Start",
+        "position": {
+          "x": 320,
+          "y": 80
+        },
+        "disabled": false,
+        "kind": "start",
+        "config": {
+          "fields": [
+            {
+              "name": "brief",
+              "label": "Brief",
+              "type": "long_text",
+              "required": true,
+              "default": null,
+              "choices": [],
+              "help": ""
+            }
+          ]
+        }
+      },
+      {
+        "id": "n_outline",
+        "key": "outline",
+        "title": "Generate outline",
+        "position": {
+          "x": 320,
+          "y": 280
+        },
+        "disabled": false,
+        "kind": "generate",
+        "config": {
+          "model": {
+            "connection_id": "4b81a0a0d9ac4a8799bd8e89c6721674",
+            "model_id": "qwen3:30b-a3b-workbench-32k"
+          },
+          "instructions": "",
+          "prompt": "Using only the supplied brief, make a short outline for the announcement. Preserve every supplied detail. Brief: {{start.brief}}",
+          "format": "text",
+          "json_fields": [],
+          "params": {
+            "temperature": null,
+            "top_p": null,
+            "top_k": null,
+            "max_tokens": null,
+            "seed": null,
+            "reasoning": null
+          }
+        }
+      },
+      {
+        "id": "n_draft",
+        "key": "draft",
+        "title": "Generate draft",
+        "position": {
+          "x": 320,
+          "y": 480
+        },
+        "disabled": false,
+        "kind": "generate",
+        "config": {
+          "model": {
+            "connection_id": "4b81a0a0d9ac4a8799bd8e89c6721674",
+            "model_id": "qwen3:30b-a3b-workbench-32k"
+          },
+          "instructions": "",
+          "prompt": "Write the announcement from this outline. Preserve its details and add no event facts. Outline: {{outline.text}}",
+          "format": "text",
+          "json_fields": [],
+          "params": {
+            "temperature": null,
+            "top_p": null,
+            "top_k": null,
+            "max_tokens": null,
+            "seed": null,
+            "reasoning": null
+          }
+        }
+      },
+      {
+        "id": "n_review",
+        "key": "review",
+        "title": "Approve or edit",
+        "position": {
+          "x": 320,
+          "y": 680
+        },
+        "disabled": false,
+        "kind": "review",
+        "config": {
+          "show": "{{draft.text}}",
+          "editable": true,
+          "message": "Review the synthetic announcement."
+        }
+      },
+      {
+        "id": "n_save",
+        "key": "save",
+        "title": "Save results",
+        "position": {
+          "x": 320,
+          "y": 880
+        },
+        "disabled": false,
+        "kind": "output",
+        "config": {
+          "include": [
+            {
+              "label": "Announcement",
+              "ref": "{{review.value}}"
+            }
+          ],
+          "formats": [
+            "md",
+            "json"
+          ],
+          "include_sources": false
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_0",
+        "source": "n_start",
+        "source_port": "out",
+        "target": "n_outline",
+        "target_port": "in"
+      },
+      {
+        "id": "e_1",
+        "source": "n_outline",
+        "source_port": "out",
+        "target": "n_draft",
+        "target_port": "in"
+      },
+      {
+        "id": "e_2",
+        "source": "n_draft",
+        "source_port": "out",
+        "target": "n_review",
+        "target_port": "in"
+      },
+      {
+        "id": "e_3",
+        "source": "n_review",
+        "source_port": "approved",
+        "target": "n_save",
+        "target_port": "in"
+      }
+    ],
+    "notes": [],
+    "viewport": null,
+    "settings": {
+      "default_model": {
+        "connection_id": "4b81a0a0d9ac4a8799bd8e89c6721674",
+        "model_id": "qwen3:30b-a3b-workbench-32k"
+      },
+      "keep_test_runs_days": 7
+    }
+  },
+  "graph_hash": "76af533a720d85c85cc8ef0a9dc4c016405fc4197c96b562dddcdc9eeda7a7e3",
+  "version": 1,
+  "template_id": null,
+  "archived_at": null,
+  "created_at": "2026-10-14T17:44:23.506231+00:00",
+  "updated_at": "2026-10-14T17:44:23.506231+00:00"
+}

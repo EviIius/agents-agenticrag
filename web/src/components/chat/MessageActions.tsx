@@ -60,9 +60,11 @@ export function MessageActions({
         <CopyFeedback {...feedback} />
       </IconButton>
       {message.role === "user" ? (
-        <IconButton label="Edit message" onClick={onEdit}>
-          <Pencil />
-        </IconButton>
+        message.kind !== "image" && (
+          <IconButton label="Edit message" onClick={onEdit}>
+            <Pencil />
+          </IconButton>
+        )
       ) : (
         <>
           <IconButton label="Regenerate answer" onClick={onRegenerate}>

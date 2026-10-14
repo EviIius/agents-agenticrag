@@ -2,6 +2,11 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir, writeFile } from "node:fs/promises";
 import { fakeAppURL } from "../test-runtime";
+import {
+  configureStudioBlock,
+  chooseStudioModel,
+  openStudioRun,
+} from "./studio-helpers";
 import { settle } from "./helpers";
 const dir = "../artifacts/composer-workflows/browser/workflows";
 
@@ -105,46 +110,42 @@ for (const width of [390, 1440])
 test("Creative workflow review, reconnect, variants and cancellable saving", async ({
   page,
 }) => {
-  await page.goto("/workflows");
+  await page.goto("/workflows/new?template=brief_images");
+  await configureStudioBlock(page, "Draft image prompt");
+  await chooseStudioModel(page);
+  await configureStudioBlock(page, "Create images");
+  await page.getByRole("button", { name: "2", exact: true }).click();
+  await page.getByRole("button", { name: "Advanced", exact: true }).click();
   await page
-    .getByRole("textbox", { name: "Image brief" })
+    .getByRole("spinbutton", { name: "Seed 1", exact: true })
+    .fill("901");
+  await page
+    .getByRole("spinbutton", { name: "Seed 2", exact: true })
+    .fill("902");
+  await openStudioRun(page);
+  await page
+    .getByRole("textbox", { name: "Image brief", exact: true })
     .fill("Synthetic browser workflow: one blue circle on a white background");
-  await page
-    .getByRole("button", { name: "Configure Draft image prompt", exact: true })
-    .click();
-  await page.getByRole("combobox", { name: "Prompt draft model" }).click();
-  await page.getByRole("option").filter({ hasText: "fake-chat" }).click();
-  await page
-    .getByRole("button", { name: "Configure Generate images", exact: true })
-    .click();
-  await page.getByText("Advanced seeds", { exact: true }).click();
-  await page
-    .getByRole("textbox", { name: "Image variant seeds" })
-    .fill("901,902");
-  await page
-    .getByRole("button", { name: "Start workflow", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Run workflow", exact: true }).click();
   const card = page
     .getByRole("article", { name: "Brief to images run" })
     .first();
   await expect(
-    card.getByRole("textbox", { name: "Review image prompt" }),
+    card.getByRole("textbox", { name: "Review result" }),
   ).toBeVisible();
   await page.reload();
   await expect(
-    card.getByRole("textbox", { name: "Review image prompt" }),
+    card.getByRole("textbox", { name: "Review result" }),
   ).toBeVisible();
   await card
-    .getByRole("textbox", { name: "Review image prompt" })
+    .getByRole("textbox", { name: "Review result" })
     .fill("Synthetic blue circle");
-  await card
-    .getByRole("button", { name: "Approve prompt and generate" })
-    .click();
+  await card.getByRole("button", { name: "Approve", exact: true }).click();
   await expect(card.getByRole("status")).toContainText("Ready for review", {
     timeout: 15000,
   });
   await expect(
-    card.getByRole("img", { name: "Workflow generated image" }),
+    card.getByRole("img", { name: /Workflow generated image/ }),
   ).toHaveCount(2);
   let downloads = 0;
   page.on("download", () => downloads++);
@@ -169,31 +170,26 @@ test("Recording workflow retains source and sends only explicit overrides", asyn
     },
   });
   expect(upload.status()).toBe(201);
-  await page.goto("/workflows");
+  await page.goto("/workflows/new?template=meeting_pack");
+  await configureStudioBlock(page, "Draft meeting pack");
+  await chooseStudioModel(page);
+  await page.getByText("Optional overrides", { exact: true }).click();
   await page
-    .getByRole("button", { name: "Recording to meeting pack", exact: true })
+    .getByRole("spinbutton", { name: "Output limit", exact: true })
+    .fill("900");
+  await page
+    .getByRole("spinbutton", { name: "Temperature", exact: true })
+    .fill("0.4");
+  await openStudioRun(page);
+  await page
+    .getByRole("combobox", { name: "Saved recording", exact: true })
     .click();
-  await page.getByRole("combobox", { name: "Saved recording" }).click();
   await page
     .getByRole("option")
     .filter({ hasText: "Synthetic-workflow.wav" })
     .first()
     .click();
-  await page
-    .getByRole("button", { name: "Configure Draft meeting pack", exact: true })
-    .click();
-  await page.getByRole("combobox", { name: "Meeting-pack model" }).click();
-  await page.getByRole("option").filter({ hasText: "fake-chat" }).click();
-  await page.getByText("Optional model overrides", { exact: true }).click();
-  await page
-    .getByRole("spinbutton", { name: "Workflow output token limit" })
-    .fill("900");
-  await page
-    .getByRole("spinbutton", { name: "Workflow temperature" })
-    .fill("0.4");
-  await page
-    .getByRole("button", { name: "Start workflow", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Run workflow", exact: true }).click();
   const card = page
     .getByRole("article", { name: "Recording to meeting pack run" })
     .first();

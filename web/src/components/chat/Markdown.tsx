@@ -17,10 +17,12 @@ export default function Markdown({
   text,
   streaming = false,
   sources,
+  copyFeedbackRole = "status",
 }: {
   text: string;
   streaming?: boolean;
   sources?: Source[];
+  copyFeedbackRole?: "status" | "none";
 }) {
   const feedback = useCopyFeedback();
   const reduceMotion = useReducedMotion();
@@ -57,7 +59,7 @@ export default function Markdown({
       data-code-copied={feedback.copied || undefined}
       className="min-w-0"
     >
-      <span role="status" aria-live="polite" className="sr-only">
+      <span role={copyFeedbackRole} aria-live="polite" className="sr-only">
         {feedback.failed ? "Couldn't copy. Try again." : ""}
       </span>
       <Streamdown

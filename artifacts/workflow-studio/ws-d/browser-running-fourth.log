@@ -1,0 +1,93 @@
+npm notice run workbench-web@1.0.0-alpha.0 npx
+npm notice run 'playwright' test workflow-studio-running.spec.ts --max-failures=1
+[WebServer] INFO:     Started server process [27909]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:18080 (Press CTRL+C to quit)
+[WebServer] INFO:     Started server process [27920]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:18787 (Press CTRL+C to quit)
+[WebServer] npm notice run workbench-web@1.0.0-alpha.0 dev
+[WebServer] npm notice run vite --host 127.0.0.1 --port 5173 --strictPort
+[WebServer] (node:27948) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "./test-runtime" without a file extension (vite.config.ts:4:28). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+Running 14 tests using 1 worker
+
+(node:27950) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] INFO httpx: HTTP Request: GET http://127.0.0.1:18080/api/tags "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: GET http://127.0.0.1:18080/api/ps "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/show "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/show "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/show "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/show "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/show "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/chat "HTTP/1.1 200 OK"
+  ✓   1 [chromium] › tests/workflow-studio-running.spec.ts:134:1 › Run canvas streams truthful text, follows and yields to manual zoom, and survives reconnect (7.2s)
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/chat "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: GET http://127.0.0.1:18080/api/tags "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: GET http://127.0.0.1:18080/api/ps "HTTP/1.1 200 OK"
+  ✓   2 [chromium] › tests/workflow-studio-running.spec.ts:189:1 › Run from here uses saved outputs, rejects changed settings, and versions restore with undo (7.0s)
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/chat "HTTP/1.1 200 OK"
+[WebServer] 8:28:11 AM [vite] (client) [Unhandled error] Error: ResizeObserver loop completed with undelivered notifications.
+[WebServer]  > ../../../../../../../@vite/client:305:50
+[WebServer] 
+  ✓   3 [chromium] › tests/workflow-studio-running.spec.ts:262:1 › Single block tests use explicit samples and remain outside recent history after reload (3.3s)
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/chat "HTTP/1.1 200 OK"
+  ✓   4 [chromium] › tests/workflow-studio-running.spec.ts:307:1 › Favorites select actual image outputs and saved run uses an immutable canvas snapshot (2.0s)
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/chat "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: GET http://127.0.0.1:18080/api/tags "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: GET http://127.0.0.1:18080/api/ps "HTTP/1.1 200 OK"
+  ✘   5 [chromium] › tests/workflow-studio-running.spec.ts:356:1 › Failed image block retries without repeating the finished text and shows paused notification (5.9s)
+Testing stopped early after 1 maximum allowed failures.
+
+
+  1) [chromium] › tests/workflow-studio-running.spec.ts:356:1 › Failed image block retries without repeating the finished text and shows paused notification 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('.wf-block[data-run="failed"]')
+    Expected substring: "Synthetic failure"
+    Received string:    "Create imagesCreate imagesImage could not be completed or validated. No output was accepted. Retry this job.images.imagesimages.prompt"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toContainText" locator('.wf-block[data-run="failed"]') with timeout 5000ms
+      - waiting for locator('.wf-block[data-run="failed"]')
+        11 × locator resolved to <div class="wf-block" data-run="failed" data-selected="false" data-disabled="false">…</div>
+           - unexpected value "Create imagesCreate imagesImage could not be completed or validated. No output was accepted. Retry this job.images.imagesimages.prompt"
+
+
+      374 |   await start(request, saved);
+      375 |   await page.goto(`/workflows/${d.id}?run=1`);
+    > 376 |   await expect(page.locator('.wf-block[data-run="failed"]')).toContainText(
+          |                                                              ^
+      377 |     "Synthetic failure",
+      378 |   );
+      379 |   await expect(
+        at /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/web/tests/workflow-studio-running.spec.ts:376:62
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/workflow-studio-running-Fa-d5de0-d-shows-paused-notification-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/workflow-studio-running-Fa-d5de0-d-shows-paused-notification-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/workflow-studio-running-Fa-d5de0-d-shows-paused-notification-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/workflow-studio-running-Fa-d5de0-d-shows-paused-notification-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/workflow-studio-running.spec.ts:356:1 › Failed image block retries without repeating the finished text and shows paused notification 
+  9 did not run
+  4 passed (27.4s)
+  1 error was not a part of any test, see above for details

@@ -1,0 +1,317 @@
+{
+  "id": "e446690ae52646b0aa849cc1b24d320b",
+  "kind": "graph",
+  "def_id": "874f081f11a4495d8e67b781e75e9415",
+  "def_name": "Synthetic native Cobalt Saturday trial",
+  "graph_hash": "2ae5a16bf737d5ccfcea0c668c9711c02878728c046adb3eaf9d1c68c7b54e02",
+  "snapshot_id": "9c72451307924c7b9155fdb2401e0e05",
+  "mode": "run",
+  "parent_run_id": null,
+  "state": "complete",
+  "stage": "Ready for review",
+  "error": null,
+  "created_at": "2026-10-14T18:42:09.962269+00:00",
+  "updated_at": "2026-10-14T18:43:23.075736+00:00",
+  "inputs": {
+    "brief": "Create a short announcement for a fictional art workshop. The workshop is called Cobalt Saturday; it meets at 10:00, admits 12 participants, costs $20, and provides pencils and paper. Do not add a date, address or registration link."
+  },
+  "graph": {
+    "schema": "atelier.workflow/1",
+    "nodes": [
+      {
+        "id": "n_start",
+        "key": "start",
+        "title": "Start",
+        "position": {
+          "x": 320,
+          "y": 80
+        },
+        "disabled": false,
+        "kind": "start",
+        "config": {
+          "fields": [
+            {
+              "name": "brief",
+              "label": "Brief",
+              "type": "long_text",
+              "required": true,
+              "default": null,
+              "choices": [],
+              "help": ""
+            }
+          ]
+        }
+      },
+      {
+        "id": "n_outline",
+        "key": "outline",
+        "title": "Generate outline",
+        "position": {
+          "x": 320,
+          "y": 280
+        },
+        "disabled": false,
+        "kind": "generate",
+        "config": {
+          "model": {
+            "connection_id": "8df040cfa6cf49e683c3fb9f706ec412",
+            "model_id": "qwen3:30b-a3b-workbench-32k"
+          },
+          "instructions": "",
+          "prompt": "Extract a concise factual outline from the brief. Preserve each supplied detail and its scope. Use only explicitly stated facts; leave unspecified information unspecified. Brief: {{start.brief}}",
+          "format": "text",
+          "json_fields": [],
+          "params": {
+            "temperature": null,
+            "top_p": null,
+            "top_k": null,
+            "max_tokens": null,
+            "seed": null,
+            "reasoning": null
+          }
+        }
+      },
+      {
+        "id": "n_draft",
+        "key": "draft",
+        "title": "Generate draft",
+        "position": {
+          "x": 320,
+          "y": 480
+        },
+        "disabled": false,
+        "kind": "generate",
+        "config": {
+          "model": {
+            "connection_id": "8df040cfa6cf49e683c3fb9f706ec412",
+            "model_id": "qwen3:30b-a3b-workbench-32k"
+          },
+          "instructions": "",
+          "prompt": "Write a short announcement using the original brief as the authoritative source. The outline is an organizational aid and may contain mistakes. Preserve every explicit fact and its scope. Omit claims unsupported by the original brief. Original brief: {{start.brief}}\nOutline: {{outline.text}}",
+          "format": "text",
+          "json_fields": [],
+          "params": {
+            "temperature": null,
+            "top_p": null,
+            "top_k": null,
+            "max_tokens": null,
+            "seed": null,
+            "reasoning": null
+          }
+        }
+      },
+      {
+        "id": "n_review",
+        "key": "review",
+        "title": "Approve or edit",
+        "position": {
+          "x": 320,
+          "y": 680
+        },
+        "disabled": false,
+        "kind": "review",
+        "config": {
+          "show": "{{draft.text}}",
+          "editable": true,
+          "message": "Review the synthetic announcement."
+        }
+      },
+      {
+        "id": "n_save",
+        "key": "save",
+        "title": "Save results",
+        "position": {
+          "x": 320,
+          "y": 880
+        },
+        "disabled": false,
+        "kind": "output",
+        "config": {
+          "include": [
+            {
+              "label": "Announcement",
+              "ref": "{{review.value}}"
+            }
+          ],
+          "formats": [
+            "md",
+            "json"
+          ],
+          "include_sources": false
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_0",
+        "source": "n_start",
+        "source_port": "out",
+        "target": "n_outline",
+        "target_port": "in"
+      },
+      {
+        "id": "e_1",
+        "source": "n_outline",
+        "source_port": "out",
+        "target": "n_draft",
+        "target_port": "in"
+      },
+      {
+        "id": "e_2",
+        "source": "n_draft",
+        "source_port": "out",
+        "target": "n_review",
+        "target_port": "in"
+      },
+      {
+        "id": "e_3",
+        "source": "n_review",
+        "source_port": "approved",
+        "target": "n_save",
+        "target_port": "in"
+      }
+    ],
+    "notes": [],
+    "viewport": null,
+    "settings": {
+      "default_model": {
+        "connection_id": "8df040cfa6cf49e683c3fb9f706ec412",
+        "model_id": "qwen3:30b-a3b-workbench-32k"
+      },
+      "keep_test_runs_days": 7
+    }
+  },
+  "nodes": {
+    "n_draft": {
+      "state": "complete",
+      "attempt": 1,
+      "port": "out",
+      "output": {
+        "context_length": 32768,
+        "draft": true,
+        "model": {
+          "connection_id": "8df040cfa6cf49e683c3fb9f706ec412",
+          "model_id": "qwen3:30b-a3b-workbench-32k",
+          "params": {
+            "max_tokens": null,
+            "reasoning": null,
+            "seed": null,
+            "temperature": null,
+            "top_k": null,
+            "top_p": null
+          }
+        },
+        "model_display_name": "qwen3:30b-a3b-workbench-32k",
+        "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "prompt_version": 1,
+        "resolved_params": {},
+        "text": "Cobalt Saturday is a creative art workshop meeting at 10:00. The workshop admits 12 participants and costs $20. Pencils and paper are provided."
+      },
+      "error": null,
+      "started_at": "2026-10-14T18:42:10.661956+00:00",
+      "finished_at": "2026-10-14T18:42:11.342044+00:00",
+      "reused_from": null,
+      "warnings": [],
+      "progress": null
+    },
+    "n_outline": {
+      "state": "complete",
+      "attempt": 1,
+      "port": "out",
+      "output": {
+        "context_length": 32768,
+        "draft": true,
+        "model": {
+          "connection_id": "8df040cfa6cf49e683c3fb9f706ec412",
+          "model_id": "qwen3:30b-a3b-workbench-32k",
+          "params": {
+            "max_tokens": null,
+            "reasoning": null,
+            "seed": null,
+            "temperature": null,
+            "top_k": null,
+            "top_p": null
+          }
+        },
+        "model_display_name": "qwen3:30b-a3b-workbench-32k",
+        "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "prompt_version": 1,
+        "resolved_params": {},
+        "text": "- Workshop name: Cobalt Saturday  \n- Meeting time: 10:00  \n- Participant capacity: 12  \n- Cost: $20  \n- Materials provided: pencils and paper"
+      },
+      "error": null,
+      "started_at": "2026-10-14T18:42:09.972537+00:00",
+      "finished_at": "2026-10-14T18:42:10.657277+00:00",
+      "reused_from": null,
+      "warnings": [],
+      "progress": null
+    },
+    "n_review": {
+      "state": "complete",
+      "attempt": 1,
+      "port": "approved",
+      "output": {
+        "value": "Cobalt Saturday is a creative art workshop meeting at 10:00. The workshop admits 12 participants and costs $20. Pencils and paper are provided.\n\nSynthetic host edit: prepared for review."
+      },
+      "error": null,
+      "started_at": "2026-10-14T18:42:11.346257+00:00",
+      "finished_at": "2026-10-14T18:43:23.029081+00:00",
+      "reused_from": null,
+      "warnings": [],
+      "progress": null
+    },
+    "n_save": {
+      "state": "complete",
+      "attempt": 1,
+      "port": "out",
+      "output": {
+        "formats": [
+          "md",
+          "json"
+        ],
+        "include_sources": false,
+        "items": [
+          {
+            "label": "Announcement",
+            "type": "text",
+            "value": "Cobalt Saturday is a creative art workshop meeting at 10:00. The workshop admits 12 participants and costs $20. Pencils and paper are provided.\n\nSynthetic host edit: prepared for review."
+          }
+        ]
+      },
+      "error": null,
+      "started_at": "2026-10-14T18:43:23.066245+00:00",
+      "finished_at": "2026-10-14T18:43:23.070700+00:00",
+      "reused_from": null,
+      "warnings": [],
+      "progress": null
+    },
+    "n_start": {
+      "state": "complete",
+      "attempt": 1,
+      "port": "out",
+      "output": {
+        "brief": "Create a short announcement for a fictional art workshop. The workshop is called Cobalt Saturday; it meets at 10:00, admits 12 participants, costs $20, and provides pencils and paper. Do not add a date, address or registration link."
+      },
+      "error": null,
+      "started_at": "2026-10-14T18:42:09.964935+00:00",
+      "finished_at": "2026-10-14T18:42:09.967855+00:00",
+      "reused_from": null,
+      "warnings": [],
+      "progress": null
+    }
+  },
+  "results": [
+    {
+      "node_id": "n_save",
+      "label": "Save results",
+      "items": [
+        {
+          "label": "Announcement",
+          "type": "text",
+          "value": "Cobalt Saturday is a creative art workshop meeting at 10:00. The workshop admits 12 participants and costs $20. Pencils and paper are provided.\n\nSynthetic host edit: prepared for review."
+        }
+      ]
+    }
+  ],
+  "source_available": false
+}

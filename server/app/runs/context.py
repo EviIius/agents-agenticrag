@@ -35,6 +35,11 @@ def path(messages: list[Message], leaf: str | None) -> list[Message]:
     return list(reversed(out))
 
 
+def text_path(messages: list[Message], leaf: str | None) -> list[Message]:
+    """Keep image ancestry for navigation; exclude it from text context/budgeting."""
+    return [message for message in path(messages, leaf) if message.kind != "image"]
+
+
 async def assemble(
     store: Store,
     data_dir: Path,
@@ -57,7 +62,7 @@ async def assemble(
         system += (
             "\n\nCurrent date: " + datetime.now().astimezone().strftime("%A, %B %-d, %Y") + "."
         )
-    selected = path(messages, leaf)
+    selected = text_path(messages, leaf)
     has_recording = any(a.kind == "audio" for m in selected for a in m.attachments)
     if has_recording:
         connection = await store.one(

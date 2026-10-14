@@ -15,6 +15,7 @@ from ..schemas import (
 )
 from .attachments import attachment
 from .core import Store
+from .image_jobs import image_job
 
 
 async def message(store: Store, identifier: str) -> Message:
@@ -50,6 +51,15 @@ async def message(store: Store, identifier: str) -> Message:
             "web": WebInfo(**json.loads(str(row["web_json"]))) if row["web_json"] else None,
             "library": LibraryInfo(**json.loads(row["library_json"]))
             if row["library_json"]
+            else None,
+            "images": [
+                await image_job(store, r["job_id"])
+                for r in await store.rows(
+                    "SELECT job_id FROM message_images WHERE message_id=? ORDER BY position",
+                    (identifier,),
+                )
+            ]
+            if row["kind"] == "image"
             else None,
         }
     )

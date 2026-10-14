@@ -13,22 +13,42 @@ export const router = createBrowserRouter([
     ),
     children: [
       {
-        path: "/workflows",
-        lazy: async () => {
-          const { WorkflowsPage } =
-            await import("@/components/workflows/WorkflowsPage");
-          return { Component: WorkflowsPage };
-        },
+        element: <LiveAppShell />,
+        children: [
+          { index: true, element: null },
+          { path: "/c/:chatId", element: null },
+          ...[
+            "/workflows",
+            "/workflows/new",
+            "/workflows/runs",
+            "/workflows/runs/:runId",
+            "/workflows/:workflowId/runs/:runId",
+          ].map((path) => ({
+            path,
+            lazy: async () => {
+              const { WorkflowsPage } =
+                await import("@/components/workflows/WorkflowsPage");
+              return { Component: WorkflowsPage };
+            },
+          })),
+          {
+            path: "/workflows/:workflowId",
+            lazy: async () => {
+              const { Studio } =
+                await import("@/components/workflows/studio/Studio");
+              return { Component: Studio };
+            },
+          },
+          {
+            path: "/images",
+            lazy: async () => {
+              const { ImagesPage } =
+                await import("@/components/images/ImagesPage");
+              return { Component: ImagesPage };
+            },
+          },
+        ],
       },
-      {
-        path: "/images",
-        lazy: async () => {
-          const { ImagesPage } = await import("@/components/images/ImagesPage");
-          return { Component: ImagesPage };
-        },
-      },
-      { path: "/", element: <LiveAppShell /> },
-      { path: "/c/:chatId", element: <LiveAppShell /> },
       { path: "/design/chat/:chatId?", element: <AppShell /> },
       {
         path: "/design",

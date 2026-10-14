@@ -16,6 +16,12 @@ export default defineConfig({
   ],
   webServer: [
     {
+      command:
+        "cd .. && . scripts/tool-env.sh && uv run --directory server uvicorn tests.fake_runtime:app --host 127.0.0.1 --port 18080 --workers 1",
+      url: "http://127.0.0.1:18080/api/tags",
+      reuseExistingServer: false,
+    },
+    {
       command: `cd .. && . scripts/tool-env.sh && uv run --directory server uvicorn tests.serve_app:app --host 127.0.0.1 --port ${fakeAppPort} --workers 1`,
       url: fakeAppURL + "/api/health",
       reuseExistingServer: false,
@@ -24,12 +30,6 @@ export default defineConfig({
       command: "npm run dev -- --port 5173 --strictPort",
       env: { WORKBENCH_E2E: "1" },
       url: "http://127.0.0.1:5173",
-      reuseExistingServer: false,
-    },
-    {
-      command:
-        "cd .. && . scripts/tool-env.sh && uv run --directory server uvicorn tests.fake_runtime:app --host 127.0.0.1 --port 18080 --workers 1",
-      url: "http://127.0.0.1:18080/api/tags",
       reuseExistingServer: false,
     },
   ],

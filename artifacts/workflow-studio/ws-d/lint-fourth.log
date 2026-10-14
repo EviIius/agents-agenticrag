@@ -1,0 +1,107 @@
+I001 [*] Import block is un-sorted or un-formatted
+   --> app/workflows/reuse.py:190:5
+    |
+189 |     node = next(n for n in doc.nodes if n.id == node_id)
+190 |     from .graph import PickNode, ReviewNode, TranscribeNode, OutputNode
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+191 |
+192 |     values_to_fill = (
+    |
+help: Organize imports
+    |
+189 |     node = next(n for n in doc.nodes if n.id == node_id)
+    -     from .graph import PickNode, ReviewNode, TranscribeNode, OutputNode
+190 +     from .graph import OutputNode, PickNode, ReviewNode, TranscribeNode
+191 |
+    |
+
+F841 Local variable `manager` is assigned to but never used
+  --> tests/test_workflow_live_snapshots.py:70:5
+   |
+69 |     app, _, _ = chat_app
+70 |     manager = app.state.workflow_graphs
+   |     ^^^^^^^
+71 |     definition = await create(app)
+72 |     run = await submit(app, definition)
+   |
+help: Remove assignment to unused variable `manager`
+
+E501 Line too long (109 > 100)
+  --> tests/test_workflow_live_snapshots.py:78:101
+   |
+76 |     )
+77 |     await app.state.store.execute(
+78 |         "UPDATE workflow_graph_steps SET state='running',output_json=? WHERE run_id=? AND node_id='n_draft'",
+   |                                                                                                     ^^^^^^^^^
+79 |         (json.dumps({"text": "Durable synthetic partial"}), run.id),
+80 |     )
+   |
+
+E501 Line too long (166 > 100)
+  --> tests/test_workflow_modes_migration.py:22:101
+   |
+20 | … user_version={version};")
+21 | …
+22 | …h,created_at,updated_at) VALUES('fake-def','Synthetic','{}','fake-hash','2026-10-13','2026-10-13')"
+   |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+23 | …
+24 | …
+   |
+
+E501 Line too long (157 > 100)
+  --> tests/test_workflow_modes_migration.py:25:101
+   |
+23 | …
+24 | …
+25 | …h_hash,graph_json,created_at) VALUES('fake-snapshot','fake-def','fake-hash','{}','2026-10-13')"
+   |                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+26 | …
+27 | …
+   |
+
+E501 Line too long (294 > 100)
+  --> tests/test_workflow_modes_migration.py:28:101
+   |
+26 | …
+27 | …
+28 | …ot_id,graph_hash,inputs_json,state,stage,created_at,updated_at) VALUES('fake-run','fake-key','{}','fake-def','Synthetic','fake-snapshot','fake-hash','{}','complete','Done','2026-10-13','2026-10-13')"
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+29 | …
+30 | …
+   |
+
+E501 Line too long (176 > 100)
+  --> tests/test_workflow_modes_migration.py:31:101
+   |
+29 | …
+30 | …
+31 | …pt,port,output_json) VALUES('fake-run','n_start','complete',1,'out','{\"brief\":\"Synthetic source\"}')"
+   |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+32 | …
+33 | …
+   |
+
+E501 Line too long (203 > 100)
+  --> tests/test_workflow_modes_migration.py:34:101
+   |
+32 | …
+33 | …
+34 | …tput_json,state,started_at,finished_at) VALUES('fake-run','n_start',1,'{}','{}','complete','2026-10-13','2026-10-13')"
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+35 | …
+36 | …
+   |
+
+E501 Line too long (159 > 100)
+  --> tests/test_workflow_modes_migration.py:37:101
+   |
+35 | …
+36 | …
+37 | …source_json,sha256) VALUES('fake-run','n_start','{\"text\":\"Synthetic original\"}','fake-sha')"
+   |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+38 | …
+39 | …ta_json) VALUES('fake-run','{}')")
+   |
+
+Found 9 errors.
+[*] 1 fixable with the `--fix` option (1 hidden fix can be enabled with the `--unsafe-fixes` option).

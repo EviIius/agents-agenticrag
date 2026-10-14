@@ -71,10 +71,38 @@ const webMessage: Message = {
   },
 };
 const ImagesPreview = lazy(() => import("./ImagesPreview"));
+const ChatImagesPreview = lazy(() => import("./ChatImagesPreview"));
 const WorkflowsPreview = lazy(() => import("./WorkflowsPreview"));
+const WorkflowHomePreview = lazy(() => import("./WorkflowHomePreview"));
+const WorkflowStudioPreview = lazy(() => import("./WorkflowStudioPreview"));
+const WorkingPreview = lazy(() => import("./WorkingPreview"));
 const Markdown = lazy(() => import("@/components/chat/Markdown"));
 const LibraryAnswersPreview = lazy(() => import("./LibraryAnswersPreview"));
 export function DesignPage() {
+  if (new URLSearchParams(location.search).has("chat-images"))
+    return (
+      <Suspense fallback={<p>Loading chat images…</p>}>
+        <ChatImagesPreview />
+      </Suspense>
+    );
+  if (new URLSearchParams(location.search).has("indicator"))
+    return (
+      <Suspense fallback={<p>Loading indicator…</p>}>
+        <WorkingPreview />
+      </Suspense>
+    );
+  if (new URLSearchParams(location.search).has("studio"))
+    return (
+      <Suspense fallback={<p>Loading Studio…</p>}>
+        <WorkflowStudioPreview />
+      </Suspense>
+    );
+  if (new URLSearchParams(location.search).has("workflow-home"))
+    return (
+      <Suspense fallback={<p>Loading workflows home…</p>}>
+        <WorkflowHomePreview />
+      </Suspense>
+    );
   if (new URLSearchParams(location.search).has("workflows"))
     return (
       <Suspense fallback={<p>Loading workflows…</p>}>

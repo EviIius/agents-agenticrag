@@ -1,6 +1,6 @@
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, RootModel
+from pydantic import BaseModel, ConfigDict, Field, RootModel, model_validator
 
 from .config import VERSION
 
@@ -37,6 +37,46 @@ class ImageJob(BaseModel):
     image_bytes: int = 0
     metadata_bytes: int = 0
     sha256: str | None = None
+    origin: "ImageOrigin | None" = None
+    elapsed_seconds: float | None = None
+
+
+class ImageOrigin(BaseModel):
+    chat_id: str
+    message_id: str
+    title: str | None = None
+    deleted: bool = False
+
+
+class ChatImageCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    request_key: str = Field(pattern=r"^[A-Za-z0-9_-]{8,100}$")
+    prompt: str = Field(min_length=1, max_length=4000)
+    count: int = Field(ge=1, le=3)
+    seeds: list[Annotated[int, Field(strict=True, ge=0, le=4294967295)]] = Field(
+        min_length=1, max_length=3
+    )
+    parent_id: str | None = Field(None, pattern=r"^[a-f0-9]{32}$")
+    source_job_id: str | None = Field(None, pattern=r"^[a-f0-9]{32}$")
+
+    @model_validator(mode="after")
+    def valid_images(self) -> "ChatImageCreate":
+        if len(self.seeds) != self.count or not self.prompt.strip():
+            raise ValueError("Provide a prompt and one seed for each image.")
+        return self
+
+
+class ChatImageRetry(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    request_key: str = Field(pattern=r"^[A-Za-z0-9_-]{8,100}$")
+    seeds: list[Annotated[int, Field(strict=True, ge=0, le=4294967295)]] = Field(
+        min_length=1, max_length=3
+    )
+
+
+class ChatImageResponse(BaseModel):
+    user: "Message | None" = None
+    assistant: "Message"
 
 
 class ImageStorage(BaseModel):
@@ -560,6 +600,8 @@ class Message(BaseModel):
     web: WebInfo | None = None
     library: LibraryInfo | None = None
     created_at: str
+    kind: Literal["text", "image"] = "text"
+    images: list[ImageJob] | None = None
 
 
 class ChatDetail(BaseModel):

@@ -1,5 +1,6 @@
 """Browser-test app with isolated temporary data and a test-only listener."""
 
+import asyncio
 import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -29,7 +30,11 @@ original = app.router.lifespan_context
 
 @asynccontextmanager
 async def lifespan(server: FastAPI) -> AsyncIterator[None]:
-    async with original(server):
+    context = original(server)
+    await context.__aenter__()
+    server.state.fake_lifecycle = context
+    server.state.fake_restart_lock = asyncio.Lock()
+    try:
         await connections.create(
             server.state.store,
             ConnectionCreate(name="Fake runtime", base_url="http://127.0.0.1:18080"),
@@ -39,9 +44,24 @@ async def lifespan(server: FastAPI) -> AsyncIterator[None]:
 
         server.state.images.engine = FakeImageEngine()
         yield
+    finally:
+        await server.state.fake_lifecycle.__aexit__(None, None, None)
 
 
 app.router.lifespan_context = lifespan
+
+
+@app.post("/tests/images/release")
+async def release_fake_image() -> dict[str, bool]:
+    """Release the actual fake worker after its second denoising event."""
+    app.state.images.engine.release.set()
+    return {"released": True}
+
+
+@app.post("/tests/images/pause")
+async def pause_fake_image() -> dict[str, bool]:
+    app.state.images.engine.release.clear()
+    return {"paused": True}
 
 
 @app.post("/tests/long-chat/{chat_id}")
@@ -73,3 +93,17 @@ async def seed_long_chat(chat_id: str) -> dict[str, int]:
     statements.append(("UPDATE chats SET current_leaf_id=? WHERE id=?", (parent, chat_id)))
     await app.state.store.batch(statements)
     return {"messages": 300}
+
+
+@app.post("/tests/restart-lifecycle")
+async def restart_fake_lifecycle() -> dict[str, bool]:
+    """Exercise a full app shutdown/startup against the same private fake database."""
+    from tests.fake_image import FakeImageEngine
+
+    async with app.state.fake_restart_lock:
+        await app.state.fake_lifecycle.__aexit__(None, None, None)
+        context = original(app)
+        await context.__aenter__()
+        app.state.fake_lifecycle = context
+        app.state.images.engine = FakeImageEngine()
+    return {"restarted": True}

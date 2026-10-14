@@ -1,0 +1,81 @@
+F................................                                        [100%]
+=================================== FAILURES ===================================
+____ test_definition_api_concurrency_archive_and_immutable_layout_snapshots ____
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10cfa9e80>, <httpx.AsyncClient object at 0x10d038440>, <fastapi.applications.FastAPI object at 0x10cfa96a0>)
+
+    async def test_definition_api_concurrency_archive_and_immutable_layout_snapshots(
+        chat_app: Any,
+    ) -> None:
+        app, client, _ = chat_app
+        app.state.images.engine = FakeEngine()
+        app.state.images.engine.release.set()
+        created = (
+            await client.post(
+                "/api/workflows/defs",
+                json={
+                    "graph": template_graph("brief_images", seeds=[42]).model_dump(by_alias=True),
+                    "default_model": {
+                        "connection_id": app.state.test_connection,
+                        "model_id": "fake-chat",
+                    },
+                },
+            )
+        ).json()
+        path = "/api/workflows/defs/" + created["id"]
+        body = {
+            "name": "Fake updated",
+            "description": "Synthetic",
+            "icon": "image",
+            "graph": created["graph"],
+            "version": created["version"],
+        }
+        first_run = await client.post(
+            path + "/runs",
+            json={"request_key": "fake-layout-before", "inputs": {"brief": "Fake circle"}},
+        )
+        assert first_run.status_code == 202
+        await finish(app, first_run.json()["id"])
+        body["graph"]["nodes"][0]["position"]["x"] = 888
+        saved = await client.put(path, json=body)
+        assert saved.status_code == 200
+        assert saved.json()["version"] == 2 and saved.json()["graph_hash"] == created["graph_hash"]
+        conflict = await client.put(path, json=body)
+        assert conflict.status_code == 409 and conflict.json()["current"] == saved.json()
+        body["force"] = True
+        assert (await client.put(path, json=body)).json()["version"] == 3
+        assert len((await client.get(path + "/snapshots")).json()) == 1
+        second_run = await client.post(
+            path + "/runs",
+            json={"request_key": "fake-layout-after", "inputs": {"brief": "Fake circle"}},
+        )
+        assert second_run.status_code == 202
+        await finish(app, second_run.json()["id"])
+        snaps = (await client.get(path + "/snapshots")).json()
+        assert len(snaps) == 2 and snaps[0]["id"] != snaps[1]["id"]
+        assert all(s["run_count"] == 1 for s in snaps)
+        assert snaps[0]["graph_hash"] == snaps[1]["graph_hash"]
+        assert {s["graph"]["nodes"][0]["position"]["x"] for s in snaps} == {320, 888}
+        assert (
+            await client.patch(
+                path + "/snapshots/" + snaps[0]["id"], json={"label": "Fake named version"}
+            )
+        ).json()["label"] == "Fake named version"
+        duplicated = await client.post(path + "/duplicate")
+        assert duplicated.status_code == 201 and duplicated.json()["id"] != created["id"]
+        assert (await client.delete(path)).status_code == 204
+        assert (await client.get(path)).json()["archived_at"]
+        assert created["id"] not in {d["id"] for d in (await client.get("/api/workflows/defs")).json()}
+        assert (
+            await client.post(
+                path + "/runs", json={"request_key": "fake-archived", "inputs": {"brief": "x"}}
+            )
+        ).status_code == 409
+>       assert len((await client.get("/api/workflows/blocks")).json()["blocks"]) == 7
+E       AssertionError: assert 8 == 7
+E        +  where 8 = len([{'kind': 'start', 'label': 'Start', 'category': 'Inputs', 'available': True, ...}, {'kind': 'generate', 'label': 'Gen...ilable': True, ...}, {'kind': 'review', 'label': 'Approve or edit', 'category': 'Review', 'available': True, ...}, ...])
+
+tests/test_workflow_graph_engine.py:113: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_workflow_graph_engine.py::test_definition_api_concurrency_archive_and_immutable_layout_snapshots
+1 failed, 32 passed in 9.96s

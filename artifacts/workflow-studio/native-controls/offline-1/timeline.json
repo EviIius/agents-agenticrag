@@ -1,0 +1,4595 @@
+[
+  {
+    "kind": "run.snapshot",
+    "at": 1792007619700.0999,
+    "data": {
+      "paused_count": 0,
+      "items": [
+        {
+          "id": "e28e95a28a814d3aae61794f65e09c9b",
+          "kind": "graph",
+          "def_id": "dd1591fac4e644f4ac1bee7fd7775462",
+          "def_name": "Synthetic offline stream observer",
+          "graph_hash": "bcdb18ae1d3316bd4c798b131b72363d030ea53b67d64ff89980adcd03d18e8d",
+          "snapshot_id": "2b3482444dc54966b1b8f76451b89efd",
+          "mode": "run",
+          "parent_run_id": null,
+          "state": "cancelled",
+          "stage": "Cancelled",
+          "error": null,
+          "created_at": "2026-10-14T18:50:09.477144+00:00",
+          "updated_at": "2026-10-14T18:50:09.914566+00:00",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "graph": {
+            "schema": "atelier.workflow/1",
+            "nodes": [
+              {
+                "id": "n_start",
+                "key": "start",
+                "title": "Start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "disabled": false,
+                "kind": "start",
+                "config": {
+                  "fields": [
+                    {
+                      "name": "brief",
+                      "label": "Brief",
+                      "type": "long_text",
+                      "required": true,
+                      "default": null,
+                      "choices": [],
+                      "help": ""
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "n_outline",
+                "key": "outline",
+                "title": "Generate outline",
+                "position": {
+                  "x": 320,
+                  "y": 180
+                },
+                "disabled": false,
+                "kind": "generate",
+                "config": {
+                  "model": {
+                    "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                    "model_id": "fake-chat"
+                  },
+                  "instructions": "",
+                  "prompt": "{{start.brief}}",
+                  "format": "text",
+                  "json_fields": [],
+                  "params": {
+                    "temperature": null,
+                    "top_p": null,
+                    "top_k": null,
+                    "max_tokens": null,
+                    "seed": null,
+                    "reasoning": null
+                  }
+                }
+              },
+              {
+                "id": "n_draft",
+                "key": "draft",
+                "title": "Generate draft",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "disabled": false,
+                "kind": "generate",
+                "config": {
+                  "model": {
+                    "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                    "model_id": "fake-chat"
+                  },
+                  "instructions": "",
+                  "prompt": "{{start.brief}}",
+                  "format": "text",
+                  "json_fields": [],
+                  "params": {
+                    "temperature": null,
+                    "top_p": null,
+                    "top_k": null,
+                    "max_tokens": null,
+                    "seed": null,
+                    "reasoning": null
+                  }
+                }
+              },
+              {
+                "id": "n_review",
+                "key": "review",
+                "title": "Approve or edit",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "disabled": false,
+                "kind": "review",
+                "config": {
+                  "show": "{{draft.text}}",
+                  "editable": true,
+                  "message": "Check this result before continuing."
+                }
+              }
+            ],
+            "edges": [
+              {
+                "id": "e0",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_outline",
+                "target_port": "in"
+              },
+              {
+                "id": "e1",
+                "source": "n_outline",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "notes": [],
+            "viewport": null,
+            "settings": {
+              "default_model": {
+                "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            }
+          },
+          "nodes": {
+            "n_draft": {
+              "state": "cancelled",
+              "attempt": 1,
+              "port": null,
+              "output": {
+                "context_length": 16384,
+                "draft": true,
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat",
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  }
+                },
+                "model_display_name": "fake-chat",
+                "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "prompt_version": 1,
+                "resolved_params": {},
+                "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n"
+              },
+              "error": null,
+              "started_at": "2026-10-14T18:50:09.712878+00:00",
+              "finished_at": "2026-10-14T18:50:09.913497+00:00",
+              "reused_from": null,
+              "warnings": [],
+              "progress": null
+            },
+            "n_outline": {
+              "state": "complete",
+              "attempt": 1,
+              "port": "out",
+              "output": {
+                "context_length": 16384,
+                "draft": true,
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat",
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  }
+                },
+                "model_display_name": "fake-chat",
+                "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "prompt_version": 1,
+                "resolved_params": {},
+                "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+              },
+              "error": null,
+              "started_at": "2026-10-14T18:50:09.487918+00:00",
+              "finished_at": "2026-10-14T18:50:09.708625+00:00",
+              "reused_from": null,
+              "warnings": [],
+              "progress": null
+            },
+            "n_review": {
+              "state": "pending",
+              "attempt": 0,
+              "port": null,
+              "output": null,
+              "error": null,
+              "started_at": null,
+              "finished_at": null,
+              "reused_from": null,
+              "warnings": [],
+              "progress": null
+            },
+            "n_start": {
+              "state": "complete",
+              "attempt": 1,
+              "port": "out",
+              "output": {
+                "brief": "Synthetic offline event test"
+              },
+              "error": null,
+              "started_at": "2026-10-14T18:50:09.480270+00:00",
+              "finished_at": "2026-10-14T18:50:09.483490+00:00",
+              "reused_from": null,
+              "warnings": [],
+              "progress": null
+            }
+          },
+          "results": [],
+          "source_available": false
+        }
+      ],
+      "next_cursor": null
+    }
+  },
+  {
+    "kind": "run.snapshot",
+    "at": 1792007619732.5,
+    "data": {
+      "paused_count": 0,
+      "items": [
+        {
+          "id": "e28e95a28a814d3aae61794f65e09c9b",
+          "kind": "graph",
+          "def_id": "dd1591fac4e644f4ac1bee7fd7775462",
+          "def_name": "Synthetic offline stream observer",
+          "graph_hash": "bcdb18ae1d3316bd4c798b131b72363d030ea53b67d64ff89980adcd03d18e8d",
+          "snapshot_id": "2b3482444dc54966b1b8f76451b89efd",
+          "mode": "run",
+          "parent_run_id": null,
+          "state": "cancelled",
+          "stage": "Cancelled",
+          "error": null,
+          "created_at": "2026-10-14T18:50:09.477144+00:00",
+          "updated_at": "2026-10-14T18:50:09.914566+00:00",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "graph": {
+            "schema": "atelier.workflow/1",
+            "nodes": [
+              {
+                "id": "n_start",
+                "key": "start",
+                "title": "Start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "disabled": false,
+                "kind": "start",
+                "config": {
+                  "fields": [
+                    {
+                      "name": "brief",
+                      "label": "Brief",
+                      "type": "long_text",
+                      "required": true,
+                      "default": null,
+                      "choices": [],
+                      "help": ""
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "n_outline",
+                "key": "outline",
+                "title": "Generate outline",
+                "position": {
+                  "x": 320,
+                  "y": 180
+                },
+                "disabled": false,
+                "kind": "generate",
+                "config": {
+                  "model": {
+                    "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                    "model_id": "fake-chat"
+                  },
+                  "instructions": "",
+                  "prompt": "{{start.brief}}",
+                  "format": "text",
+                  "json_fields": [],
+                  "params": {
+                    "temperature": null,
+                    "top_p": null,
+                    "top_k": null,
+                    "max_tokens": null,
+                    "seed": null,
+                    "reasoning": null
+                  }
+                }
+              },
+              {
+                "id": "n_draft",
+                "key": "draft",
+                "title": "Generate draft",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "disabled": false,
+                "kind": "generate",
+                "config": {
+                  "model": {
+                    "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                    "model_id": "fake-chat"
+                  },
+                  "instructions": "",
+                  "prompt": "{{start.brief}}",
+                  "format": "text",
+                  "json_fields": [],
+                  "params": {
+                    "temperature": null,
+                    "top_p": null,
+                    "top_k": null,
+                    "max_tokens": null,
+                    "seed": null,
+                    "reasoning": null
+                  }
+                }
+              },
+              {
+                "id": "n_review",
+                "key": "review",
+                "title": "Approve or edit",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "disabled": false,
+                "kind": "review",
+                "config": {
+                  "show": "{{draft.text}}",
+                  "editable": true,
+                  "message": "Check this result before continuing."
+                }
+              }
+            ],
+            "edges": [
+              {
+                "id": "e0",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_outline",
+                "target_port": "in"
+              },
+              {
+                "id": "e1",
+                "source": "n_outline",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "notes": [],
+            "viewport": null,
+            "settings": {
+              "default_model": {
+                "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            }
+          },
+          "nodes": {
+            "n_draft": {
+              "state": "cancelled",
+              "attempt": 1,
+              "port": null,
+              "output": {
+                "context_length": 16384,
+                "draft": true,
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat",
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  }
+                },
+                "model_display_name": "fake-chat",
+                "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "prompt_version": 1,
+                "resolved_params": {},
+                "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n"
+              },
+              "error": null,
+              "started_at": "2026-10-14T18:50:09.712878+00:00",
+              "finished_at": "2026-10-14T18:50:09.913497+00:00",
+              "reused_from": null,
+              "warnings": [],
+              "progress": null
+            },
+            "n_outline": {
+              "state": "complete",
+              "attempt": 1,
+              "port": "out",
+              "output": {
+                "context_length": 16384,
+                "draft": true,
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat",
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  }
+                },
+                "model_display_name": "fake-chat",
+                "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "prompt_version": 1,
+                "resolved_params": {},
+                "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+              },
+              "error": null,
+              "started_at": "2026-10-14T18:50:09.487918+00:00",
+              "finished_at": "2026-10-14T18:50:09.708625+00:00",
+              "reused_from": null,
+              "warnings": [],
+              "progress": null
+            },
+            "n_review": {
+              "state": "pending",
+              "attempt": 0,
+              "port": null,
+              "output": null,
+              "error": null,
+              "started_at": null,
+              "finished_at": null,
+              "reused_from": null,
+              "warnings": [],
+              "progress": null
+            },
+            "n_start": {
+              "state": "complete",
+              "attempt": 1,
+              "port": "out",
+              "output": {
+                "brief": "Synthetic offline event test"
+              },
+              "error": null,
+              "started_at": "2026-10-14T18:50:09.480270+00:00",
+              "finished_at": "2026-10-14T18:50:09.483490+00:00",
+              "reused_from": null,
+              "warnings": [],
+              "progress": null
+            }
+          },
+          "results": [],
+          "source_available": false
+        }
+      ],
+      "next_cursor": null
+    }
+  },
+  {
+    "kind": "run.updated",
+    "at": 1792007620457.4,
+    "data": {
+      "paused_count": 0,
+      "run": {
+        "created_at": "2026-10-14T19:53:40.445649+00:00",
+        "def_id": "38ee08ea328a4f2a86bbebb37a185942",
+        "def_name": "Synthetic native cancel and recover",
+        "error": null,
+        "graph": {
+          "edges": [
+            {
+              "id": "e_0",
+              "source": "n_start",
+              "source_port": "out",
+              "target": "n_outline",
+              "target_port": "in"
+            },
+            {
+              "id": "e_1",
+              "source": "n_outline",
+              "source_port": "out",
+              "target": "n_draft",
+              "target_port": "in"
+            },
+            {
+              "id": "e_2",
+              "source": "n_draft",
+              "source_port": "out",
+              "target": "n_review",
+              "target_port": "in"
+            },
+            {
+              "id": "e_3",
+              "source": "n_review",
+              "source_port": "approved",
+              "target": "n_save",
+              "target_port": "in"
+            }
+          ],
+          "nodes": [
+            {
+              "config": {
+                "fields": [
+                  {
+                    "choices": [],
+                    "default": null,
+                    "help": "",
+                    "label": "Brief",
+                    "name": "brief",
+                    "required": true,
+                    "type": "long_text"
+                  }
+                ]
+              },
+              "disabled": false,
+              "id": "n_start",
+              "key": "start",
+              "kind": "start",
+              "position": {
+                "x": 320,
+                "y": 80
+              },
+              "title": "Start"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Extract a concise factual outline from the brief. Preserve each supplied detail and its scope. Use only explicitly stated facts; leave unspecified information unspecified. Brief: {{start.brief}}"
+              },
+              "disabled": false,
+              "id": "n_outline",
+              "key": "outline",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 280
+              },
+              "title": "Generate outline"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Write a short announcement using the original brief as the authoritative source. The outline is an organizational aid and may contain mistakes. Preserve every explicit fact and its scope. Omit claims unsupported by the original brief. Original brief: {{start.brief}}\nOutline: {{outline.text}}"
+              },
+              "disabled": false,
+              "id": "n_draft",
+              "key": "draft",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 480
+              },
+              "title": "Generate draft"
+            },
+            {
+              "config": {
+                "editable": true,
+                "message": "Review the synthetic announcement.",
+                "show": "{{draft.text}}"
+              },
+              "disabled": false,
+              "id": "n_review",
+              "key": "review",
+              "kind": "review",
+              "position": {
+                "x": 320,
+                "y": 680
+              },
+              "title": "Approve or edit"
+            },
+            {
+              "config": {
+                "formats": [
+                  "md",
+                  "json"
+                ],
+                "include": [
+                  {
+                    "label": "Announcement",
+                    "ref": "{{review.value}}"
+                  }
+                ],
+                "include_sources": false
+              },
+              "disabled": false,
+              "id": "n_save",
+              "key": "save",
+              "kind": "output",
+              "position": {
+                "x": 320,
+                "y": 880
+              },
+              "title": "Save results"
+            }
+          ],
+          "notes": [],
+          "schema": "atelier.workflow/1",
+          "settings": {
+            "default_model": {
+              "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+              "model_id": "fake-chat"
+            },
+            "keep_test_runs_days": 7
+          },
+          "viewport": null
+        },
+        "graph_hash": "2bbc30b5f2b29caf1fb4b632972f9a93ac68df03a4f8a89ed6e1362a34ef7118",
+        "id": "62424eb6ba734042b2e4917b920aa132",
+        "inputs": {},
+        "kind": "graph",
+        "mode": "test",
+        "nodes": {
+          "n_draft": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "pending",
+            "warnings": []
+          },
+          "n_outline": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "text": "Cobalt Saturday fictional art workshop; 10:00; 12 participants; $20; pencils and paper provided. No date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          },
+          "n_review": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_save": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_start": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "brief": "Create a short announcement for a fictional art workshop. The workshop is called Cobalt Saturday; it meets at 10:00, admits 12 participants, costs $20, and provides pencils and paper. Do not add a date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          }
+        },
+        "parent_run_id": null,
+        "results": [],
+        "snapshot_id": "bdc01d6e4a244a02b508caaece3e981a",
+        "source_available": false,
+        "stage": "Waiting for a block",
+        "state": "queued",
+        "updated_at": "2026-10-14T19:53:40.445649+00:00"
+      }
+    }
+  },
+  {
+    "kind": "run.updated",
+    "at": 1792007620457.5,
+    "data": {
+      "paused_count": 0,
+      "run": {
+        "created_at": "2026-10-14T19:53:40.445649+00:00",
+        "def_id": "38ee08ea328a4f2a86bbebb37a185942",
+        "def_name": "Synthetic native cancel and recover",
+        "error": null,
+        "graph": {
+          "edges": [
+            {
+              "id": "e_0",
+              "source": "n_start",
+              "source_port": "out",
+              "target": "n_outline",
+              "target_port": "in"
+            },
+            {
+              "id": "e_1",
+              "source": "n_outline",
+              "source_port": "out",
+              "target": "n_draft",
+              "target_port": "in"
+            },
+            {
+              "id": "e_2",
+              "source": "n_draft",
+              "source_port": "out",
+              "target": "n_review",
+              "target_port": "in"
+            },
+            {
+              "id": "e_3",
+              "source": "n_review",
+              "source_port": "approved",
+              "target": "n_save",
+              "target_port": "in"
+            }
+          ],
+          "nodes": [
+            {
+              "config": {
+                "fields": [
+                  {
+                    "choices": [],
+                    "default": null,
+                    "help": "",
+                    "label": "Brief",
+                    "name": "brief",
+                    "required": true,
+                    "type": "long_text"
+                  }
+                ]
+              },
+              "disabled": false,
+              "id": "n_start",
+              "key": "start",
+              "kind": "start",
+              "position": {
+                "x": 320,
+                "y": 80
+              },
+              "title": "Start"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Extract a concise factual outline from the brief. Preserve each supplied detail and its scope. Use only explicitly stated facts; leave unspecified information unspecified. Brief: {{start.brief}}"
+              },
+              "disabled": false,
+              "id": "n_outline",
+              "key": "outline",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 280
+              },
+              "title": "Generate outline"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Write a short announcement using the original brief as the authoritative source. The outline is an organizational aid and may contain mistakes. Preserve every explicit fact and its scope. Omit claims unsupported by the original brief. Original brief: {{start.brief}}\nOutline: {{outline.text}}"
+              },
+              "disabled": false,
+              "id": "n_draft",
+              "key": "draft",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 480
+              },
+              "title": "Generate draft"
+            },
+            {
+              "config": {
+                "editable": true,
+                "message": "Review the synthetic announcement.",
+                "show": "{{draft.text}}"
+              },
+              "disabled": false,
+              "id": "n_review",
+              "key": "review",
+              "kind": "review",
+              "position": {
+                "x": 320,
+                "y": 680
+              },
+              "title": "Approve or edit"
+            },
+            {
+              "config": {
+                "formats": [
+                  "md",
+                  "json"
+                ],
+                "include": [
+                  {
+                    "label": "Announcement",
+                    "ref": "{{review.value}}"
+                  }
+                ],
+                "include_sources": false
+              },
+              "disabled": false,
+              "id": "n_save",
+              "key": "save",
+              "kind": "output",
+              "position": {
+                "x": 320,
+                "y": 880
+              },
+              "title": "Save results"
+            }
+          ],
+          "notes": [],
+          "schema": "atelier.workflow/1",
+          "settings": {
+            "default_model": {
+              "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+              "model_id": "fake-chat"
+            },
+            "keep_test_runs_days": 7
+          },
+          "viewport": null
+        },
+        "graph_hash": "2bbc30b5f2b29caf1fb4b632972f9a93ac68df03a4f8a89ed6e1362a34ef7118",
+        "id": "62424eb6ba734042b2e4917b920aa132",
+        "inputs": {},
+        "kind": "graph",
+        "mode": "test",
+        "nodes": {
+          "n_draft": {
+            "attempt": 1,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": "2026-10-14T19:53:40.448978+00:00",
+            "state": "running",
+            "warnings": []
+          },
+          "n_outline": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "text": "Cobalt Saturday fictional art workshop; 10:00; 12 participants; $20; pencils and paper provided. No date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          },
+          "n_review": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_save": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_start": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "brief": "Create a short announcement for a fictional art workshop. The workshop is called Cobalt Saturday; it meets at 10:00, admits 12 participants, costs $20, and provides pencils and paper. Do not add a date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          }
+        },
+        "parent_run_id": null,
+        "results": [],
+        "snapshot_id": "bdc01d6e4a244a02b508caaece3e981a",
+        "source_available": false,
+        "stage": "Generate draft",
+        "state": "running",
+        "updated_at": "2026-10-14T19:53:40.450422+00:00"
+      }
+    }
+  },
+  {
+    "kind": "run.updated",
+    "at": 1792007620457.5999,
+    "data": {
+      "paused_count": 0,
+      "run": {
+        "created_at": "2026-10-14T19:53:40.445649+00:00",
+        "def_id": "38ee08ea328a4f2a86bbebb37a185942",
+        "def_name": "Synthetic native cancel and recover",
+        "error": null,
+        "graph": {
+          "edges": [
+            {
+              "id": "e_0",
+              "source": "n_start",
+              "source_port": "out",
+              "target": "n_outline",
+              "target_port": "in"
+            },
+            {
+              "id": "e_1",
+              "source": "n_outline",
+              "source_port": "out",
+              "target": "n_draft",
+              "target_port": "in"
+            },
+            {
+              "id": "e_2",
+              "source": "n_draft",
+              "source_port": "out",
+              "target": "n_review",
+              "target_port": "in"
+            },
+            {
+              "id": "e_3",
+              "source": "n_review",
+              "source_port": "approved",
+              "target": "n_save",
+              "target_port": "in"
+            }
+          ],
+          "nodes": [
+            {
+              "config": {
+                "fields": [
+                  {
+                    "choices": [],
+                    "default": null,
+                    "help": "",
+                    "label": "Brief",
+                    "name": "brief",
+                    "required": true,
+                    "type": "long_text"
+                  }
+                ]
+              },
+              "disabled": false,
+              "id": "n_start",
+              "key": "start",
+              "kind": "start",
+              "position": {
+                "x": 320,
+                "y": 80
+              },
+              "title": "Start"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Extract a concise factual outline from the brief. Preserve each supplied detail and its scope. Use only explicitly stated facts; leave unspecified information unspecified. Brief: {{start.brief}}"
+              },
+              "disabled": false,
+              "id": "n_outline",
+              "key": "outline",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 280
+              },
+              "title": "Generate outline"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Write a short announcement using the original brief as the authoritative source. The outline is an organizational aid and may contain mistakes. Preserve every explicit fact and its scope. Omit claims unsupported by the original brief. Original brief: {{start.brief}}\nOutline: {{outline.text}}"
+              },
+              "disabled": false,
+              "id": "n_draft",
+              "key": "draft",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 480
+              },
+              "title": "Generate draft"
+            },
+            {
+              "config": {
+                "editable": true,
+                "message": "Review the synthetic announcement.",
+                "show": "{{draft.text}}"
+              },
+              "disabled": false,
+              "id": "n_review",
+              "key": "review",
+              "kind": "review",
+              "position": {
+                "x": 320,
+                "y": 680
+              },
+              "title": "Approve or edit"
+            },
+            {
+              "config": {
+                "formats": [
+                  "md",
+                  "json"
+                ],
+                "include": [
+                  {
+                    "label": "Announcement",
+                    "ref": "{{review.value}}"
+                  }
+                ],
+                "include_sources": false
+              },
+              "disabled": false,
+              "id": "n_save",
+              "key": "save",
+              "kind": "output",
+              "position": {
+                "x": 320,
+                "y": 880
+              },
+              "title": "Save results"
+            }
+          ],
+          "notes": [],
+          "schema": "atelier.workflow/1",
+          "settings": {
+            "default_model": {
+              "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+              "model_id": "fake-chat"
+            },
+            "keep_test_runs_days": 7
+          },
+          "viewport": null
+        },
+        "graph_hash": "2bbc30b5f2b29caf1fb4b632972f9a93ac68df03a4f8a89ed6e1362a34ef7118",
+        "id": "62424eb6ba734042b2e4917b920aa132",
+        "inputs": {},
+        "kind": "graph",
+        "mode": "test",
+        "nodes": {
+          "n_draft": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "pending",
+            "warnings": []
+          },
+          "n_outline": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "text": "Cobalt Saturday fictional art workshop; 10:00; 12 participants; $20; pencils and paper provided. No date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          },
+          "n_review": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_save": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_start": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "brief": "Create a short announcement for a fictional art workshop. The workshop is called Cobalt Saturday; it meets at 10:00, admits 12 participants, costs $20, and provides pencils and paper. Do not add a date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          }
+        },
+        "parent_run_id": null,
+        "results": [],
+        "snapshot_id": "bdc01d6e4a244a02b508caaece3e981a",
+        "source_available": false,
+        "stage": "Waiting for a block",
+        "state": "queued",
+        "updated_at": "2026-10-14T19:53:40.445649+00:00"
+      }
+    }
+  },
+  {
+    "kind": "run.updated",
+    "at": 1792007620457.7,
+    "data": {
+      "paused_count": 0,
+      "run": {
+        "created_at": "2026-10-14T19:53:40.445649+00:00",
+        "def_id": "38ee08ea328a4f2a86bbebb37a185942",
+        "def_name": "Synthetic native cancel and recover",
+        "error": null,
+        "graph": {
+          "edges": [
+            {
+              "id": "e_0",
+              "source": "n_start",
+              "source_port": "out",
+              "target": "n_outline",
+              "target_port": "in"
+            },
+            {
+              "id": "e_1",
+              "source": "n_outline",
+              "source_port": "out",
+              "target": "n_draft",
+              "target_port": "in"
+            },
+            {
+              "id": "e_2",
+              "source": "n_draft",
+              "source_port": "out",
+              "target": "n_review",
+              "target_port": "in"
+            },
+            {
+              "id": "e_3",
+              "source": "n_review",
+              "source_port": "approved",
+              "target": "n_save",
+              "target_port": "in"
+            }
+          ],
+          "nodes": [
+            {
+              "config": {
+                "fields": [
+                  {
+                    "choices": [],
+                    "default": null,
+                    "help": "",
+                    "label": "Brief",
+                    "name": "brief",
+                    "required": true,
+                    "type": "long_text"
+                  }
+                ]
+              },
+              "disabled": false,
+              "id": "n_start",
+              "key": "start",
+              "kind": "start",
+              "position": {
+                "x": 320,
+                "y": 80
+              },
+              "title": "Start"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Extract a concise factual outline from the brief. Preserve each supplied detail and its scope. Use only explicitly stated facts; leave unspecified information unspecified. Brief: {{start.brief}}"
+              },
+              "disabled": false,
+              "id": "n_outline",
+              "key": "outline",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 280
+              },
+              "title": "Generate outline"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Write a short announcement using the original brief as the authoritative source. The outline is an organizational aid and may contain mistakes. Preserve every explicit fact and its scope. Omit claims unsupported by the original brief. Original brief: {{start.brief}}\nOutline: {{outline.text}}"
+              },
+              "disabled": false,
+              "id": "n_draft",
+              "key": "draft",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 480
+              },
+              "title": "Generate draft"
+            },
+            {
+              "config": {
+                "editable": true,
+                "message": "Review the synthetic announcement.",
+                "show": "{{draft.text}}"
+              },
+              "disabled": false,
+              "id": "n_review",
+              "key": "review",
+              "kind": "review",
+              "position": {
+                "x": 320,
+                "y": 680
+              },
+              "title": "Approve or edit"
+            },
+            {
+              "config": {
+                "formats": [
+                  "md",
+                  "json"
+                ],
+                "include": [
+                  {
+                    "label": "Announcement",
+                    "ref": "{{review.value}}"
+                  }
+                ],
+                "include_sources": false
+              },
+              "disabled": false,
+              "id": "n_save",
+              "key": "save",
+              "kind": "output",
+              "position": {
+                "x": 320,
+                "y": 880
+              },
+              "title": "Save results"
+            }
+          ],
+          "notes": [],
+          "schema": "atelier.workflow/1",
+          "settings": {
+            "default_model": {
+              "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+              "model_id": "fake-chat"
+            },
+            "keep_test_runs_days": 7
+          },
+          "viewport": null
+        },
+        "graph_hash": "2bbc30b5f2b29caf1fb4b632972f9a93ac68df03a4f8a89ed6e1362a34ef7118",
+        "id": "62424eb6ba734042b2e4917b920aa132",
+        "inputs": {},
+        "kind": "graph",
+        "mode": "test",
+        "nodes": {
+          "n_draft": {
+            "attempt": 1,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": "2026-10-14T19:53:40.448978+00:00",
+            "state": "running",
+            "warnings": []
+          },
+          "n_outline": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "text": "Cobalt Saturday fictional art workshop; 10:00; 12 participants; $20; pencils and paper provided. No date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          },
+          "n_review": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_save": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_start": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "brief": "Create a short announcement for a fictional art workshop. The workshop is called Cobalt Saturday; it meets at 10:00, admits 12 participants, costs $20, and provides pencils and paper. Do not add a date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          }
+        },
+        "parent_run_id": null,
+        "results": [],
+        "snapshot_id": "bdc01d6e4a244a02b508caaece3e981a",
+        "source_available": false,
+        "stage": "Generate draft",
+        "state": "running",
+        "updated_at": "2026-10-14T19:53:40.450422+00:00"
+      }
+    }
+  },
+  {
+    "kind": "node.text",
+    "at": 1792007620458,
+    "data": {
+      "attempt": 1,
+      "delta": "Fake ",
+      "node_id": "n_draft",
+      "run_id": "62424eb6ba734042b2e4917b920aa132",
+      "text": "Fake "
+    }
+  },
+  {
+    "kind": "node.text",
+    "at": 1792007620458,
+    "data": {
+      "attempt": 1,
+      "delta": "Fake ",
+      "node_id": "n_draft",
+      "run_id": "62424eb6ba734042b2e4917b920aa132",
+      "text": "Fake "
+    }
+  },
+  {
+    "kind": "run.updated",
+    "at": 1792007620510.0999,
+    "data": {
+      "paused_count": 0,
+      "run": {
+        "created_at": "2026-10-14T19:53:40.445649+00:00",
+        "def_id": "38ee08ea328a4f2a86bbebb37a185942",
+        "def_name": "Synthetic native cancel and recover",
+        "error": null,
+        "graph": {
+          "edges": [
+            {
+              "id": "e_0",
+              "source": "n_start",
+              "source_port": "out",
+              "target": "n_outline",
+              "target_port": "in"
+            },
+            {
+              "id": "e_1",
+              "source": "n_outline",
+              "source_port": "out",
+              "target": "n_draft",
+              "target_port": "in"
+            },
+            {
+              "id": "e_2",
+              "source": "n_draft",
+              "source_port": "out",
+              "target": "n_review",
+              "target_port": "in"
+            },
+            {
+              "id": "e_3",
+              "source": "n_review",
+              "source_port": "approved",
+              "target": "n_save",
+              "target_port": "in"
+            }
+          ],
+          "nodes": [
+            {
+              "config": {
+                "fields": [
+                  {
+                    "choices": [],
+                    "default": null,
+                    "help": "",
+                    "label": "Brief",
+                    "name": "brief",
+                    "required": true,
+                    "type": "long_text"
+                  }
+                ]
+              },
+              "disabled": false,
+              "id": "n_start",
+              "key": "start",
+              "kind": "start",
+              "position": {
+                "x": 320,
+                "y": 80
+              },
+              "title": "Start"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Extract a concise factual outline from the brief. Preserve each supplied detail and its scope. Use only explicitly stated facts; leave unspecified information unspecified. Brief: {{start.brief}}"
+              },
+              "disabled": false,
+              "id": "n_outline",
+              "key": "outline",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 280
+              },
+              "title": "Generate outline"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Write a short announcement using the original brief as the authoritative source. The outline is an organizational aid and may contain mistakes. Preserve every explicit fact and its scope. Omit claims unsupported by the original brief. Original brief: {{start.brief}}\nOutline: {{outline.text}}"
+              },
+              "disabled": false,
+              "id": "n_draft",
+              "key": "draft",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 480
+              },
+              "title": "Generate draft"
+            },
+            {
+              "config": {
+                "editable": true,
+                "message": "Review the synthetic announcement.",
+                "show": "{{draft.text}}"
+              },
+              "disabled": false,
+              "id": "n_review",
+              "key": "review",
+              "kind": "review",
+              "position": {
+                "x": 320,
+                "y": 680
+              },
+              "title": "Approve or edit"
+            },
+            {
+              "config": {
+                "formats": [
+                  "md",
+                  "json"
+                ],
+                "include": [
+                  {
+                    "label": "Announcement",
+                    "ref": "{{review.value}}"
+                  }
+                ],
+                "include_sources": false
+              },
+              "disabled": false,
+              "id": "n_save",
+              "key": "save",
+              "kind": "output",
+              "position": {
+                "x": 320,
+                "y": 880
+              },
+              "title": "Save results"
+            }
+          ],
+          "notes": [],
+          "schema": "atelier.workflow/1",
+          "settings": {
+            "default_model": {
+              "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+              "model_id": "fake-chat"
+            },
+            "keep_test_runs_days": 7
+          },
+          "viewport": null
+        },
+        "graph_hash": "2bbc30b5f2b29caf1fb4b632972f9a93ac68df03a4f8a89ed6e1362a34ef7118",
+        "id": "62424eb6ba734042b2e4917b920aa132",
+        "inputs": {},
+        "kind": "graph",
+        "mode": "test",
+        "nodes": {
+          "n_draft": {
+            "attempt": 1,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": "2026-10-14T19:53:40.448978+00:00",
+            "state": "running",
+            "warnings": []
+          },
+          "n_outline": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "text": "Cobalt Saturday fictional art workshop; 10:00; 12 participants; $20; pencils and paper provided. No date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          },
+          "n_review": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_save": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_start": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "brief": "Create a short announcement for a fictional art workshop. The workshop is called Cobalt Saturday; it meets at 10:00, admits 12 participants, costs $20, and provides pencils and paper. Do not add a date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          }
+        },
+        "parent_run_id": null,
+        "results": [],
+        "snapshot_id": "bdc01d6e4a244a02b508caaece3e981a",
+        "source_available": false,
+        "stage": "Generate draft",
+        "state": "running",
+        "updated_at": "2026-10-14T19:53:40.456397+00:00"
+      }
+    }
+  },
+  {
+    "kind": "run.updated",
+    "at": 1792007620510.2,
+    "data": {
+      "paused_count": 0,
+      "run": {
+        "created_at": "2026-10-14T19:53:40.445649+00:00",
+        "def_id": "38ee08ea328a4f2a86bbebb37a185942",
+        "def_name": "Synthetic native cancel and recover",
+        "error": null,
+        "graph": {
+          "edges": [
+            {
+              "id": "e_0",
+              "source": "n_start",
+              "source_port": "out",
+              "target": "n_outline",
+              "target_port": "in"
+            },
+            {
+              "id": "e_1",
+              "source": "n_outline",
+              "source_port": "out",
+              "target": "n_draft",
+              "target_port": "in"
+            },
+            {
+              "id": "e_2",
+              "source": "n_draft",
+              "source_port": "out",
+              "target": "n_review",
+              "target_port": "in"
+            },
+            {
+              "id": "e_3",
+              "source": "n_review",
+              "source_port": "approved",
+              "target": "n_save",
+              "target_port": "in"
+            }
+          ],
+          "nodes": [
+            {
+              "config": {
+                "fields": [
+                  {
+                    "choices": [],
+                    "default": null,
+                    "help": "",
+                    "label": "Brief",
+                    "name": "brief",
+                    "required": true,
+                    "type": "long_text"
+                  }
+                ]
+              },
+              "disabled": false,
+              "id": "n_start",
+              "key": "start",
+              "kind": "start",
+              "position": {
+                "x": 320,
+                "y": 80
+              },
+              "title": "Start"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Extract a concise factual outline from the brief. Preserve each supplied detail and its scope. Use only explicitly stated facts; leave unspecified information unspecified. Brief: {{start.brief}}"
+              },
+              "disabled": false,
+              "id": "n_outline",
+              "key": "outline",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 280
+              },
+              "title": "Generate outline"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Write a short announcement using the original brief as the authoritative source. The outline is an organizational aid and may contain mistakes. Preserve every explicit fact and its scope. Omit claims unsupported by the original brief. Original brief: {{start.brief}}\nOutline: {{outline.text}}"
+              },
+              "disabled": false,
+              "id": "n_draft",
+              "key": "draft",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 480
+              },
+              "title": "Generate draft"
+            },
+            {
+              "config": {
+                "editable": true,
+                "message": "Review the synthetic announcement.",
+                "show": "{{draft.text}}"
+              },
+              "disabled": false,
+              "id": "n_review",
+              "key": "review",
+              "kind": "review",
+              "position": {
+                "x": 320,
+                "y": 680
+              },
+              "title": "Approve or edit"
+            },
+            {
+              "config": {
+                "formats": [
+                  "md",
+                  "json"
+                ],
+                "include": [
+                  {
+                    "label": "Announcement",
+                    "ref": "{{review.value}}"
+                  }
+                ],
+                "include_sources": false
+              },
+              "disabled": false,
+              "id": "n_save",
+              "key": "save",
+              "kind": "output",
+              "position": {
+                "x": 320,
+                "y": 880
+              },
+              "title": "Save results"
+            }
+          ],
+          "notes": [],
+          "schema": "atelier.workflow/1",
+          "settings": {
+            "default_model": {
+              "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+              "model_id": "fake-chat"
+            },
+            "keep_test_runs_days": 7
+          },
+          "viewport": null
+        },
+        "graph_hash": "2bbc30b5f2b29caf1fb4b632972f9a93ac68df03a4f8a89ed6e1362a34ef7118",
+        "id": "62424eb6ba734042b2e4917b920aa132",
+        "inputs": {},
+        "kind": "graph",
+        "mode": "test",
+        "nodes": {
+          "n_draft": {
+            "attempt": 1,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "context_length": 16384,
+              "draft": true,
+              "model": {
+                "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                "model_id": "fake-chat",
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                }
+              },
+              "model_display_name": "fake-chat",
+              "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "prompt_version": 1,
+              "resolved_params": {},
+              "text": "Fake "
+            },
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": "2026-10-14T19:53:40.448978+00:00",
+            "state": "running",
+            "warnings": []
+          },
+          "n_outline": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "text": "Cobalt Saturday fictional art workshop; 10:00; 12 participants; $20; pencils and paper provided. No date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          },
+          "n_review": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_save": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_start": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "brief": "Create a short announcement for a fictional art workshop. The workshop is called Cobalt Saturday; it meets at 10:00, admits 12 participants, costs $20, and provides pencils and paper. Do not add a date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          }
+        },
+        "parent_run_id": null,
+        "results": [],
+        "snapshot_id": "bdc01d6e4a244a02b508caaece3e981a",
+        "source_available": false,
+        "stage": "Generate draft",
+        "state": "running",
+        "updated_at": "2026-10-14T19:53:40.456397+00:00"
+      }
+    }
+  },
+  {
+    "kind": "run.snapshot",
+    "at": 1792007620535.9,
+    "data": {
+      "paused_count": 0,
+      "items": [
+        {
+          "id": "e28e95a28a814d3aae61794f65e09c9b",
+          "kind": "graph",
+          "def_id": "dd1591fac4e644f4ac1bee7fd7775462",
+          "def_name": "Synthetic offline stream observer",
+          "graph_hash": "bcdb18ae1d3316bd4c798b131b72363d030ea53b67d64ff89980adcd03d18e8d",
+          "snapshot_id": "2b3482444dc54966b1b8f76451b89efd",
+          "mode": "run",
+          "parent_run_id": null,
+          "state": "cancelled",
+          "stage": "Cancelled",
+          "error": null,
+          "created_at": "2026-10-14T18:50:09.477144+00:00",
+          "updated_at": "2026-10-14T18:50:09.914566+00:00",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "graph": {
+            "schema": "atelier.workflow/1",
+            "nodes": [
+              {
+                "id": "n_start",
+                "key": "start",
+                "title": "Start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "disabled": false,
+                "kind": "start",
+                "config": {
+                  "fields": [
+                    {
+                      "name": "brief",
+                      "label": "Brief",
+                      "type": "long_text",
+                      "required": true,
+                      "default": null,
+                      "choices": [],
+                      "help": ""
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "n_outline",
+                "key": "outline",
+                "title": "Generate outline",
+                "position": {
+                  "x": 320,
+                  "y": 180
+                },
+                "disabled": false,
+                "kind": "generate",
+                "config": {
+                  "model": {
+                    "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                    "model_id": "fake-chat"
+                  },
+                  "instructions": "",
+                  "prompt": "{{start.brief}}",
+                  "format": "text",
+                  "json_fields": [],
+                  "params": {
+                    "temperature": null,
+                    "top_p": null,
+                    "top_k": null,
+                    "max_tokens": null,
+                    "seed": null,
+                    "reasoning": null
+                  }
+                }
+              },
+              {
+                "id": "n_draft",
+                "key": "draft",
+                "title": "Generate draft",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "disabled": false,
+                "kind": "generate",
+                "config": {
+                  "model": {
+                    "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                    "model_id": "fake-chat"
+                  },
+                  "instructions": "",
+                  "prompt": "{{start.brief}}",
+                  "format": "text",
+                  "json_fields": [],
+                  "params": {
+                    "temperature": null,
+                    "top_p": null,
+                    "top_k": null,
+                    "max_tokens": null,
+                    "seed": null,
+                    "reasoning": null
+                  }
+                }
+              },
+              {
+                "id": "n_review",
+                "key": "review",
+                "title": "Approve or edit",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "disabled": false,
+                "kind": "review",
+                "config": {
+                  "show": "{{draft.text}}",
+                  "editable": true,
+                  "message": "Check this result before continuing."
+                }
+              }
+            ],
+            "edges": [
+              {
+                "id": "e0",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_outline",
+                "target_port": "in"
+              },
+              {
+                "id": "e1",
+                "source": "n_outline",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "notes": [],
+            "viewport": null,
+            "settings": {
+              "default_model": {
+                "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            }
+          },
+          "nodes": {
+            "n_draft": {
+              "state": "cancelled",
+              "attempt": 1,
+              "port": null,
+              "output": {
+                "context_length": 16384,
+                "draft": true,
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat",
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  }
+                },
+                "model_display_name": "fake-chat",
+                "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "prompt_version": 1,
+                "resolved_params": {},
+                "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n"
+              },
+              "error": null,
+              "started_at": "2026-10-14T18:50:09.712878+00:00",
+              "finished_at": "2026-10-14T18:50:09.913497+00:00",
+              "reused_from": null,
+              "warnings": [],
+              "progress": null
+            },
+            "n_outline": {
+              "state": "complete",
+              "attempt": 1,
+              "port": "out",
+              "output": {
+                "context_length": 16384,
+                "draft": true,
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat",
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  }
+                },
+                "model_display_name": "fake-chat",
+                "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "prompt_version": 1,
+                "resolved_params": {},
+                "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+              },
+              "error": null,
+              "started_at": "2026-10-14T18:50:09.487918+00:00",
+              "finished_at": "2026-10-14T18:50:09.708625+00:00",
+              "reused_from": null,
+              "warnings": [],
+              "progress": null
+            },
+            "n_review": {
+              "state": "pending",
+              "attempt": 0,
+              "port": null,
+              "output": null,
+              "error": null,
+              "started_at": null,
+              "finished_at": null,
+              "reused_from": null,
+              "warnings": [],
+              "progress": null
+            },
+            "n_start": {
+              "state": "complete",
+              "attempt": 1,
+              "port": "out",
+              "output": {
+                "brief": "Synthetic offline event test"
+              },
+              "error": null,
+              "started_at": "2026-10-14T18:50:09.480270+00:00",
+              "finished_at": "2026-10-14T18:50:09.483490+00:00",
+              "reused_from": null,
+              "warnings": [],
+              "progress": null
+            }
+          },
+          "results": [],
+          "source_available": false
+        }
+      ],
+      "next_cursor": null
+    }
+  },
+  {
+    "kind": "node.text",
+    "at": 1792007620557.4,
+    "data": {
+      "attempt": 1,
+      "delta": "runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| ",
+      "node_id": "n_draft",
+      "run_id": "62424eb6ba734042b2e4917b920aa132",
+      "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| "
+    }
+  },
+  {
+    "kind": "node.text",
+    "at": 1792007620559.2998,
+    "data": {
+      "attempt": 1,
+      "delta": "runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| ",
+      "node_id": "n_draft",
+      "run_id": "62424eb6ba734042b2e4917b920aa132",
+      "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| "
+    }
+  },
+  {
+    "kind": "run.updated",
+    "at": 1792007620563.7,
+    "data": {
+      "paused_count": 0,
+      "run": {
+        "created_at": "2026-10-14T19:53:40.445649+00:00",
+        "def_id": "38ee08ea328a4f2a86bbebb37a185942",
+        "def_name": "Synthetic native cancel and recover",
+        "error": null,
+        "graph": {
+          "edges": [
+            {
+              "id": "e_0",
+              "source": "n_start",
+              "source_port": "out",
+              "target": "n_outline",
+              "target_port": "in"
+            },
+            {
+              "id": "e_1",
+              "source": "n_outline",
+              "source_port": "out",
+              "target": "n_draft",
+              "target_port": "in"
+            },
+            {
+              "id": "e_2",
+              "source": "n_draft",
+              "source_port": "out",
+              "target": "n_review",
+              "target_port": "in"
+            },
+            {
+              "id": "e_3",
+              "source": "n_review",
+              "source_port": "approved",
+              "target": "n_save",
+              "target_port": "in"
+            }
+          ],
+          "nodes": [
+            {
+              "config": {
+                "fields": [
+                  {
+                    "choices": [],
+                    "default": null,
+                    "help": "",
+                    "label": "Brief",
+                    "name": "brief",
+                    "required": true,
+                    "type": "long_text"
+                  }
+                ]
+              },
+              "disabled": false,
+              "id": "n_start",
+              "key": "start",
+              "kind": "start",
+              "position": {
+                "x": 320,
+                "y": 80
+              },
+              "title": "Start"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Extract a concise factual outline from the brief. Preserve each supplied detail and its scope. Use only explicitly stated facts; leave unspecified information unspecified. Brief: {{start.brief}}"
+              },
+              "disabled": false,
+              "id": "n_outline",
+              "key": "outline",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 280
+              },
+              "title": "Generate outline"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Write a short announcement using the original brief as the authoritative source. The outline is an organizational aid and may contain mistakes. Preserve every explicit fact and its scope. Omit claims unsupported by the original brief. Original brief: {{start.brief}}\nOutline: {{outline.text}}"
+              },
+              "disabled": false,
+              "id": "n_draft",
+              "key": "draft",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 480
+              },
+              "title": "Generate draft"
+            },
+            {
+              "config": {
+                "editable": true,
+                "message": "Review the synthetic announcement.",
+                "show": "{{draft.text}}"
+              },
+              "disabled": false,
+              "id": "n_review",
+              "key": "review",
+              "kind": "review",
+              "position": {
+                "x": 320,
+                "y": 680
+              },
+              "title": "Approve or edit"
+            },
+            {
+              "config": {
+                "formats": [
+                  "md",
+                  "json"
+                ],
+                "include": [
+                  {
+                    "label": "Announcement",
+                    "ref": "{{review.value}}"
+                  }
+                ],
+                "include_sources": false
+              },
+              "disabled": false,
+              "id": "n_save",
+              "key": "save",
+              "kind": "output",
+              "position": {
+                "x": 320,
+                "y": 880
+              },
+              "title": "Save results"
+            }
+          ],
+          "notes": [],
+          "schema": "atelier.workflow/1",
+          "settings": {
+            "default_model": {
+              "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+              "model_id": "fake-chat"
+            },
+            "keep_test_runs_days": 7
+          },
+          "viewport": null
+        },
+        "graph_hash": "2bbc30b5f2b29caf1fb4b632972f9a93ac68df03a4f8a89ed6e1362a34ef7118",
+        "id": "62424eb6ba734042b2e4917b920aa132",
+        "inputs": {},
+        "kind": "graph",
+        "mode": "test",
+        "nodes": {
+          "n_draft": {
+            "attempt": 1,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "context_length": 16384,
+              "draft": true,
+              "model": {
+                "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                "model_id": "fake-chat",
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                }
+              },
+              "model_display_name": "fake-chat",
+              "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "prompt_version": 1,
+              "resolved_params": {},
+              "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| "
+            },
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": "2026-10-14T19:53:40.448978+00:00",
+            "state": "running",
+            "warnings": []
+          },
+          "n_outline": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "text": "Cobalt Saturday fictional art workshop; 10:00; 12 participants; $20; pencils and paper provided. No date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          },
+          "n_review": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_save": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_start": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "brief": "Create a short announcement for a fictional art workshop. The workshop is called Cobalt Saturday; it meets at 10:00, admits 12 participants, costs $20, and provides pencils and paper. Do not add a date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          }
+        },
+        "parent_run_id": null,
+        "results": [],
+        "snapshot_id": "bdc01d6e4a244a02b508caaece3e981a",
+        "source_available": false,
+        "stage": "Stopping current block",
+        "state": "cancelling",
+        "updated_at": "2026-10-14T19:53:40.560361+00:00"
+      }
+    }
+  },
+  {
+    "kind": "run.updated",
+    "at": 1792007620564.2998,
+    "data": {
+      "paused_count": 0,
+      "run": {
+        "created_at": "2026-10-14T19:53:40.445649+00:00",
+        "def_id": "38ee08ea328a4f2a86bbebb37a185942",
+        "def_name": "Synthetic native cancel and recover",
+        "error": null,
+        "graph": {
+          "edges": [
+            {
+              "id": "e_0",
+              "source": "n_start",
+              "source_port": "out",
+              "target": "n_outline",
+              "target_port": "in"
+            },
+            {
+              "id": "e_1",
+              "source": "n_outline",
+              "source_port": "out",
+              "target": "n_draft",
+              "target_port": "in"
+            },
+            {
+              "id": "e_2",
+              "source": "n_draft",
+              "source_port": "out",
+              "target": "n_review",
+              "target_port": "in"
+            },
+            {
+              "id": "e_3",
+              "source": "n_review",
+              "source_port": "approved",
+              "target": "n_save",
+              "target_port": "in"
+            }
+          ],
+          "nodes": [
+            {
+              "config": {
+                "fields": [
+                  {
+                    "choices": [],
+                    "default": null,
+                    "help": "",
+                    "label": "Brief",
+                    "name": "brief",
+                    "required": true,
+                    "type": "long_text"
+                  }
+                ]
+              },
+              "disabled": false,
+              "id": "n_start",
+              "key": "start",
+              "kind": "start",
+              "position": {
+                "x": 320,
+                "y": 80
+              },
+              "title": "Start"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Extract a concise factual outline from the brief. Preserve each supplied detail and its scope. Use only explicitly stated facts; leave unspecified information unspecified. Brief: {{start.brief}}"
+              },
+              "disabled": false,
+              "id": "n_outline",
+              "key": "outline",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 280
+              },
+              "title": "Generate outline"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Write a short announcement using the original brief as the authoritative source. The outline is an organizational aid and may contain mistakes. Preserve every explicit fact and its scope. Omit claims unsupported by the original brief. Original brief: {{start.brief}}\nOutline: {{outline.text}}"
+              },
+              "disabled": false,
+              "id": "n_draft",
+              "key": "draft",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 480
+              },
+              "title": "Generate draft"
+            },
+            {
+              "config": {
+                "editable": true,
+                "message": "Review the synthetic announcement.",
+                "show": "{{draft.text}}"
+              },
+              "disabled": false,
+              "id": "n_review",
+              "key": "review",
+              "kind": "review",
+              "position": {
+                "x": 320,
+                "y": 680
+              },
+              "title": "Approve or edit"
+            },
+            {
+              "config": {
+                "formats": [
+                  "md",
+                  "json"
+                ],
+                "include": [
+                  {
+                    "label": "Announcement",
+                    "ref": "{{review.value}}"
+                  }
+                ],
+                "include_sources": false
+              },
+              "disabled": false,
+              "id": "n_save",
+              "key": "save",
+              "kind": "output",
+              "position": {
+                "x": 320,
+                "y": 880
+              },
+              "title": "Save results"
+            }
+          ],
+          "notes": [],
+          "schema": "atelier.workflow/1",
+          "settings": {
+            "default_model": {
+              "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+              "model_id": "fake-chat"
+            },
+            "keep_test_runs_days": 7
+          },
+          "viewport": null
+        },
+        "graph_hash": "2bbc30b5f2b29caf1fb4b632972f9a93ac68df03a4f8a89ed6e1362a34ef7118",
+        "id": "62424eb6ba734042b2e4917b920aa132",
+        "inputs": {},
+        "kind": "graph",
+        "mode": "test",
+        "nodes": {
+          "n_draft": {
+            "attempt": 1,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "context_length": 16384,
+              "draft": true,
+              "model": {
+                "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                "model_id": "fake-chat",
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                }
+              },
+              "model_display_name": "fake-chat",
+              "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "prompt_version": 1,
+              "resolved_params": {},
+              "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| "
+            },
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": "2026-10-14T19:53:40.448978+00:00",
+            "state": "running",
+            "warnings": []
+          },
+          "n_outline": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "text": "Cobalt Saturday fictional art workshop; 10:00; 12 participants; $20; pencils and paper provided. No date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          },
+          "n_review": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_save": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_start": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "brief": "Create a short announcement for a fictional art workshop. The workshop is called Cobalt Saturday; it meets at 10:00, admits 12 participants, costs $20, and provides pencils and paper. Do not add a date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          }
+        },
+        "parent_run_id": null,
+        "results": [],
+        "snapshot_id": "bdc01d6e4a244a02b508caaece3e981a",
+        "source_available": false,
+        "stage": "Stopping current block",
+        "state": "cancelling",
+        "updated_at": "2026-10-14T19:53:40.560361+00:00"
+      }
+    }
+  },
+  {
+    "kind": "run.updated",
+    "at": 1792007620566.5,
+    "data": {
+      "paused_count": 0,
+      "run": {
+        "created_at": "2026-10-14T19:53:40.445649+00:00",
+        "def_id": "38ee08ea328a4f2a86bbebb37a185942",
+        "def_name": "Synthetic native cancel and recover",
+        "error": null,
+        "graph": {
+          "edges": [
+            {
+              "id": "e_0",
+              "source": "n_start",
+              "source_port": "out",
+              "target": "n_outline",
+              "target_port": "in"
+            },
+            {
+              "id": "e_1",
+              "source": "n_outline",
+              "source_port": "out",
+              "target": "n_draft",
+              "target_port": "in"
+            },
+            {
+              "id": "e_2",
+              "source": "n_draft",
+              "source_port": "out",
+              "target": "n_review",
+              "target_port": "in"
+            },
+            {
+              "id": "e_3",
+              "source": "n_review",
+              "source_port": "approved",
+              "target": "n_save",
+              "target_port": "in"
+            }
+          ],
+          "nodes": [
+            {
+              "config": {
+                "fields": [
+                  {
+                    "choices": [],
+                    "default": null,
+                    "help": "",
+                    "label": "Brief",
+                    "name": "brief",
+                    "required": true,
+                    "type": "long_text"
+                  }
+                ]
+              },
+              "disabled": false,
+              "id": "n_start",
+              "key": "start",
+              "kind": "start",
+              "position": {
+                "x": 320,
+                "y": 80
+              },
+              "title": "Start"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Extract a concise factual outline from the brief. Preserve each supplied detail and its scope. Use only explicitly stated facts; leave unspecified information unspecified. Brief: {{start.brief}}"
+              },
+              "disabled": false,
+              "id": "n_outline",
+              "key": "outline",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 280
+              },
+              "title": "Generate outline"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Write a short announcement using the original brief as the authoritative source. The outline is an organizational aid and may contain mistakes. Preserve every explicit fact and its scope. Omit claims unsupported by the original brief. Original brief: {{start.brief}}\nOutline: {{outline.text}}"
+              },
+              "disabled": false,
+              "id": "n_draft",
+              "key": "draft",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 480
+              },
+              "title": "Generate draft"
+            },
+            {
+              "config": {
+                "editable": true,
+                "message": "Review the synthetic announcement.",
+                "show": "{{draft.text}}"
+              },
+              "disabled": false,
+              "id": "n_review",
+              "key": "review",
+              "kind": "review",
+              "position": {
+                "x": 320,
+                "y": 680
+              },
+              "title": "Approve or edit"
+            },
+            {
+              "config": {
+                "formats": [
+                  "md",
+                  "json"
+                ],
+                "include": [
+                  {
+                    "label": "Announcement",
+                    "ref": "{{review.value}}"
+                  }
+                ],
+                "include_sources": false
+              },
+              "disabled": false,
+              "id": "n_save",
+              "key": "save",
+              "kind": "output",
+              "position": {
+                "x": 320,
+                "y": 880
+              },
+              "title": "Save results"
+            }
+          ],
+          "notes": [],
+          "schema": "atelier.workflow/1",
+          "settings": {
+            "default_model": {
+              "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+              "model_id": "fake-chat"
+            },
+            "keep_test_runs_days": 7
+          },
+          "viewport": null
+        },
+        "graph_hash": "2bbc30b5f2b29caf1fb4b632972f9a93ac68df03a4f8a89ed6e1362a34ef7118",
+        "id": "62424eb6ba734042b2e4917b920aa132",
+        "inputs": {},
+        "kind": "graph",
+        "mode": "test",
+        "nodes": {
+          "n_draft": {
+            "attempt": 1,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "context_length": 16384,
+              "draft": true,
+              "model": {
+                "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                "model_id": "fake-chat",
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                }
+              },
+              "model_display_name": "fake-chat",
+              "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "prompt_version": 1,
+              "resolved_params": {},
+              "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| "
+            },
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": "2026-10-14T19:53:40.448978+00:00",
+            "state": "running",
+            "warnings": []
+          },
+          "n_outline": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "text": "Cobalt Saturday fictional art workshop; 10:00; 12 participants; $20; pencils and paper provided. No date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          },
+          "n_review": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_save": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_start": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "brief": "Create a short announcement for a fictional art workshop. The workshop is called Cobalt Saturday; it meets at 10:00, admits 12 participants, costs $20, and provides pencils and paper. Do not add a date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          }
+        },
+        "parent_run_id": null,
+        "results": [],
+        "snapshot_id": "bdc01d6e4a244a02b508caaece3e981a",
+        "source_available": false,
+        "stage": "Stopping current block",
+        "state": "cancelling",
+        "updated_at": "2026-10-14T19:53:40.560361+00:00"
+      }
+    }
+  },
+  {
+    "kind": "run.updated",
+    "at": 1792007620567.5999,
+    "data": {
+      "paused_count": 0,
+      "run": {
+        "created_at": "2026-10-14T19:53:40.445649+00:00",
+        "def_id": "38ee08ea328a4f2a86bbebb37a185942",
+        "def_name": "Synthetic native cancel and recover",
+        "error": null,
+        "graph": {
+          "edges": [
+            {
+              "id": "e_0",
+              "source": "n_start",
+              "source_port": "out",
+              "target": "n_outline",
+              "target_port": "in"
+            },
+            {
+              "id": "e_1",
+              "source": "n_outline",
+              "source_port": "out",
+              "target": "n_draft",
+              "target_port": "in"
+            },
+            {
+              "id": "e_2",
+              "source": "n_draft",
+              "source_port": "out",
+              "target": "n_review",
+              "target_port": "in"
+            },
+            {
+              "id": "e_3",
+              "source": "n_review",
+              "source_port": "approved",
+              "target": "n_save",
+              "target_port": "in"
+            }
+          ],
+          "nodes": [
+            {
+              "config": {
+                "fields": [
+                  {
+                    "choices": [],
+                    "default": null,
+                    "help": "",
+                    "label": "Brief",
+                    "name": "brief",
+                    "required": true,
+                    "type": "long_text"
+                  }
+                ]
+              },
+              "disabled": false,
+              "id": "n_start",
+              "key": "start",
+              "kind": "start",
+              "position": {
+                "x": 320,
+                "y": 80
+              },
+              "title": "Start"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Extract a concise factual outline from the brief. Preserve each supplied detail and its scope. Use only explicitly stated facts; leave unspecified information unspecified. Brief: {{start.brief}}"
+              },
+              "disabled": false,
+              "id": "n_outline",
+              "key": "outline",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 280
+              },
+              "title": "Generate outline"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Write a short announcement using the original brief as the authoritative source. The outline is an organizational aid and may contain mistakes. Preserve every explicit fact and its scope. Omit claims unsupported by the original brief. Original brief: {{start.brief}}\nOutline: {{outline.text}}"
+              },
+              "disabled": false,
+              "id": "n_draft",
+              "key": "draft",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 480
+              },
+              "title": "Generate draft"
+            },
+            {
+              "config": {
+                "editable": true,
+                "message": "Review the synthetic announcement.",
+                "show": "{{draft.text}}"
+              },
+              "disabled": false,
+              "id": "n_review",
+              "key": "review",
+              "kind": "review",
+              "position": {
+                "x": 320,
+                "y": 680
+              },
+              "title": "Approve or edit"
+            },
+            {
+              "config": {
+                "formats": [
+                  "md",
+                  "json"
+                ],
+                "include": [
+                  {
+                    "label": "Announcement",
+                    "ref": "{{review.value}}"
+                  }
+                ],
+                "include_sources": false
+              },
+              "disabled": false,
+              "id": "n_save",
+              "key": "save",
+              "kind": "output",
+              "position": {
+                "x": 320,
+                "y": 880
+              },
+              "title": "Save results"
+            }
+          ],
+          "notes": [],
+          "schema": "atelier.workflow/1",
+          "settings": {
+            "default_model": {
+              "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+              "model_id": "fake-chat"
+            },
+            "keep_test_runs_days": 7
+          },
+          "viewport": null
+        },
+        "graph_hash": "2bbc30b5f2b29caf1fb4b632972f9a93ac68df03a4f8a89ed6e1362a34ef7118",
+        "id": "62424eb6ba734042b2e4917b920aa132",
+        "inputs": {},
+        "kind": "graph",
+        "mode": "test",
+        "nodes": {
+          "n_draft": {
+            "attempt": 1,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "context_length": 16384,
+              "draft": true,
+              "model": {
+                "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                "model_id": "fake-chat",
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                }
+              },
+              "model_display_name": "fake-chat",
+              "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "prompt_version": 1,
+              "resolved_params": {},
+              "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| "
+            },
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": "2026-10-14T19:53:40.448978+00:00",
+            "state": "running",
+            "warnings": []
+          },
+          "n_outline": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "text": "Cobalt Saturday fictional art workshop; 10:00; 12 participants; $20; pencils and paper provided. No date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          },
+          "n_review": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_save": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_start": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "brief": "Create a short announcement for a fictional art workshop. The workshop is called Cobalt Saturday; it meets at 10:00, admits 12 participants, costs $20, and provides pencils and paper. Do not add a date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          }
+        },
+        "parent_run_id": null,
+        "results": [],
+        "snapshot_id": "bdc01d6e4a244a02b508caaece3e981a",
+        "source_available": false,
+        "stage": "Stopping current block",
+        "state": "cancelling",
+        "updated_at": "2026-10-14T19:53:40.560361+00:00"
+      }
+    }
+  },
+  {
+    "kind": "run.updated",
+    "at": 1792007620569.5,
+    "data": {
+      "paused_count": 0,
+      "run": {
+        "created_at": "2026-10-14T19:53:40.445649+00:00",
+        "def_id": "38ee08ea328a4f2a86bbebb37a185942",
+        "def_name": "Synthetic native cancel and recover",
+        "error": null,
+        "graph": {
+          "edges": [
+            {
+              "id": "e_0",
+              "source": "n_start",
+              "source_port": "out",
+              "target": "n_outline",
+              "target_port": "in"
+            },
+            {
+              "id": "e_1",
+              "source": "n_outline",
+              "source_port": "out",
+              "target": "n_draft",
+              "target_port": "in"
+            },
+            {
+              "id": "e_2",
+              "source": "n_draft",
+              "source_port": "out",
+              "target": "n_review",
+              "target_port": "in"
+            },
+            {
+              "id": "e_3",
+              "source": "n_review",
+              "source_port": "approved",
+              "target": "n_save",
+              "target_port": "in"
+            }
+          ],
+          "nodes": [
+            {
+              "config": {
+                "fields": [
+                  {
+                    "choices": [],
+                    "default": null,
+                    "help": "",
+                    "label": "Brief",
+                    "name": "brief",
+                    "required": true,
+                    "type": "long_text"
+                  }
+                ]
+              },
+              "disabled": false,
+              "id": "n_start",
+              "key": "start",
+              "kind": "start",
+              "position": {
+                "x": 320,
+                "y": 80
+              },
+              "title": "Start"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Extract a concise factual outline from the brief. Preserve each supplied detail and its scope. Use only explicitly stated facts; leave unspecified information unspecified. Brief: {{start.brief}}"
+              },
+              "disabled": false,
+              "id": "n_outline",
+              "key": "outline",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 280
+              },
+              "title": "Generate outline"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Write a short announcement using the original brief as the authoritative source. The outline is an organizational aid and may contain mistakes. Preserve every explicit fact and its scope. Omit claims unsupported by the original brief. Original brief: {{start.brief}}\nOutline: {{outline.text}}"
+              },
+              "disabled": false,
+              "id": "n_draft",
+              "key": "draft",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 480
+              },
+              "title": "Generate draft"
+            },
+            {
+              "config": {
+                "editable": true,
+                "message": "Review the synthetic announcement.",
+                "show": "{{draft.text}}"
+              },
+              "disabled": false,
+              "id": "n_review",
+              "key": "review",
+              "kind": "review",
+              "position": {
+                "x": 320,
+                "y": 680
+              },
+              "title": "Approve or edit"
+            },
+            {
+              "config": {
+                "formats": [
+                  "md",
+                  "json"
+                ],
+                "include": [
+                  {
+                    "label": "Announcement",
+                    "ref": "{{review.value}}"
+                  }
+                ],
+                "include_sources": false
+              },
+              "disabled": false,
+              "id": "n_save",
+              "key": "save",
+              "kind": "output",
+              "position": {
+                "x": 320,
+                "y": 880
+              },
+              "title": "Save results"
+            }
+          ],
+          "notes": [],
+          "schema": "atelier.workflow/1",
+          "settings": {
+            "default_model": {
+              "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+              "model_id": "fake-chat"
+            },
+            "keep_test_runs_days": 7
+          },
+          "viewport": null
+        },
+        "graph_hash": "2bbc30b5f2b29caf1fb4b632972f9a93ac68df03a4f8a89ed6e1362a34ef7118",
+        "id": "62424eb6ba734042b2e4917b920aa132",
+        "inputs": {},
+        "kind": "graph",
+        "mode": "test",
+        "nodes": {
+          "n_draft": {
+            "attempt": 1,
+            "error": null,
+            "finished_at": "2026-10-14T19:53:40.566384+00:00",
+            "output": {
+              "context_length": 16384,
+              "draft": true,
+              "model": {
+                "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                "model_id": "fake-chat",
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                }
+              },
+              "model_display_name": "fake-chat",
+              "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "prompt_version": 1,
+              "resolved_params": {},
+              "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| "
+            },
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": "2026-10-14T19:53:40.448978+00:00",
+            "state": "cancelled",
+            "warnings": []
+          },
+          "n_outline": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "text": "Cobalt Saturday fictional art workshop; 10:00; 12 participants; $20; pencils and paper provided. No date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          },
+          "n_review": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_save": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_start": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "brief": "Create a short announcement for a fictional art workshop. The workshop is called Cobalt Saturday; it meets at 10:00, admits 12 participants, costs $20, and provides pencils and paper. Do not add a date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          }
+        },
+        "parent_run_id": null,
+        "results": [],
+        "snapshot_id": "bdc01d6e4a244a02b508caaece3e981a",
+        "source_available": false,
+        "stage": "Stopping current block",
+        "state": "cancelling",
+        "updated_at": "2026-10-14T19:53:40.560361+00:00"
+      }
+    }
+  },
+  {
+    "kind": "run.updated",
+    "at": 1792007620570.4,
+    "data": {
+      "paused_count": 0,
+      "run": {
+        "created_at": "2026-10-14T19:53:40.445649+00:00",
+        "def_id": "38ee08ea328a4f2a86bbebb37a185942",
+        "def_name": "Synthetic native cancel and recover",
+        "error": null,
+        "graph": {
+          "edges": [
+            {
+              "id": "e_0",
+              "source": "n_start",
+              "source_port": "out",
+              "target": "n_outline",
+              "target_port": "in"
+            },
+            {
+              "id": "e_1",
+              "source": "n_outline",
+              "source_port": "out",
+              "target": "n_draft",
+              "target_port": "in"
+            },
+            {
+              "id": "e_2",
+              "source": "n_draft",
+              "source_port": "out",
+              "target": "n_review",
+              "target_port": "in"
+            },
+            {
+              "id": "e_3",
+              "source": "n_review",
+              "source_port": "approved",
+              "target": "n_save",
+              "target_port": "in"
+            }
+          ],
+          "nodes": [
+            {
+              "config": {
+                "fields": [
+                  {
+                    "choices": [],
+                    "default": null,
+                    "help": "",
+                    "label": "Brief",
+                    "name": "brief",
+                    "required": true,
+                    "type": "long_text"
+                  }
+                ]
+              },
+              "disabled": false,
+              "id": "n_start",
+              "key": "start",
+              "kind": "start",
+              "position": {
+                "x": 320,
+                "y": 80
+              },
+              "title": "Start"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Extract a concise factual outline from the brief. Preserve each supplied detail and its scope. Use only explicitly stated facts; leave unspecified information unspecified. Brief: {{start.brief}}"
+              },
+              "disabled": false,
+              "id": "n_outline",
+              "key": "outline",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 280
+              },
+              "title": "Generate outline"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Write a short announcement using the original brief as the authoritative source. The outline is an organizational aid and may contain mistakes. Preserve every explicit fact and its scope. Omit claims unsupported by the original brief. Original brief: {{start.brief}}\nOutline: {{outline.text}}"
+              },
+              "disabled": false,
+              "id": "n_draft",
+              "key": "draft",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 480
+              },
+              "title": "Generate draft"
+            },
+            {
+              "config": {
+                "editable": true,
+                "message": "Review the synthetic announcement.",
+                "show": "{{draft.text}}"
+              },
+              "disabled": false,
+              "id": "n_review",
+              "key": "review",
+              "kind": "review",
+              "position": {
+                "x": 320,
+                "y": 680
+              },
+              "title": "Approve or edit"
+            },
+            {
+              "config": {
+                "formats": [
+                  "md",
+                  "json"
+                ],
+                "include": [
+                  {
+                    "label": "Announcement",
+                    "ref": "{{review.value}}"
+                  }
+                ],
+                "include_sources": false
+              },
+              "disabled": false,
+              "id": "n_save",
+              "key": "save",
+              "kind": "output",
+              "position": {
+                "x": 320,
+                "y": 880
+              },
+              "title": "Save results"
+            }
+          ],
+          "notes": [],
+          "schema": "atelier.workflow/1",
+          "settings": {
+            "default_model": {
+              "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+              "model_id": "fake-chat"
+            },
+            "keep_test_runs_days": 7
+          },
+          "viewport": null
+        },
+        "graph_hash": "2bbc30b5f2b29caf1fb4b632972f9a93ac68df03a4f8a89ed6e1362a34ef7118",
+        "id": "62424eb6ba734042b2e4917b920aa132",
+        "inputs": {},
+        "kind": "graph",
+        "mode": "test",
+        "nodes": {
+          "n_draft": {
+            "attempt": 1,
+            "error": null,
+            "finished_at": "2026-10-14T19:53:40.566384+00:00",
+            "output": {
+              "context_length": 16384,
+              "draft": true,
+              "model": {
+                "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                "model_id": "fake-chat",
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                }
+              },
+              "model_display_name": "fake-chat",
+              "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "prompt_version": 1,
+              "resolved_params": {},
+              "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| "
+            },
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": "2026-10-14T19:53:40.448978+00:00",
+            "state": "cancelled",
+            "warnings": []
+          },
+          "n_outline": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "text": "Cobalt Saturday fictional art workshop; 10:00; 12 participants; $20; pencils and paper provided. No date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          },
+          "n_review": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_save": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_start": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "brief": "Create a short announcement for a fictional art workshop. The workshop is called Cobalt Saturday; it meets at 10:00, admits 12 participants, costs $20, and provides pencils and paper. Do not add a date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          }
+        },
+        "parent_run_id": null,
+        "results": [],
+        "snapshot_id": "bdc01d6e4a244a02b508caaece3e981a",
+        "source_available": false,
+        "stage": "Stopping current block",
+        "state": "cancelling",
+        "updated_at": "2026-10-14T19:53:40.560361+00:00"
+      }
+    }
+  },
+  {
+    "kind": "run.updated",
+    "at": 1792007620572.2998,
+    "data": {
+      "paused_count": 0,
+      "run": {
+        "created_at": "2026-10-14T19:53:40.445649+00:00",
+        "def_id": "38ee08ea328a4f2a86bbebb37a185942",
+        "def_name": "Synthetic native cancel and recover",
+        "error": null,
+        "graph": {
+          "edges": [
+            {
+              "id": "e_0",
+              "source": "n_start",
+              "source_port": "out",
+              "target": "n_outline",
+              "target_port": "in"
+            },
+            {
+              "id": "e_1",
+              "source": "n_outline",
+              "source_port": "out",
+              "target": "n_draft",
+              "target_port": "in"
+            },
+            {
+              "id": "e_2",
+              "source": "n_draft",
+              "source_port": "out",
+              "target": "n_review",
+              "target_port": "in"
+            },
+            {
+              "id": "e_3",
+              "source": "n_review",
+              "source_port": "approved",
+              "target": "n_save",
+              "target_port": "in"
+            }
+          ],
+          "nodes": [
+            {
+              "config": {
+                "fields": [
+                  {
+                    "choices": [],
+                    "default": null,
+                    "help": "",
+                    "label": "Brief",
+                    "name": "brief",
+                    "required": true,
+                    "type": "long_text"
+                  }
+                ]
+              },
+              "disabled": false,
+              "id": "n_start",
+              "key": "start",
+              "kind": "start",
+              "position": {
+                "x": 320,
+                "y": 80
+              },
+              "title": "Start"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Extract a concise factual outline from the brief. Preserve each supplied detail and its scope. Use only explicitly stated facts; leave unspecified information unspecified. Brief: {{start.brief}}"
+              },
+              "disabled": false,
+              "id": "n_outline",
+              "key": "outline",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 280
+              },
+              "title": "Generate outline"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Write a short announcement using the original brief as the authoritative source. The outline is an organizational aid and may contain mistakes. Preserve every explicit fact and its scope. Omit claims unsupported by the original brief. Original brief: {{start.brief}}\nOutline: {{outline.text}}"
+              },
+              "disabled": false,
+              "id": "n_draft",
+              "key": "draft",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 480
+              },
+              "title": "Generate draft"
+            },
+            {
+              "config": {
+                "editable": true,
+                "message": "Review the synthetic announcement.",
+                "show": "{{draft.text}}"
+              },
+              "disabled": false,
+              "id": "n_review",
+              "key": "review",
+              "kind": "review",
+              "position": {
+                "x": 320,
+                "y": 680
+              },
+              "title": "Approve or edit"
+            },
+            {
+              "config": {
+                "formats": [
+                  "md",
+                  "json"
+                ],
+                "include": [
+                  {
+                    "label": "Announcement",
+                    "ref": "{{review.value}}"
+                  }
+                ],
+                "include_sources": false
+              },
+              "disabled": false,
+              "id": "n_save",
+              "key": "save",
+              "kind": "output",
+              "position": {
+                "x": 320,
+                "y": 880
+              },
+              "title": "Save results"
+            }
+          ],
+          "notes": [],
+          "schema": "atelier.workflow/1",
+          "settings": {
+            "default_model": {
+              "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+              "model_id": "fake-chat"
+            },
+            "keep_test_runs_days": 7
+          },
+          "viewport": null
+        },
+        "graph_hash": "2bbc30b5f2b29caf1fb4b632972f9a93ac68df03a4f8a89ed6e1362a34ef7118",
+        "id": "62424eb6ba734042b2e4917b920aa132",
+        "inputs": {},
+        "kind": "graph",
+        "mode": "test",
+        "nodes": {
+          "n_draft": {
+            "attempt": 1,
+            "error": null,
+            "finished_at": "2026-10-14T19:53:40.566384+00:00",
+            "output": {
+              "context_length": 16384,
+              "draft": true,
+              "model": {
+                "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                "model_id": "fake-chat",
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                }
+              },
+              "model_display_name": "fake-chat",
+              "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "prompt_version": 1,
+              "resolved_params": {},
+              "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| "
+            },
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": "2026-10-14T19:53:40.448978+00:00",
+            "state": "cancelled",
+            "warnings": []
+          },
+          "n_outline": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "text": "Cobalt Saturday fictional art workshop; 10:00; 12 participants; $20; pencils and paper provided. No date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          },
+          "n_review": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_save": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_start": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "brief": "Create a short announcement for a fictional art workshop. The workshop is called Cobalt Saturday; it meets at 10:00, admits 12 participants, costs $20, and provides pencils and paper. Do not add a date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          }
+        },
+        "parent_run_id": null,
+        "results": [],
+        "snapshot_id": "bdc01d6e4a244a02b508caaece3e981a",
+        "source_available": false,
+        "stage": "Cancelled",
+        "state": "cancelled",
+        "updated_at": "2026-10-14T19:53:40.568506+00:00"
+      }
+    }
+  },
+  {
+    "kind": "run.updated",
+    "at": 1792007620583.7,
+    "data": {
+      "paused_count": 0,
+      "run": {
+        "created_at": "2026-10-14T19:53:40.445649+00:00",
+        "def_id": "38ee08ea328a4f2a86bbebb37a185942",
+        "def_name": "Synthetic native cancel and recover",
+        "error": null,
+        "graph": {
+          "edges": [
+            {
+              "id": "e_0",
+              "source": "n_start",
+              "source_port": "out",
+              "target": "n_outline",
+              "target_port": "in"
+            },
+            {
+              "id": "e_1",
+              "source": "n_outline",
+              "source_port": "out",
+              "target": "n_draft",
+              "target_port": "in"
+            },
+            {
+              "id": "e_2",
+              "source": "n_draft",
+              "source_port": "out",
+              "target": "n_review",
+              "target_port": "in"
+            },
+            {
+              "id": "e_3",
+              "source": "n_review",
+              "source_port": "approved",
+              "target": "n_save",
+              "target_port": "in"
+            }
+          ],
+          "nodes": [
+            {
+              "config": {
+                "fields": [
+                  {
+                    "choices": [],
+                    "default": null,
+                    "help": "",
+                    "label": "Brief",
+                    "name": "brief",
+                    "required": true,
+                    "type": "long_text"
+                  }
+                ]
+              },
+              "disabled": false,
+              "id": "n_start",
+              "key": "start",
+              "kind": "start",
+              "position": {
+                "x": 320,
+                "y": 80
+              },
+              "title": "Start"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Extract a concise factual outline from the brief. Preserve each supplied detail and its scope. Use only explicitly stated facts; leave unspecified information unspecified. Brief: {{start.brief}}"
+              },
+              "disabled": false,
+              "id": "n_outline",
+              "key": "outline",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 280
+              },
+              "title": "Generate outline"
+            },
+            {
+              "config": {
+                "format": "text",
+                "instructions": "",
+                "json_fields": [],
+                "model": {
+                  "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                  "model_id": "fake-chat"
+                },
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                },
+                "prompt": "Write a short announcement using the original brief as the authoritative source. The outline is an organizational aid and may contain mistakes. Preserve every explicit fact and its scope. Omit claims unsupported by the original brief. Original brief: {{start.brief}}\nOutline: {{outline.text}}"
+              },
+              "disabled": false,
+              "id": "n_draft",
+              "key": "draft",
+              "kind": "generate",
+              "position": {
+                "x": 320,
+                "y": 480
+              },
+              "title": "Generate draft"
+            },
+            {
+              "config": {
+                "editable": true,
+                "message": "Review the synthetic announcement.",
+                "show": "{{draft.text}}"
+              },
+              "disabled": false,
+              "id": "n_review",
+              "key": "review",
+              "kind": "review",
+              "position": {
+                "x": 320,
+                "y": 680
+              },
+              "title": "Approve or edit"
+            },
+            {
+              "config": {
+                "formats": [
+                  "md",
+                  "json"
+                ],
+                "include": [
+                  {
+                    "label": "Announcement",
+                    "ref": "{{review.value}}"
+                  }
+                ],
+                "include_sources": false
+              },
+              "disabled": false,
+              "id": "n_save",
+              "key": "save",
+              "kind": "output",
+              "position": {
+                "x": 320,
+                "y": 880
+              },
+              "title": "Save results"
+            }
+          ],
+          "notes": [],
+          "schema": "atelier.workflow/1",
+          "settings": {
+            "default_model": {
+              "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+              "model_id": "fake-chat"
+            },
+            "keep_test_runs_days": 7
+          },
+          "viewport": null
+        },
+        "graph_hash": "2bbc30b5f2b29caf1fb4b632972f9a93ac68df03a4f8a89ed6e1362a34ef7118",
+        "id": "62424eb6ba734042b2e4917b920aa132",
+        "inputs": {},
+        "kind": "graph",
+        "mode": "test",
+        "nodes": {
+          "n_draft": {
+            "attempt": 1,
+            "error": null,
+            "finished_at": "2026-10-14T19:53:40.566384+00:00",
+            "output": {
+              "context_length": 16384,
+              "draft": true,
+              "model": {
+                "connection_id": "9c343be079ec4d8d922f090f47ce5b19",
+                "model_id": "fake-chat",
+                "params": {
+                  "max_tokens": null,
+                  "reasoning": null,
+                  "seed": null,
+                  "temperature": null,
+                  "top_k": null,
+                  "top_p": null
+                }
+              },
+              "model_display_name": "fake-chat",
+              "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "prompt_version": 1,
+              "resolved_params": {},
+              "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| "
+            },
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": "2026-10-14T19:53:40.448978+00:00",
+            "state": "cancelled",
+            "warnings": []
+          },
+          "n_outline": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "text": "Cobalt Saturday fictional art workshop; 10:00; 12 participants; $20; pencils and paper provided. No date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          },
+          "n_review": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_save": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": null,
+            "port": null,
+            "progress": null,
+            "reused_from": null,
+            "started_at": null,
+            "state": "skipped",
+            "warnings": []
+          },
+          "n_start": {
+            "attempt": 0,
+            "error": null,
+            "finished_at": null,
+            "output": {
+              "brief": "Create a short announcement for a fictional art workshop. The workshop is called Cobalt Saturday; it meets at 10:00, admits 12 participants, costs $20, and provides pencils and paper. Do not add a date, address or registration link."
+            },
+            "port": "out",
+            "progress": null,
+            "reused_from": "sample",
+            "started_at": null,
+            "state": "complete",
+            "warnings": []
+          }
+        },
+        "parent_run_id": null,
+        "results": [],
+        "snapshot_id": "bdc01d6e4a244a02b508caaece3e981a",
+        "source_available": false,
+        "stage": "Cancelled",
+        "state": "cancelled",
+        "updated_at": "2026-10-14T19:53:40.568506+00:00"
+      }
+    }
+  }
+]

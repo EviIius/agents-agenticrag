@@ -52,6 +52,7 @@ export function ConversationMotionPreview() {
       assistant.content =
         'Synthetic copy example.\n\n```python\nprint("fake")\n```';
     if (state === "optimistic") {
+      user.created_at = new Date().toISOString();
       setRows([]);
       setPending(user);
       useFreshRows.getState().add(user.id);

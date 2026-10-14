@@ -1,0 +1,44 @@
+E501 Line too long (117 > 100)
+   --> app/workflows/engine.py:322:101
+    |
+320 |                 )
+321 |                 output = rebind(old.output, previous.id, identifier) if old and previous else None
+322 |                 if body.mode == "test" and not previous and body.node_id and node.id in ancestors(doc, body.node_id):
+    |                                                                                                     ^^^^^^^^^^^^^^^^^
+323 |                     state, output = "complete", samples.get(node.id, {})
+324 |                 statements.append(
+    |
+
+E501 Line too long (105 > 100)
+   --> tests/test_workflow_graph_engine.py:114:101
+    |
+112 |     ).status_code == 409
+113 |     assert len((await client.get("/api/workflows/blocks")).json()["blocks"]) == 8
+114 |     assert any(b["kind"] == "pick" for b in (await client.get("/api/workflows/blocks")).json()["blocks"])
+    |                                                                                                     ^^^^^
+115 |     assert len((await client.get("/api/workflows/templates")).json()) == 2
+    |
+
+E501 Line too long (111 > 100)
+  --> tests/test_workflow_run_modes.py:41:101
+   |
+39 |     changed.nodes[1].config.prompt += " changed"
+40 |     await manager.defs.save(
+41 |         definition.id, DefSave(name=definition.name, description="", graph=changed, version=definition.version)
+   |                                                                                                     ^^^^^^^^^^^
+42 |     )
+43 |     assert not (await plan(manager, definition.id, "n_images")).eligible
+   |
+
+E501 Line too long (110 > 100)
+  --> tests/test_workflow_run_modes.py:63:101
+   |
+61 |     await app.state.store.execute(
+62 |         ("INSERT INTO model_prefs(connection_id,model_id,params_json)"
+63 |          " VALUES(?,?,?) ON CONFLICT(connection_id,model_id) DO UPDATE SET params_json=excluded.params_json"),
+   |                                                                                                     ^^^^^^^^^^
+64 |         (app.state.test_connection, "fake-chat", '{"temperature":0.7}'),
+65 |     )
+   |
+
+Found 5 errors (1 fixed, 4 remaining).

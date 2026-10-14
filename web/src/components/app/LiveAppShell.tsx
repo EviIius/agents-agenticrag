@@ -1,11 +1,14 @@
+import type { ImageComposerCommand } from "@/lib/composer-drafts";
+import type { ImageIteration } from "@/components/chat/ImageActions";
 import { FoldersGroup } from "./FoldersGroup";
-import { SectionTabs } from "./SectionTabs";
+import { WorkspaceContext } from "./WorkspaceNavigation";
 import type { FolderAction } from "./FolderDialog";
 import { lazy, Suspense } from "react";
 import { OfflineNotice } from "./OfflineNotice";
 import { ChatTitle } from "./ChatTitle";
 import { failureCopy, failureDetail } from "@/lib/errors";
 import { useSend, useSendState } from "@/hooks/useSend";
+import { useChatImages } from "@/hooks/useChatImages";
 import { useUploads } from "@/hooks/useUploads";
 import { useModelOps } from "@/hooks/useModelOps";
 import { useShortcuts } from "@/hooks/useShortcuts";
@@ -14,7 +17,7 @@ import { HistoryList } from "./HistoryList";
 import { EmptyState } from "./EmptyState";
 import { Panels } from "./Panels";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { Link, Outlet, useLocation, useMatch, useNavigate } from "react-router";
 import {
   useQuery,
   useQueryClient,
@@ -62,10 +65,35 @@ import { useAppEntrance } from "@/hooks/useAppEntrance";
 import { useLibraryIndex } from "@/hooks/useLibraryIndex";
 import type { Scope } from "@/components/chat/LibraryControl";
 const FolderDialog = lazy(() => import("./FolderDialog"));
+const WorkflowNotifier = lazy(
+  () => import("@/components/workflows/WorkflowNotifier"),
+);
 export function LiveAppShell() {
   const ui = useUI(),
-    navigate = useNavigate(),
-    { chatId } = useParams();
+    navigate = useNavigate();
+  const {
+    pathname,
+    search: routeSearch,
+    state: routeState,
+    hash: routeHash,
+  } = useLocation();
+  useEffect(() => {
+    if (routeState?.imageMode)
+      navigate(pathname + routeSearch + routeHash, {
+        replace: true,
+        state: { ...routeState, imageMode: false },
+      });
+  }, [routeState, pathname, routeSearch, routeHash, navigate]);
+  const routeChatId = useMatch("/c/:chatId")?.params.chatId;
+  const workspace = pathname.startsWith("/workflows") || pathname === "/images";
+  const studio =
+    /^\/workflows\/(?!runs(?:\/|$)|new(?:\/|$))[^/]+(?:\/runs\/[^/]+)?$/.test(
+      pathname,
+    );
+  const lastChat = useRef<string | undefined>(routeChatId);
+  if (!workspace) lastChat.current = routeChatId;
+  // Keep the current chat state alive while a workspace child occupies the main pane.
+  const chatId = workspace ? lastChat.current : routeChatId;
   const query = useQueryClient();
   const sendState = useSendState(chatId);
   const { busy, pending, sendError } = sendState;
@@ -149,6 +177,15 @@ export function LiveAppShell() {
     queryFn: () => api<Detail>("/chats/" + chatId),
     enabled: !!chatId,
   });
+  useEffect(() => {
+    if (!routeHash.startsWith("#m-") || !detail.data) return;
+    const frame = requestAnimationFrame(() =>
+      document
+        .getElementById(routeHash.slice(1))
+        ?.scrollIntoView({ block: "center", behavior: "instant" }),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [routeHash, detail.data]);
   const entering = useAppEntrance(
     !!bootstrap.data &&
       (!bootstrap.data.connections.length || models.isSuccess) &&
@@ -326,6 +363,63 @@ export function LiveAppShell() {
     ...sendState,
   });
   const chatParams = detail.data?.chat.params ?? effectiveDraftParams;
+  const imageStatus = useQuery({
+    queryKey: ["image-status"],
+    queryFn: () => api<components["schemas"]["ImageStatus"]>("/images/status"),
+  });
+  const [imageCommand, setImageCommand] = useState<{
+    chat?: string;
+    command: ImageComposerCommand;
+  }>();
+  const iterationChat = useRef(chatId);
+  iterationChat.current = chatId;
+  const chatImages = useChatImages({
+    chatId,
+    query,
+    navigate,
+    current,
+    blocked: running || !!loadingModel,
+    messages: detail.data?.messages ?? [],
+    enabled: !workspace,
+  });
+  const iterateImage: ImageIteration = (job, action, position) => {
+    if (action === "more") {
+      void chatImages.send(job.prompt, 1, undefined, job.id);
+      return;
+    }
+    if (action === "refine") {
+      setImageCommand({
+        chat: chatId,
+        command: {
+          key: crypto.randomUUID(),
+          mode: "image",
+          refinement: { job, position },
+        },
+      });
+      return;
+    }
+    if (current?.vision !== true) return;
+    const origin = chatId;
+    void (async () => {
+      try {
+        const response = await fetch(`/api/images/jobs/${job.id}/output/png`);
+        if (!response.ok) throw new Error("Couldn't open this image.");
+        const blob = await response.blob();
+        if (iterationChat.current !== origin) return;
+        setImageCommand({
+          chat: origin,
+          command: { key: crypto.randomUUID(), mode: "chat" },
+        });
+        await upload([
+          new File([blob], `Atelier-image-${job.id.slice(0, 8)}.png`, {
+            type: "image/png",
+          }),
+        ]);
+      } catch {
+        toast.error("Couldn't attach this image. Try again.");
+      }
+    })();
+  };
   const saveParams = async (prompt: string | null, params: Params) => {
     if (chatId)
       return mutate(
@@ -407,16 +501,33 @@ export function LiveAppShell() {
       key={chatId ?? "new"}
       draftKey={chatId ?? "new"}
       images
+      imageStatus={imageStatus.data}
+      imageBusy={chatImages.busy}
+      initialImageMode={
+        Boolean(routeState?.imageMode) ||
+        new URLSearchParams(routeSearch).has("image")
+      }
+      onImageSend={chatImages.send}
+      onImageCommandApplied={(key) =>
+        setImageCommand((saved) =>
+          saved?.command.key === key ? undefined : saved,
+        )
+      }
+      imageCommand={
+        imageCommand && imageCommand.chat === chatId
+          ? imageCommand.command
+          : undefined
+      }
       optimistic={Boolean(chatId)}
       suggestions={!chatId}
       audioExtensions={audioExtensions}
       attachmentExtensions={bootstrap.data?.attachment_extensions}
       model={current}
-      disabled={!current || busy || !!loadingModel}
+      disabled={!current || busy || chatImages.busy || !!loadingModel}
       running={running}
       onStop={stop}
       onSend={(text) => onSend(text)}
-      error={sendError}
+      error={chatImages.error || sendError}
       files={effectiveFiles}
       uploads={uploads}
       transcriptionReady={Boolean(bootstrap.data?.features.transcription)}
@@ -594,7 +705,7 @@ export function LiveAppShell() {
     />
   );
   let visible = visiblePath(
-    detail.data?.messages ?? [],
+    chatImages.messages,
     detail.data?.chat.current_leaf_id ?? null,
   );
   if (runEntry) {
@@ -617,267 +728,350 @@ export function LiveAppShell() {
     return rows;
   }, [detail.data?.messages, runId, chatId]);
   return (
-    <div className="app-shell" data-app-entry={entering || undefined}>
-      <aside className="sidebar-desktop" data-collapsed={ui.collapsed}>
-        <Sidebar collapsed={ui.collapsed} history={list} />
-      </aside>
-      {folderAction && (
-        <Suspense fallback={null}>
-          <FolderDialog
-            key={
-              folderAction.kind +
-              folderAction.folder?.id +
-              folderAction.chat?.id
+    <WorkspaceContext.Provider
+      value={{
+        chatPath: chatId ? `/c/${chatId}` : "/",
+        modelKey: current
+          ? `${current.connection_id}/${current.model_id}`
+          : undefined,
+      }}
+    >
+      <div className="app-shell" data-app-entry={entering || undefined}>
+        <aside className="sidebar-desktop" data-collapsed={ui.collapsed}>
+          <Sidebar collapsed={ui.collapsed} history={list} />
+        </aside>
+        {folderAction && (
+          <Suspense fallback={null}>
+            <FolderDialog
+              key={
+                folderAction.kind +
+                folderAction.folder?.id +
+                folderAction.chat?.id
+              }
+              action={folderAction}
+              onClose={() => setFolderAction(null)}
+            />
+          </Suspense>
+        )}
+        <main
+          className="app-main"
+          onDragOver={(e) => e.preventDefault()}
+          onDragEnter={(e) => {
+            if (!workspace && e.dataTransfer.types.includes("Files")) {
+              dragDepth.current++;
+              setDragging(true);
             }
-            action={folderAction}
-            onClose={() => setFolderAction(null)}
-          />
-        </Suspense>
-      )}
-      <main
-        className="app-main"
-        onDragOver={(e) => e.preventDefault()}
-        onDragEnter={(e) => {
-          if (e.dataTransfer.types.includes("Files")) {
-            dragDepth.current++;
-            setDragging(true);
-          }
-        }}
-        onDragLeave={() => {
-          if (--dragDepth.current <= 0) {
+          }}
+          onDragLeave={() => {
+            if (--dragDepth.current <= 0) {
+              dragDepth.current = 0;
+              setDragging(false);
+            }
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
             dragDepth.current = 0;
             setDragging(false);
-          }
-        }}
-        onDrop={(e) => {
-          e.preventDefault();
-          dragDepth.current = 0;
-          setDragging(false);
-          void upload(Array.from(e.dataTransfer.files));
-        }}
-      >
-        {dragging && (
-          <div
-            role="status"
-            className="pointer-events-none absolute inset-4 z-40 flex items-center justify-center rounded-xl border-2 border-dashed border-brand bg-bg/80 text-sm"
-          >
-            Drop images, documents, text files or recordings
-          </div>
-        )}
-        <header data-scrolled={scrolled || undefined} className="topbar">
-          <div className="flex min-w-0 flex-1 items-center">
-            {(!desktop || ui.collapsed) && (
+            if (!workspace) void upload(Array.from(e.dataTransfer.files));
+          }}
+        >
+          {dragging && (
+            <div
+              role="status"
+              className="pointer-events-none absolute inset-4 z-40 flex items-center justify-center rounded-xl border-2 border-dashed border-brand bg-bg/80 text-sm"
+            >
+              Drop images, documents, text files or recordings
+            </div>
+          )}
+          {workspace ? (
+            studio ? null : (
+              <header className="topbar">
+                {(!desktop || ui.collapsed) && (
+                  <IconButton
+                    label="Open sidebar"
+                    onClick={() =>
+                      ui.set(desktop ? { collapsed: false } : { sidebar: true })
+                    }
+                  >
+                    <PanelLeftOpen />
+                  </IconButton>
+                )}
+                {pathname === "/images" ? (
+                  <span className="text-sm font-medium">Images</span>
+                ) : (
+                  <>
+                    <Link
+                      to="/workflows"
+                      className="flex min-h-11 items-center text-sm text-fg-2"
+                    >
+                      Workflows
+                    </Link>
+                    {pathname !== "/workflows" && (
+                      <span className="text-sm text-fg-2">
+                        /{" "}
+                        {pathname === "/workflows/new"
+                          ? "Use a template"
+                          : pathname === "/workflows/runs"
+                            ? "Runs"
+                            : "Run"}
+                      </span>
+                    )}
+                  </>
+                )}
+              </header>
+            )
+          ) : (
+            <header data-scrolled={scrolled || undefined} className="topbar">
+              <div className="flex min-w-0 flex-1 items-center">
+                {(!desktop || ui.collapsed) && (
+                  <IconButton
+                    label="Open sidebar"
+                    onClick={() =>
+                      ui.set(desktop ? { collapsed: false } : { sidebar: true })
+                    }
+                  >
+                    <PanelLeftOpen />
+                  </IconButton>
+                )}
+                <ModelPicker
+                  state={models.isLoading ? "loading" : "ready"}
+                  models={models.data ?? []}
+                  connections={bootstrap.data?.connections}
+                  current={current}
+                  onChoose={(model) => {
+                    void changeModel(model);
+                  }}
+                  loadingModel={loadingModel}
+                  onModelAction={(model) =>
+                    model.loaded
+                      ? operateModel(model, true)
+                      : changeModel(model)
+                  }
+                />
+              </div>
+              {detail.data && (
+                <ChatTitle
+                  key={detail.data.chat.id}
+                  title={detail.data.chat.title}
+                  onRename={(title) =>
+                    mutate("/chats/" + detail.data!.chat.id, { title }, "PATCH")
+                  }
+                />
+              )}
               <IconButton
-                label="Open sidebar"
-                onClick={() =>
-                  ui.set(desktop ? { collapsed: false } : { sidebar: true })
-                }
+                label="Chat controls"
+                className="relative"
+                onClick={() => ui.set({ panel: !ui.panel })}
               >
-                <PanelLeftOpen />
+                <SlidersHorizontal />
+                {controlsDirty && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute right-1 top-1 size-1.5 rounded-full bg-brand"
+                  />
+                )}
+                {controlsDirty && (
+                  <span className="sr-only">Unsaved changes</span>
+                )}
               </IconButton>
-            )}
-            <ModelPicker
-              state={models.isLoading ? "loading" : "ready"}
+              {detail.data && menu(detail.data.chat)}
+            </header>
+          )}
+          {workspace ? (
+            <Outlet />
+          ) : bootstrap.isError ? (
+            <OfflineNotice
+              detail={String(bootstrap.error)}
+              onRetry={() => void bootstrap.refetch()}
+            />
+          ) : bootstrap.data?.connections.length === 0 ? (
+            <Welcome
+              detections={detect.data}
+              error={detect.isError}
+              onAdd={(base_url) =>
+                void mutate("/connections", { kind: "ollama", base_url })
+              }
+              onRetry={() => void detect.refetch()}
+              onSettings={() =>
+                ui.set({
+                  settings: true,
+                  settingsPane: "Connections",
+                  sidebar: false,
+                })
+              }
+            />
+          ) : !chatId ? (
+            <EmptyState ui={ui} composer={composer} />
+          ) : (
+            <>
+              <LiveThread
+                onImageIteration={iterateImage}
+                onImageAction={(message, action) =>
+                  void chatImages.action(message, action)
+                }
+                pending={pending?.chat_id === chatId ? pending : null}
+                position={runEntry?.[1].position}
+                onScrollChange={setScrolled}
+                selectedModel={current}
+                messages={visible}
+                all={all}
+                stage={runEntry?.[1].stage}
+                steps={runEntry?.[1].steps}
+                scrollRef={scroll}
+                onAboveBottomChange={setAbove}
+                onRegenerate={(m, force) => void regenerate(m, force)}
+                onRegenerateWith={(m, model) =>
+                  void regenerate(m, false, model)
+                }
+                models={models.data ?? []}
+                connections={bootstrap.data?.connections ?? []}
+                onSettings={(pane) =>
+                  ui.set({
+                    settings: true,
+                    ...(pane ? { settingsPane: pane } : {}),
+                  })
+                }
+                onChatSettings={() => ui.set({ panel: true })}
+                onNew={() => navigate("/")}
+                onEdit={(m, text) => onSend(text, m.parent_id ?? null)}
+                onBranch={(id) =>
+                  void mutate(
+                    "/chats/" + chatId,
+                    { current_leaf_id: latestLeaf(all, id) },
+                    "PATCH",
+                  )
+                }
+                sources={{
+                  ...detail.data?.sources,
+                  ...(runEntry
+                    ? {
+                        [runEntry[1].message.id]:
+                          runEntry[1].sources ??
+                          detail.data?.sources?.[runEntry[1].message.id] ??
+                          [],
+                      }
+                    : {}),
+                }}
+                reads={detail.data?.reads}
+              />
+              <div className="composer-row relative" data-testid="composer-row">
+                <Button
+                  data-slot="scroll-bottom"
+                  data-state={above ? "visible" : "hidden"}
+                  inert={!above}
+                  tabIndex={above ? 0 : -1}
+                  aria-hidden={!above}
+                  aria-label="Scroll to bottom"
+                  className="absolute -top-12 right-6 size-11 rounded-full border border-line bg-surface text-fg"
+                  onClick={() =>
+                    scroll.current?.scrollTo({
+                      top: scroll.current.scrollHeight,
+                      behavior:
+                        matchMedia("(prefers-reduced-motion: reduce)")
+                          .matches || ui.reduceMotion === "always"
+                          ? "instant"
+                          : "smooth",
+                    })
+                  }
+                >
+                  <ArrowDown />
+                </Button>
+                {composer}
+              </div>
+            </>
+          )}
+        </main>
+        <Panels
+          ui={ui}
+          wide={wide}
+          phone={phone}
+          panel={panel}
+          list={list}
+          chat={!workspace}
+        />
+        <SettingsDialog
+          searchEnabled={Boolean(bootstrap.data?.features.web_search)}
+          renderPane={(pane) => (
+            <LiveSettingsPane
+              pane={pane}
+              bootstrap={bootstrap.data}
               models={models.data ?? []}
-              connections={bootstrap.data?.connections}
-              current={current}
-              onChoose={(model) => {
-                void changeModel(model);
-              }}
-              loadingModel={loadingModel}
               onModelAction={(model) =>
                 model.loaded ? operateModel(model, true) : changeModel(model)
               }
             />
-          </div>
-          {detail.data && (
-            <ChatTitle
-              key={detail.data.chat.id}
-              title={detail.data.chat.title}
-              onRename={(title) =>
-                mutate("/chats/" + detail.data!.chat.id, { title }, "PATCH")
-              }
-            />
           )}
-          <IconButton
-            label="Chat controls"
-            className="relative"
-            onClick={() => ui.set({ panel: !ui.panel })}
-          >
-            <SlidersHorizontal />
-            {controlsDirty && (
-              <span
-                aria-hidden="true"
-                className="absolute right-1 top-1 size-1.5 rounded-full bg-brand"
-              />
-            )}
-            {controlsDirty && <span className="sr-only">Unsaved changes</span>}
-          </IconButton>
-          {detail.data && menu(detail.data.chat)}
-        </header>
-        <SectionTabs
-          active="chat"
-          chatPath={chatId ? `/c/${chatId}` : "/"}
-          modelKey={
-            current ? `${current.connection_id}/${current.model_id}` : undefined
-          }
         />
-        {bootstrap.isError ? (
-          <OfflineNotice
-            detail={String(bootstrap.error)}
-            onRetry={() => void bootstrap.refetch()}
-          />
-        ) : bootstrap.data?.connections.length === 0 ? (
-          <Welcome
-            detections={detect.data}
-            error={detect.isError}
-            onAdd={(base_url) =>
-              void mutate("/connections", { kind: "ollama", base_url })
-            }
-            onRetry={() => void detect.refetch()}
-            onSettings={() =>
-              ui.set({
-                settings: true,
-                settingsPane: "Connections",
-                sidebar: false,
-              })
-            }
-          />
-        ) : !chatId ? (
-          <EmptyState ui={ui} composer={composer} />
-        ) : (
-          <>
-            <LiveThread
-              pending={pending?.chat_id === chatId ? pending : null}
-              position={runEntry?.[1].position}
-              onScrollChange={setScrolled}
-              selectedModel={current}
-              messages={visible}
-              all={all}
-              stage={runEntry?.[1].stage}
-              steps={runEntry?.[1].steps}
-              scrollRef={scroll}
-              onAboveBottomChange={setAbove}
-              onRegenerate={(m, force) => void regenerate(m, force)}
-              onRegenerateWith={(m, model) => void regenerate(m, false, model)}
-              models={models.data ?? []}
-              connections={bootstrap.data?.connections ?? []}
-              onSettings={(pane) =>
-                ui.set({
-                  settings: true,
-                  ...(pane ? { settingsPane: pane } : {}),
-                })
-              }
-              onChatSettings={() => ui.set({ panel: true })}
-              onNew={() => navigate("/")}
-              onEdit={(m, text) => onSend(text, m.parent_id ?? null)}
-              onBranch={(id) =>
-                void mutate(
-                  "/chats/" + chatId,
-                  { current_leaf_id: latestLeaf(all, id) },
-                  "PATCH",
-                )
-              }
-              sources={{
-                ...detail.data?.sources,
-                ...(runEntry
-                  ? {
-                      [runEntry[1].message.id]:
-                        runEntry[1].sources ??
-                        detail.data?.sources?.[runEntry[1].message.id] ??
-                        [],
-                    }
-                  : {}),
-              }}
-              reads={detail.data?.reads}
-            />
-            <div className="composer-row relative" data-testid="composer-row">
-              <Button
-                data-slot="scroll-bottom"
-                data-state={above ? "visible" : "hidden"}
-                inert={!above}
-                tabIndex={above ? 0 : -1}
-                aria-hidden={!above}
-                aria-label="Scroll to bottom"
-                className="absolute -top-12 right-6 size-11 rounded-full border border-line bg-surface text-fg"
-                onClick={() =>
-                  scroll.current?.scrollTo({
-                    top: scroll.current.scrollHeight,
-                    behavior:
-                      matchMedia("(prefers-reduced-motion: reduce)").matches ||
-                      ui.reduceMotion === "always"
-                        ? "instant"
-                        : "smooth",
-                  })
+        <Suspense fallback={null}>
+          <WorkflowNotifier />
+        </Suspense>
+        <CommandPalette
+          chatActionsDisabled={workspace}
+          open={ui.command}
+          onOpenChange={(command) => ui.set({ command })}
+          onChat={(chat) => navigate("/c/" + chat.id)}
+          searchDisabled={webBlocked || !bootstrap.data?.features.web_search}
+          libraryDisabled={!effectiveLibrary && !!libraryReason}
+          actions={{
+            newChat: () => navigate("/"),
+            workflows: () => navigate("/workflows"),
+            ...(studio && !pathname.includes("/runs/")
+              ? {
+                  runWorkflow: () =>
+                    window.dispatchEvent(
+                      new CustomEvent("studio:command", {
+                        detail: "run-workflow",
+                      }),
+                    ),
+                  cancelWorkflow: () =>
+                    window.dispatchEvent(
+                      new CustomEvent("studio:command", {
+                        detail: "cancel-run",
+                      }),
+                    ),
                 }
-              >
-                <ArrowDown />
-              </Button>
-              {composer}
-            </div>
-          </>
-        )}
-      </main>
-      <Panels ui={ui} wide={wide} phone={phone} panel={panel} list={list} />
-      <SettingsDialog
-        searchEnabled={Boolean(bootstrap.data?.features.web_search)}
-        renderPane={(pane) => (
-          <LiveSettingsPane
-            pane={pane}
-            bootstrap={bootstrap.data}
-            models={models.data ?? []}
-            onModelAction={(model) =>
-              model.loaded ? operateModel(model, true) : changeModel(model)
+              : {}),
+            images: () => navigate("/images"),
+            switchModel: () =>
+              window.dispatchEvent(new Event("workbench:choose-model")),
+            toggleSearch: () => {
+              if (webBlocked || !bootstrap.data?.features.web_search) return;
+              const next = !(detail.data?.chat.web_enabled ?? web);
+              toggleWeb(next);
+            },
+            toggleLibrary: () => toggleLibrary(!effectiveLibrary),
+            chatSettings: () => ui.set({ panel: true }),
+            applyPreset: () => ui.set({ panel: true, choosePreset: true }),
+            settings: () => ui.set({ settings: true }),
+            shortcuts: () =>
+              ui.set({ settings: true, settingsPane: "Shortcuts" }),
+            toggleTheme: () =>
+              ui.set({
+                theme:
+                  resolvedTheme(
+                    ui.theme,
+                    matchMedia("(prefers-color-scheme: dark)").matches,
+                  ) === "dark"
+                    ? "light"
+                    : "dark",
+              }),
+          }}
+        />
+        <ChatActionDialog
+          action={action}
+          onClose={() => setAction(null)}
+          onApply={(title) => {
+            if (action) {
+              if (action.kind === "delete") {
+                void mutate("/chats/" + action.chat.id, undefined, "DELETE");
+                if (chatId === action.chat.id) navigate("/");
+              } else
+                void mutate("/chats/" + action.chat.id, { title }, "PATCH");
+              setAction(null);
             }
-          />
-        )}
-      />
-      <CommandPalette
-        open={ui.command}
-        onOpenChange={(command) => ui.set({ command })}
-        onChat={(chat) => navigate("/c/" + chat.id)}
-        searchDisabled={webBlocked || !bootstrap.data?.features.web_search}
-        libraryDisabled={!effectiveLibrary && !!libraryReason}
-        actions={{
-          newChat: () => navigate("/"),
-          switchModel: () =>
-            window.dispatchEvent(new Event("workbench:choose-model")),
-          toggleSearch: () => {
-            if (webBlocked || !bootstrap.data?.features.web_search) return;
-            const next = !(detail.data?.chat.web_enabled ?? web);
-            toggleWeb(next);
-          },
-          toggleLibrary: () => toggleLibrary(!effectiveLibrary),
-          chatSettings: () => ui.set({ panel: true }),
-          applyPreset: () => ui.set({ panel: true, choosePreset: true }),
-          settings: () => ui.set({ settings: true }),
-          shortcuts: () =>
-            ui.set({ settings: true, settingsPane: "Shortcuts" }),
-          toggleTheme: () =>
-            ui.set({
-              theme:
-                resolvedTheme(
-                  ui.theme,
-                  matchMedia("(prefers-color-scheme: dark)").matches,
-                ) === "dark"
-                  ? "light"
-                  : "dark",
-            }),
-        }}
-      />
-      <ChatActionDialog
-        action={action}
-        onClose={() => setAction(null)}
-        onApply={(title) => {
-          if (action) {
-            if (action.kind === "delete") {
-              void mutate("/chats/" + action.chat.id, undefined, "DELETE");
-              if (chatId === action.chat.id) navigate("/");
-            } else void mutate("/chats/" + action.chat.id, { title }, "PATCH");
-            setAction(null);
-          }
-        }}
-      />
-    </div>
+          }}
+        />
+      </div>
+    </WorkspaceContext.Provider>
   );
 }

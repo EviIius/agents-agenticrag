@@ -1,0 +1,35 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________________ test_image_iteration_lineage_and_export ____________________
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10af81400>, <httpx.AsyncClient object at 0x10af83770>, <fastapi.applications.FastAPI object at 0x10af80c20>)
+
+    async def test_image_iteration_lineage_and_export(
+        chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+    ) -> None:
+        app, client, runtime = chat_app
+        engine = FakeEngine()
+        app.state.images.engine = engine
+        cid = await new(client)
+        first = (await client.post(f"/api/chats/{cid}/images", json=inputs(2))).json()
+        source = first["assistant"]["images"][1]
+        more = (
+            await client.post(f"/api/chats/{cid}/images", json=inputs(1, source_job_id=source["id"]))
+        ).json()
+        refined_prompt = "Synthetic cobalt harbor with golden shapes"
+        refined = (
+            await client.post(
+                f"/api/chats/{cid}/images",
+                json=inputs(1, prompt=refined_prompt, source_job_id=source["id"]),
+            )
+        ).json()
+        for response in (more, refined):
+            assert response["assistant"]["images"][0]["parent_id"] == source["id"]
+>           assert response["assistant"]["params"]["source_job_id"] == source["id"]
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'params'
+
+tests/test_chat_image_exports.py:35: KeyError
+=========================== short test summary info ============================
+FAILED tests/test_chat_image_exports.py::test_image_iteration_lineage_and_export
+1 failed in 0.25s

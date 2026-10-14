@@ -1,0 +1,14 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+E501 Line too long (103 > 100)
+   --> tests/test_chat_images.py:157:101
+    |
+155 |     assert mixed == expected
+156 |     capture = runtime.state.captures[-1]
+157 |     assert capture["messages"] == [{"role": m.role, "content": m.content} for m in mixed.messages[:-1]]
+    |                                                                                                     ^^^
+158 |     assert capture["options"] == {"num_ctx": 16384}
+159 |     assert [m.content for m in mixed.messages if m.role == "user"] == [
+    |
+
+Found 1 error.
+make: *** [check] Error 1

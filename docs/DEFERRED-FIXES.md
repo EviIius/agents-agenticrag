@@ -363,3 +363,63 @@ exports verified. Research remains shelved; broad reliability experiments end.
 See `PRODUCT-DELIVERY-REPORT.md` for exact calls, retained failures, test layers,
 source preservation, migration verification and image storage measurements.
 VoiceOver remains off the work list; its historical reported failure is retained.
+# Image creation in chat — 12 October 2026
+
+Requested by Jake during the WS-B continuation. Pending:
+
+- Start image creation from the ordinary message composer, with a model-like image choice.
+- Show generation progress, cancellation and generated images as turns in that same conversation.
+- Keep save/share, retry identity and automatic seeds; repeat controls belong in optional advanced settings.
+- Keep the gallery as a secondary place to browse saved images.
+
+This replaces the current embedded Images workspace as the desired creation flow.
+Review the durable chat-artifact/message schema and restoration behavior as a
+separate implementation scope after the Workflow Studio engine checkpoint.
+WS-B remains isolated; this entry does not claim the chat integration is built.
+
+13 October: Jake authorized Claude's supplied `docs/next/chat-images/` plan after
+WS-D, with its recommended defaults. The references and prototype are preserved;
+`docs/CHAT-IMAGES-IMPLEMENTATION-REVIEW.md` records the implementation corrections.
+Next checkpoints are CI-A (waiting/reasoning indicator), CI-B (saved image turns
+in the composer), and CI-C (viewer, iteration and exports), each with review.
+The chat integration remains pending; no merge or live publication is authorized.
+
+
+## Studio and chat images — 14 October 2026
+
+The earlier CI-A/B/C pending rows are historical. CI-C is implemented on the
+isolated `codex/workflow-studio` branch with one full green 615-pass browser run,
+three existing skips; main/live are unchanged. Viewer, lineage/refinement,
+vision-gated upload, phone snap/dots and image exports pass automated checks.
+Physical iPhone acceptance of this new chat-image flow remains pending.
+
+The native workflow repair passes source binding, two complete factual drafts,
+review reload, approval, edited saving and immutable raw outputs. It stops after
+six calls when the cancellation timing probe misses its running window. A third
+finished draft also broadens the materials claim, so fidelity remains inconsistent.
+Streaming/RSS/driver cleanup capture defects are repaired. Event-triggered UI
+cancellation passes offline against fake runtime, not native. Native cancellation
+and recovery remain unverified; no seventh call or retry ran.
+
+See `WORKFLOW-STUDIO-NATIVE-REPAIR-REPORT.md`. No broader Search/grounding pass,
+Research restart, VoiceOver result, template/default change or main publication
+is implied. Remaining knowledge/logic blocks and reference-pixel editing are
+future scope; final main merge needs Jake's explicit okay.
+
+
+## Native cancellation/recovery closeout — 14 October 2026
+
+The missing native control pair now passes on the isolated Studio branch. Actual
+first-text SSE clicks a visible enabled UI Cancel control; incomplete stream
+closure, partial output, zero downstream execution and capacity release are
+verified. One identical single-block run then completes, survives reload and
+stays outside normal history. Two native calls only; no retry. One recovered
+answer passes manual fact review, without excusing earlier unsupported claims.
+
+The prior DOM-window failure remains preserved. An offline editing-precondition
+failure is also retained; closing the prior Run view fixes it. See
+`WORKFLOW-STUDIO-NATIVE-CONTROLS-REPORT.md`. UI/control verification is complete
+for this checkpoint. Main/live are unchanged and merge/publication need Jake's
+explicit okay. New-flow physical iPhone acceptance, general factual grounding,
+future WS-E blocks and reference-pixel editing remain separate; VoiceOver stays
+outside the current list and Research is shelved.

@@ -11,7 +11,12 @@ import {
   X,
   Layers,
   BookOpen,
+  Images,
+  Workflow,
 } from "lucide-react";
+import { useNavigate } from "react-router";
+import { useWorkflowActivity } from "@/stores/workflow-activity";
+import { Play, Square, Pause } from "lucide-react";
 import { api, type Chat } from "@/lib/api";
 import type { components } from "@/lib/api-types";
 import {
@@ -30,6 +35,10 @@ import {
 import { IconButton } from "./IconButton";
 import { Button } from "@/components/ui/button";
 export type PaletteActions = {
+  runWorkflow?: () => void;
+  cancelWorkflow?: () => void;
+  workflows?: () => void;
+  images?: () => void;
   toggleLibrary?: () => void;
   applyPreset?: () => void;
   newChat: () => void;
@@ -49,6 +58,7 @@ export function CommandPalette({
   libraryDisabled,
   previewChats,
   previewState,
+  chatActionsDisabled = false,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -58,7 +68,10 @@ export function CommandPalette({
   libraryDisabled?: boolean;
   previewChats?: Chat[];
   previewState?: "loading" | "error" | "empty";
+  chatActionsDisabled?: boolean;
 }) {
+  const workflowActivity = useWorkflowActivity((s) => s.active);
+  const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState("");
   const [query, setQuery] = useState("");
@@ -128,6 +141,36 @@ export function CommandPalette({
   ).filter((item) =>
     item.label.toLocaleLowerCase().includes(text.toLocaleLowerCase().trim()),
   );
+  const chatActions = new Set([
+    "Switch model…",
+    "Toggle web search",
+    "Chat controls",
+    "Toggle library",
+    "Apply preset…",
+  ]);
+  const destinations = [
+    { label: "Workflows", icon: Workflow, action: actions.workflows },
+    { label: "Images", icon: Images, action: actions.images },
+    { label: "Run workflow", icon: Play, action: actions.runWorkflow },
+    { label: "Cancel workflow", icon: Square, action: actions.cancelWorkflow },
+    ...workflowActivity
+      .filter((run) => run.state === "paused")
+      .map((run) => ({
+        id: `resume:${run.id}`,
+        label: `Resume ${run.name}`,
+        icon: Pause,
+        action: () =>
+          navigate(
+            run.defId
+              ? `/workflows/${run.defId}/runs/${run.id}`
+              : `/workflows/runs/${run.id}`,
+          ),
+      })),
+  ].filter(
+    (item) =>
+      item.action &&
+      item.label.toLocaleLowerCase().includes(text.toLocaleLowerCase().trim()),
+  );
   const chats =
     text !== query && !previewChats
       ? []
@@ -170,6 +213,25 @@ export function CommandPalette({
             onValueChange={setText}
           />
           <CommandList className="min-h-0 max-h-[min(380px,45dvh)] p-2">
+            {destinations.length > 0 && (
+              <CommandGroup heading="Go to">
+                {destinations.map((item) => {
+                  const { label, icon: Icon, action } = item;
+                  const identity = "id" in item ? item.id : label;
+                  return (
+                    <CommandItem
+                      key={identity}
+                      value={identity}
+                      className="min-h-11"
+                      onSelect={() => choose(action!)}
+                    >
+                      <Icon className="size-4" />
+                      {label}
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            )}
             {commands.length > 0 && (
               <CommandGroup heading="Actions">
                 {commands.map(({ label, icon: Icon, action, disabled }) => (
@@ -177,7 +239,10 @@ export function CommandPalette({
                     className="min-h-11"
                     key={label}
                     value={label}
-                    disabled={disabled}
+                    disabled={
+                      disabled ||
+                      (chatActionsDisabled && chatActions.has(label))
+                    }
                     onSelect={() => choose(action)}
                   >
                     <Icon />

@@ -1,0 +1,178 @@
+{
+  "id": "8521216e06674f7393138c7d60619c15",
+  "name": "Synthetic native cancel and recover",
+  "description": "",
+  "icon": "workflow",
+  "graph": {
+    "schema": "atelier.workflow/1",
+    "nodes": [
+      {
+        "id": "n_start",
+        "key": "start",
+        "title": "Start",
+        "position": {
+          "x": 320,
+          "y": 80
+        },
+        "disabled": false,
+        "kind": "start",
+        "config": {
+          "fields": [
+            {
+              "name": "brief",
+              "label": "Brief",
+              "type": "long_text",
+              "required": true,
+              "default": null,
+              "choices": [],
+              "help": ""
+            }
+          ]
+        }
+      },
+      {
+        "id": "n_outline",
+        "key": "outline",
+        "title": "Generate outline",
+        "position": {
+          "x": 320,
+          "y": 280
+        },
+        "disabled": false,
+        "kind": "generate",
+        "config": {
+          "model": {
+            "connection_id": "691b50a691dd4c9aa1f080d892e24d5c",
+            "model_id": "qwen3:30b-a3b-workbench-32k"
+          },
+          "instructions": "",
+          "prompt": "Extract a concise factual outline from the brief. Preserve each supplied detail and its scope. Use only explicitly stated facts; leave unspecified information unspecified. Brief: {{start.brief}}",
+          "format": "text",
+          "json_fields": [],
+          "params": {
+            "temperature": null,
+            "top_p": null,
+            "top_k": null,
+            "max_tokens": null,
+            "seed": null,
+            "reasoning": null
+          }
+        }
+      },
+      {
+        "id": "n_draft",
+        "key": "draft",
+        "title": "Generate draft",
+        "position": {
+          "x": 320,
+          "y": 480
+        },
+        "disabled": false,
+        "kind": "generate",
+        "config": {
+          "model": {
+            "connection_id": "691b50a691dd4c9aa1f080d892e24d5c",
+            "model_id": "qwen3:30b-a3b-workbench-32k"
+          },
+          "instructions": "",
+          "prompt": "Write a short announcement using the original brief as the authoritative source. The outline is an organizational aid and may contain mistakes. Preserve every explicit fact and its scope. Omit claims unsupported by the original brief. Original brief: {{start.brief}}\nOutline: {{outline.text}}",
+          "format": "text",
+          "json_fields": [],
+          "params": {
+            "temperature": null,
+            "top_p": null,
+            "top_k": null,
+            "max_tokens": null,
+            "seed": null,
+            "reasoning": null
+          }
+        }
+      },
+      {
+        "id": "n_review",
+        "key": "review",
+        "title": "Approve or edit",
+        "position": {
+          "x": 320,
+          "y": 680
+        },
+        "disabled": false,
+        "kind": "review",
+        "config": {
+          "show": "{{draft.text}}",
+          "editable": true,
+          "message": "Review the synthetic announcement."
+        }
+      },
+      {
+        "id": "n_save",
+        "key": "save",
+        "title": "Save results",
+        "position": {
+          "x": 320,
+          "y": 880
+        },
+        "disabled": false,
+        "kind": "output",
+        "config": {
+          "include": [
+            {
+              "label": "Announcement",
+              "ref": "{{review.value}}"
+            }
+          ],
+          "formats": [
+            "md",
+            "json"
+          ],
+          "include_sources": false
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_0",
+        "source": "n_start",
+        "source_port": "out",
+        "target": "n_outline",
+        "target_port": "in"
+      },
+      {
+        "id": "e_1",
+        "source": "n_outline",
+        "source_port": "out",
+        "target": "n_draft",
+        "target_port": "in"
+      },
+      {
+        "id": "e_2",
+        "source": "n_draft",
+        "source_port": "out",
+        "target": "n_review",
+        "target_port": "in"
+      },
+      {
+        "id": "e_3",
+        "source": "n_review",
+        "source_port": "approved",
+        "target": "n_save",
+        "target_port": "in"
+      }
+    ],
+    "notes": [],
+    "viewport": null,
+    "settings": {
+      "default_model": {
+        "connection_id": "691b50a691dd4c9aa1f080d892e24d5c",
+        "model_id": "qwen3:30b-a3b-workbench-32k"
+      },
+      "keep_test_runs_days": 7
+    }
+  },
+  "graph_hash": "1a1f6f4ffbce3e4b79e6938dda8a73dd79e46b988e72ef90d3c1be74c54eeabb",
+  "version": 1,
+  "template_id": null,
+  "archived_at": null,
+  "created_at": "2026-10-14T19:56:59.929373+00:00",
+  "updated_at": "2026-10-14T19:56:59.929373+00:00"
+}

@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { RunInputs } from "@/components/workflows/studio/RunInputs";
+import type { Doc } from "@/components/workflows/studio/types";
 import { Button } from "@/components/ui/button";
 import { useUI } from "@/stores/ui";
 import {
-  WorkflowForm,
   WorkflowList,
   type Workflow,
 } from "@/components/workflows/WorkflowsPage";
@@ -141,22 +142,43 @@ export default function WorkflowsPreview() {
           </Button>
         ))}
       </div>
-      <WorkflowForm
-        key={state}
+      <RunInputs
         preview
-        previewProgress={state === "uploading" ? 50 : undefined}
-        previewRecording={meeting || state.startsWith("upload")}
-        models={[
+        defId="fake"
+        beforeRun={async () => true}
+        accepted={() => {}}
+        doc={
           {
-            connection_id: "fake",
-            model_id: "fake-chat",
-            display_name: "Fake text model",
-            context_length: 16384,
-          },
-        ]}
-        recordings={[
-          { id: "synthetic", filename: "Synthetic.wav", status: "ready" },
-        ]}
+            schema: "atelier.workflow/1",
+            nodes: [
+              {
+                id: "n_start",
+                key: "start",
+                kind: "start",
+                title: "Start",
+                position: { x: 0, y: 0 },
+                disabled: false,
+                config: {
+                  fields: [
+                    {
+                      name: "brief",
+                      label: "Synthetic input",
+                      type: "long_text",
+                      required: false,
+                      default: "",
+                      help: "Fake runtime preview",
+                      choices: [],
+                    },
+                  ],
+                },
+              },
+            ],
+            edges: [],
+            notes: [],
+            viewport: null,
+            settings: { default_model: null, keep_test_runs_days: 7 },
+          } satisfies Doc
+        }
       />
       {state === "upload-failed" && (
         <p role="status">Fake upload interrupted. Try the recording again.</p>

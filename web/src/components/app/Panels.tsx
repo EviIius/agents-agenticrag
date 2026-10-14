@@ -22,16 +22,18 @@ export function Panels({
   phone,
   panel,
   list,
+  chat = true,
 }: {
   ui: ReturnType<typeof useUI.getState>;
   wide: boolean;
   phone: boolean;
   panel: ReactNode;
   list: ReactNode;
+  chat?: boolean;
 }) {
   return (
     <>
-      {ui.panel && wide && (
+      {chat && ui.panel && wide && (
         <aside data-slot="side-panel" className="chat-panel">
           {panel}
         </aside>
@@ -49,7 +51,8 @@ export function Panels({
           <Sidebar history={list} close={() => ui.set({ sidebar: false })} />
         </SheetContent>
       </Sheet>
-      {!wide &&
+      {chat &&
+        !wide &&
         (phone ? (
           <Drawer open={ui.panel} onOpenChange={(panel) => ui.set({ panel })}>
             <DrawerContent className="overflow-clip">

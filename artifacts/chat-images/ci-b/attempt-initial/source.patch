@@ -1,0 +1,2484 @@
+diff --git a/server/app/api/messages.py b/server/app/api/messages.py
+index 61cafbb2..5a0c1853 100644
+--- a/server/app/api/messages.py
++++ b/server/app/api/messages.py
+@@ -21,6 +21,8 @@ async def regenerate(identifier: str, body: Regenerate, request: Request) -> Run
+ async def start_regeneration(identifier: str, body: Regenerate, request: Request) -> RunResponse:
+     store = request.app.state.store
+     old = await messages.message(store, identifier)
++    if old.kind == "image":
++        raise AppError("validation_error", "Use the image turn's Try again action.", 422)
+     if old.role != "assistant":
+         raise AppError("validation_error", "Only assistant messages can be regenerated.", 422)
+     if any(r.chat_id == old.chat_id for r in await request.app.state.runs.active()):
+diff --git a/server/app/db/messages.py b/server/app/db/messages.py
+index 1e3281f9..afa3d3f9 100644
+--- a/server/app/db/messages.py
++++ b/server/app/db/messages.py
+@@ -15,6 +15,7 @@ from ..schemas import (
+ )
+ from .attachments import attachment
+ from .core import Store
++from .image_jobs import image_job
+ 
+ 
+ async def message(store: Store, identifier: str) -> Message:
+@@ -51,6 +52,15 @@ async def message(store: Store, identifier: str) -> Message:
+             "library": LibraryInfo(**json.loads(row["library_json"]))
+             if row["library_json"]
+             else None,
++            "images": [
++                await image_job(store, r["job_id"])
++                for r in await store.rows(
++                    "SELECT job_id FROM message_images WHERE message_id=? ORDER BY position",
++                    (identifier,),
++                )
++            ]
++            if row["kind"] == "image"
++            else None,
+         }
+     )
+ 
+diff --git a/server/app/images/jobs.py b/server/app/images/jobs.py
+index 0fe30c89..45844e11 100644
+--- a/server/app/images/jobs.py
++++ b/server/app/images/jobs.py
+@@ -4,7 +4,7 @@ import asyncio
+ import json
+ import os
+ import shutil
+-from collections.abc import AsyncGenerator
++from collections.abc import AsyncGenerator, Sequence
+ from datetime import UTC, datetime
+ from pathlib import Path
+ from typing import Any
+@@ -12,11 +12,14 @@ from uuid import uuid4
+ 
+ from ..capacity import Capacity
+ from ..db.core import Store
++from ..db.image_jobs import image_job
+ from ..errors import AppError
+ from ..schemas import ImageChange, ImageCreate, ImageJob, ImageSnapshot, ImageStorage
+ from .engine import Engine
+ from .files import atomic_json, sync_directory, validate
+ 
++Prepared = list[tuple[str, list[tuple[str, tuple[object, ...]]]]]
++
+ ACTIVE = {"queued", "preparing", "running", "cancelling"}
+ 
+ 
+@@ -45,29 +48,7 @@ class Images:
+ 
+     async def get(self, identifier: str) -> ImageJob:
+         self.path(identifier)
+-        row = await self.store.one(
+-            "SELECT j.*,a.sha256,a.bytes,a.metadata_bytes FROM image_jobs j "
+-            "LEFT JOIN image_artifacts a ON a.job_id=j.id WHERE j.id=?",
+-            (identifier,),
+-        )
+-        if not row:
+-            raise AppError("not_found", "Image job not found.", 404)
+-        spec = json.loads(row["input_json"])
+-        return ImageJob(
+-            id=row["id"],
+-            parent_id=row["parent_id"],
+-            prompt=spec["prompt"],
+-            seed=spec["seed"],
+-            state=row["state"],
+-            stage=row["stage"],
+-            completed_steps=row["completed_steps"],
+-            error=row["error"],
+-            created_at=row["created_at"],
+-            updated_at=row["updated_at"],
+-            image_bytes=row["bytes"] or 0,
+-            metadata_bytes=row["metadata_bytes"] or 0,
+-            sha256=row["sha256"],
+-        )
++        return await image_job(self.store, identifier)
+ 
+     async def list(self, before: str | None = None) -> list[ImageJob]:
+         rows = await self.store.rows(
+@@ -97,7 +78,16 @@ class Images:
+         )
+ 
+     async def snapshot(self) -> ImageSnapshot:
+-        return ImageSnapshot(jobs=await self.list(), storage=await self.storage())
++        jobs = await self.list()
++        # Active older jobs must survive a snapshot gap even beyond Gallery's page.
++        known = {job.id for job in jobs}
++        for row in await self.store.rows(
++            "SELECT id FROM image_jobs WHERE state IN "
++            "('queued','preparing','running','cancelling') ORDER BY created_at,id"
++        ):
++            if row["id"] not in known:
++                jobs.append(await self.get(row["id"]))
++        return ImageSnapshot(jobs=jobs, storage=await self.storage())
+ 
+     async def emit(self, identifier: str) -> None:
+         async with self.condition:
+@@ -152,55 +142,71 @@ class Images:
+                         409,
+                     )
+                 return await self.get(old["id"])
+-            if self.closing:
+-                raise AppError(
+-                    "image_unavailable", "Image service is shutting down. Retry shortly.", 503
+-                )
+-            if not self.engine.status().available:
+-                raise AppError(
+-                    "image_unavailable",
+-                    "The local image worker or pinned model is unavailable.",
+-                    409,
+-                )
+-            if len(self.tasks) >= 20:
+-                raise AppError(
+-                    "image_queue_full", "The image queue is full. Wait for a job to finish.", 409
+-                )
+-            if shutil.disk_usage(self.data).free < 128 * 1024**2:
+-                raise AppError("low_disk", "Free at least 128 MB before starting an image.", 409)
+-            if spec.parent_id:
+-                await self.get(spec.parent_id)
+-            identifier, timestamp = uuid4().hex, now()
+-            folder = self.path(identifier)
+-            folder.mkdir(mode=0o700)
++            prepared = await self.prepare([spec])
+             try:
+-                atomic_json(folder / "input.json", expected)
+-                await self.store.batch(
+-                    [
+-                        (
+-                            "INSERT INTO image_jobs(id,request_key,parent_id,input_json,"
+-                            "state,stage,"
+-                            "created_at,updated_at) "
+-                            "VALUES(?,?,?,?,'queued','Waiting for capacity',?,?)",
+-                            (
+-                                identifier,
+-                                spec.request_key,
+-                                spec.parent_id,
+-                                canonical,
+-                                timestamp,
+-                                timestamp,
+-                            ),
+-                        ),
+-                        ("INSERT INTO image_steps(job_id) VALUES(?)", (identifier,)),
+-                    ]
+-                )
++                await self.store.batch([statement for _, rows in prepared for statement in rows])
+             except BaseException:
+-                shutil.rmtree(folder)
++                self.discard(prepared)
+                 raise
++            identifier = prepared[0][0]
+             self.schedule(identifier)
+             await self.emit(identifier)
+             return await self.get(identifier)
+ 
++    async def prepare(self, specs: Sequence[ImageCreate]) -> Prepared:
++        """Caller owns self.lock; prepare all manifests without commits or scheduling."""
++        if self.closing:
++            raise AppError(
++                "image_unavailable", "Image service is shutting down. Retry shortly.", 503
++            )
++        if not self.engine.status().available:
++            raise AppError(
++                "image_unavailable", "The local image worker or pinned model is unavailable.", 409
++            )
++        if len(self.tasks) + len(specs) > 20:
++            raise AppError(
++                "image_queue_full", "The image queue is full. Wait for a job to finish.", 409
++            )
++        if shutil.disk_usage(self.data).free < 128 * 1024**2:
++            raise AppError("low_disk", "Free at least 128 MB before starting an image.", 409)
++        prepared: Prepared = []
++        try:
++            for spec in specs:
++                if not spec.prompt.strip():
++                    raise AppError("invalid_request", "Write an image prompt first.", 422)
++                if spec.parent_id:
++                    await self.get(spec.parent_id)
++                expected = {"prompt": spec.prompt, "seed": spec.seed}
++                identifier, timestamp = uuid4().hex, now()
++                folder = self.path(identifier)
++                folder.mkdir(mode=0o700)
++                rows: list[tuple[str, tuple[object, ...]]] = [
++                    (
++                        "INSERT INTO image_jobs(id,request_key,parent_id,input_json,state,stage,"
++                        "created_at,updated_at) VALUES(?,?,?,?,'queued',"
++                        "'Waiting for capacity',?,?)",
++                        (
++                            identifier,
++                            spec.request_key,
++                            spec.parent_id,
++                            json.dumps(expected, sort_keys=True),
++                            timestamp,
++                            timestamp,
++                        ),
++                    ),
++                    ("INSERT INTO image_steps(job_id) VALUES(?)", (identifier,)),
++                ]
++                prepared.append((identifier, rows))
++                atomic_json(folder / "input.json", expected)
++            return prepared
++        except BaseException:
++            self.discard(prepared)
++            raise
++
++    def discard(self, prepared: Prepared) -> None:
++        for identifier, _ in prepared:
++            shutil.rmtree(self.path(identifier), ignore_errors=True)
++
+     def schedule(self, identifier: str) -> None:
+         task = asyncio.create_task(self.run(identifier))
+         self.tasks[identifier] = task
+@@ -316,8 +322,11 @@ class Images:
+                 os.replace(output, trash)
+                 sync_directory(folder)
+             try:
+-                await self.store.execute(
+-                    "DELETE FROM image_artifacts WHERE job_id=?", (identifier,)
++                await self.store.batch(
++                    [
++                        ("DELETE FROM image_artifacts WHERE job_id=?", (identifier,)),
++                        ("UPDATE image_jobs SET updated_at=? WHERE id=?", (now(), identifier)),
++                    ]
+                 )
+             except BaseException:
+                 if trash.exists():
+@@ -347,7 +356,9 @@ class Images:
+     async def recover(self) -> None:
+         # A previous worker's parent pipe has closed; it exits without this new
+         # server signaling any PID which might have been reused.
+-        rows = await self.store.rows("SELECT id,state,input_json FROM image_jobs")
++        rows = await self.store.rows(
++            "SELECT id,state,input_json FROM image_jobs ORDER BY created_at,id"
++        )
+         known = {row["id"] for row in rows}
+         for folder in self.folder.iterdir():
+             if folder.name not in known and folder.is_dir():
+diff --git a/server/app/main.py b/server/app/main.py
+index f4307522..a97e3ed9 100644
+--- a/server/app/main.py
++++ b/server/app/main.py
+@@ -11,6 +11,7 @@ from fastapi.responses import FileResponse
+ from .api import (
+     attachments,
+     backup,
++    chat_images,
+     chats,
+     connections,
+     folders,
+@@ -145,6 +146,7 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
+         workflows.router,
+         workflow_graphs.router,
+         chats.router,
++        chat_images.router,
+         connections.router,
+         messages.router,
+         models.router,
+diff --git a/server/app/runs/context.py b/server/app/runs/context.py
+index 903cb46f..b6ded0a8 100644
+--- a/server/app/runs/context.py
++++ b/server/app/runs/context.py
+@@ -57,7 +57,7 @@ async def assemble(
+         system += (
+             "\n\nCurrent date: " + datetime.now().astimezone().strftime("%A, %B %-d, %Y") + "."
+         )
+-    selected = path(messages, leaf)
++    selected = [m for m in path(messages, leaf) if m.kind != "image"]
+     has_recording = any(a.kind == "audio" for m in selected for a in m.attachments)
+     if has_recording:
+         connection = await store.one(
+diff --git a/server/app/schemas.py b/server/app/schemas.py
+index 03594d56..049a45e1 100644
+--- a/server/app/schemas.py
++++ b/server/app/schemas.py
+@@ -1,6 +1,6 @@
+ from typing import Annotated, Any, Literal
+ 
+-from pydantic import BaseModel, ConfigDict, Field, RootModel
++from pydantic import BaseModel, ConfigDict, Field, RootModel, model_validator
+ 
+ from .config import VERSION
+ 
+@@ -37,6 +37,45 @@ class ImageJob(BaseModel):
+     image_bytes: int = 0
+     metadata_bytes: int = 0
+     sha256: str | None = None
++    origin: "ImageOrigin | None" = None
++
++
++class ImageOrigin(BaseModel):
++    chat_id: str
++    message_id: str
++    title: str | None = None
++    deleted: bool = False
++
++
++class ChatImageCreate(BaseModel):
++    model_config = ConfigDict(extra="forbid")
++    request_key: str = Field(pattern=r"^[A-Za-z0-9_-]{8,100}$")
++    prompt: str = Field(min_length=1, max_length=4000)
++    count: int = Field(ge=1, le=3)
++    seeds: list[Annotated[int, Field(strict=True, ge=0, le=4294967295)]] = Field(
++        min_length=1, max_length=3
++    )
++    parent_id: str | None = Field(None, pattern=r"^[a-f0-9]{32}$")
++    source_job_id: str | None = Field(None, pattern=r"^[a-f0-9]{32}$")
++
++    @model_validator(mode="after")
++    def valid_images(self) -> "ChatImageCreate":
++        if len(self.seeds) != self.count or not self.prompt.strip():
++            raise ValueError("Provide a prompt and one seed for each image.")
++        return self
++
++
++class ChatImageRetry(BaseModel):
++    model_config = ConfigDict(extra="forbid")
++    request_key: str = Field(pattern=r"^[A-Za-z0-9_-]{8,100}$")
++    seeds: list[Annotated[int, Field(strict=True, ge=0, le=4294967295)]] = Field(
++        min_length=1, max_length=3
++    )
++
++
++class ChatImageResponse(BaseModel):
++    user: "Message | None" = None
++    assistant: "Message"
+ 
+ 
+ class ImageStorage(BaseModel):
+@@ -560,6 +599,8 @@ class Message(BaseModel):
+     web: WebInfo | None = None
+     library: LibraryInfo | None = None
+     created_at: str
++    kind: Literal["text", "image"] = "text"
++    images: list[ImageJob] | None = None
+ 
+ 
+ class ChatDetail(BaseModel):
+diff --git a/server/tests/fake_image.py b/server/tests/fake_image.py
+index 331b21fd..90ed48e7 100644
+--- a/server/tests/fake_image.py
++++ b/server/tests/fake_image.py
+@@ -13,6 +13,7 @@ from tests.test_images import output
+ class FakeImageEngine:
+     def __init__(self) -> None:
+         self.failed_once: set[tuple[str, int]] = set()
++        self.release = asyncio.Event()
+ 
+     def status(self) -> ImageStatus:
+         return ImageStatus(available=True)
+@@ -33,6 +34,8 @@ class FakeImageEngine:
+             raise ValueError("Synthetic failure")
+         for i in range(4):
+             await progress({"type": "denoising", "completed_steps": i + 1})
++            if "#pause-step" in expected["prompt"] and i == 1:
++                await self.release.wait()
+             await asyncio.sleep(
+                 1
+                 if "#restart" in expected["prompt"]
+diff --git a/server/tests/serve_app.py b/server/tests/serve_app.py
+index b231c890..7ca79418 100644
+--- a/server/tests/serve_app.py
++++ b/server/tests/serve_app.py
+@@ -51,6 +51,19 @@ async def lifespan(server: FastAPI) -> AsyncIterator[None]:
+ app.router.lifespan_context = lifespan
+ 
+ 
++@app.post("/tests/images/release")
++async def release_fake_image() -> dict[str, bool]:
++    """Release the actual fake worker after its second denoising event."""
++    app.state.images.engine.release.set()
++    return {"released": True}
++
++
++@app.post("/tests/images/pause")
++async def pause_fake_image() -> dict[str, bool]:
++    app.state.images.engine.release.clear()
++    return {"paused": True}
++
++
+ @app.post("/tests/long-chat/{chat_id}")
+ async def seed_long_chat(chat_id: str) -> dict[str, int]:
+     """Synthetic history for the Phase 3 browser performance measurement only."""
+diff --git a/server/tests/test_documents.py b/server/tests/test_documents.py
+index f6cb4dab..c8a944a2 100644
+--- a/server/tests/test_documents.py
++++ b/server/tests/test_documents.py
+@@ -305,7 +305,7 @@ async def test_phase5a_rows_and_meta_nullable_survive_migration(tmp_path: Path)
+     async with aiosqlite.connect(target) as db:
+         await migrate(db)
+         version = await (await db.execute("PRAGMA user_version")).fetchone()
+-        assert version and version[0] == 12
++        assert version and version[0] == 13
+         assert all(
+             row[0] is None
+             for row in await (await db.execute("SELECT meta_json FROM attachments")).fetchall()
+diff --git a/server/tests/test_folders_backups.py b/server/tests/test_folders_backups.py
+index d42c7e50..bbd6a2cb 100644
+--- a/server/tests/test_folders_backups.py
++++ b/server/tests/test_folders_backups.py
+@@ -130,7 +130,7 @@ async def test_phase5b_migration_preserves_every_existing_column(tmp_path: Path)
+         await migrate(db)
+     assert snapshot(dbpath, columns)[1] == before
+     with sqlite3.connect(dbpath) as db:
+-        assert db.execute("PRAGMA user_version").fetchone()[0] == 12
++        assert db.execute("PRAGMA user_version").fetchone()[0] == 13
+         assert all(r[0] is None for r in db.execute("SELECT folder_id FROM chats"))
+         assert db.execute("SELECT COUNT(*) FROM folders").fetchone()[0] == 0
+ 
+diff --git a/server/tests/test_foundation.py b/server/tests/test_foundation.py
+index deb509e3..476af578 100644
+--- a/server/tests/test_foundation.py
++++ b/server/tests/test_foundation.py
+@@ -15,7 +15,7 @@ async def test_migration_is_idempotent_and_private(tmp_path: Path) -> None:
+     for _ in range(2):
+         async with connect(tmp_path) as db:
+             async with db.execute("PRAGMA user_version") as cursor:
+-                assert await cursor.fetchone() == (12,)
++                assert await cursor.fetchone() == (13,)
+             async with db.execute("PRAGMA journal_mode") as cursor:
+                 assert await cursor.fetchone() == ("wal",)
+             async with db.execute("PRAGMA foreign_keys") as cursor:
+diff --git a/server/tests/test_workflow_graph_storage.py b/server/tests/test_workflow_graph_storage.py
+index be0ac425..a04e8816 100644
+--- a/server/tests/test_workflow_graph_storage.py
++++ b/server/tests/test_workflow_graph_storage.py
+@@ -45,7 +45,7 @@ async def test_workflow_graph_migration_preserves_every_preexisting_column(tmp_p
+         integrity = await (await db.execute("PRAGMA integrity_check")).fetchone()
+         version = await (await db.execute("PRAGMA user_version")).fetchone()
+         assert integrity and integrity[0] == "ok"
+-        assert version and version[0] == 12
++        assert version and version[0] == 13
+     assert snapshot(target, columns)[1] == before
+     with sqlite3.connect(target) as db:
+         assert db.execute("SELECT COUNT(*) FROM workflow_graph_runs").fetchone()[0] == 0
+diff --git a/web/src/components/app/LiveAppShell.tsx b/web/src/components/app/LiveAppShell.tsx
+index d5dc6c82..a1ed32c1 100644
+--- a/web/src/components/app/LiveAppShell.tsx
++++ b/web/src/components/app/LiveAppShell.tsx
+@@ -6,6 +6,7 @@ import { OfflineNotice } from "./OfflineNotice";
+ import { ChatTitle } from "./ChatTitle";
+ import { failureCopy, failureDetail } from "@/lib/errors";
+ import { useSend, useSendState } from "@/hooks/useSend";
++import { useChatImages } from "@/hooks/useChatImages";
+ import { useUploads } from "@/hooks/useUploads";
+ import { useModelOps } from "@/hooks/useModelOps";
+ import { useShortcuts } from "@/hooks/useShortcuts";
+@@ -68,7 +69,7 @@ const WorkflowNotifier = lazy(
+ export function LiveAppShell() {
+   const ui = useUI(),
+     navigate = useNavigate();
+-  const { pathname } = useLocation();
++  const { pathname, search: routeSearch, state: routeState } = useLocation();
+   const routeChatId = useMatch("/c/:chatId")?.params.chatId;
+   const workspace = pathname.startsWith("/workflows") || pathname === "/images";
+   const studio =
+@@ -339,6 +340,19 @@ export function LiveAppShell() {
+     ...sendState,
+   });
+   const chatParams = detail.data?.chat.params ?? effectiveDraftParams;
++  const imageStatus = useQuery({
++    queryKey: ["image-status"],
++    queryFn: () => api<components["schemas"]["ImageStatus"]>("/images/status"),
++  });
++  const chatImages = useChatImages({
++    chatId,
++    query,
++    navigate,
++    current,
++    blocked: running || !!loadingModel,
++    messages: detail.data?.messages ?? [],
++    enabled: !workspace,
++  });
+   const saveParams = async (prompt: string | null, params: Params) => {
+     if (chatId)
+       return mutate(
+@@ -420,16 +434,23 @@ export function LiveAppShell() {
+       key={chatId ?? "new"}
+       draftKey={chatId ?? "new"}
+       images
++      imageStatus={imageStatus.data}
++      imageBusy={chatImages.busy}
++      initialImageMode={
++        Boolean(routeState?.imageMode) ||
++        new URLSearchParams(routeSearch).has("image")
++      }
++      onImageSend={chatImages.send}
+       optimistic={Boolean(chatId)}
+       suggestions={!chatId}
+       audioExtensions={audioExtensions}
+       attachmentExtensions={bootstrap.data?.attachment_extensions}
+       model={current}
+-      disabled={!current || busy || !!loadingModel}
++      disabled={!current || busy || chatImages.busy || !!loadingModel}
+       running={running}
+       onStop={stop}
+       onSend={(text) => onSend(text)}
+-      error={sendError}
++      error={chatImages.error || sendError}
+       files={effectiveFiles}
+       uploads={uploads}
+       transcriptionReady={Boolean(bootstrap.data?.features.transcription)}
+@@ -607,7 +628,7 @@ export function LiveAppShell() {
+     />
+   );
+   let visible = visiblePath(
+-    detail.data?.messages ?? [],
++    chatImages.messages,
+     detail.data?.chat.current_leaf_id ?? null,
+   );
+   if (runEntry) {
+@@ -807,6 +828,9 @@ export function LiveAppShell() {
+           ) : (
+             <>
+               <LiveThread
++                onImageAction={(message, action) =>
++                  void chatImages.action(message, action)
++                }
+                 pending={pending?.chat_id === chatId ? pending : null}
+                 position={runEntry?.[1].position}
+                 onScrollChange={setScrolled}
+diff --git a/web/src/components/chat/Composer.tsx b/web/src/components/chat/Composer.tsx
+index 74d814c4..26f57b6e 100644
+--- a/web/src/components/chat/Composer.tsx
++++ b/web/src/components/chat/Composer.tsx
+@@ -8,8 +8,6 @@ import {
+   useLayoutEffect,
+   useEffect,
+   useCallback,
+-  lazy,
+-  Suspense,
+ } from "react";
+ import {
+   ArrowUp,
+@@ -19,6 +17,8 @@ import {
+   Square,
+   Globe,
+   ImageIcon,
++  MoreHorizontal,
++  ChevronDown,
+ } from "lucide-react";
+ import { Button } from "@/components/ui/button";
+ import { IconButton } from "@/components/app/IconButton";
+@@ -33,18 +33,16 @@ import {
+   TooltipContent,
+   TooltipTrigger,
+ } from "@/components/ui/tooltip";
+-const ImagesWorkspace = lazy(() =>
+-  import("@/components/images/ImagesPage").then((module) => ({
+-    default: module.ImagesWorkspace,
+-  })),
+-);
+-// Unsent drafts live only in this browser session and never enter test evidence.
+-const drafts = new Map<string, string>();
+-const imageDrafts = new Map<string, string>();
++import { imageDrafts, drafts } from "@/lib/composer-drafts";
++import { validImageSeed } from "@/lib/image-seeds";
+ export function Composer({
+   draftKey,
+   images = false,
+   previewImages = false,
++  imageStatus,
++  initialImageMode = false,
++  imageBusy = false,
++  onImageSend,
+   starter = "",
+   optimistic = false,
+   running = false,
+@@ -74,6 +72,14 @@ export function Composer({
+   draftKey?: string;
+   images?: boolean;
+   previewImages?: boolean;
++  imageStatus?: import("@/lib/api-types").components["schemas"]["ImageStatus"];
++  initialImageMode?: boolean;
++  imageBusy?: boolean;
++  onImageSend?: (
++    prompt: string,
++    count: number,
++    seeds?: number[],
++  ) => Promise<boolean>;
+   optimistic?: boolean;
+   libraryControl?: React.ComponentProps<typeof LibraryControl>;
+   transcriptionReady?: boolean;
+@@ -106,8 +112,16 @@ export function Composer({
+   const [imageValue, setImageValue] = useState(() =>
+     draftKey ? (imageDrafts.get(draftKey) ?? "") : "",
+   );
+-  const [imageMode, setImageMode] = useState(false);
+-  const [imagesOpened, setImagesOpened] = useState(false);
++  const [imageMode, setImageMode] = useState(initialImageMode);
++  const [count, setCount] = useState(1);
++  const [seeds, setSeeds] = useState(["", "", ""]);
++  const imageAvailable = previewImages || Boolean(imageStatus?.available);
++  const visibleValue = imageMode ? imageValue : value;
++  const validSeeds = seeds
++    .slice(0, count)
++    .every((seed) => !seed || validImageSeed(seed));
++  const fixedSeeds = seeds.slice(0, count).some(Boolean);
++  const completeSeeds = !fixedSeeds || seeds.slice(0, count).every(Boolean);
+   useEffect(() => {
+     if (draftKey) {
+       drafts.set(draftKey, value);
+@@ -148,7 +162,16 @@ export function Composer({
+   }, []);
+   const updateDraft = (text: string) => {
+     revision.current++;
+-    setValue(text);
++    if (!imageMode && text.startsWith("/image ") && imageAvailable) {
++      setImageMode(true);
++      setImageValue(text.slice(7));
++      setValue("");
++    } else if (imageMode) setImageValue(text);
++    else setValue(text);
++  };
++  const toggleImage = () => {
++    setImageMode((mode) => !mode);
++    requestAnimationFrame(() => textarea.current?.focus());
+   };
+   const fileInput = useRef<HTMLInputElement>(null);
+   const textarea = useRef<HTMLTextAreaElement>(null);
+@@ -157,7 +180,7 @@ export function Composer({
+       textarea.current.style.height = "auto";
+       textarea.current.style.height = `${Math.min(textarea.current.scrollHeight, window.innerHeight * 0.4)}px`;
+     }
+-  }, [value]);
++  }, [visibleValue]);
+   const waiting =
+     uploads.some((u) => !u.failed) ||
+     files.some(
+@@ -174,6 +197,33 @@ export function Composer({
+     ? `${estimatedInput.toLocaleString()} of ${context.context_length.toLocaleString()} total tokens; ${budget.available.toLocaleString()} input allowance; ${budget.reserve.toLocaleString()} reserved for response; 256 safety margin`
+     : "Context usage unavailable";
+   const send = async () => {
++    if (imageMode) {
++      if (
++        running ||
++        imageBusy ||
++        !imageAvailable ||
++        !imageValue.trim() ||
++        !validSeeds ||
++        !completeSeeds
++      )
++        return;
++      const submitted = imageValue,
++        version = revision.current;
++      const accepted = await onImageSend?.(
++        submitted,
++        count,
++        fixedSeeds ? seeds.slice(0, count).map(Number) : undefined,
++      );
++      if (
++        accepted !== false &&
++        draftKey &&
++        imageDrafts.get(draftKey) === submitted
++      )
++        imageDrafts.delete(draftKey);
++      if (accepted !== false && mounted.current && revision.current === version)
++        setImageValue("");
++      return;
++    }
+     if (!running && !disabled && !waiting && value.trim()) {
+       const submitted = value;
+       const version = revision.current;
+@@ -195,387 +245,485 @@ export function Composer({
+   };
+   return (
+     <>
+-      {imagesOpened && (
+-        <div
+-          hidden={!imageMode}
+-          className="mx-auto max-w-[var(--thread-w)] max-h-[65dvh] overflow-y-auto rounded-xl"
+-          data-slot="image-workspace"
+-        >
+-          <Suspense
+-            fallback={
+-              <p role="status" className="p-4">
+-                Opening image tools…
+-              </p>
+-            }
+-          >
+-            <ImagesWorkspace
+-              embedded
+-              prompt={imageValue}
+-              onPromptChange={setImageValue}
+-              onClose={() => {
+-                setImageMode(false);
+-                requestAnimationFrame(() => textarea.current?.focus());
+-              }}
+-              preview={previewImages}
+-            />
+-          </Suspense>
+-        </div>
+-      )}
+-      <div hidden={imageMode}>
+-        <form
+-          data-slot="composer"
+-          className="composer"
+-          aria-label="Message"
+-          onSubmit={(event) => {
+-            event.preventDefault();
+-            void send();
++      <form
++        data-slot="composer"
++        className="composer"
++        data-image-mode={imageMode || undefined}
++        aria-label="Message"
++        onSubmit={(event) => {
++          event.preventDefault();
++          void send();
++        }}
++      >
++        {error && (
++          <p role="alert" className="mb-3 text-sm text-danger">
++            {error}
++          </p>
++        )}
++        <input
++          type="file"
++          multiple
++          hidden
++          ref={fileInput}
++          onChange={(e) => {
++            onAttach?.(Array.from(e.target.files ?? []));
++            e.target.value = "";
+           }}
+-        >
+-          {error && (
+-            <p role="alert" className="mb-3 text-sm text-danger">
+-              {error}
+-            </p>
+-          )}
+-          <input
+-            type="file"
+-            multiple
+-            hidden
+-            ref={fileInput}
+-            onChange={(e) => {
+-              onAttach?.(Array.from(e.target.files ?? []));
+-              e.target.value = "";
+-            }}
+-          />
+-          {uploads.map((upload) => (
+-            <UploadChip
+-              key={upload.id}
+-              upload={upload}
+-              onCancel={() => onCancelUpload?.(upload.id)}
+-            />
+-          ))}
+-          {files.map((file) =>
+-            file.kind === "audio" ? (
+-              <AudioChip
+-                key={file.id}
+-                attachment={file}
+-                model={model}
+-                reserve={context?.reserve}
+-                onRemove={() => onRemove?.(file.id)}
++        />
++        {!imageMode && (
++          <>
++            {uploads.map((upload) => (
++              <UploadChip
++                key={upload.id}
++                upload={upload}
++                onCancel={() => onCancelUpload?.(upload.id)}
+               />
+-            ) : file.document ? (
+-              <DocumentChip
+-                key={file.id}
+-                attachment={file}
+-                model={model}
+-                reserve={context?.reserve}
+-                onRemove={() => onRemove?.(file.id)}
+-              />
+-            ) : (
+-              <div
+-                key={file.id}
+-                data-slot="attachment-chip"
+-                className="mb-2 inline-flex max-w-full items-center rounded-md border border-line px-2 text-xs"
+-              >
+-                <span className="truncate">{file.filename}</span>
+-                <IconButton
+-                  label={`Remove ${file.filename}`}
+-                  type="button"
+-                  onClick={() => onRemove?.(file.id)}
++            ))}
++            {files.map((file) =>
++              file.kind === "audio" ? (
++                <AudioChip
++                  key={file.id}
++                  attachment={file}
++                  model={model}
++                  reserve={context?.reserve}
++                  onRemove={() => onRemove?.(file.id)}
++                />
++              ) : file.document ? (
++                <DocumentChip
++                  key={file.id}
++                  attachment={file}
++                  model={model}
++                  reserve={context?.reserve}
++                  onRemove={() => onRemove?.(file.id)}
++                />
++              ) : (
++                <div
++                  key={file.id}
++                  data-slot="attachment-chip"
++                  className="mb-2 inline-flex max-w-full items-center rounded-md border border-line px-2 text-xs"
+                 >
+-                  <X />
+-                </IconButton>
+-              </div>
+-            ),
+-          )}
+-          {files.some(
+-            (file) =>
+-              file.document ||
+-              (file.kind === "audio" &&
+-                (file.transcript?.token_estimate ?? 0) <= budget.available),
+-          ) &&
+-            context &&
+-            estimatedInput > budget.available && (
+-              <p role="status" className="mb-3 text-xs text-warning">
+-                This message and its attachments may exceed the input allowance
+-                ({budget.available.toLocaleString()} tokens after reserving{" "}
+-                {budget.reserve.toLocaleString()} for the response and 256 for
+-                safety). Lower Max output tokens in Chat controls, choose a
+-                larger context or remove an attachment.
+-              </p>
++                  <span className="truncate">{file.filename}</span>
++                  <IconButton
++                    label={`Remove ${file.filename}`}
++                    type="button"
++                    onClick={() => onRemove?.(file.id)}
++                  >
++                    <X />
++                  </IconButton>
++                </div>
++              ),
+             )}
+-          <textarea
+-            ref={textarea}
+-            autoFocus={autoFocus}
+-            aria-label={model ? `Message ${model.display_name}` : "Message"}
+-            placeholder={
+-              model
++            {files.some(
++              (file) =>
++                file.document ||
++                (file.kind === "audio" &&
++                  (file.transcript?.token_estimate ?? 0) <= budget.available),
++            ) &&
++              context &&
++              estimatedInput > budget.available && (
++                <p role="status" className="mb-3 text-xs text-warning">
++                  This message and its attachments may exceed the input
++                  allowance ({budget.available.toLocaleString()} tokens after
++                  reserving {budget.reserve.toLocaleString()} for the response
++                  and 256 for safety). Lower Max output tokens in Chat controls,
++                  choose a larger context or remove an attachment.
++                </p>
++              )}
++          </>
++        )}
++        <textarea
++          ref={textarea}
++          autoFocus={autoFocus}
++          aria-label={
++            imageMode
++              ? "Image prompt"
++              : model
++                ? `Message ${model.display_name}`
++                : "Message"
++          }
++          placeholder={
++            imageMode
++              ? "Describe an image…"
++              : model
+                 ? `Message ${model.display_name}…`
+                 : disabled
+                   ? "Choose a model to begin…"
+                   : "Message…"
++          }
++          value={visibleValue}
++          onChange={(event) => updateDraft(event.target.value)}
++          onPaste={(event) => {
++            if (imageMode) return;
++            const files = Array.from(event.clipboardData.files);
++            if (files.length) {
++              event.preventDefault();
++              onAttach?.(files);
+             }
+-            value={value}
+-            onChange={(event) => updateDraft(event.target.value)}
+-            onPaste={(event) => {
+-              const files = Array.from(event.clipboardData.files);
+-              if (files.length) {
+-                event.preventDefault();
+-                onAttach?.(files);
+-              }
+-            }}
+-            onKeyDown={(event) => {
+-              if (event.key === "ArrowUp" && !value) {
+-                event.preventDefault();
+-                window.dispatchEvent(new Event("workbench:edit-last"));
+-              }
+-              if (event.key === "Escape" && running) {
+-                event.preventDefault();
+-                onStop?.();
+-              }
+-              if (
+-                event.key === "Enter" &&
+-                !event.shiftKey &&
+-                !event.nativeEvent.isComposing &&
+-                (!matchMedia("(pointer: coarse)").matches ||
+-                  event.metaKey ||
+-                  event.ctrlKey)
+-              ) {
+-                event.preventDefault();
+-                void send();
+-              }
+-            }}
+-            rows={2}
+-          />
+-          <div className="flex min-w-0 flex-wrap items-center gap-1">
+-            <DropdownMenu
+-              open={attachmentMenuOpen}
+-              onOpenChange={setAttachmentMenuOpen}
+-            >
+-              <DropdownMenuTrigger asChild>
+-                <IconButton label="Add attachment" type="button">
+-                  <Plus />
+-                </IconButton>
+-              </DropdownMenuTrigger>
+-              <DropdownMenuContent
+-                ref={bindAttachmentMenu}
+-                onCloseAutoFocus={() => restoreAttachmentBackground.current()}
+-                align="start"
+-                onKeyDown={(event) => {
+-                  // Escape also works before Radix's document listener mounts.
+-                  if (event.key === "Escape") {
+-                    event.preventDefault();
+-                    setAttachmentMenuOpen(false);
+-                  }
+-                }}
++          }}
++          onKeyDown={(event) => {
++            if (!imageMode && event.key === "ArrowUp" && !value) {
++              event.preventDefault();
++              window.dispatchEvent(new Event("workbench:edit-last"));
++            }
++            if (event.key === "Escape" && imageMode && !imageValue) {
++              event.preventDefault();
++              toggleImage();
++            }
++            if (event.key === "Escape" && running) {
++              event.preventDefault();
++              onStop?.();
++            }
++            if (
++              event.key === "Enter" &&
++              !event.shiftKey &&
++              !event.nativeEvent.isComposing &&
++              (!matchMedia("(pointer: coarse)").matches ||
++                event.metaKey ||
++                event.ctrlKey)
++            ) {
++              event.preventDefault();
++              void send();
++            }
++          }}
++          rows={2}
++        />
++        <div className="flex min-w-0 flex-wrap items-center gap-1">
++          {!imageMode && (
++            <>
++              <DropdownMenu
++                open={attachmentMenuOpen}
++                onOpenChange={setAttachmentMenuOpen}
+               >
+-                <DropdownMenuItem
+-                  disabled={model?.vision !== true}
+-                  onSelect={() => {
+-                    if (fileInput.current) {
+-                      fileInput.current.accept = "image/*";
+-                      fileInput.current.click();
+-                    }
+-                  }}
+-                >
+-                  <span>
+-                    Add image
+-                    {!model?.vision && (
+-                      <span className="block text-xs text-fg-3">
+-                        Images need a vision model
+-                      </span>
+-                    )}
+-                  </span>
+-                </DropdownMenuItem>
+-                <DropdownMenuItem
+-                  onSelect={() => {
+-                    if (fileInput.current) {
+-                      fileInput.current.accept =
+-                        attachmentExtensions?.text?.join(",") ?? "";
+-                      fileInput.current.click();
+-                    }
+-                  }}
+-                >
+-                  Add text file
+-                </DropdownMenuItem>
+-                <DropdownMenuItem
+-                  onSelect={() => {
+-                    if (fileInput.current) {
+-                      fileInput.current.accept =
+-                        attachmentExtensions?.document?.join(",") ?? "";
+-                      fileInput.current.click();
++                <DropdownMenuTrigger asChild>
++                  <IconButton label="Add attachment" type="button">
++                    <Plus />
++                  </IconButton>
++                </DropdownMenuTrigger>
++                <DropdownMenuContent
++                  ref={bindAttachmentMenu}
++                  onCloseAutoFocus={() => restoreAttachmentBackground.current()}
++                  align="start"
++                  onKeyDown={(event) => {
++                    // Escape also works before Radix's document listener mounts.
++                    if (event.key === "Escape") {
++                      event.preventDefault();
++                      setAttachmentMenuOpen(false);
+                     }
+                   }}
+                 >
+-                  Add document (PDF, Word)
+-                </DropdownMenuItem>
+-                <DropdownMenuItem
+-                  disabled={!transcriptionReady}
+-                  onSelect={() => {
+-                    if (fileInput.current) {
+-                      fileInput.current.accept = audioExtensions.join(",");
+-                      fileInput.current.click();
+-                    }
++                  <DropdownMenuItem
++                    disabled={model?.vision !== true}
++                    onSelect={() => {
++                      if (fileInput.current) {
++                        fileInput.current.accept = "image/*";
++                        fileInput.current.click();
++                      }
++                    }}
++                  >
++                    <span>
++                      Add image
++                      {!model?.vision && (
++                        <span className="block text-xs text-fg-3">
++                          Images need a vision model
++                        </span>
++                      )}
++                    </span>
++                  </DropdownMenuItem>
++                  <DropdownMenuItem
++                    onSelect={() => {
++                      if (fileInput.current) {
++                        fileInput.current.accept =
++                          attachmentExtensions?.text?.join(",") ?? "";
++                        fileInput.current.click();
++                      }
++                    }}
++                  >
++                    Add text file
++                  </DropdownMenuItem>
++                  <DropdownMenuItem
++                    onSelect={() => {
++                      if (fileInput.current) {
++                        fileInput.current.accept =
++                          attachmentExtensions?.document?.join(",") ?? "";
++                        fileInput.current.click();
++                      }
++                    }}
++                  >
++                    Add document (PDF, Word)
++                  </DropdownMenuItem>
++                  <DropdownMenuItem
++                    disabled={!transcriptionReady}
++                    onSelect={() => {
++                      if (fileInput.current) {
++                        fileInput.current.accept = audioExtensions.join(",");
++                        fileInput.current.click();
++                      }
++                    }}
++                  >
++                    {transcriptionReady
++                      ? "Add recording"
++                      : "Recordings need the transcription engine"}
++                  </DropdownMenuItem>
++                </DropdownMenuContent>
++              </DropdownMenu>
++              {onWebChange && (
++                <Button
++                  type="button"
++                  variant="ghost"
++                  aria-label="Web search"
++                  aria-pressed={web && !webBlocked}
++                  aria-disabled={webBlocked}
++                  title={
++                    webBlocked
++                      ? "Search is off in chats with a recording"
++                      : undefined
++                  }
++                  className={`h-11 gap-2 px-2 rounded-full ${web && !webBlocked ? "bg-brand-soft text-brand" : ""}`}
++                  onClick={() => {
++                    if (!webBlocked) onWebChange(!web);
+                   }}
+                 >
+-                  {transcriptionReady
+-                    ? "Add recording"
+-                    : "Recordings need the transcription engine"}
+-                </DropdownMenuItem>
+-              </DropdownMenuContent>
+-            </DropdownMenu>
+-            {onWebChange && (
+-              <Button
+-                type="button"
+-                variant="ghost"
+-                aria-label="Web search"
+-                aria-pressed={web && !webBlocked}
+-                aria-disabled={webBlocked}
+-                title={
+-                  webBlocked
+-                    ? "Search is off in chats with a recording"
+-                    : undefined
+-                }
+-                className={`h-11 gap-2 px-2 rounded-full ${web && !webBlocked ? "bg-brand-soft text-brand" : ""}`}
+-                onClick={() => {
+-                  if (!webBlocked) onWebChange(!web);
+-                }}
+-              >
+-                <Globe className="size-4" />
+-                <span className="hidden text-xs sm:inline">Search</span>
+-              </Button>
+-            )}
+-            {images && (
+-              <Button
+-                type="button"
+-                variant="ghost"
+-                className="h-11 min-w-11 gap-2 px-2"
+-                aria-label="Create image"
+-                onClick={() => {
+-                  setImagesOpened(true);
+-                  setImageMode(true);
+-                }}
++                  <Globe className="size-4" />
++                  <span className="hidden text-xs sm:inline">Search</span>
++                </Button>
++              )}
++            </>
++          )}
++          {images && (
++            <Button
++              type="button"
++              variant="ghost"
++              className={`h-11 min-w-11 gap-2 rounded-full px-2 ${imageMode ? "bg-brand-soft text-brand" : ""}`}
++              aria-label={imageMode ? "Leave image mode" : "Create image"}
++              aria-pressed={imageMode}
++              disabled={!imageAvailable && !imageMode}
++              title={
++                !imageAvailable
++                  ? (imageStatus?.reason ?? "Connecting to the image service…")
++                  : undefined
++              }
++              onClick={toggleImage}
++            >
++              <ImageIcon className="size-4" />
++              <span
++                className={imageMode ? "text-xs" : "hidden text-xs sm:inline"}
+               >
+-                <ImageIcon className="size-4" />
+-                <span className="hidden text-xs sm:inline">Image</span>
+-              </Button>
+-            )}
+-            {libraryControl && <LibraryControl {...libraryControl} />}
+-            {model?.reasoning && (
++                Image
++              </span>
++              {imageMode && <X className="size-3" />}
++            </Button>
++          )}
++          {imageMode && (
++            <>
+               <DropdownMenu>
+                 <DropdownMenuTrigger asChild>
+                   <Button
+                     type="button"
+-                    variant="ghost"
+-                    className="h-11 gap-2 px-2"
+-                    aria-label={`Think: ${thinkValue ?? "Model default"}`}
++                    variant="outline"
++                    className="h-11 rounded-full gap-1"
++                    aria-label="Image count"
+                   >
+-                    <Brain className="size-4" />
+-                    <span className="hidden text-xs sm:inline">Think</span>
++                    {count} image{count > 1 ? "s" : ""}
++                    <ChevronDown className="size-3" />
+                   </Button>
+                 </DropdownMenuTrigger>
+                 <DropdownMenuContent>
+-                  {["Model default", ...(model.reasoning?.options ?? [])].map(
+-                    (level) => (
+-                      <DropdownMenuItem
+-                        key={level}
+-                        onSelect={() => {
+-                          onThinkChange?.(
+-                            level === "Model default" ? null : level,
+-                          );
+-                        }}
+-                      >
+-                        {level[0].toUpperCase() + level.slice(1)}
+-                      </DropdownMenuItem>
+-                    ),
+-                  )}
++                  {[1, 2, 3].map((n) => (
++                    <DropdownMenuItem key={n} onSelect={() => setCount(n)}>
++                      {n} image{n > 1 ? "s" : ""}
++                    </DropdownMenuItem>
++                  ))}
+                 </DropdownMenuContent>
+               </DropdownMenu>
+-            )}
+-            <div className="ml-auto flex items-center gap-2">
+-              <Tooltip>
+-                <TooltipTrigger asChild>
+-                  <span
+-                    tabIndex={0}
+-                    role="img"
+-                    aria-label={contextLabel}
+-                    className="flex size-11 items-center justify-center"
+-                  >
+-                    <svg
+-                      viewBox="0 0 20 20"
+-                      className="size-[18px]"
+-                      aria-hidden
+-                    >
+-                      <circle
+-                        cx="10"
+-                        cy="10"
+-                        r="8"
+-                        fill="none"
+-                        stroke="var(--line)"
+-                        strokeWidth="2"
+-                      />
+-                      <circle
+-                        cx="10"
+-                        cy="10"
+-                        r="8"
+-                        fill="none"
+-                        stroke="var(--text-3)"
+-                        strokeWidth="2"
+-                        data-slot="context-ring"
+-                        strokeDasharray={
+-                          context
+-                            ? `${Math.min(1, (context.used_tokens + value.length * 0.3) / context.context_length) * 51} 51`
+-                            : "0 51"
++              <DropdownMenu>
++                <DropdownMenuTrigger asChild>
++                  <IconButton label="Image options" type="button">
++                    <MoreHorizontal />
++                  </IconButton>
++                </DropdownMenuTrigger>
++                <DropdownMenuContent
++                  className="p-3"
++                  onCloseAutoFocus={() => textarea.current?.focus()}
++                >
++                  <p className="mb-2 text-sm font-medium">Seed · Automatic</p>
++                  <p className="mb-2 max-w-60 text-xs text-fg-2">
++                    Leave every field empty for a new result. To repeat an
++                    image, set one seed for each image.
++                  </p>
++                  {Array.from({ length: count }, (_, i) => (
++                    <label key={i} className="mb-2 block text-xs">
++                      Seed {i + 1}
++                      <input
++                        className="mt-1 block h-11 w-full rounded-md border border-line bg-surface-2 px-2 text-base"
++                        aria-label={`Seed ${i + 1}`}
++                        inputMode="numeric"
++                        placeholder="Automatic"
++                        value={seeds[i]}
++                        onChange={(event) =>
++                          setSeeds((old) =>
++                            old.map((seed, n) =>
++                              n === i ? event.target.value : seed,
++                            ),
++                          )
+                         }
+-                        transform="rotate(-90 10 10)"
+                       />
+-                    </svg>
+-                  </span>
+-                </TooltipTrigger>
+-                <TooltipContent>
+-                  {context
+-                    ? contextLabel
+-                    : "Choose a model to see context usage"}
+-                </TooltipContent>
+-              </Tooltip>
+-              <Tooltip>
+-                <TooltipTrigger asChild>
+-                  <span
+-                    className="inline-flex"
+-                    tabIndex={waiting ? 0 : undefined}
+-                  >
++                    </label>
++                  ))}
++                  {(!validSeeds || !completeSeeds) && (
++                    <p role="alert" className="text-xs text-danger">
++                      Use 0–4,294,967,295 for every image, or leave all seeds
++                      empty.
++                    </p>
++                  )}
++                </DropdownMenuContent>
++              </DropdownMenu>
++            </>
++          )}
++          {!imageMode && (
++            <>
++              {libraryControl && <LibraryControl {...libraryControl} />}
++              {model?.reasoning && (
++                <DropdownMenu>
++                  <DropdownMenuTrigger asChild>
+                     <Button
+-                      type={running ? "button" : "submit"}
+-                      size="icon"
+-                      aria-label={running ? "Stop generating" : "Send message"}
+-                      disabled={
+-                        !running && (disabled || waiting || !value.trim())
+-                      }
+-                      onClick={running ? onStop : undefined}
+-                      className={`size-11 rounded-full disabled:bg-surface-3 disabled:text-fg-2 disabled:opacity-100 ${running ? "bg-surface-3 text-fg" : "bg-brand text-on-brand"}`}
++                      type="button"
++                      variant="ghost"
++                      className="h-11 gap-2 px-2"
++                      aria-label={`Think: ${thinkValue ?? "Model default"}`}
+                     >
+-                      <span
+-                        key={running ? "stop" : "send"}
+-                        data-slot="send-icon"
+-                      >
+-                        {running ? <Square /> : <ArrowUp />}
+-                      </span>
++                      <Brain className="size-4" />
++                      <span className="hidden text-xs sm:inline">Think</span>
+                     </Button>
+-                  </span>
+-                </TooltipTrigger>
+-                <TooltipContent>
+-                  {waiting
+-                    ? uploads.some((u) => u.kind === "document" && !u.failed)
+-                      ? "Waiting for the document"
+-                      : "Waiting for the transcript"
+-                    : running
+-                      ? "Stop generating"
++                  </DropdownMenuTrigger>
++                  <DropdownMenuContent>
++                    {["Model default", ...(model.reasoning?.options ?? [])].map(
++                      (level) => (
++                        <DropdownMenuItem
++                          key={level}
++                          onSelect={() => {
++                            onThinkChange?.(
++                              level === "Model default" ? null : level,
++                            );
++                          }}
++                        >
++                          {level[0].toUpperCase() + level.slice(1)}
++                        </DropdownMenuItem>
++                      ),
++                    )}
++                  </DropdownMenuContent>
++                </DropdownMenu>
++              )}
++            </>
++          )}
++          <div className="ml-auto flex items-center gap-2">
++            {imageMode && (
++              <span className="hidden text-xs text-fg-3 md:inline">
++                {imageStatus?.model ?? "FLUX.2 klein"} ·{" "}
++                {imageStatus?.width ?? 1024}²
++              </span>
++            )}
++            {!imageMode && (
++              <>
++                <Tooltip>
++                  <TooltipTrigger asChild>
++                    <span
++                      tabIndex={0}
++                      role="img"
++                      aria-label={contextLabel}
++                      className="flex size-11 items-center justify-center"
++                    >
++                      <svg
++                        viewBox="0 0 20 20"
++                        className="size-[18px]"
++                        aria-hidden
++                      >
++                        <circle
++                          cx="10"
++                          cy="10"
++                          r="8"
++                          fill="none"
++                          stroke="var(--line)"
++                          strokeWidth="2"
++                        />
++                        <circle
++                          cx="10"
++                          cy="10"
++                          r="8"
++                          fill="none"
++                          stroke="var(--text-3)"
++                          strokeWidth="2"
++                          data-slot="context-ring"
++                          strokeDasharray={
++                            context
++                              ? `${Math.min(1, (context.used_tokens + value.length * 0.3) / context.context_length) * 51} 51`
++                              : "0 51"
++                          }
++                          transform="rotate(-90 10 10)"
++                        />
++                      </svg>
++                    </span>
++                  </TooltipTrigger>
++                  <TooltipContent>
++                    {context
++                      ? contextLabel
++                      : "Choose a model to see context usage"}
++                  </TooltipContent>
++                </Tooltip>
++              </>
++            )}
++            <Tooltip>
++              <TooltipTrigger asChild>
++                <span
++                  className="inline-flex"
++                  tabIndex={waiting ? 0 : undefined}
++                >
++                  <Button
++                    type={running ? "button" : "submit"}
++                    size="icon"
++                    aria-label={
++                      running
++                        ? "Stop generating"
++                        : imageMode
++                          ? "Create image"
++                          : "Send message"
++                    }
++                    disabled={
++                      !running &&
++                      (imageMode
++                        ? imageBusy ||
++                          !imageAvailable ||
++                          !imageValue.trim() ||
++                          !validSeeds ||
++                          !completeSeeds
++                        : disabled || waiting || !value.trim())
++                    }
++                    onClick={running ? onStop : undefined}
++                    className={`size-11 rounded-full disabled:bg-surface-3 disabled:text-fg-2 disabled:opacity-100 ${running ? "bg-surface-3 text-fg" : "bg-brand text-on-brand"}`}
++                  >
++                    <span key={running ? "stop" : "send"} data-slot="send-icon">
++                      {running ? <Square /> : <ArrowUp />}
++                    </span>
++                  </Button>
++                </span>
++              </TooltipTrigger>
++              <TooltipContent>
++                {waiting
++                  ? uploads.some((u) => u.kind === "document" && !u.failed)
++                    ? "Waiting for the document"
++                    : "Waiting for the transcript"
++                  : running
++                    ? "Stop generating"
++                    : imageMode
++                      ? "Create image"
+                       : "Send message"}
+-                </TooltipContent>
+-              </Tooltip>
+-            </div>
++              </TooltipContent>
++            </Tooltip>
+           </div>
+-        </form>
+-        {(suggestions || recordingReady) && (!recordingReady || !value) && (
++        </div>
++      </form>
++      {!imageMode &&
++        (suggestions || recordingReady) &&
++        (!recordingReady || !value) && (
+           <div
+             data-slot="suggestion-chips"
+             className="mt-4 flex flex-wrap justify-center gap-2"
+@@ -615,7 +763,6 @@ export function Composer({
+             ))}
+           </div>
+         )}
+-      </div>
+     </>
+   );
+ }
+diff --git a/web/src/components/chat/LiveThread.tsx b/web/src/components/chat/LiveThread.tsx
+index a58d9530..0ac92c3e 100644
+--- a/web/src/components/chat/LiveThread.tsx
++++ b/web/src/components/chat/LiveThread.tsx
+@@ -18,7 +18,7 @@ import {
+   useState,
+   type RefObject,
+ } from "react";
+-import { TriangleAlert } from "lucide-react";
++import { TriangleAlert, ImagePlus } from "lucide-react";
+ import { Button } from "@/components/ui/button";
+ import { Textarea } from "@/components/ui/textarea";
+ import type { Message, Source, WebRead, Model, Bootstrap } from "@/lib/api";
+@@ -28,7 +28,9 @@ import { SearchActivity } from "./SearchActivity";
+ import { messageError } from "@/lib/errors";
+ import { SourcesSheet } from "./SourcesSheet";
+ const Markdown = lazy(() => import("./Markdown"));
++const ImageTurn = lazy(() => import("./ImageTurn"));
+ type LiveThreadProps = {
++  onImageAction?: (message: Message, action: "retry" | "cancel") => void;
+   pending?: Message | null;
+   position?: number;
+   onScrollChange?: (scrolled: boolean) => void;
+@@ -59,6 +61,7 @@ type LiveThreadProps = {
+ export function LiveThread({
+   messages,
+   all,
++  onImageAction,
+   stage,
+   steps,
+   scrollRef,
+@@ -84,6 +87,7 @@ export function LiveThread({
+     [draft, setDraft] = useState("");
+   const stick = useRef(true);
+   const handlers = useRef({
++    onImageAction,
+     onRegenerate,
+     onEdit,
+     onBranch,
+@@ -95,6 +99,7 @@ export function LiveThread({
+   });
+   useEffect(() => {
+     handlers.current = {
++      onImageAction,
+       onRegenerate,
+       onEdit,
+       onBranch,
+@@ -107,6 +112,8 @@ export function LiveThread({
+   });
+   const stable = useMemo(
+     () => ({
++      onImageAction: (message: Message, action: "retry" | "cancel") =>
++        handlers.current.onImageAction?.(message, action),
+       onRegenerate: (message: Message, force?: boolean) =>
+         handlers.current.onRegenerate(message, force),
+       onEdit: (message: Message, text: string) =>
+@@ -153,7 +160,9 @@ export function LiveThread({
+   }, [last?.id, last?.status, last?.error?.message]);
+   useEffect(() => {
+     const listener = () => {
+-      const last = [...messages].reverse().find((m) => m.role === "user");
++      const last = [...messages]
++        .reverse()
++        .find((m) => m.role === "user" && m.kind !== "image");
+       if (last) {
+         setEditing(last.id);
+         setDraft(last.content);
+@@ -238,6 +247,7 @@ function OptimisticRow({ message }: { message: Message }) {
+       <article
+         aria-label="user message"
+         data-message-id={message.id}
++        id={`m-${message.id}`}
+         data-fresh={fresh || undefined}
+         onAnimationEnd={(event) => {
+           if (event.target === event.currentTarget)
+@@ -297,6 +307,7 @@ export const MessageRow = memo(function MessageRow({
+   onChatSettings,
+   onNew,
+   onRegenerateWith,
++  onImageAction,
+   editing,
+   draft,
+   setEditing,
+@@ -313,6 +324,7 @@ export const MessageRow = memo(function MessageRow({
+           useFreshRows.getState().clear(message.id);
+       }}
+       data-message-id={message.id}
++      id={`m-${message.id}`}
+       style={
+         message.status !== "streaming"
+           ? { contentVisibility: "auto", containIntrinsicSize: "auto 180px" }
+@@ -355,6 +367,16 @@ export const MessageRow = memo(function MessageRow({
+           </div>
+         ) : (
+           <div className="user-bubble ml-auto w-fit">
++            {message.kind === "image" && (
++              <p className="mb-1 flex items-center gap-1 text-xs text-fg-2">
++                <ImagePlus className="size-3" />
++                Image
++                {(all.find((row) => row.parent_id === message.id)?.images
++                  ?.length ?? 1) > 1
++                  ? ` · ${all.find((row) => row.parent_id === message.id)?.images?.length} images`
++                  : ""}
++              </p>
++            )}
+             <p className="whitespace-pre-wrap break-words">{message.content}</p>
+             {(message.attachments ?? []).map((a) =>
+               a.kind === "audio" ? (
+@@ -375,6 +397,15 @@ export const MessageRow = memo(function MessageRow({
+             )}
+           </div>
+         )
++      ) : message.kind === "image" ? (
++        <Suspense fallback={<p role="status">Loading images…</p>}>
++          <ImageTurn
++            message={message}
++            all={all}
++            onBranch={onBranch}
++            onAction={onImageAction}
++          />
++        </Suspense>
+       ) : (
+         <>
+           {message.stats?.dropped_message_count ? (
+@@ -500,7 +531,7 @@ export const MessageRow = memo(function MessageRow({
+           {renderSources?.(message, sources ?? [], reads ?? [])}
+         </>
+       )}
+-      {message.status !== "streaming" && (
++      {message.status !== "streaming" && message.kind !== "image" && (
+         <div
+           data-slot="message-footer"
+           data-role={message.role}
+diff --git a/web/src/components/images/ImagesPage.tsx b/web/src/components/images/ImagesPage.tsx
+index 73d1b16a..52888d62 100644
+--- a/web/src/components/images/ImagesPage.tsx
++++ b/web/src/components/images/ImagesPage.tsx
+@@ -1,12 +1,10 @@
+ import { useEffect, useRef, useState } from "react";
+-import { Link } from "react-router";
++import { Link, useNavigate } from "react-router";
+ import { ArrowLeft, ImageIcon } from "lucide-react";
+ import { api } from "@/lib/api";
+ import { usePreferenceSync } from "@/hooks/usePreferenceSync";
+ import type { components } from "@/lib/api-types";
+ import { Button } from "@/components/ui/button";
+-import { Input } from "@/components/ui/input";
+-import { Textarea } from "@/components/ui/textarea";
+ import {
+   Dialog,
+   DialogContent,
+@@ -15,7 +13,7 @@ import {
+ } from "@/components/ui/dialog";
+ import { FileSaveDialog } from "@/components/app/FileSaveDialog";
+ import { IconButton } from "@/components/app/IconButton";
+-import { imageSeeds, validImageSeed } from "@/lib/image-seeds";
++import { imageSeeds } from "@/lib/image-seeds";
+ 
+ type Job = components["schemas"]["ImageJob"];
+ type Snapshot = components["schemas"]["ImageSnapshot"];
+@@ -220,8 +218,6 @@ export function ImagesView({
+   storage,
+   status,
+   preview = false,
+-  prompt: controlledPrompt,
+-  onPromptChange,
+   embedded = false,
+ }: {
+   jobs: Job[];
+@@ -232,11 +228,7 @@ export function ImagesView({
+   onPromptChange?: (prompt: string) => void;
+   embedded?: boolean;
+ }) {
+-  const [ownPrompt, setOwnPrompt] = useState("");
+-  const prompt = controlledPrompt ?? ownPrompt;
+-  const setPrompt = onPromptChange ?? setOwnPrompt;
+-  const [seed, setSeed] = useState("");
+-  const [parent, setParent] = useState<string>();
++  const navigate = useNavigate();
+   const [filter, setFilter] = useState("all");
+   const [saving, setSaving] = useState<Job>();
+   const [detail, setDetail] = useState<Job>();
+@@ -314,96 +306,21 @@ export function ImagesView({
+       filter === "all" ||
+       (filter === "active" ? active.has(job.state) : job.image_bytes > 0),
+   );
+-  const validSeed = !seed || validImageSeed(seed);
+   return (
+     <>
+-      <section
+-        className={
+-          embedded
+-            ? "composer"
+-            : "rounded-xl border border-line bg-surface p-4 sm:p-5"
+-        }
+-        aria-labelledby="image-create"
+-      >
+-        <h2 id="image-create" className="mb-1 font-medium">
+-          Create an image
+-        </h2>
+-        <p className="mb-4 text-sm text-fg-2">
+-          Describe what you want. Your Mac creates it with FLUX.2 klein 4B.
++      <div className="mb-5 flex items-center justify-between gap-3">
++        <p className="text-sm text-fg-2">
++          Images from your chats and workflows.
+         </p>
+-        {status && !status.available && (
+-          <p className="mb-3 text-sm text-fg-2" role="status">
+-            {status.reason}
+-          </p>
+-        )}
+-        <label className="mb-2 block text-sm" htmlFor="image-prompt">
+-          Prompt
+-        </label>
+-        <Textarea
+-          id="image-prompt"
+-          value={prompt}
+-          maxLength={4000}
+-          className="min-h-28 bg-surface-2 text-base"
+-          placeholder="Describe the image you want…"
+-          onChange={(event) => setPrompt(event.target.value)}
+-        />
+-        <div className="mt-4 flex flex-wrap items-end gap-3">
+-          <details className="text-sm">
+-            <summary className="flex min-h-11 cursor-pointer items-center">
+-              Advanced
+-            </summary>
+-            <label className="block text-sm">
+-              Seed (optional)
+-              <Input
+-                aria-label="Seed"
+-                inputMode="numeric"
+-                value={seed}
+-                onChange={(event) => setSeed(event.target.value)}
+-                className="mt-1 h-11 w-36 bg-surface-2"
+-                placeholder="Automatic"
+-              />
+-            </label>
+-            <p className="mt-2 max-w-60 text-xs text-fg-3">
+-              Leave empty for a new result. Use a saved seed to repeat an image
+-              with the same prompt.
+-            </p>
+-          </details>
+-          <Button
+-            className="h-11"
+-            disabled={
+-              busy ||
+-              !prompt.trim() ||
+-              !validSeed ||
+-              (!preview && !status?.available)
+-            }
+-            onClick={() =>
+-              !preview &&
+-              void submit(prompt, seed ? Number(seed) : undefined, parent)
+-            }
+-          >
+-            Generate one image
+-          </Button>
+-          {parent && (
+-            <Button
+-              className="h-11"
+-              variant="ghost"
+-              onClick={() => setParent(undefined)}
+-            >
+-              Clear version link
+-            </Button>
+-          )}
+-        </div>
+-        {parent && (
+-          <p className="mt-2 text-sm text-fg-2">
+-            New version from the selected prompt. This generates a complete
+-            image and keeps the original.
+-          </p>
+-        )}
+-        <p className="mt-3 text-xs text-fg-3">
+-          One native task at a time. Chat may wait for an image to finish;
+-          models are never unloaded automatically.
++        <Button className="h-11" onClick={() => navigate("/?image=1")}>
++          New image
++        </Button>
++      </div>
++      {status && !status.available && (
++        <p role="status" className="mb-4 text-sm text-fg-2">
++          {status.reason}
+         </p>
+-      </section>
++      )}
+       {notice && (
+         <p className="my-4 text-sm text-fg-2" role="status">
+           {notice}
+@@ -514,6 +431,17 @@ export function ImagesView({
+                   ? ` · ${bytes(job.image_bytes + job.metadata_bytes)}`
+                   : ""}
+               </p>
++              {job.origin &&
++                (job.origin.deleted ? (
++                  <p className="mt-2 text-xs text-fg-3">From a deleted chat</p>
++                ) : (
++                  <Link
++                    className="mt-2 flex min-h-11 items-center text-sm text-brand"
++                    to={`/c/${job.origin.chat_id}#m-${job.origin.message_id}`}
++                  >
++                    From {job.origin.title ?? "chat"}
++                  </Link>
++                ))}
+               {job.error && (
+                 <p className="mt-3 text-sm text-danger">{job.error}</p>
+               )}
+@@ -611,18 +539,6 @@ export function ImagesView({
+                 Created {new Date(detail.created_at).toLocaleString()}
+               </p>
+               <div className="flex flex-wrap gap-2">
+-                <Button
+-                  className="h-11"
+-                  onClick={() => {
+-                    setPrompt(detail.prompt);
+-                    setSeed("");
+-                    setParent(detail.id);
+-                    setDetail(undefined);
+-                    document.getElementById("image-prompt")?.focus();
+-                  }}
+-                >
+-                  Use prompt for new version
+-                </Button>
+                 {!!detail.image_bytes && (
+                   <Button
+                     className="h-11"
+diff --git a/web/src/design/DesignPage.tsx b/web/src/design/DesignPage.tsx
+index dcbac001..0cd22d38 100644
+--- a/web/src/design/DesignPage.tsx
++++ b/web/src/design/DesignPage.tsx
+@@ -71,6 +71,7 @@ const webMessage: Message = {
+   },
+ };
+ const ImagesPreview = lazy(() => import("./ImagesPreview"));
++const ChatImagesPreview = lazy(() => import("./ChatImagesPreview"));
+ const WorkflowsPreview = lazy(() => import("./WorkflowsPreview"));
+ const WorkflowHomePreview = lazy(() => import("./WorkflowHomePreview"));
+ const WorkflowStudioPreview = lazy(() => import("./WorkflowStudioPreview"));
+@@ -78,6 +79,12 @@ const WorkingPreview = lazy(() => import("./WorkingPreview"));
+ const Markdown = lazy(() => import("@/components/chat/Markdown"));
+ const LibraryAnswersPreview = lazy(() => import("./LibraryAnswersPreview"));
+ export function DesignPage() {
++  if (new URLSearchParams(location.search).has("chat-images"))
++    return (
++      <Suspense fallback={<p>Loading chat images…</p>}>
++        <ChatImagesPreview />
++      </Suspense>
++    );
+   if (new URLSearchParams(location.search).has("indicator"))
+     return (
+       <Suspense fallback={<p>Loading indicator…</p>}>
+diff --git a/web/src/lib/api-types.ts b/web/src/lib/api-types.ts
+index ebd854d6..8a31fd54 100644
+--- a/web/src/lib/api-types.ts
++++ b/web/src/lib/api-types.ts
+@@ -1316,6 +1316,57 @@ export interface paths {
+         patch?: never;
+         trace?: never;
+     };
++    "/api/chats/{identifier}/images": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        get?: never;
++        put?: never;
++        /** Create */
++        post: operations["create_api_chats__identifier__images_post"];
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
++    "/api/chats/{identifier}/messages/{message_id}/images/retry": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        get?: never;
++        put?: never;
++        /** Retry */
++        post: operations["retry_api_chats__identifier__messages__message_id__images_retry_post"];
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
++    "/api/chats/{identifier}/messages/{message_id}/images/cancel": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        get?: never;
++        put?: never;
++        /** Cancel */
++        post: operations["cancel_api_chats__identifier__messages__message_id__images_cancel_post"];
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
+     "/api/connections": {
+         parameters: {
+             query?: never;
+@@ -1853,6 +1904,33 @@ export interface components {
+                 [key: string]: components["schemas"]["WebRead"][];
+             };
+         };
++        /** ChatImageCreate */
++        ChatImageCreate: {
++            /** Request Key */
++            request_key: string;
++            /** Prompt */
++            prompt: string;
++            /** Count */
++            count: number;
++            /** Seeds */
++            seeds: number[];
++            /** Parent Id */
++            parent_id?: string | null;
++            /** Source Job Id */
++            source_job_id?: string | null;
++        };
++        /** ChatImageResponse */
++        ChatImageResponse: {
++            user?: components["schemas"]["Message"] | null;
++            assistant: components["schemas"]["Message"];
++        };
++        /** ChatImageRetry */
++        ChatImageRetry: {
++            /** Request Key */
++            request_key: string;
++            /** Seeds */
++            seeds: number[];
++        };
+         /** ChatList */
+         ChatList: {
+             /** Items */
+@@ -2529,6 +2607,7 @@ export interface components {
+             metadata_bytes: number;
+             /** Sha256 */
+             sha256?: string | null;
++            origin?: components["schemas"]["ImageOrigin"] | null;
+         };
+         /** ImageNode */
+         ImageNode: {
+@@ -2551,6 +2630,20 @@ export interface components {
+             kind: "generate_image";
+             config: components["schemas"]["ImageConfig"];
+         };
++        /** ImageOrigin */
++        ImageOrigin: {
++            /** Chat Id */
++            chat_id: string;
++            /** Message Id */
++            message_id: string;
++            /** Title */
++            title?: string | null;
++            /**
++             * Deleted
++             * @default false
++             */
++            deleted: boolean;
++        };
+         /** ImageSnapshot */
+         ImageSnapshot: {
+             /** Jobs */
+@@ -2832,6 +2925,14 @@ export interface components {
+             library?: components["schemas"]["LibraryInfo"] | null;
+             /** Created At */
+             created_at: string;
++            /**
++             * Kind
++             * @default text
++             * @enum {string}
++             */
++            kind: "text" | "image";
++            /** Images */
++            images?: components["schemas"]["ImageJob"][] | null;
+         };
+         /** MessageErrorData */
+         MessageErrorData: {
+@@ -6808,6 +6909,109 @@ export interface operations {
+             };
+         };
+     };
++    create_api_chats__identifier__images_post: {
++        parameters: {
++            query?: never;
++            header?: never;
++            path: {
++                identifier: string;
++            };
++            cookie?: never;
++        };
++        requestBody: {
++            content: {
++                "application/json": components["schemas"]["ChatImageCreate"];
++            };
++        };
++        responses: {
++            /** @description Successful Response */
++            202: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/json": components["schemas"]["ChatImageResponse"];
++                };
++            };
++            /** @description Validation Error */
++            422: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/json": components["schemas"]["HTTPValidationError"];
++                };
++            };
++        };
++    };
++    retry_api_chats__identifier__messages__message_id__images_retry_post: {
++        parameters: {
++            query?: never;
++            header?: never;
++            path: {
++                identifier: string;
++                message_id: string;
++            };
++            cookie?: never;
++        };
++        requestBody: {
++            content: {
++                "application/json": components["schemas"]["ChatImageRetry"];
++            };
++        };
++        responses: {
++            /** @description Successful Response */
++            202: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/json": components["schemas"]["ChatImageResponse"];
++                };
++            };
++            /** @description Validation Error */
++            422: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/json": components["schemas"]["HTTPValidationError"];
++                };
++            };
++        };
++    };
++    cancel_api_chats__identifier__messages__message_id__images_cancel_post: {
++        parameters: {
++            query?: never;
++            header?: never;
++            path: {
++                identifier: string;
++                message_id: string;
++            };
++            cookie?: never;
++        };
++        requestBody?: never;
++        responses: {
++            /** @description Successful Response */
++            200: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/json": components["schemas"]["ChatImageResponse"];
++                };
++            };
++            /** @description Validation Error */
++            422: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/json": components["schemas"]["HTTPValidationError"];
++                };
++            };
++        };
++    };
+     listing_api_connections_get: {
+         parameters: {
+             query?: never;
+diff --git a/web/src/lib/api.ts b/web/src/lib/api.ts
+index 54abb595..cc19db0c 100644
+--- a/web/src/lib/api.ts
++++ b/web/src/lib/api.ts
+@@ -1,10 +1,18 @@
+ import type { components } from "./api-types";
+ export type Chat = components["schemas"]["Chat"];
+-export type Message = components["schemas"]["Message"];
++// The additive discriminator is optional for pre-migration/optimistic text rows.
++export type Message = Omit<components["schemas"]["Message"], "kind"> & {
++  kind?: components["schemas"]["Message"]["kind"];
++};
+ export type Model = components["schemas"]["ModelInfo"];
+ export type Attachment = components["schemas"]["Attachment"];
+-export type Detail = components["schemas"]["ChatDetail"];
+-export type RunResponse = components["schemas"]["RunResponse"];
++export type Detail = Omit<components["schemas"]["ChatDetail"], "messages"> & {
++  messages: Message[];
++};
++export type RunResponse = Omit<
++  components["schemas"]["RunResponse"],
++  "user_message" | "assistant_message"
++> & { user_message?: Message | null; assistant_message: Message };
+ export type Bootstrap = components["schemas"]["Bootstrap"];
+ export type Source = components["schemas"]["Source"];
+ export type WebRead = components["schemas"]["WebRead"];
+diff --git a/web/src/styles/motion.css b/web/src/styles/motion.css
+index 2361aba4..08b488f6 100644
+--- a/web/src/styles/motion.css
++++ b/web/src/styles/motion.css
+@@ -894,3 +894,202 @@ article[data-fresh="true"] {
+ [data-reduce-motion="always"] .wf-edge-path[data-run="active"] {
+   stroke-dasharray: none;
+ }
++
++/* CI-B: job-driven image development. The color field is decorative, not a preview. */
++.composer[data-image-mode] {
++  border-color: color-mix(in srgb, var(--brand) 40%, var(--line));
++}
++.image-frames {
++  display: grid;
++  grid-template-columns: repeat(2, minmax(0, 1fr));
++  gap: 8px;
++}
++.image-frames.image-count-1 {
++  grid-template-columns: minmax(0, 1fr);
++  max-width: 440px;
++}
++.image-frames.image-count-3 {
++  grid-template-columns: repeat(3, minmax(0, 1fr));
++}
++.image-frame-shell {
++  position: relative;
++  min-width: 0;
++}
++.image-frame {
++  aspect-ratio: 1;
++  position: relative;
++  overflow: hidden;
++  border: 1px solid var(--line);
++  border-radius: var(--radius-lg);
++  background: var(--surface-2);
++}
++.image-develop {
++  position: absolute;
++  inset: 0;
++  opacity: 0.85;
++}
++.image-develop[data-decoding] {
++  opacity: 1;
++}
++.image-develop i {
++  position: absolute;
++  width: 125%;
++  height: 125%;
++  left: -20%;
++  top: -25%;
++  border-radius: 50%;
++  background: radial-gradient(ellipse, var(--brand), transparent 60%);
++  filter: blur(28px);
++  animation: image-drift-a 7s ease-in-out infinite alternate;
++}
++.image-develop i:nth-child(2) {
++  left: 20%;
++  top: 15%;
++  background: radial-gradient(ellipse, var(--brand-soft), transparent 65%);
++  animation: image-drift-b 9s ease-in-out infinite alternate;
++}
++.image-develop i:nth-child(3) {
++  left: -15%;
++  top: 35%;
++  background: radial-gradient(ellipse, var(--surface-3), transparent 60%);
++  animation: image-drift-c 11s ease-in-out infinite alternate;
++}
++.image-develop::after {
++  content: "";
++  position: absolute;
++  inset: 0;
++  opacity: 0.08;
++  background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="160" height="160"%3E%3Cfilter id="n"%3E%3CfeTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23n)" opacity=".8"/%3E%3C/svg%3E');
++}
++.image-sheen {
++  position: absolute;
++  inset: 0;
++  width: 40%;
++  background: linear-gradient(
++    90deg,
++    transparent,
++    color-mix(in srgb, var(--text-1) 6%, transparent),
++    transparent
++  );
++  animation: image-sheen 2.4s ease-in-out infinite;
++}
++.image-progress {
++  position: absolute;
++  bottom: 12px;
++  left: 12px;
++  right: 12px;
++  display: flex;
++  gap: 4px;
++}
++.image-progress > span {
++  height: 3px;
++  flex: 1;
++  overflow: hidden;
++  border-radius: 2px;
++  background: color-mix(in srgb, var(--surface-3) 60%, transparent);
++}
++.image-progress i {
++  display: block;
++  height: 100%;
++  background: var(--brand);
++  transform: scaleX(0);
++  transform-origin: left;
++  transition: transform 320ms var(--ease-out);
++}
++.image-progress i[data-filled="true"] {
++  transform: scaleX(1);
++}
++.image-output {
++  position: absolute;
++  inset: 0;
++  width: 100%;
++  height: 100%;
++  object-fit: contain;
++  opacity: 0;
++}
++.image-output.is-loaded {
++  opacity: 1;
++}
++.image-reveal {
++  animation: image-reveal 320ms var(--ease-out);
++}
++.image-frame-actions {
++  display: flex;
++  flex-wrap: wrap;
++  align-items: center;
++  margin-top: 4px;
++}
++@media (hover: hover) and (pointer: fine) {
++  .image-frame-actions {
++    position: absolute;
++    bottom: 0;
++    left: 0;
++    right: 0;
++    margin: 0;
++    padding: 8px;
++    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
++    background: linear-gradient(transparent, var(--overlay));
++    opacity: 0;
++    transition: opacity 120ms var(--ease-out);
++  }
++  .image-frame-shell:hover .image-frame-actions,
++  .image-frame-shell:focus-within .image-frame-actions {
++    opacity: 1;
++  }
++}
++[data-frozen] .image-develop *,
++[data-frozen] .atelier-mark * {
++  animation-play-state: paused;
++}
++@keyframes image-drift-a {
++  from {
++    transform: translate(-6%, -4%);
++  }
++  to {
++    transform: translate(12%, 10%);
++  }
++}
++@keyframes image-drift-b {
++  from {
++    transform: translate(8%, 5%);
++  }
++  to {
++    transform: translate(-10%, -8%);
++  }
++}
++@keyframes image-drift-c {
++  from {
++    transform: translate(-4%, 9%);
++  }
++  to {
++    transform: translate(9%, -7%);
++  }
++}
++@keyframes image-sheen {
++  from {
++    transform: translateX(-110%);
++  }
++  to {
++    transform: translateX(360%);
++  }
++}
++@keyframes image-reveal {
++  from {
++    opacity: 0;
++    transform: scale(1.03);
++  }
++  to {
++    opacity: 1;
++    transform: scale(1);
++  }
++}
++
++@media (max-width: 767px) {
++  .image-frames.image-count-3 {
++    display: flex;
++    overflow-x: auto;
++  }
++  .image-frames.image-count-3 > .image-frame-shell {
++    flex: 0 0 78%;
++  }
++}
+diff --git a/web/tests/composer-workflows.spec.ts b/web/tests/composer-workflows.spec.ts
+index c1195d50..c668f71f 100644
+--- a/web/tests/composer-workflows.spec.ts
++++ b/web/tests/composer-workflows.spec.ts
+@@ -42,7 +42,7 @@ test("Composer image acceptance retry preserves seed/key, saving and unsent chat
+     )
+       chatCalls++;
+   });
+-  await page.route("**/api/images/jobs", async (route) => {
++  await page.route("**/api/chats/*/images", async (route) => {
+     if (route.request().method() !== "POST") return route.continue();
+     bodies.push(route.request().postDataJSON());
+     if (bodies.length === 1) {
+@@ -63,26 +63,26 @@ test("Composer image acceptance retry preserves seed/key, saving and unsent chat
+     page.getByRole("textbox", { name: "Seed", exact: true }),
+   ).not.toBeVisible();
+   await page
+-    .getByRole("textbox", { name: "Prompt", exact: true })
++    .getByRole("textbox", { name: "Image prompt", exact: true })
+     .fill("Synthetic composer circle");
+-  await page.getByRole("button", { name: "Generate one image" }).click();
++  await page.getByRole("button", { name: "Create image", exact: true }).click();
+   await expect(
+     page
+-      .getByRole("status")
++      .getByRole("alert")
+       .filter({ hasText: /Failed to fetch|Load failed|NetworkError/ }),
+   ).toBeVisible();
+-  await page.getByRole("button", { name: "Generate one image" }).click();
++  await page.getByRole("button", { name: "Create image", exact: true }).click();
+   await expect.poll(() => bodies.length).toBe(2);
+   expect(bodies[1]).toEqual(bodies[0]);
+-  expect(Number.isInteger(bodies[0].seed)).toBe(true);
+-  expect(bodies[0].seed as number).toBeGreaterThanOrEqual(0);
+-  expect(bodies[0].seed as number).toBeLessThanOrEqual(4294967295);
++  expect(Number.isInteger((bodies[0].seeds as number[])[0])).toBe(true);
++  expect((bodies[0].seeds as number[])[0]).toBeGreaterThanOrEqual(0);
++  expect((bodies[0].seeds as number[])[0]).toBeLessThanOrEqual(4294967295);
+   const job = page
+     .getByRole("article")
+     .filter({ hasText: "Synthetic composer circle" })
+     .first();
+   await expect(
+-    job.getByRole("button", { name: "Save", exact: true }),
++    job.getByRole("button", { name: "Save image", exact: true }),
+   ).toBeVisible();
+   const scan = await new AxeBuilder({ page }).analyze();
+   expect(
+@@ -90,17 +90,19 @@ test("Composer image acceptance retry preserves seed/key, saving and unsent chat
+       ["critical", "serious"].includes(v.impact ?? ""),
+     ),
+   ).toEqual([]);
+-  await job.getByRole("button", { name: "Save", exact: true }).click();
++  await job.getByRole("button", { name: "Save image", exact: true }).click();
+   await expect(
+     page.getByRole("dialog", { name: "Save image", exact: true }),
+   ).toBeVisible();
+   await page
+     .getByRole("button", { name: "Close image save", exact: true })
+     .click();
+-  await page.getByRole("button", { name: "Message", exact: true }).click();
++  await page
++    .getByRole("button", { name: "Leave image mode", exact: true })
++    .click();
+   await expect(message).toHaveValue("Synthetic unsent chat draft");
+   await expect(message).toBeFocused();
+-  expect(chatCalls).toBe(0);
++  expect(chatCalls).toBe(1); // Approved: the image is now a saved chat turn.
+   await workspaceLink(page, "Workflows");
+   await page
+     .getByRole("button", { name: "Use Brief to images template", exact: true })
+diff --git a/web/tests/images.spec.ts b/web/tests/images.spec.ts
+index 6a0d51af..53ca642a 100644
+--- a/web/tests/images.spec.ts
++++ b/web/tests/images.spec.ts
+@@ -103,16 +103,13 @@ test("Durable Images: close, reconnect, version, exports and removal", async ({
+ }) => {
+   await request.post("/api/images/clear", { data: { confirm: true } });
+   await page.goto("/images");
+-  await expect(
+-    page.getByRole("button", { name: "Generate one image" }),
+-  ).toBeDisabled();
++  await page.getByRole("button", { name: "New image", exact: true }).click();
+   await page
+-    .getByRole("textbox", { name: "Prompt", exact: true })
++    .getByRole("textbox", { name: "Image prompt", exact: true })
+     .fill("Synthetic browser image #slow");
+-  await page.getByRole("button", { name: "Generate one image" }).click();
+-  await expect(
+-    page.getByRole("status").filter({ hasText: "Image accepted" }),
+-  ).toBeVisible();
++  await page.getByRole("button", { name: "Create image", exact: true }).click();
++  await expect(page).toHaveURL(/\/c\//);
++  await expect(page.locator('[data-slot="image-turn"]')).toBeVisible();
+   await openSidebar(page);
+   await page.getByRole("link", { name: "New chat", exact: true }).click();
+   await page.goto("/images");
+@@ -123,13 +120,20 @@ test("Durable Images: close, reconnect, version, exports and removal", async ({
+   await expect(
+     job.getByRole("button", { name: "Save", exact: true }),
+   ).toBeVisible();
+-  await job.getByRole("button", { name: "Details", exact: true }).click();
+-  await page
+-    .getByRole("button", { name: "Use prompt for new version" })
+-    .click();
+-  await page.getByText("Advanced", { exact: true }).click();
+-  await page.getByRole("textbox", { name: "Seed", exact: true }).fill("1337");
+-  await page.getByRole("button", { name: "Generate one image" }).click();
++  // CI-B moves creation to chat; lineage regression remains on its existing job API.
++  const originalId = await job.getAttribute("data-job-id");
++  const created = await request.post("/api/images/jobs", {
++    data: {
++      request_key: crypto.randomUUID(),
++      prompt: "Synthetic browser image #slow",
++      seed: 1337,
++      parent_id: originalId,
++    },
++  });
++  expect(created.status()).toBe(202);
++  const accepted = await created.json();
++  expect(accepted.seed).toBe(1337);
++  expect(accepted.parent_id).toBe(originalId);
+   const version = page
+     .getByRole("article")
+     .filter({ hasText: "Additional version" })

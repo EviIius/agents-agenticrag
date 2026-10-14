@@ -1,0 +1,94 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+All checks passed!
+. scripts/tool-env.sh; uv run --directory server ruff format --check app tests
+151 files already formatted
+. scripts/tool-env.sh; uv run --directory server mypy app tests
+Success: no issues found in 149 source files
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_coverage.py
+..........................................................F............. [ 11%]
+........................................................................ [ 22%]
+.........................................................F.......F...... [ 33%]
+........................................................................ [ 45%]
+........................................................................ [ 56%]
+........................................................................ [ 67%]
+........................................................................ [ 79%]
+........................................................................ [ 90%]
+............................................................             [100%]
+=================================== FAILURES ===================================
+____________ test_phase5a_rows_and_meta_nullable_survive_migration _____________
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-105/test_phase5a_rows_and_meta_nul0')
+
+    async def test_phase5a_rows_and_meta_nullable_survive_migration(tmp_path: Path) -> None:
+        target = tmp_path / "phase5a.db"
+        shutil.copyfile(Path(__file__).parent / "fixtures/db/phase3.db", target)
+        async with aiosqlite.connect(target) as db:
+            await db.executescript(
+                (MIGRATIONS / "005_presets.sql").read_text() + "PRAGMA user_version=5;"
+            )
+            await db.execute(
+                "INSERT INTO presets VALUES ('fake','Invented preset',NULL,'{}',0,"
+                "'2026-10-05','2026-10-05')"
+            )
+            await db.commit()
+        columns, before = snapshot(target)
+        async with aiosqlite.connect(target) as db:
+            await migrate(db)
+            version = await (await db.execute("PRAGMA user_version")).fetchone()
+>           assert version and version[0] == 11
+E           assert ((12,) and 12 == 11)
+
+tests/test_documents.py:308: AssertionError
+____________ test_phase5b_migration_preserves_every_existing_column ____________
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-105/test_phase5b_migration_preserv0')
+
+    async def test_phase5b_migration_preserves_every_existing_column(tmp_path: Path) -> None:
+        dbpath = tmp_path / "phase5b.db"
+        shutil.copy2(Path(__file__).parent / "fixtures/db/phase3.db", dbpath)
+        async with aiosqlite.connect(dbpath) as db:
+            for p in sorted(MIGRATIONS.glob("*.sql")):
+                n = int(p.name.split("_")[0])
+                if 4 < n <= 6:
+                    await db.executescript(p.read_text() + f"\nPRAGMA user_version={n};")
+            await db.commit()
+            columns, before = snapshot(dbpath)
+            await migrate(db)
+        assert snapshot(dbpath, columns)[1] == before
+        with sqlite3.connect(dbpath) as db:
+>           assert db.execute("PRAGMA user_version").fetchone()[0] == 11
+E           assert 12 == 11
+
+tests/test_folders_backups.py:133: AssertionError
+___________________ test_migration_is_idempotent_and_private ___________________
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-105/test_migration_is_idempotent_a0')
+
+    @pytest.mark.asyncio
+    async def test_migration_is_idempotent_and_private(tmp_path: Path) -> None:
+        for _ in range(2):
+            async with connect(tmp_path) as db:
+                async with db.execute("PRAGMA user_version") as cursor:
+>                   assert await cursor.fetchone() == (11,)
+E                   assert (12,) == (11,)
+E                     
+E                     At index 0 diff: 12 != 11
+E                     Use -v to get more diff
+
+tests/test_foundation.py:18: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_documents.py::test_phase5a_rows_and_meta_nullable_survive_migration
+FAILED tests/test_folders_backups.py::test_phase5b_migration_preserves_every_existing_column
+FAILED tests/test_foundation.py::test_migration_is_idempotent_and_private - a...
+3 failed, 633 passed in 265.80s (0:04:25)
+providers line coverage: 368/418 = 88.0%
+runs line coverage: 389/435 = 89.4%
+search line coverage: 1564/1741 = 89.8%
+transcribe line coverage: 690/740 = 93.2%
+documents line coverage: 196/203 = 96.6%
+library line coverage: 762/823 = 92.6%
+images line coverage: 625/702 = 89.0%
+workflows line coverage: 2627/2956 = 88.9%
+backup.py line coverage: 106/113 = 93.8%
+capacity.py line coverage: 55/58 = 94.8%
+make: *** [check] Error 1

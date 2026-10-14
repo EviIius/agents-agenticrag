@@ -70,6 +70,15 @@ export default defineConfig({
   build: {
     manifest: true,
     assetsInlineLimit: 0,
+    // Keep the existing first-load code together for compression. Only the
+    // entry's static dependency tree matches; the Studio/canvas stays lazy.
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [{ name: "initial-core", tags: ["$initial"] }],
+        },
+      },
+    },
     outDir: "../server/app/static",
     emptyOutDir: true,
   },

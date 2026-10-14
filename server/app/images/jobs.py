@@ -4,7 +4,7 @@ import asyncio
 import json
 import os
 import shutil
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -12,10 +12,13 @@ from uuid import uuid4
 
 from ..capacity import Capacity
 from ..db.core import Store
+from ..db.image_jobs import image_job
 from ..errors import AppError
 from ..schemas import ImageChange, ImageCreate, ImageJob, ImageSnapshot, ImageStorage
 from .engine import Engine
 from .files import atomic_json, sync_directory, validate
+
+Prepared = list[tuple[str, list[tuple[str, tuple[object, ...]]]]]
 
 ACTIVE = {"queued", "preparing", "running", "cancelling"}
 
@@ -45,29 +48,7 @@ class Images:
 
     async def get(self, identifier: str) -> ImageJob:
         self.path(identifier)
-        row = await self.store.one(
-            "SELECT j.*,a.sha256,a.bytes,a.metadata_bytes FROM image_jobs j "
-            "LEFT JOIN image_artifacts a ON a.job_id=j.id WHERE j.id=?",
-            (identifier,),
-        )
-        if not row:
-            raise AppError("not_found", "Image job not found.", 404)
-        spec = json.loads(row["input_json"])
-        return ImageJob(
-            id=row["id"],
-            parent_id=row["parent_id"],
-            prompt=spec["prompt"],
-            seed=spec["seed"],
-            state=row["state"],
-            stage=row["stage"],
-            completed_steps=row["completed_steps"],
-            error=row["error"],
-            created_at=row["created_at"],
-            updated_at=row["updated_at"],
-            image_bytes=row["bytes"] or 0,
-            metadata_bytes=row["metadata_bytes"] or 0,
-            sha256=row["sha256"],
-        )
+        return await image_job(self.store, identifier)
 
     async def list(self, before: str | None = None) -> list[ImageJob]:
         rows = await self.store.rows(
@@ -97,7 +78,16 @@ class Images:
         )
 
     async def snapshot(self) -> ImageSnapshot:
-        return ImageSnapshot(jobs=await self.list(), storage=await self.storage())
+        jobs = await self.list()
+        # Active older jobs must survive a snapshot gap even beyond Gallery's page.
+        known = {job.id for job in jobs}
+        for row in await self.store.rows(
+            "SELECT id FROM image_jobs WHERE state IN "
+            "('queued','preparing','running','cancelling') ORDER BY created_at,id"
+        ):
+            if row["id"] not in known:
+                jobs.append(await self.get(row["id"]))
+        return ImageSnapshot(jobs=jobs, storage=await self.storage())
 
     async def emit(self, identifier: str) -> None:
         async with self.condition:
@@ -152,54 +142,70 @@ class Images:
                         409,
                     )
                 return await self.get(old["id"])
-            if self.closing:
-                raise AppError(
-                    "image_unavailable", "Image service is shutting down. Retry shortly.", 503
-                )
-            if not self.engine.status().available:
-                raise AppError(
-                    "image_unavailable",
-                    "The local image worker or pinned model is unavailable.",
-                    409,
-                )
-            if len(self.tasks) >= 20:
-                raise AppError(
-                    "image_queue_full", "The image queue is full. Wait for a job to finish.", 409
-                )
-            if shutil.disk_usage(self.data).free < 128 * 1024**2:
-                raise AppError("low_disk", "Free at least 128 MB before starting an image.", 409)
-            if spec.parent_id:
-                await self.get(spec.parent_id)
-            identifier, timestamp = uuid4().hex, now()
-            folder = self.path(identifier)
-            folder.mkdir(mode=0o700)
+            prepared = await self.prepare([spec])
             try:
-                atomic_json(folder / "input.json", expected)
-                await self.store.batch(
-                    [
-                        (
-                            "INSERT INTO image_jobs(id,request_key,parent_id,input_json,"
-                            "state,stage,"
-                            "created_at,updated_at) "
-                            "VALUES(?,?,?,?,'queued','Waiting for capacity',?,?)",
-                            (
-                                identifier,
-                                spec.request_key,
-                                spec.parent_id,
-                                canonical,
-                                timestamp,
-                                timestamp,
-                            ),
-                        ),
-                        ("INSERT INTO image_steps(job_id) VALUES(?)", (identifier,)),
-                    ]
-                )
+                await self.store.batch([statement for _, rows in prepared for statement in rows])
             except BaseException:
-                shutil.rmtree(folder)
+                self.discard(prepared)
                 raise
+            identifier = prepared[0][0]
             self.schedule(identifier)
             await self.emit(identifier)
             return await self.get(identifier)
+
+    async def prepare(self, specs: Sequence[ImageCreate]) -> Prepared:
+        """Caller owns self.lock; prepare all manifests without commits or scheduling."""
+        if self.closing:
+            raise AppError(
+                "image_unavailable", "Image service is shutting down. Retry shortly.", 503
+            )
+        if not self.engine.status().available:
+            raise AppError(
+                "image_unavailable", "The local image worker or pinned model is unavailable.", 409
+            )
+        if len(self.tasks) + len(specs) > 20:
+            raise AppError(
+                "image_queue_full", "The image queue is full. Wait for a job to finish.", 409
+            )
+        if shutil.disk_usage(self.data).free < 128 * 1024**2:
+            raise AppError("low_disk", "Free at least 128 MB before starting an image.", 409)
+        prepared: Prepared = []
+        try:
+            for spec in specs:
+                if not spec.prompt.strip():
+                    raise AppError("invalid_request", "Write an image prompt first.", 422)
+                if spec.parent_id:
+                    await self.get(spec.parent_id)
+                expected = {"prompt": spec.prompt, "seed": spec.seed}
+                identifier, timestamp = uuid4().hex, now()
+                folder = self.path(identifier)
+                folder.mkdir(mode=0o700)
+                rows: list[tuple[str, tuple[object, ...]]] = [
+                    (
+                        "INSERT INTO image_jobs(id,request_key,parent_id,input_json,state,stage,"
+                        "created_at,updated_at) VALUES(?,?,?,?,'queued',"
+                        "'Waiting for capacity',?,?)",
+                        (
+                            identifier,
+                            spec.request_key,
+                            spec.parent_id,
+                            json.dumps(expected, sort_keys=True),
+                            timestamp,
+                            timestamp,
+                        ),
+                    ),
+                    ("INSERT INTO image_steps(job_id) VALUES(?)", (identifier,)),
+                ]
+                prepared.append((identifier, rows))
+                atomic_json(folder / "input.json", expected)
+            return prepared
+        except BaseException:
+            self.discard(prepared)
+            raise
+
+    def discard(self, prepared: Prepared) -> None:
+        for identifier, _ in prepared:
+            shutil.rmtree(self.path(identifier), ignore_errors=True)
 
     def schedule(self, identifier: str) -> None:
         task = asyncio.create_task(self.run(identifier))
@@ -316,8 +322,11 @@ class Images:
                 os.replace(output, trash)
                 sync_directory(folder)
             try:
-                await self.store.execute(
-                    "DELETE FROM image_artifacts WHERE job_id=?", (identifier,)
+                await self.store.batch(
+                    [
+                        ("DELETE FROM image_artifacts WHERE job_id=?", (identifier,)),
+                        ("UPDATE image_jobs SET updated_at=? WHERE id=?", (now(), identifier)),
+                    ]
                 )
             except BaseException:
                 if trash.exists():
@@ -347,7 +356,9 @@ class Images:
     async def recover(self) -> None:
         # A previous worker's parent pipe has closed; it exits without this new
         # server signaling any PID which might have been reused.
-        rows = await self.store.rows("SELECT id,state,input_json FROM image_jobs")
+        rows = await self.store.rows(
+            "SELECT id,state,input_json FROM image_jobs ORDER BY created_at,id"
+        )
         known = {row["id"] for row in rows}
         for folder in self.folder.iterdir():
             if folder.name not in known and folder.is_dir():

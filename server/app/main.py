@@ -11,6 +11,7 @@ from fastapi.responses import FileResponse
 from .api import (
     attachments,
     backup,
+    chat_images,
     chats,
     connections,
     folders,
@@ -22,6 +23,7 @@ from .api import (
     runs,
     search,
     transcription,
+    workflow_graphs,
     workflows,
 )
 from .api import settings as settings_api
@@ -41,6 +43,7 @@ from .search.pipeline import Pipeline
 from .security import SecurityMiddleware
 from .transcribe.cleanup import Cleanups
 from .transcribe.jobs import TranscriptionManager
+from .workflows.engine import GraphRunner
 from .workflows.jobs import Workflows
 
 
@@ -92,6 +95,8 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
                 app.state.cleanup,
             )
             await app.state.workflows.recover()
+            app.state.workflow_graphs = GraphRunner(app.state.store, app.state.workflows)
+            await app.state.workflow_graphs.recover()
             app.state.backups = Backups(
                 app.state.store,
                 config.data_dir.expanduser().resolve(),
@@ -101,6 +106,7 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
             try:
                 yield
             finally:
+                await app.state.workflow_graphs.close()
                 await app.state.workflows.close()
                 await app.state.images.close()
                 await app.state.library.close()
@@ -138,7 +144,9 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
         backup.router,
         transcription.router,
         workflows.router,
+        workflow_graphs.router,
         chats.router,
+        chat_images.router,
         connections.router,
         messages.router,
         models.router,

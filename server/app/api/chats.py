@@ -199,14 +199,38 @@ async def export(identifier: str, request: Request, format: str = "md") -> Respo
     data = await detail(identifier, request)
     branch = path(data.messages, data.chat.current_leaf_id)
     if format == "json":
-        text = data.model_copy(update={"messages": branch}).model_dump_json(indent=2)
+        exported = data.model_copy(update={"messages": branch}).model_dump(mode="json")
+        for row, message in zip(exported["messages"], branch, strict=True):
+            if message.kind == "image":
+                row["prompt"] = (
+                    message.content
+                    if message.role == "user"
+                    else next((m.content for m in branch if m.id == message.parent_id), "")
+                )
+                row["job_ids"] = [job.id for job in message.images or []]
+                row["seeds"] = [job.seed for job in message.images or []]
+        text = json.dumps(exported, indent=2, ensure_ascii=False)
         mime = "application/json"
     elif format == "md":
         text = (
             "# "
             + data.chat.title
             + "\n\n"
-            + "\n\n".join("## " + m.role.title() + "\n\n" + m.content for m in branch)
+            + "\n\n".join(
+                "## "
+                + m.role.title()
+                + "\n\n"
+                + m.content
+                + (
+                    "\n".join(
+                        f"Image {i}: Atelier-image-{job.id[:8]}.png · seed {job.seed}"
+                        for i, job in enumerate(m.images or [], 1)
+                    )
+                    if m.kind == "image" and m.role == "assistant"
+                    else ""
+                )
+                for m in branch
+            )
         )
         mime = "text/markdown"
     else:

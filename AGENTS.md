@@ -949,3 +949,356 @@ seed controls and composer return; no work is accepted or private text captured.
 Jake's earlier overall “It works” remains Images phone acceptance, not a physical
 pass for this new UI. H4: docs/COMPOSER-WORKFLOW-UX-REPORT.md. Stop for UI review;
 configurable additional steps and further inference remain separately scoped.
+
+
+**User authorization — 12 October 2026 (isolated Workflow Studio):** Jake asked
+for Claude's Workflow Studio redesign to be reviewed and implemented in a separate
+GitHub branch and instance. Use `codex/workflow-studio` and its managed worktree;
+retain the current main checkout and installed app. Build
+`docs/next/workflow-studio/WORKFLOW-STUDIO-SPEC.md` checkpoint by checkpoint,
+stopping for review after each. WS-A replaces the top tabs with sidebar navigation
+and a shared shell; the composer image action remains. Jake explicitly approved
+user-authored model calls inside workflow blocks and the named `@xyflow/react`
+dependency on this isolated branch, lazy-loaded in the builder, attribution kept.
+Application-authored prompts remain frozen and require evaluation evidence.
+Install the canvas dependency at WS-C, after the earlier checkpoint reviews.
+GitHub CLI installation and Jake's browser sign-in are approved as local tooling.
+No merge to main, deployment or change to the live app before Jake's final okay.
+Future motion-guard changes, Classify evaluation targets and optional WS-F extras
+retain their specific review gates. Research remains shelved. Private workflow
+inputs, documents, recordings and their filenames follow the existing privacy rule.
+
+
+**Workflow Studio WS-A closeout — 12 October 2026:** The isolated
+`codex/workflow-studio` branch replaces top tabs with persistent sidebar rows,
+a shared shell, a home with two existing templates/recent runs, the existing
+builder at `/workflows/new` and a saved-run detail page. Composer Images remains.
+No server/API/schema/prompt/sampling/dependency/native or production change.
+Source `ee788832` passes 532 Python / 39 frontend checks and one complete browser
+invocation: 505 passes, three existing skips. Initial JS is 245,249 gzip bytes
+(+1,378); both streaming p95 values are 3 ms. First focused link-label/selector
+failures are retained and corrected before the complete run. Fresh evidence is
+archived separately, historical bytes restored, and provided reference files
+retained exactly. The local preview uses fake data; no physical iPhone pass is
+claimed. Installed 97-file server and 410 current-release static hashes match.
+H4: `docs/WORKFLOW-STUDIO-WS-A-REPORT.md`; engine review:
+`docs/WORKFLOW-STUDIO-REVIEW.md`. Stop for WS-A review before WS-B. User-written
+block calls and lazy canvas dependency approval persist on this branch; the final
+main merge/live deployment still require Jake's okay. Research remains shelved.
+
+**User acceptance and authorization — 12 October 2026 (WS-B):** Jake asked to
+continue to WS-B. Close the WS-A review stop without inventing individual phone
+checks. Build the isolated graph engine, additive storage and APIs, seven initial
+block kinds and exact legacy-template parity gates, applying the corrections in
+`docs/WORKFLOW-STUDIO-REVIEW.md`. Stop for WS-B review before the WS-C canvas.
+The existing main checkout and installed app remain unchanged. Jake also requested
+that image creation use the ordinary chat composer and return progress and image
+results in the conversation; record this in `docs/DEFERRED-FIXES.md` for a later
+concrete chat-artifact scope, rather than expanding this server checkpoint.
+
+
+**Workflow Studio WS-B closeout — 12 October 2026:** Source `ebc7f41e` adds
+seven strict graph block contracts, additive migration 011, definitions/snapshots,
+durable execution/attempts/original sources, approvals, retry and v2 APIs/stream.
+Legacy request parity passes six fake-runtime cases; model settings, sources and
+failed/skipped legacy states/results are faithfully projected. Canvas-independent
+ordering and snapshot identities, persisted automatic seeds, owned-job acceptance
+cancellation and per-run 10 Hz event limits follow the reviewed corrections.
+Autosave keeps the current draft; immutable full snapshots are created per run.
+
+Final checks pass: 591 Python / 39 frontend, workflows 88.4% coverage and 74 contrast
+pairs. One complete browser invocation passes 505 cases with three existing skips
+in 43.4 minutes. A retained cold-start fixture failure is fixed by starting the fake
+runtime before its dependent app; no production provider/prompt changes or weakened
+assertions/timeouts. Initial JS stays 245,249 gzip bytes. Copied synthetic-data
+rollback restores the exact backup and starts previous schema-10 source. Fresh
+outputs are archived separately, old bytes restored, 22,069 historical blobs and
+15 references verified; installed 97-file server and 410 current-release static
+hashes and main remain unchanged. No real model inference/dependency installation,
+merge, live publication or physical phone pass is claimed. The requested image
+creation/results inside chat remains a tracked follow-up. H4:
+`docs/WORKFLOW-STUDIO-WS-B-REPORT.md`. Stop for WS-B review before WS-C. Research
+remains shelved; named canvas/call approvals persist on this isolated branch.
+
+**User acceptance and authorization — 12 October 2026 (WS-C):** Jake asked to
+continue and keep Claude's UI, implementing it so it works. Close WS-B's review
+stop and build Studio editing per the supplied spec/prototype/references. The
+approved exact-pinned lazy `@xyflow/react` dependency retains attribution; phones
+edit through Outline and templates become editable copies. Preserve ordinary
+keyboard/label semantics and current APIs/prompts/model settings. Stop for WS-C
+review before WS-D, merge or live publication. The image-in-chat request remains
+tracked separately. Main and the installed app remain unchanged.
+
+
+**Workflow Studio WS-C closeout — 13 October 2026:** Claude's reviewed layout
+now edits real definitions on the isolated branch: seven kinds, native drag/
+connect/insert, typed references, Inspector/Connections, autosave/conflicts,
+history/copy/notes/tidy/minimap and phone Outline. Templates create editable
+copies; basic input/run/approval/retry/source/export paths retain legacy behavior.
+The exact approved lazy `@xyflow/react@12.12.0` keeps attribution and its license.
+No native inference, application-authored prompt, model/default/sampling/runtime
+change, main merge or live publication occurs. Research remains shelved.
+
+Source `62a822e4` retains the initial-fit dirty-state and redundant preference
+hydration fixes. Both failed full-suite attempts/traces and earlier sources are
+retained. Final make check passes 630 Python / 87 frontend, workflows 89.2%
+coverage and 110 contrast pairs; one complete browser invocation passes 529
+checks with three existing skips in 48.7 minutes. Initial JS is 241,658 gzip
+bytes (3,591 below WS-B); Studio is 77,306 gzip bytes. Historical 23,116 blobs,
+15 references, 509 source/config/test files, main and installed 97 server / 410
+static files verify preserved. 1,037 fresh outputs are archived separately and
+182 synthetic videos remain outside Git. Local/verified HTTPS health passes.
+H4: `docs/WORKFLOW-STUDIO-WS-C-REPORT.md`. Stop for WS-C review before WS-D.
+No physical phone/VoiceOver pass is claimed. The image-in-conversation request
+remains tracked separately; future motion/Classify/optional gates persist.
+
+**User authorization — 13 October 2026 (WS-D, followed by chat images):** Jake
+asked to execute WS-D and then Claude's `docs/next/chat-images/` plan, retaining
+Claude's UI. Close the WS-C review stop without inventing phone checks. Implement
+WS-D's server-driven run canvas, approvals, provenance-checked reuse, single-block
+tests, favorites and history on `codex/workflow-studio`. The requested motion
+includes J-W6's CSS connection pulse; allow `stroke-dashoffset` in the guard.
+Retain checkpoint reports and stop for review after WS-D and each CI checkpoint.
+For the ensuing CI plan use its recommended decisions: J-I1 Playful by default,
+J-I2 reasoning ticker, J-I3 saved image chat turns, J-I4 exclude both image roles
+from text context, J-I5 prompt-derived titles without a model call. No new package,
+model, runtime, sampling default, application-authored prompt or native trial is
+authorized. WS-E/WS-F and CI-D extras remain gated. Main and the installed app
+stay intact; merge and live publication still require Jake's final okay.
+
+**Workflow Studio WS-D closeout — 13 October 2026:** Source `a9a77bdd` implements
+Claude's run canvas/timeline, truthful streaming/progress and Follow, approvals,
+favorites, retry, provenance-checked reuse, durable isolated block tests, named
+versions, immutable run views, history and paused notifications. Additive migration
+012 preserves existing rows. The approved CSS connection pulse respects both
+reduced-motion triggers. Legacy phone controls retain navigation; ordinary chat,
+native performers, prompts and user sampling behavior remain unchanged.
+
+Final checks pass: 646 Python / 94 frontend, workflows 89.2% coverage and 110
+contrast pairs. One complete browser invocation passes 555 cases with three
+existing skips in 56.3 minutes. All 112 new-state axe checks pass. The earlier
+interrupted invocation and eight-failure complete run (545 passes) remain retained;
+their regressions are fixed without weakening original tests. Initial JS is
+242,270 gzip bytes, 612 above WS-C. Copied synthetic rollback restores the exact
+backup and starts prior schema-11 source. Historical 24,444 evidence/eval/fixture
+blobs, 15 workflow references, 17 supplied chat-image files and 529 source/test/
+config files verify preserved; installed 97 server / 410 static files and main
+are unchanged. 1,168 fresh outputs are archived separately and 320 final/available
+synthetic recordings remain outside Git, with earlier attempts separately retained.
+
+No native inference, new dependency/model/runtime, Research restart, main merge,
+live publication or physical iPhone/VoiceOver pass is claimed. The lifecycle
+restart test is in process, not a launchd/process restart. H4:
+`docs/WORKFLOW-STUDIO-WS-D-REPORT.md`. Stop for WS-D review before CI-A. Claude's
+chat-image plan and recommended defaults are retained for CI-A/B/C; image chat
+turns are not implemented by WS-D. Final merge/publication still need Jake's okay.
+
+**User acceptance and continuation — 13 October 2026 (CI-A):** After the WS-D
+report, Jake asked to continue, then mesh the builder and test an actual local LLM.
+Close WS-D's review stop without inventing phone results. Build CI-A of Claude's
+chat-image plan on the isolated branch, preserving the approved Playful default
+and closed live reasoning ticker. Web only: no server source, native inference,
+new dependency/model/runtime, prompt or sampling change. Retain the H4/QA report
+and stop after CI-A. Prepare a concrete bounded local-LLM workflow test proposal
+for the later integrated builder; this continuation does not run that trial now.
+Main and the installed app stay intact; final merge/publication remain gated.
+
+**Chat images CI-A closeout — 13 October 2026:** Frozen source `76957979`
+replaces dots with Claude's Atelier mark, truthful phases and a seeded 36-word
+sequence, adds browser-local Playful/Plain, and starts live reasoning as a closed
+literal ticker. Expansion follows new text until manual scrolling; first answer
+text closes it into the existing Thought row. Original reasoning and SSE/rAF/send
+paths are preserved. Failed page reads do not inflate readable-page counts.
+Both reduced-motion triggers stop motion; outgoing words are immediately hidden.
+Cross-device synchronization of this one new preference remains future server work.
+
+Final checks pass: 646 Python / 101 frontend tests, all required coverage above
+80%, 110 contrast pairs and one complete browser invocation with 573 passes,
+three existing skips and zero failures in 56.6 minutes. All 112 new-state axe
+audits pass. Initial JS is 244,418 gzip bytes (+2,148 from WS-D); ordinary render
+p95 is 2.6 / 3 ms, ticker p95 0.5 / 1 ms, first-token overhead 77.79 / 61.39 ms.
+Retain initial focused failures and the deliberately interrupted 513-pass browser
+attempt (one interrupted, 59 unrun), stopped to fix reduced-motion word overlap.
+No test assertion, timeout or performance target was weakened.
+
+Historical 30,764 evidence/eval/fixture blobs, 15 workflow references, all 17
+supplied chat-image files, 537 frozen files and 335 core files verify preserved.
+1,202 final fresh outputs are archived, 1,162 historical files restored and 40 new
+fake captures relocated; 989 interrupted outputs are also retained. All available
+907 synthetic videos remain outside Git. Installed 97 server / 410 static files,
+main and service/route identity remain unchanged; local/verified HTTPS health pass.
+
+H4: `docs/CHAT-IMAGES-CI-A-REPORT.md`. Stop for CI-A review before CI-B/C.
+`docs/WORKFLOW-STUDIO-NATIVE-TRIAL-PLAN.md` proposes at most seven calls on the
+installed daily profile after integration; it is not executed. No server change,
+native inference, new dependency/model/runtime, prompt/sampling/default change,
+Research restart, main merge or live publication. No physical phone/VoiceOver
+pass is claimed; final merge/publication still require Jake's okay.
+
+**User acceptance and continuation — 13 October 2026 (CI-B):** Jake said
+“Proceed.” Close CI-A's review stop and implement CI-B of the supplied chat-image
+plan on `codex/workflow-studio`: additive migration 013, atomic/idempotent saved
+image turns, retry/cancel, exclusion of both image roles from text context,
+prompt-derived image-first titles, the unified composer and truthful job cards,
+and Gallery provenance/navigation. The existing separate composer image workspace
+and Gallery creation form are explicitly replaced by chat image mode; retain
+their acceptance/retry/draft/save/cancel/storage coverage through the new flow.
+Preserve Claude's UI and supplied files. No new dependency, model, runtime,
+native inference, prompt, sampling/default change or Research. CI-C viewer,
+iteration and export remain next checkpoint. Retain H4/QA evidence and stop after
+CI-B. Main/live publication and the bounded native workflow trial remain gated.
+
+**Chat images CI-B closeout — 14 October 2026:** Frozen source `3825196a`
+implements Claude's unified image composer and durable chat turns with additive
+migration 013, atomic/idempotent job acceptance, explicit/implicit parent identity,
+scoped cancellation, retry/user branch navigation and deleted-chat origins.
+Both image roles are excluded from text context; titles use the prompt without a
+model call. Existing jobs/capacity/SSE remain; real steps drive progress, observed
+completions reveal once, history is immediate, and saving uses the existing dialog.
+
+Checks pass: 653 Python / 104 frontend, required coverage above 80%, 110 contrast
+pairs and one complete browser invocation with 595 passes, three existing skips,
+zero failures (1.0 hour). All 112 new-state axe checks pass. Initial JS is 246,848
+gzip bytes (+2,430); render p95 2.4 / 3 ms and first-token overhead 74.37 / 67.65 ms.
+Retain focused failures and the deliberately interrupted first full run (314
+passes, one interrupted, 281 unrun); concrete parent/branch fixes precede the
+final full run. That interrupted run's temporary trace/recordings were overwritten
+by a focused run and are unavailable; its source/log and available captures remain.
+No test threshold/timeout/assertion was weakened and no skip was added.
+
+552 frozen files, 323 core files, 33,141 historical blobs, 15 workflow references
+and all 17 supplied chat-image files verify preserved. Archive retains 1,206 fresh
+outputs, restores 1,166 historical files and relocates 40 fake captures. All 584
+available final synthetic videos remain outside Git. Exact unchanged interrupted
+copies reference original Git blobs (7,305 copies / 1,960,959,222 bytes avoided).
+Installed 97 server / 410 static hashes and main remain unchanged; local and
+verified HTTPS health pass. No service/route change, main merge or deployment.
+
+H4: `docs/CHAT-IMAGES-CI-B-REPORT.md`; test ledger records explicitly approved UI
+replacements. G9's existing native Web accuracy release gate remains open: 56
+zero-inference payload comparisons over 25 original questions prove context
+parity, not a new real-model accuracy pass. No native inference, new dependency/
+model/runtime, prompt/sampling/default change or Research restart. No physical
+phone/VoiceOver pass claimed. Stop for CI-B review before CI-C; viewer/iteration/
+exports and the bounded local-LLM workflow trial remain next reviewed work.
+Final merge/publication still require Jake's explicit okay.
+
+**User authorization — 14 October 2026 (CI-C and native workflow trial):** Jake
+asked “Continue to CI-C and then the test.” Accept CI-B's review and implement
+Claude's CI-C viewer, iteration, vision-gated attachment action, exports and phone
+scroll-snap behavior on the isolated branch. Preserve the supplied UI and files;
+Refine records lineage and edits the prompt only, not reference-image pixels.
+After CI-C verification, execute `docs/WORKFLOW-STUDIO-NATIVE-TRIAL-PLAN.md` in a
+separate synthetic data folder: the installed daily profile, at most seven native
+calls and ten minutes, stopping on the first failure without retry. This request
+closes the intermediate review stop for that named sequence; retain both H4
+reports. No new model/dependency/runtime, application-authored prompt, sampling
+change, Research restart or native image concurrency. Main, live service and
+production data remain unchanged. Stop after the trial for review; final merge
+and publication still require Jake's explicit okay.
+
+
+**CI-C and native workflow trial closeout — 14 October 2026:** Frozen source
+`f8e301c2` completes Claude's viewer, iteration, vision-gated attachment, phone
+snap/dots and image exports on `codex/workflow-studio`. Final check/build pass:
+654 Python / 104 frontend, 110 contrast pairs and one full browser invocation with
+615 passes, three existing skips and zero failures in 1.0 hour. Retain all prior
+failed/interrupted attempts and concrete portal/contrast/draft/focus fixes; no
+assertion, timeout, target or skip was weakened. Initial JS is 247,594 gzip bytes
+(+746 from CI-B); 16 new viewer/refine axe audits pass. All historical reference/
+eval bytes, 556 frozen files, 322 core files, main and installed 97 server / 410
+static files verify intact; local/verified HTTPS health pass. G9 remains open.
+
+The authorized native trial stops after two actual daily-profile calls at its
+first manual semantic gate: recurrence and broader material provision are invented.
+Exact outline-to-draft binding and a visible paused review are observed, but no
+reload/approval/edit, second run, in-flight cancellation or recovery pass is
+claimed. Save never runs. Both model streams close and trial capacity releases;
+cleanup cancels the paused run. Retain setup's zero-call SPA-route failure, empty
+browser event observer (wrong legacy endpoint) and unavailable RSS measurement.
+Native NDJSON, exact requests, durable snapshots and synthetic video/frame remain.
+No retry, new inference, sampling/prompt/default/runtime change or native image job.
+
+H4 reports: `docs/CHAT-IMAGES-CI-C-REPORT.md` and
+`docs/WORKFLOW-STUDIO-NATIVE-TRIAL-REPORT.md`. Stop for review before more native
+experiments or Studio/reference-edit expansion. No main merge, live publication,
+Research restart or physical iPhone/VoiceOver pass; final merge/publication still
+require Jake's explicit okay.
+
+
+**User authorization — 14 October 2026 (native recipe and harness repair):**
+After the CI-C/native failure report and prioritized fixes, Jake said “Fix them.”
+Proceed with `docs/WORKFLOW-STUDIO-NATIVE-REPAIR-PLAN.md`: carry the original brief
+into both user-authored trial Generate blocks, retain human review, fix actual
+Studio SSE/RSS/cleanup measurement and perform one frozen trial, max seven native
+calls / ten minutes with first-failure stopping. Preserve the original failed
+trial and all release targets. No ordinary application prompt/template/sampling/
+runtime/default/UI change, broad Search experiment, Research restart, new model
+or dependency. His question about committing to main is a readiness question;
+no merge/publication is authorized. Stop with H4 results after the bounded trial.
+
+
+**Native recipe/harness repair closeout — 14 October 2026:** The isolated,
+frozen user-authored recipe preserves original-brief and exact upstream-outline
+binding in six native requests. Two full runs produce faithful drafts and pass
+review reload, unchanged approval, edited save/export and raw-output preservation.
+Actual Studio SSE (149 events), PID/RSS and clean driver/stream close are captured.
+Retain the zero-call offline selection failure and its correction. Runtime,
+product prompts/templates/source, sampling and defaults remain unchanged.
+
+The native trial fails its cancellation DOM-window assertion after the brief
+third draft finishes, then stops at six calls / 306.16 seconds. Cleanup cancels a
+paused run, not active generation; single-block recovery remains unexecuted.
+Read-only third-output review also flags “all necessary materials,” so two good
+samples do not qualify consistent fidelity. No retry or seventh call followed.
+A prospective actual-node.text UI cancellation probe passes with partial output
+and no downstream review using fake runtime only; no native pass is claimed.
+H4: `docs/WORKFLOW-STUDIO-NATIVE-REPAIR-REPORT.md`. Preserve prior evidence/gates,
+main and the installed app. Stop for review before another native pair or main
+merge/publication; Research/VoiceOver stay outside the work list and G9 is open.
+
+
+**User authorization — 14 October 2026 (native cancel/recovery pair):** Jake
+said “Go ahead and repair it then” after the remaining native control-check
+recommendation. Proceed with `docs/WORKFLOW-STUDIO-NATIVE-CONTROLS-PLAN.md`, one
+frozen pair, at most two native calls / three minutes with first-failure stopping,
+using the same daily profile, unchanged user-authored recipe and explicit samples.
+Use actual Studio text events to click a visible enabled Cancel control, then
+verify closure/capacity and one single-block recovery/history/reload check.
+Preserve all earlier failed trials and factual limitations. No new model/package/
+runtime, application prompt/template/sampling/default change, Research/Search
+experiment, native image job or main/live publication. Stop with H4 evidence.
+
+
+**Native cancel/recovery closeout — 14 October 2026:** The frozen pair passes
+using the existing daily profile, unchanged user-authored Draft and explicit
+source samples. Actual node.text triggers a visible enabled hit-testable Cancel
+control. An incomplete native stream closes without error, one byte of partial
+output persists, no downstream block runs and capacity releases. A second
+identical native request completes, survives reload, stays outside normal
+history and passes manual review for all supplied facts/no additional claims.
+Exactly two calls / 139.27 seconds; no retry or extra inference. Earlier failures
+and general grounding limitations remain unqualified. Retain the zero-native
+first offline setup failure (still following prior run) and its explicit Close
+Run remedy. No assertion/timeout/target change; final offline UI pair passes.
+
+H4: `docs/WORKFLOW-STUDIO-NATIVE-CONTROLS-REPORT.md`. Product source remains the
+fully checked CI-C f8e301c2 candidate; main and installed app stay intact. No
+runtime/model/default/sampling/dependency/application prompt/template change,
+Research/Search restart, native image job or phone/VoiceOver pass. The missing
+native control gate is closed. Stop for final branch review; merge and live
+publication still require Jake's explicit okay. Factual outputs require review,
+G9 remains open and future WS-E/reference editing remains separately gated.
+
+
+**User acceptance and merge authorization — 14 October 2026:** Jake said
+“Go ahead” after Codex recommended merging the reviewed checkpoint following
+native cancellation/recovery verification. Accept the branch review and merge
+`codex/workflow-studio` into main, pushing the reviewed source/history to GitHub.
+Retain a source fallback to the accepted pre-Studio main and all earlier trial
+failures. Preserve the untracked original Claude documents outside the checkout
+before Git writes their identical tracked copies. Product source remains the
+fully tested f8e301c2 candidate. Factual drafts retain their review requirement;
+no general grounding, physical-phone or VoiceOver qualification is implied.
+Future WS-E/reference editing and Research remain separately gated. This merge
+operation preserves the installed service and production data.

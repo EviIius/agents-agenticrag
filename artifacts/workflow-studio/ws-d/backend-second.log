@@ -1,0 +1,41 @@
+.............................F.........                                  [100%]
+=================================== FAILURES ===================================
+_____ test_text_tail_and_next_block_progress_share_the_per_run_rate_limit ______
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10cdb02f0>, <httpx.AsyncClient object at 0x10ce8ce90>, <fastapi.applications.FastAPI object at 0x10cdb3770>)
+
+    async def test_text_tail_and_next_block_progress_share_the_per_run_rate_limit(
+        chat_app: Any,
+    ) -> None:
+        app, _, _ = chat_app
+        manager = app.state.workflow_graphs
+        queue: asyncio.Queue[Any] = asyncio.Queue(10)
+        manager.listeners.add(queue)
+        timestamps: list[float] = []
+        for kind in ["node.text", "node.text", "node.progress"]:
+>           await manager.ephemeral(
+                kind, {"run_id": "fake-rate-run", "node_id": "fake-block", "delta": "Fake text"}
+            )
+
+tests/test_workflow_graph_engine.py:570: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.workflows.engine.GraphRunner object at 0x10ce8cb90>
+kind = 'node.progress'
+data = {'run_id': 'fake-rate-run', 'node_id': 'fake-block', 'delta': 'Fake text'}
+
+    async def ephemeral(self, kind: str, data: dict[str, Any]) -> None:
+        identifier = str(data["run_id"])
+        node_id = str(data["node_id"])
+        live = self.live.setdefault(identifier, {}).setdefault(node_id, {})
+        if kind == "node.text" and "text" in data:
+            live["text"] = data["text"]
+        elif kind == "node.progress":
+>           live["progress"] = {k: data[k] for k in ["done", "total", "label"]}
+                                   ^^^^^^^
+E           KeyError: 'done'
+
+app/workflows/engine.py:134: KeyError
+=========================== short test summary info ============================
+FAILED tests/test_workflow_graph_engine.py::test_text_tail_and_next_block_progress_share_the_per_run_rate_limit
+1 failed, 38 passed in 12.18s

@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { ArrowLeft, ImageIcon } from "lucide-react";
 import { api } from "@/lib/api";
 import { usePreferenceSync } from "@/hooks/usePreferenceSync";
 import type { components } from "@/lib/api-types";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { FileSaveDialog } from "@/components/app/FileSaveDialog";
 import { IconButton } from "@/components/app/IconButton";
-import { imageSeeds, validImageSeed } from "@/lib/image-seeds";
+import { imageSeeds } from "@/lib/image-seeds";
 
 type Job = components["schemas"]["ImageJob"];
 type Snapshot = components["schemas"]["ImageSnapshot"];
@@ -31,11 +29,7 @@ export function bytes(value: number) {
 }
 
 export function ImagesPage() {
-  return (
-    <main>
-      <ImagesWorkspace />
-    </main>
-  );
+  return <ImagesWorkspace inShell />;
 }
 
 export function ImagesWorkspace({
@@ -44,12 +38,14 @@ export function ImagesWorkspace({
   onPromptChange,
   onClose,
   preview = false,
+  inShell = false,
 }: {
   embedded?: boolean;
   prompt?: string;
   onPromptChange?: (prompt: string) => void;
   onClose?: () => void;
   preview?: boolean;
+  inShell?: boolean;
 }) {
   const [preferences, setPreferences] = useState<Record<string, unknown>>();
   usePreferenceSync(preferences);
@@ -155,7 +151,9 @@ export function ImagesWorkspace({
       className={
         embedded
           ? "bg-bg"
-          : "h-dvh overflow-y-auto bg-bg px-4 pb-[max(24px,env(safe-area-inset-bottom))] pt-[max(16px,env(safe-area-inset-top))]"
+          : inShell
+            ? "min-h-0 flex-1 overflow-y-auto bg-bg px-4 py-6 pb-[max(24px,env(safe-area-inset-bottom))] lg:px-8"
+            : "h-dvh overflow-y-auto bg-bg px-4 pb-[max(24px,env(safe-area-inset-bottom))] pt-[max(16px,env(safe-area-inset-top))]"
       }
       aria-label={embedded ? "Create images here" : "Images"}
     >
@@ -167,13 +165,13 @@ export function ImagesWorkspace({
             <Button variant="ghost" className="h-11" onClick={onClose}>
               <ArrowLeft className="size-4" /> Message
             </Button>
-          ) : (
+          ) : !inShell ? (
             <IconButton label="Back to chat" asChild>
               <Link to="/">
                 <ArrowLeft />
               </Link>
             </IconButton>
-          )}
+          ) : null}
           <h1 className="flex-1 text-xl font-semibold">Images</h1>
           {embedded && (
             <Link
@@ -220,8 +218,6 @@ export function ImagesView({
   storage,
   status,
   preview = false,
-  prompt: controlledPrompt,
-  onPromptChange,
   embedded = false,
 }: {
   jobs: Job[];
@@ -232,11 +228,7 @@ export function ImagesView({
   onPromptChange?: (prompt: string) => void;
   embedded?: boolean;
 }) {
-  const [ownPrompt, setOwnPrompt] = useState("");
-  const prompt = controlledPrompt ?? ownPrompt;
-  const setPrompt = onPromptChange ?? setOwnPrompt;
-  const [seed, setSeed] = useState("");
-  const [parent, setParent] = useState<string>();
+  const navigate = useNavigate();
   const [filter, setFilter] = useState("all");
   const [saving, setSaving] = useState<Job>();
   const [detail, setDetail] = useState<Job>();
@@ -314,96 +306,21 @@ export function ImagesView({
       filter === "all" ||
       (filter === "active" ? active.has(job.state) : job.image_bytes > 0),
   );
-  const validSeed = !seed || validImageSeed(seed);
   return (
     <>
-      <section
-        className={
-          embedded
-            ? "composer"
-            : "rounded-xl border border-line bg-surface p-4 sm:p-5"
-        }
-        aria-labelledby="image-create"
-      >
-        <h2 id="image-create" className="mb-1 font-medium">
-          Create an image
-        </h2>
-        <p className="mb-4 text-sm text-fg-2">
-          Describe what you want. Your Mac creates it with FLUX.2 klein 4B.
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <p className="text-sm text-fg-2">
+          Images from your chats and workflows.
         </p>
-        {status && !status.available && (
-          <p className="mb-3 text-sm text-fg-2" role="status">
-            {status.reason}
-          </p>
-        )}
-        <label className="mb-2 block text-sm" htmlFor="image-prompt">
-          Prompt
-        </label>
-        <Textarea
-          id="image-prompt"
-          value={prompt}
-          maxLength={4000}
-          className="min-h-28 bg-surface-2 text-base"
-          placeholder="Describe the image you want…"
-          onChange={(event) => setPrompt(event.target.value)}
-        />
-        <div className="mt-4 flex flex-wrap items-end gap-3">
-          <details className="text-sm">
-            <summary className="flex min-h-11 cursor-pointer items-center">
-              Advanced
-            </summary>
-            <label className="block text-sm">
-              Seed (optional)
-              <Input
-                aria-label="Seed"
-                inputMode="numeric"
-                value={seed}
-                onChange={(event) => setSeed(event.target.value)}
-                className="mt-1 h-11 w-36 bg-surface-2"
-                placeholder="Automatic"
-              />
-            </label>
-            <p className="mt-2 max-w-60 text-xs text-fg-3">
-              Leave empty for a new result. Use a saved seed to repeat an image
-              with the same prompt.
-            </p>
-          </details>
-          <Button
-            className="h-11"
-            disabled={
-              busy ||
-              !prompt.trim() ||
-              !validSeed ||
-              (!preview && !status?.available)
-            }
-            onClick={() =>
-              !preview &&
-              void submit(prompt, seed ? Number(seed) : undefined, parent)
-            }
-          >
-            Generate one image
-          </Button>
-          {parent && (
-            <Button
-              className="h-11"
-              variant="ghost"
-              onClick={() => setParent(undefined)}
-            >
-              Clear version link
-            </Button>
-          )}
-        </div>
-        {parent && (
-          <p className="mt-2 text-sm text-fg-2">
-            New version from the selected prompt. This generates a complete
-            image and keeps the original.
-          </p>
-        )}
-        <p className="mt-3 text-xs text-fg-3">
-          One native task at a time. Chat may wait for an image to finish;
-          models are never unloaded automatically.
+        <Button className="h-11" onClick={() => navigate("/?image=1")}>
+          New image
+        </Button>
+      </div>
+      {status && !status.available && (
+        <p role="status" className="mb-4 text-sm text-fg-2">
+          {status.reason}
         </p>
-      </section>
+      )}
       {notice && (
         <p className="my-4 text-sm text-fg-2" role="status">
           {notice}
@@ -514,6 +431,17 @@ export function ImagesView({
                   ? ` · ${bytes(job.image_bytes + job.metadata_bytes)}`
                   : ""}
               </p>
+              {job.origin &&
+                (job.origin.deleted ? (
+                  <p className="mt-2 text-xs text-fg-3">From a deleted chat</p>
+                ) : (
+                  <Link
+                    className="mt-2 flex min-h-11 items-center text-sm text-brand"
+                    to={`/c/${job.origin.chat_id}#m-${job.origin.message_id}`}
+                  >
+                    From {job.origin.title ?? "chat"}
+                  </Link>
+                ))}
               {job.error && (
                 <p className="mt-3 text-sm text-danger">{job.error}</p>
               )}
@@ -611,18 +539,6 @@ export function ImagesView({
                 Created {new Date(detail.created_at).toLocaleString()}
               </p>
               <div className="flex flex-wrap gap-2">
-                <Button
-                  className="h-11"
-                  onClick={() => {
-                    setPrompt(detail.prompt);
-                    setSeed("");
-                    setParent(detail.id);
-                    setDetail(undefined);
-                    document.getElementById("image-prompt")?.focus();
-                  }}
-                >
-                  Use prompt for new version
-                </Button>
                 {!!detail.image_bytes && (
                   <Button
                     className="h-11"

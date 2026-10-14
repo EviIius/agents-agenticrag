@@ -32,6 +32,8 @@ def main() -> None:
         pairs += [("line-input", surface, 3.2) for surface in ("bg", "surface")]
         pairs += [("on-brand", "danger", 4.5)]
         pairs += [(foreground, background, 4.5) for foreground in ("danger", "warning") for background in ("bg", "surface", "surface-2")]
+        pairs += [("cat-" + cat, bg, 3) for cat in ("input", "ai", "knowledge", "media", "logic", "review", "output") for bg in ("cat-" + cat + "-tint", "surface")]
+        pairs += [("text", "note-" + tone, 4.5) for tone in ("neutral", "amber", "rose", "teal")]
         for foreground, background, threshold in pairs:
             actual = ratio(theme[foreground], theme[background])
             count += 1
