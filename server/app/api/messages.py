@@ -21,6 +21,8 @@ async def regenerate(identifier: str, body: Regenerate, request: Request) -> Run
 async def start_regeneration(identifier: str, body: Regenerate, request: Request) -> RunResponse:
     store = request.app.state.store
     old = await messages.message(store, identifier)
+    if old.kind == "image":
+        raise AppError("validation_error", "Use the image turn's Try again action.", 422)
     if old.role != "assistant":
         raise AppError("validation_error", "Only assistant messages can be regenerated.", 422)
     if any(r.chat_id == old.chat_id for r in await request.app.state.runs.active()):

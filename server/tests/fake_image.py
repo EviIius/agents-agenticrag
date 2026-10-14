@@ -13,6 +13,7 @@ from tests.test_images import output
 class FakeImageEngine:
     def __init__(self) -> None:
         self.failed_once: set[tuple[str, int]] = set()
+        self.release = asyncio.Event()
 
     def status(self) -> ImageStatus:
         return ImageStatus(available=True)
@@ -33,6 +34,8 @@ class FakeImageEngine:
             raise ValueError("Synthetic failure")
         for i in range(4):
             await progress({"type": "denoising", "completed_steps": i + 1})
+            if "#pause-step" in expected["prompt"] and i == 1:
+                await self.release.wait()
             await asyncio.sleep(
                 1
                 if "#restart" in expected["prompt"]

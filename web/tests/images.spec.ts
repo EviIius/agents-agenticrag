@@ -103,16 +103,13 @@ test("Durable Images: close, reconnect, version, exports and removal", async ({
 }) => {
   await request.post("/api/images/clear", { data: { confirm: true } });
   await page.goto("/images");
-  await expect(
-    page.getByRole("button", { name: "Generate one image" }),
-  ).toBeDisabled();
+  await page.getByRole("button", { name: "New image", exact: true }).click();
   await page
-    .getByRole("textbox", { name: "Prompt", exact: true })
+    .getByRole("textbox", { name: "Image prompt", exact: true })
     .fill("Synthetic browser image #slow");
-  await page.getByRole("button", { name: "Generate one image" }).click();
-  await expect(
-    page.getByRole("status").filter({ hasText: "Image accepted" }),
-  ).toBeVisible();
+  await page.getByRole("button", { name: "Create image", exact: true }).click();
+  await expect(page).toHaveURL(/\/c\//);
+  await expect(page.locator('[data-slot="image-turn"]')).toBeVisible();
   await openSidebar(page);
   await page.getByRole("link", { name: "New chat", exact: true }).click();
   await page.goto("/images");
@@ -123,13 +120,20 @@ test("Durable Images: close, reconnect, version, exports and removal", async ({
   await expect(
     job.getByRole("button", { name: "Save", exact: true }),
   ).toBeVisible();
-  await job.getByRole("button", { name: "Details", exact: true }).click();
-  await page
-    .getByRole("button", { name: "Use prompt for new version" })
-    .click();
-  await page.getByText("Advanced", { exact: true }).click();
-  await page.getByRole("textbox", { name: "Seed", exact: true }).fill("1337");
-  await page.getByRole("button", { name: "Generate one image" }).click();
+  // CI-B moves creation to chat; lineage regression remains on its existing job API.
+  const originalId = await job.getAttribute("data-job-id");
+  const created = await request.post("/api/images/jobs", {
+    data: {
+      request_key: crypto.randomUUID(),
+      prompt: "Synthetic browser image #slow",
+      seed: 1337,
+      parent_id: originalId,
+    },
+  });
+  expect(created.status()).toBe(202);
+  const accepted = await created.json();
+  expect(accepted.seed).toBe(1337);
+  expect(accepted.parent_id).toBe(originalId);
   const version = page
     .getByRole("article")
     .filter({ hasText: "Additional version" })

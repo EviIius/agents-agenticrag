@@ -51,6 +51,19 @@ async def lifespan(server: FastAPI) -> AsyncIterator[None]:
 app.router.lifespan_context = lifespan
 
 
+@app.post("/tests/images/release")
+async def release_fake_image() -> dict[str, bool]:
+    """Release the actual fake worker after its second denoising event."""
+    app.state.images.engine.release.set()
+    return {"released": True}
+
+
+@app.post("/tests/images/pause")
+async def pause_fake_image() -> dict[str, bool]:
+    app.state.images.engine.release.clear()
+    return {"paused": True}
+
+
 @app.post("/tests/long-chat/{chat_id}")
 async def seed_long_chat(chat_id: str) -> dict[str, int]:
     """Synthetic history for the Phase 3 browser performance measurement only."""

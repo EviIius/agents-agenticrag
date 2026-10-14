@@ -1,10 +1,18 @@
 import type { components } from "./api-types";
 export type Chat = components["schemas"]["Chat"];
-export type Message = components["schemas"]["Message"];
+// The additive discriminator is optional for pre-migration/optimistic text rows.
+export type Message = Omit<components["schemas"]["Message"], "kind"> & {
+  kind?: components["schemas"]["Message"]["kind"];
+};
 export type Model = components["schemas"]["ModelInfo"];
 export type Attachment = components["schemas"]["Attachment"];
-export type Detail = components["schemas"]["ChatDetail"];
-export type RunResponse = components["schemas"]["RunResponse"];
+export type Detail = Omit<components["schemas"]["ChatDetail"], "messages"> & {
+  messages: Message[];
+};
+export type RunResponse = Omit<
+  components["schemas"]["RunResponse"],
+  "user_message" | "assistant_message"
+> & { user_message?: Message | null; assistant_message: Message };
 export type Bootstrap = components["schemas"]["Bootstrap"];
 export type Source = components["schemas"]["Source"];
 export type WebRead = components["schemas"]["WebRead"];

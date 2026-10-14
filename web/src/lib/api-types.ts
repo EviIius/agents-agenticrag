@@ -1316,6 +1316,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/chats/{identifier}/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create */
+        post: operations["create_api_chats__identifier__images_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/chats/{identifier}/messages/{message_id}/images/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retry */
+        post: operations["retry_api_chats__identifier__messages__message_id__images_retry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/chats/{identifier}/messages/{message_id}/images/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel */
+        post: operations["cancel_api_chats__identifier__messages__message_id__images_cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/connections": {
         parameters: {
             query?: never;
@@ -1852,6 +1903,33 @@ export interface components {
             reads?: {
                 [key: string]: components["schemas"]["WebRead"][];
             };
+        };
+        /** ChatImageCreate */
+        ChatImageCreate: {
+            /** Request Key */
+            request_key: string;
+            /** Prompt */
+            prompt: string;
+            /** Count */
+            count: number;
+            /** Seeds */
+            seeds: number[];
+            /** Parent Id */
+            parent_id?: string | null;
+            /** Source Job Id */
+            source_job_id?: string | null;
+        };
+        /** ChatImageResponse */
+        ChatImageResponse: {
+            user?: components["schemas"]["Message"] | null;
+            assistant: components["schemas"]["Message"];
+        };
+        /** ChatImageRetry */
+        ChatImageRetry: {
+            /** Request Key */
+            request_key: string;
+            /** Seeds */
+            seeds: number[];
         };
         /** ChatList */
         ChatList: {
@@ -2529,6 +2607,9 @@ export interface components {
             metadata_bytes: number;
             /** Sha256 */
             sha256?: string | null;
+            origin?: components["schemas"]["ImageOrigin"] | null;
+            /** Elapsed Seconds */
+            elapsed_seconds?: number | null;
         };
         /** ImageNode */
         ImageNode: {
@@ -2550,6 +2631,20 @@ export interface components {
              */
             kind: "generate_image";
             config: components["schemas"]["ImageConfig"];
+        };
+        /** ImageOrigin */
+        ImageOrigin: {
+            /** Chat Id */
+            chat_id: string;
+            /** Message Id */
+            message_id: string;
+            /** Title */
+            title?: string | null;
+            /**
+             * Deleted
+             * @default false
+             */
+            deleted: boolean;
         };
         /** ImageSnapshot */
         ImageSnapshot: {
@@ -2832,6 +2927,14 @@ export interface components {
             library?: components["schemas"]["LibraryInfo"] | null;
             /** Created At */
             created_at: string;
+            /**
+             * Kind
+             * @default text
+             * @enum {string}
+             */
+            kind: "text" | "image";
+            /** Images */
+            images?: components["schemas"]["ImageJob"][] | null;
         };
         /** MessageErrorData */
         MessageErrorData: {
@@ -6795,6 +6898,109 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RunResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_api_chats__identifier__images_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatImageCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatImageResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_api_chats__identifier__messages__message_id__images_retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+                message_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatImageRetry"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatImageResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_api_chats__identifier__messages__message_id__images_cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+                message_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatImageResponse"];
                 };
             };
             /** @description Validation Error */

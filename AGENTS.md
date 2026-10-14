@@ -1134,3 +1134,16 @@ installed daily profile after integration; it is not executed. No server change,
 native inference, new dependency/model/runtime, prompt/sampling/default change,
 Research restart, main merge or live publication. No physical phone/VoiceOver
 pass is claimed; final merge/publication still require Jake's okay.
+
+**User acceptance and continuation — 13 October 2026 (CI-B):** Jake said
+“Proceed.” Close CI-A's review stop and implement CI-B of the supplied chat-image
+plan on `codex/workflow-studio`: additive migration 013, atomic/idempotent saved
+image turns, retry/cancel, exclusion of both image roles from text context,
+prompt-derived image-first titles, the unified composer and truthful job cards,
+and Gallery provenance/navigation. The existing separate composer image workspace
+and Gallery creation form are explicitly replaced by chat image mode; retain
+their acceptance/retry/draft/save/cancel/storage coverage through the new flow.
+Preserve Claude's UI and supplied files. No new dependency, model, runtime,
+native inference, prompt, sampling/default change or Research. CI-C viewer,
+iteration and export remain next checkpoint. Retain H4/QA evidence and stop after
+CI-B. Main/live publication and the bounded native workflow trial remain gated.

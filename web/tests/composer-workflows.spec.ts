@@ -42,7 +42,7 @@ test("Composer image acceptance retry preserves seed/key, saving and unsent chat
     )
       chatCalls++;
   });
-  await page.route("**/api/images/jobs", async (route) => {
+  await page.route("**/api/chats/*/images", async (route) => {
     if (route.request().method() !== "POST") return route.continue();
     bodies.push(route.request().postDataJSON());
     if (bodies.length === 1) {
@@ -63,26 +63,23 @@ test("Composer image acceptance retry preserves seed/key, saving and unsent chat
     page.getByRole("textbox", { name: "Seed", exact: true }),
   ).not.toBeVisible();
   await page
-    .getByRole("textbox", { name: "Prompt", exact: true })
+    .getByRole("textbox", { name: "Image prompt", exact: true })
     .fill("Synthetic composer circle");
-  await page.getByRole("button", { name: "Generate one image" }).click();
+  await page.getByRole("button", { name: "Create image", exact: true }).click();
   await expect(
     page
-      .getByRole("status")
+      .getByRole("alert")
       .filter({ hasText: /Failed to fetch|Load failed|NetworkError/ }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Generate one image" }).click();
+  await page.getByRole("button", { name: "Create image", exact: true }).click();
   await expect.poll(() => bodies.length).toBe(2);
   expect(bodies[1]).toEqual(bodies[0]);
-  expect(Number.isInteger(bodies[0].seed)).toBe(true);
-  expect(bodies[0].seed as number).toBeGreaterThanOrEqual(0);
-  expect(bodies[0].seed as number).toBeLessThanOrEqual(4294967295);
-  const job = page
-    .getByRole("article")
-    .filter({ hasText: "Synthetic composer circle" })
-    .first();
+  expect(Number.isInteger((bodies[0].seeds as number[])[0])).toBe(true);
+  expect((bodies[0].seeds as number[])[0]).toBeGreaterThanOrEqual(0);
+  expect((bodies[0].seeds as number[])[0]).toBeLessThanOrEqual(4294967295);
+  const job = page.locator('[data-slot="image-turn"]').last();
   await expect(
-    job.getByRole("button", { name: "Save", exact: true }),
+    job.getByRole("button", { name: "Save image", exact: true }),
   ).toBeVisible();
   const scan = await new AxeBuilder({ page }).analyze();
   expect(
@@ -90,17 +87,19 @@ test("Composer image acceptance retry preserves seed/key, saving and unsent chat
       ["critical", "serious"].includes(v.impact ?? ""),
     ),
   ).toEqual([]);
-  await job.getByRole("button", { name: "Save", exact: true }).click();
+  await job.getByRole("button", { name: "Save image", exact: true }).click();
   await expect(
     page.getByRole("dialog", { name: "Save image", exact: true }),
   ).toBeVisible();
   await page
     .getByRole("button", { name: "Close image save", exact: true })
     .click();
-  await page.getByRole("button", { name: "Message", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Leave image mode", exact: true })
+    .click();
   await expect(message).toHaveValue("Synthetic unsent chat draft");
   await expect(message).toBeFocused();
-  expect(chatCalls).toBe(0);
+  expect(chatCalls).toBe(1); // Approved: the image is now a saved chat turn.
   await workspaceLink(page, "Workflows");
   await page
     .getByRole("button", { name: "Use Brief to images template", exact: true })
@@ -208,16 +207,13 @@ test("Image cancellation stays in composer and Workflows returns to the same sav
   await message.fill("Synthetic saved-chat draft");
   await page.getByRole("button", { name: "Create image", exact: true }).click();
   await page
-    .getByRole("textbox", { name: "Prompt", exact: true })
+    .getByRole("textbox", { name: "Image prompt", exact: true })
     .fill("Synthetic cancellable composer #slow");
-  await page.getByRole("button", { name: "Generate one image" }).click();
-  const job = page
-    .getByRole("article")
-    .filter({ hasText: "Synthetic cancellable composer #slow" })
-    .first();
+  await page.getByRole("button", { name: "Create image", exact: true }).click();
+  const job = page.locator('[data-slot="image-turn"]').last();
   await job.getByRole("button", { name: "Cancel", exact: true }).click();
   await expect(
-    job.getByText("cancelled", { exact: true }).first(),
+    job.locator("div[role=status]").filter({ hasText: "Cancelled" }),
   ).toBeVisible();
   await settle(page);
   const dir = "../artifacts/composer-workflows/browser/composer";
@@ -226,7 +222,9 @@ test("Image cancellation stays in composer and Workflows returns to the same sav
     path: `${dir}/cancel-${browserName}-fake.png`,
     fullPage: true,
   });
-  await page.getByRole("button", { name: "Message", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Leave image mode", exact: true })
+    .click();
   await workspaceLink(page, "Workflows");
   await page.goBack();
   await expect(page).toHaveURL(new RegExp(`/c/${chat.id}$`));

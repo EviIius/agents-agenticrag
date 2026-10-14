@@ -18,7 +18,7 @@ import {
   useState,
   type RefObject,
 } from "react";
-import { TriangleAlert } from "lucide-react";
+import { TriangleAlert, ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { Message, Source, WebRead, Model, Bootstrap } from "@/lib/api";
@@ -28,7 +28,9 @@ import { SearchActivity } from "./SearchActivity";
 import { messageError } from "@/lib/errors";
 import { SourcesSheet } from "./SourcesSheet";
 const Markdown = lazy(() => import("./Markdown"));
+const ImageTurn = lazy(() => import("./ImageTurn"));
 type LiveThreadProps = {
+  onImageAction?: (message: Message, action: "retry" | "cancel") => void;
   pending?: Message | null;
   position?: number;
   onScrollChange?: (scrolled: boolean) => void;
@@ -59,6 +61,7 @@ type LiveThreadProps = {
 export function LiveThread({
   messages,
   all,
+  onImageAction,
   stage,
   steps,
   scrollRef,
@@ -84,6 +87,7 @@ export function LiveThread({
     [draft, setDraft] = useState("");
   const stick = useRef(true);
   const handlers = useRef({
+    onImageAction,
     onRegenerate,
     onEdit,
     onBranch,
@@ -95,6 +99,7 @@ export function LiveThread({
   });
   useEffect(() => {
     handlers.current = {
+      onImageAction,
       onRegenerate,
       onEdit,
       onBranch,
@@ -107,6 +112,8 @@ export function LiveThread({
   });
   const stable = useMemo(
     () => ({
+      onImageAction: (message: Message, action: "retry" | "cancel") =>
+        handlers.current.onImageAction?.(message, action),
       onRegenerate: (message: Message, force?: boolean) =>
         handlers.current.onRegenerate(message, force),
       onEdit: (message: Message, text: string) =>
@@ -153,7 +160,9 @@ export function LiveThread({
   }, [last?.id, last?.status, last?.error?.message]);
   useEffect(() => {
     const listener = () => {
-      const last = [...messages].reverse().find((m) => m.role === "user");
+      const last = [...messages]
+        .reverse()
+        .find((m) => m.role === "user" && m.kind !== "image");
       if (last) {
         setEditing(last.id);
         setDraft(last.content);
@@ -238,6 +247,7 @@ function OptimisticRow({ message }: { message: Message }) {
       <article
         aria-label="user message"
         data-message-id={message.id}
+        id={`m-${message.id}`}
         data-fresh={fresh || undefined}
         onAnimationEnd={(event) => {
           if (event.target === event.currentTarget)
@@ -297,6 +307,7 @@ export const MessageRow = memo(function MessageRow({
   onChatSettings,
   onNew,
   onRegenerateWith,
+  onImageAction,
   editing,
   draft,
   setEditing,
@@ -313,6 +324,7 @@ export const MessageRow = memo(function MessageRow({
           useFreshRows.getState().clear(message.id);
       }}
       data-message-id={message.id}
+      id={`m-${message.id}`}
       style={
         message.status !== "streaming"
           ? { contentVisibility: "auto", containIntrinsicSize: "auto 180px" }
@@ -355,6 +367,16 @@ export const MessageRow = memo(function MessageRow({
           </div>
         ) : (
           <div className="user-bubble ml-auto w-fit">
+            {message.kind === "image" && (
+              <p className="mb-1 flex items-center gap-1 text-xs text-fg-2">
+                <ImagePlus className="size-3" />
+                Image
+                {(all.find((row) => row.parent_id === message.id)?.images
+                  ?.length ?? 1) > 1
+                  ? ` · ${all.find((row) => row.parent_id === message.id)?.images?.length} images`
+                  : ""}
+              </p>
+            )}
             <p className="whitespace-pre-wrap break-words">{message.content}</p>
             {(message.attachments ?? []).map((a) =>
               a.kind === "audio" ? (
@@ -375,6 +397,15 @@ export const MessageRow = memo(function MessageRow({
             )}
           </div>
         )
+      ) : message.kind === "image" ? (
+        <Suspense fallback={<p role="status">Loading images…</p>}>
+          <ImageTurn
+            message={message}
+            all={all}
+            onBranch={onBranch}
+            onAction={onImageAction}
+          />
+        </Suspense>
       ) : (
         <>
           {message.stats?.dropped_message_count ? (
@@ -500,7 +531,7 @@ export const MessageRow = memo(function MessageRow({
           {renderSources?.(message, sources ?? [], reads ?? [])}
         </>
       )}
-      {message.status !== "streaming" && (
+      {message.status !== "streaming" && message.kind !== "image" && (
         <div
           data-slot="message-footer"
           data-role={message.role}

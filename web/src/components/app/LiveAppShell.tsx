@@ -6,6 +6,7 @@ import { OfflineNotice } from "./OfflineNotice";
 import { ChatTitle } from "./ChatTitle";
 import { failureCopy, failureDetail } from "@/lib/errors";
 import { useSend, useSendState } from "@/hooks/useSend";
+import { useChatImages } from "@/hooks/useChatImages";
 import { useUploads } from "@/hooks/useUploads";
 import { useModelOps } from "@/hooks/useModelOps";
 import { useShortcuts } from "@/hooks/useShortcuts";
@@ -68,7 +69,19 @@ const WorkflowNotifier = lazy(
 export function LiveAppShell() {
   const ui = useUI(),
     navigate = useNavigate();
-  const { pathname } = useLocation();
+  const {
+    pathname,
+    search: routeSearch,
+    state: routeState,
+    hash: routeHash,
+  } = useLocation();
+  useEffect(() => {
+    if (routeState?.imageMode)
+      navigate(pathname + routeSearch + routeHash, {
+        replace: true,
+        state: { ...routeState, imageMode: false },
+      });
+  }, [routeState, pathname, routeSearch, routeHash, navigate]);
   const routeChatId = useMatch("/c/:chatId")?.params.chatId;
   const workspace = pathname.startsWith("/workflows") || pathname === "/images";
   const studio =
@@ -162,6 +175,15 @@ export function LiveAppShell() {
     queryFn: () => api<Detail>("/chats/" + chatId),
     enabled: !!chatId,
   });
+  useEffect(() => {
+    if (!routeHash.startsWith("#m-") || !detail.data) return;
+    const frame = requestAnimationFrame(() =>
+      document
+        .getElementById(routeHash.slice(1))
+        ?.scrollIntoView({ block: "center", behavior: "instant" }),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [routeHash, detail.data]);
   const entering = useAppEntrance(
     !!bootstrap.data &&
       (!bootstrap.data.connections.length || models.isSuccess) &&
@@ -339,6 +361,19 @@ export function LiveAppShell() {
     ...sendState,
   });
   const chatParams = detail.data?.chat.params ?? effectiveDraftParams;
+  const imageStatus = useQuery({
+    queryKey: ["image-status"],
+    queryFn: () => api<components["schemas"]["ImageStatus"]>("/images/status"),
+  });
+  const chatImages = useChatImages({
+    chatId,
+    query,
+    navigate,
+    current,
+    blocked: running || !!loadingModel,
+    messages: detail.data?.messages ?? [],
+    enabled: !workspace,
+  });
   const saveParams = async (prompt: string | null, params: Params) => {
     if (chatId)
       return mutate(
@@ -420,16 +455,23 @@ export function LiveAppShell() {
       key={chatId ?? "new"}
       draftKey={chatId ?? "new"}
       images
+      imageStatus={imageStatus.data}
+      imageBusy={chatImages.busy}
+      initialImageMode={
+        Boolean(routeState?.imageMode) ||
+        new URLSearchParams(routeSearch).has("image")
+      }
+      onImageSend={chatImages.send}
       optimistic={Boolean(chatId)}
       suggestions={!chatId}
       audioExtensions={audioExtensions}
       attachmentExtensions={bootstrap.data?.attachment_extensions}
       model={current}
-      disabled={!current || busy || !!loadingModel}
+      disabled={!current || busy || chatImages.busy || !!loadingModel}
       running={running}
       onStop={stop}
       onSend={(text) => onSend(text)}
-      error={sendError}
+      error={chatImages.error || sendError}
       files={effectiveFiles}
       uploads={uploads}
       transcriptionReady={Boolean(bootstrap.data?.features.transcription)}
@@ -607,7 +649,7 @@ export function LiveAppShell() {
     />
   );
   let visible = visiblePath(
-    detail.data?.messages ?? [],
+    chatImages.messages,
     detail.data?.chat.current_leaf_id ?? null,
   );
   if (runEntry) {
@@ -807,6 +849,9 @@ export function LiveAppShell() {
           ) : (
             <>
               <LiveThread
+                onImageAction={(message, action) =>
+                  void chatImages.action(message, action)
+                }
                 pending={pending?.chat_id === chatId ? pending : null}
                 position={runEntry?.[1].position}
                 onScrollChange={setScrolled}

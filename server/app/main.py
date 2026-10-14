@@ -11,6 +11,7 @@ from fastapi.responses import FileResponse
 from .api import (
     attachments,
     backup,
+    chat_images,
     chats,
     connections,
     folders,
@@ -145,6 +146,7 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
         workflows.router,
         workflow_graphs.router,
         chats.router,
+        chat_images.router,
         connections.router,
         messages.router,
         models.router,

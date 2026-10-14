@@ -894,3 +894,202 @@ article[data-fresh="true"] {
 [data-reduce-motion="always"] .wf-edge-path[data-run="active"] {
   stroke-dasharray: none;
 }
+
+/* CI-B: job-driven image development. The color field is decorative, not a preview. */
+.composer[data-image-mode] {
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line));
+}
+.image-frames {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.image-frames.image-count-1 {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 440px;
+}
+.image-frames.image-count-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.image-frame-shell {
+  position: relative;
+  min-width: 0;
+}
+.image-frame {
+  aspect-ratio: 1;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
+}
+.image-develop {
+  position: absolute;
+  inset: 0;
+  opacity: 0.85;
+}
+.image-develop[data-decoding] {
+  opacity: 1;
+}
+.image-develop i {
+  position: absolute;
+  width: 125%;
+  height: 125%;
+  left: -20%;
+  top: -25%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, var(--brand), transparent 60%);
+  filter: blur(28px);
+  animation: image-drift-a 7s ease-in-out infinite alternate;
+}
+.image-develop i:nth-child(2) {
+  left: 20%;
+  top: 15%;
+  background: radial-gradient(ellipse, var(--brand-soft), transparent 65%);
+  animation: image-drift-b 9s ease-in-out infinite alternate;
+}
+.image-develop i:nth-child(3) {
+  left: -15%;
+  top: 35%;
+  background: radial-gradient(ellipse, var(--surface-3), transparent 60%);
+  animation: image-drift-c 11s ease-in-out infinite alternate;
+}
+.image-develop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.08;
+  background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="160" height="160"%3E%3Cfilter id="n"%3E%3CfeTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23n)" opacity=".8"/%3E%3C/svg%3E');
+}
+.image-sheen {
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--text-1) 6%, transparent),
+    transparent
+  );
+  animation: image-sheen 2.4s ease-in-out infinite;
+}
+.image-progress {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  gap: 4px;
+}
+.image-progress > span {
+  height: 3px;
+  flex: 1;
+  overflow: hidden;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--surface-3) 60%, transparent);
+}
+.image-progress i {
+  display: block;
+  height: 100%;
+  background: var(--brand);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 320ms var(--ease-out);
+}
+.image-progress i[data-filled="true"] {
+  transform: scaleX(1);
+}
+.image-output {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+}
+.image-output.is-loaded {
+  opacity: 1;
+}
+.image-reveal {
+  animation: image-reveal 320ms var(--ease-out);
+}
+.image-frame-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 4px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .image-frame-actions {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 8px;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    background: linear-gradient(transparent, var(--overlay));
+    opacity: 0;
+    transition: opacity 120ms var(--ease-out);
+  }
+  .image-frame-shell:hover .image-frame-actions,
+  .image-frame-shell:focus-within .image-frame-actions {
+    opacity: 1;
+  }
+}
+[data-frozen] .image-develop *,
+[data-frozen] .atelier-mark * {
+  animation-play-state: paused;
+}
+@keyframes image-drift-a {
+  from {
+    transform: translate(-6%, -4%);
+  }
+  to {
+    transform: translate(12%, 10%);
+  }
+}
+@keyframes image-drift-b {
+  from {
+    transform: translate(8%, 5%);
+  }
+  to {
+    transform: translate(-10%, -8%);
+  }
+}
+@keyframes image-drift-c {
+  from {
+    transform: translate(-4%, 9%);
+  }
+  to {
+    transform: translate(9%, -7%);
+  }
+}
+@keyframes image-sheen {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(360%);
+  }
+}
+@keyframes image-reveal {
+  from {
+    opacity: 0;
+    transform: scale(1.03);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 767px) {
+  .image-frames.image-count-3 {
+    display: flex;
+    overflow-x: auto;
+  }
+  .image-frames.image-count-3 > .image-frame-shell {
+    flex: 0 0 78%;
+  }
+}
