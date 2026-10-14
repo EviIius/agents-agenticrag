@@ -7,6 +7,7 @@ import {
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir, writeFile } from "node:fs/promises";
 import { settle } from "./helpers";
+import { workspaceLink } from "./workspace-helpers";
 const dir = "../artifacts/chat-images/ci-c/browser";
 test.use({ video: { mode: "on" } });
 test.beforeEach(async ({ request }) => {
@@ -269,6 +270,10 @@ test("iteration preserves text draft, source lineage, removable chip and uncerta
   await page.unroute("**/api/chats/*/images");
   await expect(page.locator('[data-slot="image-turn"]')).toHaveCount(2);
   await page.getByRole("button", { name: "Leave image mode" }).click();
+  await expect(text).toHaveValue("Synthetic saved text draft");
+  await workspaceLink(page, "Workflows");
+  await page.goBack();
+  await expect(text).toHaveAttribute("aria-label", "Message fake-chat");
   await expect(text).toHaveValue("Synthetic saved text draft");
   const newest = page.locator('[data-slot="image-turn"]').last();
   await expect(newest.locator("img")).toBeVisible();

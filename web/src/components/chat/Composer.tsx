@@ -49,6 +49,7 @@ export function Composer({
   imageBusy = false,
   onImageSend,
   imageCommand,
+  onImageCommandApplied,
   starter = "",
   optimistic = false,
   running = false,
@@ -82,6 +83,7 @@ export function Composer({
   initialImageMode?: boolean;
   imageBusy?: boolean;
   imageCommand?: ImageComposerCommand;
+  onImageCommandApplied?: (key: string) => void;
   onImageSend?: (
     prompt: string,
     count: number,
@@ -216,14 +218,14 @@ export function Composer({
       setImageValue(imageCommand.refinement.job.prompt);
       if (draftKey) imageRefinements.set(draftKey, imageCommand.refinement);
     }
-    const frame = requestAnimationFrame(() => {
+    onImageCommandApplied?.(imageCommand.key);
+    requestAnimationFrame(() => {
       const field = textarea.current;
       if (field) {
         field.focus();
         field.setSelectionRange(field.value.length, field.value.length);
       }
     });
-    return () => cancelAnimationFrame(frame);
   }, [imageCommand?.key]); // eslint-disable-line react-hooks/exhaustive-deps
   const send = async () => {
     if (imageMode) {

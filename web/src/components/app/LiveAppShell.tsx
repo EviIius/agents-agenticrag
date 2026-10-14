@@ -508,6 +508,11 @@ export function LiveAppShell() {
         new URLSearchParams(routeSearch).has("image")
       }
       onImageSend={chatImages.send}
+      onImageCommandApplied={(key) =>
+        setImageCommand((saved) =>
+          saved?.command.key === key ? undefined : saved,
+        )
+      }
       imageCommand={
         imageCommand && imageCommand.chat === chatId
           ? imageCommand.command
