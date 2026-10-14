@@ -405,3 +405,21 @@ See `WORKFLOW-STUDIO-NATIVE-REPAIR-REPORT.md`. No broader Search/grounding pass,
 Research restart, VoiceOver result, template/default change or main publication
 is implied. Remaining knowledge/logic blocks and reference-pixel editing are
 future scope; final main merge needs Jake's explicit okay.
+
+
+## Native cancellation/recovery closeout — 14 October 2026
+
+The missing native control pair now passes on the isolated Studio branch. Actual
+first-text SSE clicks a visible enabled UI Cancel control; incomplete stream
+closure, partial output, zero downstream execution and capacity release are
+verified. One identical single-block run then completes, survives reload and
+stays outside normal history. Two native calls only; no retry. One recovered
+answer passes manual fact review, without excusing earlier unsupported claims.
+
+The prior DOM-window failure remains preserved. An offline editing-precondition
+failure is also retained; closing the prior Run view fixes it. See
+`WORKFLOW-STUDIO-NATIVE-CONTROLS-REPORT.md`. UI/control verification is complete
+for this checkpoint. Main/live are unchanged and merge/publication need Jake's
+explicit okay. New-flow physical iPhone acceptance, general factual grounding,
+future WS-E blocks and reference-pixel editing remain separate; VoiceOver stays
+outside the current list and Research is shelved.

@@ -1256,3 +1256,36 @@ and no downstream review using fake runtime only; no native pass is claimed.
 H4: `docs/WORKFLOW-STUDIO-NATIVE-REPAIR-REPORT.md`. Preserve prior evidence/gates,
 main and the installed app. Stop for review before another native pair or main
 merge/publication; Research/VoiceOver stay outside the work list and G9 is open.
+
+
+**User authorization — 14 October 2026 (native cancel/recovery pair):** Jake
+said “Go ahead and repair it then” after the remaining native control-check
+recommendation. Proceed with `docs/WORKFLOW-STUDIO-NATIVE-CONTROLS-PLAN.md`, one
+frozen pair, at most two native calls / three minutes with first-failure stopping,
+using the same daily profile, unchanged user-authored recipe and explicit samples.
+Use actual Studio text events to click a visible enabled Cancel control, then
+verify closure/capacity and one single-block recovery/history/reload check.
+Preserve all earlier failed trials and factual limitations. No new model/package/
+runtime, application prompt/template/sampling/default change, Research/Search
+experiment, native image job or main/live publication. Stop with H4 evidence.
+
+
+**Native cancel/recovery closeout — 14 October 2026:** The frozen pair passes
+using the existing daily profile, unchanged user-authored Draft and explicit
+source samples. Actual node.text triggers a visible enabled hit-testable Cancel
+control. An incomplete native stream closes without error, one byte of partial
+output persists, no downstream block runs and capacity releases. A second
+identical native request completes, survives reload, stays outside normal
+history and passes manual review for all supplied facts/no additional claims.
+Exactly two calls / 139.27 seconds; no retry or extra inference. Earlier failures
+and general grounding limitations remain unqualified. Retain the zero-native
+first offline setup failure (still following prior run) and its explicit Close
+Run remedy. No assertion/timeout/target change; final offline UI pair passes.
+
+H4: `docs/WORKFLOW-STUDIO-NATIVE-CONTROLS-REPORT.md`. Product source remains the
+fully checked CI-C f8e301c2 candidate; main and installed app stay intact. No
+runtime/model/default/sampling/dependency/application prompt/template change,
+Research/Search restart, native image job or phone/VoiceOver pass. The missing
+native control gate is closed. Stop for final branch review; merge and live
+publication still require Jake's explicit okay. Factual outputs require review,
+G9 remains open and future WS-E/reference editing remains separately gated.
