@@ -1224,3 +1224,35 @@ H4 reports: `docs/CHAT-IMAGES-CI-C-REPORT.md` and
 experiments or Studio/reference-edit expansion. No main merge, live publication,
 Research restart or physical iPhone/VoiceOver pass; final merge/publication still
 require Jake's explicit okay.
+
+
+**User authorization — 14 October 2026 (native recipe and harness repair):**
+After the CI-C/native failure report and prioritized fixes, Jake said “Fix them.”
+Proceed with `docs/WORKFLOW-STUDIO-NATIVE-REPAIR-PLAN.md`: carry the original brief
+into both user-authored trial Generate blocks, retain human review, fix actual
+Studio SSE/RSS/cleanup measurement and perform one frozen trial, max seven native
+calls / ten minutes with first-failure stopping. Preserve the original failed
+trial and all release targets. No ordinary application prompt/template/sampling/
+runtime/default/UI change, broad Search experiment, Research restart, new model
+or dependency. His question about committing to main is a readiness question;
+no merge/publication is authorized. Stop with H4 results after the bounded trial.
+
+
+**Native recipe/harness repair closeout — 14 October 2026:** The isolated,
+frozen user-authored recipe preserves original-brief and exact upstream-outline
+binding in six native requests. Two full runs produce faithful drafts and pass
+review reload, unchanged approval, edited save/export and raw-output preservation.
+Actual Studio SSE (149 events), PID/RSS and clean driver/stream close are captured.
+Retain the zero-call offline selection failure and its correction. Runtime,
+product prompts/templates/source, sampling and defaults remain unchanged.
+
+The native trial fails its cancellation DOM-window assertion after the brief
+third draft finishes, then stops at six calls / 306.16 seconds. Cleanup cancels a
+paused run, not active generation; single-block recovery remains unexecuted.
+Read-only third-output review also flags “all necessary materials,” so two good
+samples do not qualify consistent fidelity. No retry or seventh call followed.
+A prospective actual-node.text UI cancellation probe passes with partial output
+and no downstream review using fake runtime only; no native pass is claimed.
+H4: `docs/WORKFLOW-STUDIO-NATIVE-REPAIR-REPORT.md`. Preserve prior evidence/gates,
+main and the installed app. Stop for review before another native pair or main
+merge/publication; Research/VoiceOver stay outside the work list and G9 is open.

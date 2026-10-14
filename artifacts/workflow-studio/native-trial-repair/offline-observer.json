@@ -1,0 +1,4190 @@
+{
+  "passed": true,
+  "native_calls": 0,
+  "fake_only": true,
+  "run_id": "bc99206a576240d19d104f95f297062a",
+  "node_text_events": 5,
+  "events": [
+    {
+      "kind": "run.snapshot",
+      "at": 1792003163301.0999,
+      "data": {
+        "paused_count": 1,
+        "items": [
+          {
+            "id": "fd8d81910c8f4390bf8e38fe9fbfaf51",
+            "kind": "graph",
+            "def_id": "696c475eae084e6aae5aa46ad697c5fe",
+            "def_name": "Synthetic offline stream observer",
+            "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+            "snapshot_id": "3b3057d64a0842c780f75a61b58e6a8e",
+            "mode": "run",
+            "parent_run_id": null,
+            "state": "paused",
+            "stage": "Waiting for you: Approve or edit",
+            "error": null,
+            "created_at": "2026-10-14T18:37:41.375462+00:00",
+            "updated_at": "2026-10-14T18:37:41.627851+00:00",
+            "inputs": {
+              "brief": "Synthetic offline event test"
+            },
+            "graph": {
+              "schema": "atelier.workflow/1",
+              "nodes": [
+                {
+                  "id": "n_start",
+                  "key": "start",
+                  "title": "Start",
+                  "position": {
+                    "x": 320,
+                    "y": 80
+                  },
+                  "disabled": false,
+                  "kind": "start",
+                  "config": {
+                    "fields": [
+                      {
+                        "name": "brief",
+                        "label": "Brief",
+                        "type": "long_text",
+                        "required": true,
+                        "default": null,
+                        "choices": [],
+                        "help": ""
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "n_draft",
+                  "key": "draft",
+                  "title": "Generate draft",
+                  "position": {
+                    "x": 320,
+                    "y": 280
+                  },
+                  "disabled": false,
+                  "kind": "generate",
+                  "config": {
+                    "model": {
+                      "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                      "model_id": "fake-chat"
+                    },
+                    "instructions": "",
+                    "prompt": "{{start.brief}}",
+                    "format": "text",
+                    "json_fields": [],
+                    "params": {
+                      "temperature": null,
+                      "top_p": null,
+                      "top_k": null,
+                      "max_tokens": null,
+                      "seed": null,
+                      "reasoning": null
+                    }
+                  }
+                },
+                {
+                  "id": "n_review",
+                  "key": "review",
+                  "title": "Approve or edit",
+                  "position": {
+                    "x": 320,
+                    "y": 480
+                  },
+                  "disabled": false,
+                  "kind": "review",
+                  "config": {
+                    "show": "{{draft.text}}",
+                    "editable": true,
+                    "message": "Check this result before continuing."
+                  }
+                }
+              ],
+              "edges": [
+                {
+                  "id": "e1",
+                  "source": "n_start",
+                  "source_port": "out",
+                  "target": "n_draft",
+                  "target_port": "in"
+                },
+                {
+                  "id": "e2",
+                  "source": "n_draft",
+                  "source_port": "out",
+                  "target": "n_review",
+                  "target_port": "in"
+                }
+              ],
+              "notes": [],
+              "viewport": null,
+              "settings": {
+                "default_model": {
+                  "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                  "model_id": "fake-chat"
+                },
+                "keep_test_runs_days": 7
+              }
+            },
+            "nodes": {
+              "n_draft": {
+                "state": "complete",
+                "attempt": 1,
+                "port": "out",
+                "output": {
+                  "context_length": 16384,
+                  "draft": true,
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat",
+                    "params": {
+                      "max_tokens": null,
+                      "reasoning": null,
+                      "seed": null,
+                      "temperature": null,
+                      "top_k": null,
+                      "top_p": null
+                    }
+                  },
+                  "model_display_name": "fake-chat",
+                  "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "prompt_version": 1,
+                  "resolved_params": {},
+                  "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+                },
+                "error": null,
+                "started_at": "2026-10-14T18:37:41.387783+00:00",
+                "finished_at": "2026-10-14T18:37:41.616644+00:00",
+                "reused_from": null,
+                "warnings": [],
+                "progress": null
+              },
+              "n_review": {
+                "state": "paused",
+                "attempt": 1,
+                "port": null,
+                "output": {
+                  "value": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+                },
+                "error": null,
+                "started_at": "2026-10-14T18:37:41.621035+00:00",
+                "finished_at": null,
+                "reused_from": null,
+                "warnings": [],
+                "progress": null
+              },
+              "n_start": {
+                "state": "complete",
+                "attempt": 1,
+                "port": "out",
+                "output": {
+                  "brief": "Synthetic offline event test"
+                },
+                "error": null,
+                "started_at": "2026-10-14T18:37:41.379363+00:00",
+                "finished_at": "2026-10-14T18:37:41.382838+00:00",
+                "reused_from": null,
+                "warnings": [],
+                "progress": null
+              }
+            },
+            "results": [],
+            "source_available": false
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    {
+      "kind": "run.snapshot",
+      "at": 1792003163328.5999,
+      "data": {
+        "paused_count": 1,
+        "items": [
+          {
+            "id": "fd8d81910c8f4390bf8e38fe9fbfaf51",
+            "kind": "graph",
+            "def_id": "696c475eae084e6aae5aa46ad697c5fe",
+            "def_name": "Synthetic offline stream observer",
+            "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+            "snapshot_id": "3b3057d64a0842c780f75a61b58e6a8e",
+            "mode": "run",
+            "parent_run_id": null,
+            "state": "paused",
+            "stage": "Waiting for you: Approve or edit",
+            "error": null,
+            "created_at": "2026-10-14T18:37:41.375462+00:00",
+            "updated_at": "2026-10-14T18:37:41.627851+00:00",
+            "inputs": {
+              "brief": "Synthetic offline event test"
+            },
+            "graph": {
+              "schema": "atelier.workflow/1",
+              "nodes": [
+                {
+                  "id": "n_start",
+                  "key": "start",
+                  "title": "Start",
+                  "position": {
+                    "x": 320,
+                    "y": 80
+                  },
+                  "disabled": false,
+                  "kind": "start",
+                  "config": {
+                    "fields": [
+                      {
+                        "name": "brief",
+                        "label": "Brief",
+                        "type": "long_text",
+                        "required": true,
+                        "default": null,
+                        "choices": [],
+                        "help": ""
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "n_draft",
+                  "key": "draft",
+                  "title": "Generate draft",
+                  "position": {
+                    "x": 320,
+                    "y": 280
+                  },
+                  "disabled": false,
+                  "kind": "generate",
+                  "config": {
+                    "model": {
+                      "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                      "model_id": "fake-chat"
+                    },
+                    "instructions": "",
+                    "prompt": "{{start.brief}}",
+                    "format": "text",
+                    "json_fields": [],
+                    "params": {
+                      "temperature": null,
+                      "top_p": null,
+                      "top_k": null,
+                      "max_tokens": null,
+                      "seed": null,
+                      "reasoning": null
+                    }
+                  }
+                },
+                {
+                  "id": "n_review",
+                  "key": "review",
+                  "title": "Approve or edit",
+                  "position": {
+                    "x": 320,
+                    "y": 480
+                  },
+                  "disabled": false,
+                  "kind": "review",
+                  "config": {
+                    "show": "{{draft.text}}",
+                    "editable": true,
+                    "message": "Check this result before continuing."
+                  }
+                }
+              ],
+              "edges": [
+                {
+                  "id": "e1",
+                  "source": "n_start",
+                  "source_port": "out",
+                  "target": "n_draft",
+                  "target_port": "in"
+                },
+                {
+                  "id": "e2",
+                  "source": "n_draft",
+                  "source_port": "out",
+                  "target": "n_review",
+                  "target_port": "in"
+                }
+              ],
+              "notes": [],
+              "viewport": null,
+              "settings": {
+                "default_model": {
+                  "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                  "model_id": "fake-chat"
+                },
+                "keep_test_runs_days": 7
+              }
+            },
+            "nodes": {
+              "n_draft": {
+                "state": "complete",
+                "attempt": 1,
+                "port": "out",
+                "output": {
+                  "context_length": 16384,
+                  "draft": true,
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat",
+                    "params": {
+                      "max_tokens": null,
+                      "reasoning": null,
+                      "seed": null,
+                      "temperature": null,
+                      "top_k": null,
+                      "top_p": null
+                    }
+                  },
+                  "model_display_name": "fake-chat",
+                  "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "prompt_version": 1,
+                  "resolved_params": {},
+                  "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+                },
+                "error": null,
+                "started_at": "2026-10-14T18:37:41.387783+00:00",
+                "finished_at": "2026-10-14T18:37:41.616644+00:00",
+                "reused_from": null,
+                "warnings": [],
+                "progress": null
+              },
+              "n_review": {
+                "state": "paused",
+                "attempt": 1,
+                "port": null,
+                "output": {
+                  "value": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+                },
+                "error": null,
+                "started_at": "2026-10-14T18:37:41.621035+00:00",
+                "finished_at": null,
+                "reused_from": null,
+                "warnings": [],
+                "progress": null
+              },
+              "n_start": {
+                "state": "complete",
+                "attempt": 1,
+                "port": "out",
+                "output": {
+                  "brief": "Synthetic offline event test"
+                },
+                "error": null,
+                "started_at": "2026-10-14T18:37:41.379363+00:00",
+                "finished_at": "2026-10-14T18:37:41.382838+00:00",
+                "reused_from": null,
+                "warnings": [],
+                "progress": null
+              }
+            },
+            "results": [],
+            "source_available": false
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    {
+      "kind": "run.updated",
+      "at": 1792003163872.0999,
+      "data": {
+        "paused_count": 1,
+        "run": {
+          "created_at": "2026-10-14T18:39:23.859663+00:00",
+          "def_id": "dd70e630519c4c2aa135fcef031d91e3",
+          "def_name": "Synthetic offline stream observer",
+          "error": null,
+          "graph": {
+            "edges": [
+              {
+                "id": "e1",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "nodes": [
+              {
+                "config": {
+                  "fields": [
+                    {
+                      "choices": [],
+                      "default": null,
+                      "help": "",
+                      "label": "Brief",
+                      "name": "brief",
+                      "required": true,
+                      "type": "long_text"
+                    }
+                  ]
+                },
+                "disabled": false,
+                "id": "n_start",
+                "key": "start",
+                "kind": "start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "title": "Start"
+              },
+              {
+                "config": {
+                  "format": "text",
+                  "instructions": "",
+                  "json_fields": [],
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat"
+                  },
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  },
+                  "prompt": "{{start.brief}}"
+                },
+                "disabled": false,
+                "id": "n_draft",
+                "key": "draft",
+                "kind": "generate",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "title": "Generate draft"
+              },
+              {
+                "config": {
+                  "editable": true,
+                  "message": "Check this result before continuing.",
+                  "show": "{{draft.text}}"
+                },
+                "disabled": false,
+                "id": "n_review",
+                "key": "review",
+                "kind": "review",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "title": "Approve or edit"
+              }
+            ],
+            "notes": [],
+            "schema": "atelier.workflow/1",
+            "settings": {
+              "default_model": {
+                "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            },
+            "viewport": null
+          },
+          "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+          "id": "bc99206a576240d19d104f95f297062a",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "kind": "graph",
+          "mode": "run",
+          "nodes": {
+            "n_draft": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            },
+            "n_review": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            },
+            "n_start": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            }
+          },
+          "parent_run_id": null,
+          "results": [],
+          "snapshot_id": "2c8a6fa38d0345c487418462269b0dd3",
+          "source_available": false,
+          "stage": "Waiting for a block",
+          "state": "queued",
+          "updated_at": "2026-10-14T18:39:23.859663+00:00"
+        }
+      }
+    },
+    {
+      "kind": "run.updated",
+      "at": 1792003163872.2,
+      "data": {
+        "paused_count": 1,
+        "run": {
+          "created_at": "2026-10-14T18:39:23.859663+00:00",
+          "def_id": "dd70e630519c4c2aa135fcef031d91e3",
+          "def_name": "Synthetic offline stream observer",
+          "error": null,
+          "graph": {
+            "edges": [
+              {
+                "id": "e1",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "nodes": [
+              {
+                "config": {
+                  "fields": [
+                    {
+                      "choices": [],
+                      "default": null,
+                      "help": "",
+                      "label": "Brief",
+                      "name": "brief",
+                      "required": true,
+                      "type": "long_text"
+                    }
+                  ]
+                },
+                "disabled": false,
+                "id": "n_start",
+                "key": "start",
+                "kind": "start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "title": "Start"
+              },
+              {
+                "config": {
+                  "format": "text",
+                  "instructions": "",
+                  "json_fields": [],
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat"
+                  },
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  },
+                  "prompt": "{{start.brief}}"
+                },
+                "disabled": false,
+                "id": "n_draft",
+                "key": "draft",
+                "kind": "generate",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "title": "Generate draft"
+              },
+              {
+                "config": {
+                  "editable": true,
+                  "message": "Check this result before continuing.",
+                  "show": "{{draft.text}}"
+                },
+                "disabled": false,
+                "id": "n_review",
+                "key": "review",
+                "kind": "review",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "title": "Approve or edit"
+              }
+            ],
+            "notes": [],
+            "schema": "atelier.workflow/1",
+            "settings": {
+              "default_model": {
+                "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            },
+            "viewport": null
+          },
+          "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+          "id": "bc99206a576240d19d104f95f297062a",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "kind": "graph",
+          "mode": "run",
+          "nodes": {
+            "n_draft": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            },
+            "n_review": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            },
+            "n_start": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.863048+00:00",
+              "state": "running",
+              "warnings": []
+            }
+          },
+          "parent_run_id": null,
+          "results": [],
+          "snapshot_id": "2c8a6fa38d0345c487418462269b0dd3",
+          "source_available": false,
+          "stage": "Start",
+          "state": "running",
+          "updated_at": "2026-10-14T18:39:23.863813+00:00"
+        }
+      }
+    },
+    {
+      "kind": "run.updated",
+      "at": 1792003163872.2,
+      "data": {
+        "paused_count": 1,
+        "run": {
+          "created_at": "2026-10-14T18:39:23.859663+00:00",
+          "def_id": "dd70e630519c4c2aa135fcef031d91e3",
+          "def_name": "Synthetic offline stream observer",
+          "error": null,
+          "graph": {
+            "edges": [
+              {
+                "id": "e1",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "nodes": [
+              {
+                "config": {
+                  "fields": [
+                    {
+                      "choices": [],
+                      "default": null,
+                      "help": "",
+                      "label": "Brief",
+                      "name": "brief",
+                      "required": true,
+                      "type": "long_text"
+                    }
+                  ]
+                },
+                "disabled": false,
+                "id": "n_start",
+                "key": "start",
+                "kind": "start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "title": "Start"
+              },
+              {
+                "config": {
+                  "format": "text",
+                  "instructions": "",
+                  "json_fields": [],
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat"
+                  },
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  },
+                  "prompt": "{{start.brief}}"
+                },
+                "disabled": false,
+                "id": "n_draft",
+                "key": "draft",
+                "kind": "generate",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "title": "Generate draft"
+              },
+              {
+                "config": {
+                  "editable": true,
+                  "message": "Check this result before continuing.",
+                  "show": "{{draft.text}}"
+                },
+                "disabled": false,
+                "id": "n_review",
+                "key": "review",
+                "kind": "review",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "title": "Approve or edit"
+              }
+            ],
+            "notes": [],
+            "schema": "atelier.workflow/1",
+            "settings": {
+              "default_model": {
+                "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            },
+            "viewport": null
+          },
+          "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+          "id": "bc99206a576240d19d104f95f297062a",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "kind": "graph",
+          "mode": "run",
+          "nodes": {
+            "n_draft": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            },
+            "n_review": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            },
+            "n_start": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:23.865930+00:00",
+              "output": {
+                "brief": "Synthetic offline event test"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.863048+00:00",
+              "state": "complete",
+              "warnings": []
+            }
+          },
+          "parent_run_id": null,
+          "results": [],
+          "snapshot_id": "2c8a6fa38d0345c487418462269b0dd3",
+          "source_available": false,
+          "stage": "Start",
+          "state": "running",
+          "updated_at": "2026-10-14T18:39:23.863813+00:00"
+        }
+      }
+    },
+    {
+      "kind": "run.updated",
+      "at": 1792003163872.2998,
+      "data": {
+        "paused_count": 1,
+        "run": {
+          "created_at": "2026-10-14T18:39:23.859663+00:00",
+          "def_id": "dd70e630519c4c2aa135fcef031d91e3",
+          "def_name": "Synthetic offline stream observer",
+          "error": null,
+          "graph": {
+            "edges": [
+              {
+                "id": "e1",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "nodes": [
+              {
+                "config": {
+                  "fields": [
+                    {
+                      "choices": [],
+                      "default": null,
+                      "help": "",
+                      "label": "Brief",
+                      "name": "brief",
+                      "required": true,
+                      "type": "long_text"
+                    }
+                  ]
+                },
+                "disabled": false,
+                "id": "n_start",
+                "key": "start",
+                "kind": "start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "title": "Start"
+              },
+              {
+                "config": {
+                  "format": "text",
+                  "instructions": "",
+                  "json_fields": [],
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat"
+                  },
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  },
+                  "prompt": "{{start.brief}}"
+                },
+                "disabled": false,
+                "id": "n_draft",
+                "key": "draft",
+                "kind": "generate",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "title": "Generate draft"
+              },
+              {
+                "config": {
+                  "editable": true,
+                  "message": "Check this result before continuing.",
+                  "show": "{{draft.text}}"
+                },
+                "disabled": false,
+                "id": "n_review",
+                "key": "review",
+                "kind": "review",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "title": "Approve or edit"
+              }
+            ],
+            "notes": [],
+            "schema": "atelier.workflow/1",
+            "settings": {
+              "default_model": {
+                "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            },
+            "viewport": null
+          },
+          "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+          "id": "bc99206a576240d19d104f95f297062a",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "kind": "graph",
+          "mode": "run",
+          "nodes": {
+            "n_draft": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            },
+            "n_review": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            },
+            "n_start": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            }
+          },
+          "parent_run_id": null,
+          "results": [],
+          "snapshot_id": "2c8a6fa38d0345c487418462269b0dd3",
+          "source_available": false,
+          "stage": "Waiting for a block",
+          "state": "queued",
+          "updated_at": "2026-10-14T18:39:23.859663+00:00"
+        }
+      }
+    },
+    {
+      "kind": "run.updated",
+      "at": 1792003163872.2998,
+      "data": {
+        "paused_count": 1,
+        "run": {
+          "created_at": "2026-10-14T18:39:23.859663+00:00",
+          "def_id": "dd70e630519c4c2aa135fcef031d91e3",
+          "def_name": "Synthetic offline stream observer",
+          "error": null,
+          "graph": {
+            "edges": [
+              {
+                "id": "e1",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "nodes": [
+              {
+                "config": {
+                  "fields": [
+                    {
+                      "choices": [],
+                      "default": null,
+                      "help": "",
+                      "label": "Brief",
+                      "name": "brief",
+                      "required": true,
+                      "type": "long_text"
+                    }
+                  ]
+                },
+                "disabled": false,
+                "id": "n_start",
+                "key": "start",
+                "kind": "start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "title": "Start"
+              },
+              {
+                "config": {
+                  "format": "text",
+                  "instructions": "",
+                  "json_fields": [],
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat"
+                  },
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  },
+                  "prompt": "{{start.brief}}"
+                },
+                "disabled": false,
+                "id": "n_draft",
+                "key": "draft",
+                "kind": "generate",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "title": "Generate draft"
+              },
+              {
+                "config": {
+                  "editable": true,
+                  "message": "Check this result before continuing.",
+                  "show": "{{draft.text}}"
+                },
+                "disabled": false,
+                "id": "n_review",
+                "key": "review",
+                "kind": "review",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "title": "Approve or edit"
+              }
+            ],
+            "notes": [],
+            "schema": "atelier.workflow/1",
+            "settings": {
+              "default_model": {
+                "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            },
+            "viewport": null
+          },
+          "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+          "id": "bc99206a576240d19d104f95f297062a",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "kind": "graph",
+          "mode": "run",
+          "nodes": {
+            "n_draft": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            },
+            "n_review": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            },
+            "n_start": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.863048+00:00",
+              "state": "running",
+              "warnings": []
+            }
+          },
+          "parent_run_id": null,
+          "results": [],
+          "snapshot_id": "2c8a6fa38d0345c487418462269b0dd3",
+          "source_available": false,
+          "stage": "Start",
+          "state": "running",
+          "updated_at": "2026-10-14T18:39:23.863813+00:00"
+        }
+      }
+    },
+    {
+      "kind": "run.updated",
+      "at": 1792003163872.2998,
+      "data": {
+        "paused_count": 1,
+        "run": {
+          "created_at": "2026-10-14T18:39:23.859663+00:00",
+          "def_id": "dd70e630519c4c2aa135fcef031d91e3",
+          "def_name": "Synthetic offline stream observer",
+          "error": null,
+          "graph": {
+            "edges": [
+              {
+                "id": "e1",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "nodes": [
+              {
+                "config": {
+                  "fields": [
+                    {
+                      "choices": [],
+                      "default": null,
+                      "help": "",
+                      "label": "Brief",
+                      "name": "brief",
+                      "required": true,
+                      "type": "long_text"
+                    }
+                  ]
+                },
+                "disabled": false,
+                "id": "n_start",
+                "key": "start",
+                "kind": "start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "title": "Start"
+              },
+              {
+                "config": {
+                  "format": "text",
+                  "instructions": "",
+                  "json_fields": [],
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat"
+                  },
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  },
+                  "prompt": "{{start.brief}}"
+                },
+                "disabled": false,
+                "id": "n_draft",
+                "key": "draft",
+                "kind": "generate",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "title": "Generate draft"
+              },
+              {
+                "config": {
+                  "editable": true,
+                  "message": "Check this result before continuing.",
+                  "show": "{{draft.text}}"
+                },
+                "disabled": false,
+                "id": "n_review",
+                "key": "review",
+                "kind": "review",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "title": "Approve or edit"
+              }
+            ],
+            "notes": [],
+            "schema": "atelier.workflow/1",
+            "settings": {
+              "default_model": {
+                "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            },
+            "viewport": null
+          },
+          "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+          "id": "bc99206a576240d19d104f95f297062a",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "kind": "graph",
+          "mode": "run",
+          "nodes": {
+            "n_draft": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            },
+            "n_review": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            },
+            "n_start": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:23.865930+00:00",
+              "output": {
+                "brief": "Synthetic offline event test"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.863048+00:00",
+              "state": "complete",
+              "warnings": []
+            }
+          },
+          "parent_run_id": null,
+          "results": [],
+          "snapshot_id": "2c8a6fa38d0345c487418462269b0dd3",
+          "source_available": false,
+          "stage": "Start",
+          "state": "running",
+          "updated_at": "2026-10-14T18:39:23.863813+00:00"
+        }
+      }
+    },
+    {
+      "kind": "run.updated",
+      "at": 1792003163898.2998,
+      "data": {
+        "paused_count": 1,
+        "run": {
+          "created_at": "2026-10-14T18:39:23.859663+00:00",
+          "def_id": "dd70e630519c4c2aa135fcef031d91e3",
+          "def_name": "Synthetic offline stream observer",
+          "error": null,
+          "graph": {
+            "edges": [
+              {
+                "id": "e1",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "nodes": [
+              {
+                "config": {
+                  "fields": [
+                    {
+                      "choices": [],
+                      "default": null,
+                      "help": "",
+                      "label": "Brief",
+                      "name": "brief",
+                      "required": true,
+                      "type": "long_text"
+                    }
+                  ]
+                },
+                "disabled": false,
+                "id": "n_start",
+                "key": "start",
+                "kind": "start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "title": "Start"
+              },
+              {
+                "config": {
+                  "format": "text",
+                  "instructions": "",
+                  "json_fields": [],
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat"
+                  },
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  },
+                  "prompt": "{{start.brief}}"
+                },
+                "disabled": false,
+                "id": "n_draft",
+                "key": "draft",
+                "kind": "generate",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "title": "Generate draft"
+              },
+              {
+                "config": {
+                  "editable": true,
+                  "message": "Check this result before continuing.",
+                  "show": "{{draft.text}}"
+                },
+                "disabled": false,
+                "id": "n_review",
+                "key": "review",
+                "kind": "review",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "title": "Approve or edit"
+              }
+            ],
+            "notes": [],
+            "schema": "atelier.workflow/1",
+            "settings": {
+              "default_model": {
+                "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            },
+            "viewport": null
+          },
+          "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+          "id": "bc99206a576240d19d104f95f297062a",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "kind": "graph",
+          "mode": "run",
+          "nodes": {
+            "n_draft": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.870352+00:00",
+              "state": "running",
+              "warnings": []
+            },
+            "n_review": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            },
+            "n_start": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:23.865930+00:00",
+              "output": {
+                "brief": "Synthetic offline event test"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.863048+00:00",
+              "state": "complete",
+              "warnings": []
+            }
+          },
+          "parent_run_id": null,
+          "results": [],
+          "snapshot_id": "2c8a6fa38d0345c487418462269b0dd3",
+          "source_available": false,
+          "stage": "Generate draft",
+          "state": "running",
+          "updated_at": "2026-10-14T18:39:23.871099+00:00"
+        }
+      }
+    },
+    {
+      "kind": "node.text",
+      "at": 1792003163898.5,
+      "data": {
+        "attempt": 1,
+        "delta": "Fake ",
+        "node_id": "n_draft",
+        "run_id": "bc99206a576240d19d104f95f297062a",
+        "text": "Fake "
+      }
+    },
+    {
+      "kind": "run.updated",
+      "at": 1792003163898.5,
+      "data": {
+        "paused_count": 1,
+        "run": {
+          "created_at": "2026-10-14T18:39:23.859663+00:00",
+          "def_id": "dd70e630519c4c2aa135fcef031d91e3",
+          "def_name": "Synthetic offline stream observer",
+          "error": null,
+          "graph": {
+            "edges": [
+              {
+                "id": "e1",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "nodes": [
+              {
+                "config": {
+                  "fields": [
+                    {
+                      "choices": [],
+                      "default": null,
+                      "help": "",
+                      "label": "Brief",
+                      "name": "brief",
+                      "required": true,
+                      "type": "long_text"
+                    }
+                  ]
+                },
+                "disabled": false,
+                "id": "n_start",
+                "key": "start",
+                "kind": "start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "title": "Start"
+              },
+              {
+                "config": {
+                  "format": "text",
+                  "instructions": "",
+                  "json_fields": [],
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat"
+                  },
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  },
+                  "prompt": "{{start.brief}}"
+                },
+                "disabled": false,
+                "id": "n_draft",
+                "key": "draft",
+                "kind": "generate",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "title": "Generate draft"
+              },
+              {
+                "config": {
+                  "editable": true,
+                  "message": "Check this result before continuing.",
+                  "show": "{{draft.text}}"
+                },
+                "disabled": false,
+                "id": "n_review",
+                "key": "review",
+                "kind": "review",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "title": "Approve or edit"
+              }
+            ],
+            "notes": [],
+            "schema": "atelier.workflow/1",
+            "settings": {
+              "default_model": {
+                "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            },
+            "viewport": null
+          },
+          "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+          "id": "bc99206a576240d19d104f95f297062a",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "kind": "graph",
+          "mode": "run",
+          "nodes": {
+            "n_draft": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.870352+00:00",
+              "state": "running",
+              "warnings": []
+            },
+            "n_review": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            },
+            "n_start": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:23.865930+00:00",
+              "output": {
+                "brief": "Synthetic offline event test"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.863048+00:00",
+              "state": "complete",
+              "warnings": []
+            }
+          },
+          "parent_run_id": null,
+          "results": [],
+          "snapshot_id": "2c8a6fa38d0345c487418462269b0dd3",
+          "source_available": false,
+          "stage": "Generate draft",
+          "state": "running",
+          "updated_at": "2026-10-14T18:39:23.877333+00:00"
+        }
+      }
+    },
+    {
+      "kind": "run.updated",
+      "at": 1792003163898.5,
+      "data": {
+        "paused_count": 1,
+        "run": {
+          "created_at": "2026-10-14T18:39:23.859663+00:00",
+          "def_id": "dd70e630519c4c2aa135fcef031d91e3",
+          "def_name": "Synthetic offline stream observer",
+          "error": null,
+          "graph": {
+            "edges": [
+              {
+                "id": "e1",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "nodes": [
+              {
+                "config": {
+                  "fields": [
+                    {
+                      "choices": [],
+                      "default": null,
+                      "help": "",
+                      "label": "Brief",
+                      "name": "brief",
+                      "required": true,
+                      "type": "long_text"
+                    }
+                  ]
+                },
+                "disabled": false,
+                "id": "n_start",
+                "key": "start",
+                "kind": "start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "title": "Start"
+              },
+              {
+                "config": {
+                  "format": "text",
+                  "instructions": "",
+                  "json_fields": [],
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat"
+                  },
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  },
+                  "prompt": "{{start.brief}}"
+                },
+                "disabled": false,
+                "id": "n_draft",
+                "key": "draft",
+                "kind": "generate",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "title": "Generate draft"
+              },
+              {
+                "config": {
+                  "editable": true,
+                  "message": "Check this result before continuing.",
+                  "show": "{{draft.text}}"
+                },
+                "disabled": false,
+                "id": "n_review",
+                "key": "review",
+                "kind": "review",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "title": "Approve or edit"
+              }
+            ],
+            "notes": [],
+            "schema": "atelier.workflow/1",
+            "settings": {
+              "default_model": {
+                "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            },
+            "viewport": null
+          },
+          "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+          "id": "bc99206a576240d19d104f95f297062a",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "kind": "graph",
+          "mode": "run",
+          "nodes": {
+            "n_draft": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": null,
+              "output": {
+                "context_length": 16384,
+                "draft": true,
+                "model": {
+                  "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                  "model_id": "fake-chat",
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  }
+                },
+                "model_display_name": "fake-chat",
+                "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "prompt_version": 1,
+                "resolved_params": {},
+                "text": "Fake "
+              },
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.870352+00:00",
+              "state": "running",
+              "warnings": []
+            },
+            "n_review": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            },
+            "n_start": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:23.865930+00:00",
+              "output": {
+                "brief": "Synthetic offline event test"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.863048+00:00",
+              "state": "complete",
+              "warnings": []
+            }
+          },
+          "parent_run_id": null,
+          "results": [],
+          "snapshot_id": "2c8a6fa38d0345c487418462269b0dd3",
+          "source_available": false,
+          "stage": "Generate draft",
+          "state": "running",
+          "updated_at": "2026-10-14T18:39:23.877333+00:00"
+        }
+      }
+    },
+    {
+      "kind": "run.snapshot",
+      "at": 1792003163918.9,
+      "data": {
+        "paused_count": 1,
+        "items": [
+          {
+            "id": "bc99206a576240d19d104f95f297062a",
+            "kind": "graph",
+            "def_id": "dd70e630519c4c2aa135fcef031d91e3",
+            "def_name": "Synthetic offline stream observer",
+            "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+            "snapshot_id": "2c8a6fa38d0345c487418462269b0dd3",
+            "mode": "run",
+            "parent_run_id": null,
+            "state": "running",
+            "stage": "Generate draft",
+            "error": null,
+            "created_at": "2026-10-14T18:39:23.859663+00:00",
+            "updated_at": "2026-10-14T18:39:23.877333+00:00",
+            "inputs": {
+              "brief": "Synthetic offline event test"
+            },
+            "graph": {
+              "schema": "atelier.workflow/1",
+              "nodes": [
+                {
+                  "id": "n_start",
+                  "key": "start",
+                  "title": "Start",
+                  "position": {
+                    "x": 320,
+                    "y": 80
+                  },
+                  "disabled": false,
+                  "kind": "start",
+                  "config": {
+                    "fields": [
+                      {
+                        "name": "brief",
+                        "label": "Brief",
+                        "type": "long_text",
+                        "required": true,
+                        "default": null,
+                        "choices": [],
+                        "help": ""
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "n_draft",
+                  "key": "draft",
+                  "title": "Generate draft",
+                  "position": {
+                    "x": 320,
+                    "y": 280
+                  },
+                  "disabled": false,
+                  "kind": "generate",
+                  "config": {
+                    "model": {
+                      "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                      "model_id": "fake-chat"
+                    },
+                    "instructions": "",
+                    "prompt": "{{start.brief}}",
+                    "format": "text",
+                    "json_fields": [],
+                    "params": {
+                      "temperature": null,
+                      "top_p": null,
+                      "top_k": null,
+                      "max_tokens": null,
+                      "seed": null,
+                      "reasoning": null
+                    }
+                  }
+                },
+                {
+                  "id": "n_review",
+                  "key": "review",
+                  "title": "Approve or edit",
+                  "position": {
+                    "x": 320,
+                    "y": 480
+                  },
+                  "disabled": false,
+                  "kind": "review",
+                  "config": {
+                    "show": "{{draft.text}}",
+                    "editable": true,
+                    "message": "Check this result before continuing."
+                  }
+                }
+              ],
+              "edges": [
+                {
+                  "id": "e1",
+                  "source": "n_start",
+                  "source_port": "out",
+                  "target": "n_draft",
+                  "target_port": "in"
+                },
+                {
+                  "id": "e2",
+                  "source": "n_draft",
+                  "source_port": "out",
+                  "target": "n_review",
+                  "target_port": "in"
+                }
+              ],
+              "notes": [],
+              "viewport": null,
+              "settings": {
+                "default_model": {
+                  "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                  "model_id": "fake-chat"
+                },
+                "keep_test_runs_days": 7
+              }
+            },
+            "nodes": {
+              "n_draft": {
+                "state": "running",
+                "attempt": 1,
+                "port": null,
+                "output": {
+                  "context_length": 16384,
+                  "draft": true,
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat",
+                    "params": {
+                      "max_tokens": null,
+                      "reasoning": null,
+                      "seed": null,
+                      "temperature": null,
+                      "top_k": null,
+                      "top_p": null
+                    }
+                  },
+                  "model_display_name": "fake-chat",
+                  "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "prompt_version": 1,
+                  "resolved_params": {},
+                  "text": "Fake "
+                },
+                "error": null,
+                "started_at": "2026-10-14T18:39:23.870352+00:00",
+                "finished_at": null,
+                "reused_from": null,
+                "warnings": [],
+                "progress": null
+              },
+              "n_review": {
+                "state": "pending",
+                "attempt": 0,
+                "port": null,
+                "output": null,
+                "error": null,
+                "started_at": null,
+                "finished_at": null,
+                "reused_from": null,
+                "warnings": [],
+                "progress": null
+              },
+              "n_start": {
+                "state": "complete",
+                "attempt": 1,
+                "port": "out",
+                "output": {
+                  "brief": "Synthetic offline event test"
+                },
+                "error": null,
+                "started_at": "2026-10-14T18:39:23.863048+00:00",
+                "finished_at": "2026-10-14T18:39:23.865930+00:00",
+                "reused_from": null,
+                "warnings": [],
+                "progress": null
+              }
+            },
+            "results": [],
+            "source_available": false
+          },
+          {
+            "id": "fd8d81910c8f4390bf8e38fe9fbfaf51",
+            "kind": "graph",
+            "def_id": "696c475eae084e6aae5aa46ad697c5fe",
+            "def_name": "Synthetic offline stream observer",
+            "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+            "snapshot_id": "3b3057d64a0842c780f75a61b58e6a8e",
+            "mode": "run",
+            "parent_run_id": null,
+            "state": "paused",
+            "stage": "Waiting for you: Approve or edit",
+            "error": null,
+            "created_at": "2026-10-14T18:37:41.375462+00:00",
+            "updated_at": "2026-10-14T18:37:41.627851+00:00",
+            "inputs": {
+              "brief": "Synthetic offline event test"
+            },
+            "graph": {
+              "schema": "atelier.workflow/1",
+              "nodes": [
+                {
+                  "id": "n_start",
+                  "key": "start",
+                  "title": "Start",
+                  "position": {
+                    "x": 320,
+                    "y": 80
+                  },
+                  "disabled": false,
+                  "kind": "start",
+                  "config": {
+                    "fields": [
+                      {
+                        "name": "brief",
+                        "label": "Brief",
+                        "type": "long_text",
+                        "required": true,
+                        "default": null,
+                        "choices": [],
+                        "help": ""
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "n_draft",
+                  "key": "draft",
+                  "title": "Generate draft",
+                  "position": {
+                    "x": 320,
+                    "y": 280
+                  },
+                  "disabled": false,
+                  "kind": "generate",
+                  "config": {
+                    "model": {
+                      "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                      "model_id": "fake-chat"
+                    },
+                    "instructions": "",
+                    "prompt": "{{start.brief}}",
+                    "format": "text",
+                    "json_fields": [],
+                    "params": {
+                      "temperature": null,
+                      "top_p": null,
+                      "top_k": null,
+                      "max_tokens": null,
+                      "seed": null,
+                      "reasoning": null
+                    }
+                  }
+                },
+                {
+                  "id": "n_review",
+                  "key": "review",
+                  "title": "Approve or edit",
+                  "position": {
+                    "x": 320,
+                    "y": 480
+                  },
+                  "disabled": false,
+                  "kind": "review",
+                  "config": {
+                    "show": "{{draft.text}}",
+                    "editable": true,
+                    "message": "Check this result before continuing."
+                  }
+                }
+              ],
+              "edges": [
+                {
+                  "id": "e1",
+                  "source": "n_start",
+                  "source_port": "out",
+                  "target": "n_draft",
+                  "target_port": "in"
+                },
+                {
+                  "id": "e2",
+                  "source": "n_draft",
+                  "source_port": "out",
+                  "target": "n_review",
+                  "target_port": "in"
+                }
+              ],
+              "notes": [],
+              "viewport": null,
+              "settings": {
+                "default_model": {
+                  "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                  "model_id": "fake-chat"
+                },
+                "keep_test_runs_days": 7
+              }
+            },
+            "nodes": {
+              "n_draft": {
+                "state": "complete",
+                "attempt": 1,
+                "port": "out",
+                "output": {
+                  "context_length": 16384,
+                  "draft": true,
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat",
+                    "params": {
+                      "max_tokens": null,
+                      "reasoning": null,
+                      "seed": null,
+                      "temperature": null,
+                      "top_k": null,
+                      "top_p": null
+                    }
+                  },
+                  "model_display_name": "fake-chat",
+                  "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "prompt_version": 1,
+                  "resolved_params": {},
+                  "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+                },
+                "error": null,
+                "started_at": "2026-10-14T18:37:41.387783+00:00",
+                "finished_at": "2026-10-14T18:37:41.616644+00:00",
+                "reused_from": null,
+                "warnings": [],
+                "progress": null
+              },
+              "n_review": {
+                "state": "paused",
+                "attempt": 1,
+                "port": null,
+                "output": {
+                  "value": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+                },
+                "error": null,
+                "started_at": "2026-10-14T18:37:41.621035+00:00",
+                "finished_at": null,
+                "reused_from": null,
+                "warnings": [],
+                "progress": null
+              },
+              "n_start": {
+                "state": "complete",
+                "attempt": 1,
+                "port": "out",
+                "output": {
+                  "brief": "Synthetic offline event test"
+                },
+                "error": null,
+                "started_at": "2026-10-14T18:37:41.379363+00:00",
+                "finished_at": "2026-10-14T18:37:41.382838+00:00",
+                "reused_from": null,
+                "warnings": [],
+                "progress": null
+              }
+            },
+            "results": [],
+            "source_available": false
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    {
+      "kind": "node.text",
+      "at": 1792003163982.4,
+      "data": {
+        "attempt": 1,
+        "delta": "runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item ",
+        "node_id": "n_draft",
+        "run_id": "bc99206a576240d19d104f95f297062a",
+        "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item "
+      }
+    },
+    {
+      "kind": "node.text",
+      "at": 1792003163982.5,
+      "data": {
+        "attempt": 1,
+        "delta": "runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item ",
+        "node_id": "n_draft",
+        "run_id": "bc99206a576240d19d104f95f297062a",
+        "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item "
+      }
+    },
+    {
+      "kind": "run.updated",
+      "at": 1792003164070.9,
+      "data": {
+        "paused_count": 1,
+        "run": {
+          "created_at": "2026-10-14T18:39:23.859663+00:00",
+          "def_id": "dd70e630519c4c2aa135fcef031d91e3",
+          "def_name": "Synthetic offline stream observer",
+          "error": null,
+          "graph": {
+            "edges": [
+              {
+                "id": "e1",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "nodes": [
+              {
+                "config": {
+                  "fields": [
+                    {
+                      "choices": [],
+                      "default": null,
+                      "help": "",
+                      "label": "Brief",
+                      "name": "brief",
+                      "required": true,
+                      "type": "long_text"
+                    }
+                  ]
+                },
+                "disabled": false,
+                "id": "n_start",
+                "key": "start",
+                "kind": "start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "title": "Start"
+              },
+              {
+                "config": {
+                  "format": "text",
+                  "instructions": "",
+                  "json_fields": [],
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat"
+                  },
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  },
+                  "prompt": "{{start.brief}}"
+                },
+                "disabled": false,
+                "id": "n_draft",
+                "key": "draft",
+                "kind": "generate",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "title": "Generate draft"
+              },
+              {
+                "config": {
+                  "editable": true,
+                  "message": "Check this result before continuing.",
+                  "show": "{{draft.text}}"
+                },
+                "disabled": false,
+                "id": "n_review",
+                "key": "review",
+                "kind": "review",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "title": "Approve or edit"
+              }
+            ],
+            "notes": [],
+            "schema": "atelier.workflow/1",
+            "settings": {
+              "default_model": {
+                "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            },
+            "viewport": null
+          },
+          "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+          "id": "bc99206a576240d19d104f95f297062a",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "kind": "graph",
+          "mode": "run",
+          "nodes": {
+            "n_draft": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": null,
+              "output": {
+                "context_length": 16384,
+                "draft": true,
+                "model": {
+                  "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                  "model_id": "fake-chat",
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  }
+                },
+                "model_display_name": "fake-chat",
+                "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "prompt_version": 1,
+                "resolved_params": {},
+                "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item "
+              },
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.870352+00:00",
+              "state": "running",
+              "warnings": []
+            },
+            "n_review": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            },
+            "n_start": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:23.865930+00:00",
+              "output": {
+                "brief": "Synthetic offline event test"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.863048+00:00",
+              "state": "complete",
+              "warnings": []
+            }
+          },
+          "parent_run_id": null,
+          "results": [],
+          "snapshot_id": "2c8a6fa38d0345c487418462269b0dd3",
+          "source_available": false,
+          "stage": "Generate draft",
+          "state": "running",
+          "updated_at": "2026-10-14T18:39:23.877333+00:00"
+        }
+      }
+    },
+    {
+      "kind": "run.updated",
+      "at": 1792003164071.7998,
+      "data": {
+        "paused_count": 1,
+        "run": {
+          "created_at": "2026-10-14T18:39:23.859663+00:00",
+          "def_id": "dd70e630519c4c2aa135fcef031d91e3",
+          "def_name": "Synthetic offline stream observer",
+          "error": null,
+          "graph": {
+            "edges": [
+              {
+                "id": "e1",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "nodes": [
+              {
+                "config": {
+                  "fields": [
+                    {
+                      "choices": [],
+                      "default": null,
+                      "help": "",
+                      "label": "Brief",
+                      "name": "brief",
+                      "required": true,
+                      "type": "long_text"
+                    }
+                  ]
+                },
+                "disabled": false,
+                "id": "n_start",
+                "key": "start",
+                "kind": "start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "title": "Start"
+              },
+              {
+                "config": {
+                  "format": "text",
+                  "instructions": "",
+                  "json_fields": [],
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat"
+                  },
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  },
+                  "prompt": "{{start.brief}}"
+                },
+                "disabled": false,
+                "id": "n_draft",
+                "key": "draft",
+                "kind": "generate",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "title": "Generate draft"
+              },
+              {
+                "config": {
+                  "editable": true,
+                  "message": "Check this result before continuing.",
+                  "show": "{{draft.text}}"
+                },
+                "disabled": false,
+                "id": "n_review",
+                "key": "review",
+                "kind": "review",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "title": "Approve or edit"
+              }
+            ],
+            "notes": [],
+            "schema": "atelier.workflow/1",
+            "settings": {
+              "default_model": {
+                "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            },
+            "viewport": null
+          },
+          "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+          "id": "bc99206a576240d19d104f95f297062a",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "kind": "graph",
+          "mode": "run",
+          "nodes": {
+            "n_draft": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": null,
+              "output": {
+                "context_length": 16384,
+                "draft": true,
+                "model": {
+                  "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                  "model_id": "fake-chat",
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  }
+                },
+                "model_display_name": "fake-chat",
+                "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "prompt_version": 1,
+                "resolved_params": {},
+                "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item "
+              },
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.870352+00:00",
+              "state": "running",
+              "warnings": []
+            },
+            "n_review": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            },
+            "n_start": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:23.865930+00:00",
+              "output": {
+                "brief": "Synthetic offline event test"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.863048+00:00",
+              "state": "complete",
+              "warnings": []
+            }
+          },
+          "parent_run_id": null,
+          "results": [],
+          "snapshot_id": "2c8a6fa38d0345c487418462269b0dd3",
+          "source_available": false,
+          "stage": "Generate draft",
+          "state": "running",
+          "updated_at": "2026-10-14T18:39:23.877333+00:00"
+        }
+      }
+    },
+    {
+      "kind": "node.text",
+      "at": 1792003164084.0999,
+      "data": {
+        "attempt": 1,
+        "delta": "| Value |\n| --- | --- |\n| Example | 42 |",
+        "node_id": "n_draft",
+        "run_id": "bc99206a576240d19d104f95f297062a",
+        "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+      }
+    },
+    {
+      "kind": "node.text",
+      "at": 1792003164084.0999,
+      "data": {
+        "attempt": 1,
+        "delta": "| Value |\n| --- | --- |\n| Example | 42 |",
+        "node_id": "n_draft",
+        "run_id": "bc99206a576240d19d104f95f297062a",
+        "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+      }
+    },
+    {
+      "kind": "run.updated",
+      "at": 1792003164087.4,
+      "data": {
+        "paused_count": 1,
+        "run": {
+          "created_at": "2026-10-14T18:39:23.859663+00:00",
+          "def_id": "dd70e630519c4c2aa135fcef031d91e3",
+          "def_name": "Synthetic offline stream observer",
+          "error": null,
+          "graph": {
+            "edges": [
+              {
+                "id": "e1",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "nodes": [
+              {
+                "config": {
+                  "fields": [
+                    {
+                      "choices": [],
+                      "default": null,
+                      "help": "",
+                      "label": "Brief",
+                      "name": "brief",
+                      "required": true,
+                      "type": "long_text"
+                    }
+                  ]
+                },
+                "disabled": false,
+                "id": "n_start",
+                "key": "start",
+                "kind": "start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "title": "Start"
+              },
+              {
+                "config": {
+                  "format": "text",
+                  "instructions": "",
+                  "json_fields": [],
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat"
+                  },
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  },
+                  "prompt": "{{start.brief}}"
+                },
+                "disabled": false,
+                "id": "n_draft",
+                "key": "draft",
+                "kind": "generate",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "title": "Generate draft"
+              },
+              {
+                "config": {
+                  "editable": true,
+                  "message": "Check this result before continuing.",
+                  "show": "{{draft.text}}"
+                },
+                "disabled": false,
+                "id": "n_review",
+                "key": "review",
+                "kind": "review",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "title": "Approve or edit"
+              }
+            ],
+            "notes": [],
+            "schema": "atelier.workflow/1",
+            "settings": {
+              "default_model": {
+                "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            },
+            "viewport": null
+          },
+          "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+          "id": "bc99206a576240d19d104f95f297062a",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "kind": "graph",
+          "mode": "run",
+          "nodes": {
+            "n_draft": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:24.083587+00:00",
+              "output": {
+                "context_length": 16384,
+                "draft": true,
+                "model": {
+                  "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                  "model_id": "fake-chat",
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  }
+                },
+                "model_display_name": "fake-chat",
+                "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "prompt_version": 1,
+                "resolved_params": {},
+                "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.870352+00:00",
+              "state": "complete",
+              "warnings": []
+            },
+            "n_review": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            },
+            "n_start": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:23.865930+00:00",
+              "output": {
+                "brief": "Synthetic offline event test"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.863048+00:00",
+              "state": "complete",
+              "warnings": []
+            }
+          },
+          "parent_run_id": null,
+          "results": [],
+          "snapshot_id": "2c8a6fa38d0345c487418462269b0dd3",
+          "source_available": false,
+          "stage": "Generate draft",
+          "state": "running",
+          "updated_at": "2026-10-14T18:39:23.877333+00:00"
+        }
+      }
+    },
+    {
+      "kind": "run.updated",
+      "at": 1792003164112.2,
+      "data": {
+        "paused_count": 1,
+        "run": {
+          "created_at": "2026-10-14T18:39:23.859663+00:00",
+          "def_id": "dd70e630519c4c2aa135fcef031d91e3",
+          "def_name": "Synthetic offline stream observer",
+          "error": null,
+          "graph": {
+            "edges": [
+              {
+                "id": "e1",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "nodes": [
+              {
+                "config": {
+                  "fields": [
+                    {
+                      "choices": [],
+                      "default": null,
+                      "help": "",
+                      "label": "Brief",
+                      "name": "brief",
+                      "required": true,
+                      "type": "long_text"
+                    }
+                  ]
+                },
+                "disabled": false,
+                "id": "n_start",
+                "key": "start",
+                "kind": "start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "title": "Start"
+              },
+              {
+                "config": {
+                  "format": "text",
+                  "instructions": "",
+                  "json_fields": [],
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat"
+                  },
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  },
+                  "prompt": "{{start.brief}}"
+                },
+                "disabled": false,
+                "id": "n_draft",
+                "key": "draft",
+                "kind": "generate",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "title": "Generate draft"
+              },
+              {
+                "config": {
+                  "editable": true,
+                  "message": "Check this result before continuing.",
+                  "show": "{{draft.text}}"
+                },
+                "disabled": false,
+                "id": "n_review",
+                "key": "review",
+                "kind": "review",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "title": "Approve or edit"
+              }
+            ],
+            "notes": [],
+            "schema": "atelier.workflow/1",
+            "settings": {
+              "default_model": {
+                "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            },
+            "viewport": null
+          },
+          "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+          "id": "bc99206a576240d19d104f95f297062a",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "kind": "graph",
+          "mode": "run",
+          "nodes": {
+            "n_draft": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:24.083587+00:00",
+              "output": {
+                "context_length": 16384,
+                "draft": true,
+                "model": {
+                  "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                  "model_id": "fake-chat",
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  }
+                },
+                "model_display_name": "fake-chat",
+                "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "prompt_version": 1,
+                "resolved_params": {},
+                "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.870352+00:00",
+              "state": "complete",
+              "warnings": []
+            },
+            "n_review": {
+              "attempt": 0,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": null,
+              "state": "pending",
+              "warnings": []
+            },
+            "n_start": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:23.865930+00:00",
+              "output": {
+                "brief": "Synthetic offline event test"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.863048+00:00",
+              "state": "complete",
+              "warnings": []
+            }
+          },
+          "parent_run_id": null,
+          "results": [],
+          "snapshot_id": "2c8a6fa38d0345c487418462269b0dd3",
+          "source_available": false,
+          "stage": "Generate draft",
+          "state": "running",
+          "updated_at": "2026-10-14T18:39:23.877333+00:00"
+        }
+      }
+    },
+    {
+      "kind": "run.updated",
+      "at": 1792003164112.2998,
+      "data": {
+        "paused_count": 1,
+        "run": {
+          "created_at": "2026-10-14T18:39:23.859663+00:00",
+          "def_id": "dd70e630519c4c2aa135fcef031d91e3",
+          "def_name": "Synthetic offline stream observer",
+          "error": null,
+          "graph": {
+            "edges": [
+              {
+                "id": "e1",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "nodes": [
+              {
+                "config": {
+                  "fields": [
+                    {
+                      "choices": [],
+                      "default": null,
+                      "help": "",
+                      "label": "Brief",
+                      "name": "brief",
+                      "required": true,
+                      "type": "long_text"
+                    }
+                  ]
+                },
+                "disabled": false,
+                "id": "n_start",
+                "key": "start",
+                "kind": "start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "title": "Start"
+              },
+              {
+                "config": {
+                  "format": "text",
+                  "instructions": "",
+                  "json_fields": [],
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat"
+                  },
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  },
+                  "prompt": "{{start.brief}}"
+                },
+                "disabled": false,
+                "id": "n_draft",
+                "key": "draft",
+                "kind": "generate",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "title": "Generate draft"
+              },
+              {
+                "config": {
+                  "editable": true,
+                  "message": "Check this result before continuing.",
+                  "show": "{{draft.text}}"
+                },
+                "disabled": false,
+                "id": "n_review",
+                "key": "review",
+                "kind": "review",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "title": "Approve or edit"
+              }
+            ],
+            "notes": [],
+            "schema": "atelier.workflow/1",
+            "settings": {
+              "default_model": {
+                "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            },
+            "viewport": null
+          },
+          "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+          "id": "bc99206a576240d19d104f95f297062a",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "kind": "graph",
+          "mode": "run",
+          "nodes": {
+            "n_draft": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:24.083587+00:00",
+              "output": {
+                "context_length": 16384,
+                "draft": true,
+                "model": {
+                  "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                  "model_id": "fake-chat",
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  }
+                },
+                "model_display_name": "fake-chat",
+                "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "prompt_version": 1,
+                "resolved_params": {},
+                "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.870352+00:00",
+              "state": "complete",
+              "warnings": []
+            },
+            "n_review": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:24.087285+00:00",
+              "state": "running",
+              "warnings": []
+            },
+            "n_start": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:23.865930+00:00",
+              "output": {
+                "brief": "Synthetic offline event test"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.863048+00:00",
+              "state": "complete",
+              "warnings": []
+            }
+          },
+          "parent_run_id": null,
+          "results": [],
+          "snapshot_id": "2c8a6fa38d0345c487418462269b0dd3",
+          "source_available": false,
+          "stage": "Approve or edit",
+          "state": "running",
+          "updated_at": "2026-10-14T18:39:24.088208+00:00"
+        }
+      }
+    },
+    {
+      "kind": "run.updated",
+      "at": 1792003164112.2998,
+      "data": {
+        "paused_count": 1,
+        "run": {
+          "created_at": "2026-10-14T18:39:23.859663+00:00",
+          "def_id": "dd70e630519c4c2aa135fcef031d91e3",
+          "def_name": "Synthetic offline stream observer",
+          "error": null,
+          "graph": {
+            "edges": [
+              {
+                "id": "e1",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "nodes": [
+              {
+                "config": {
+                  "fields": [
+                    {
+                      "choices": [],
+                      "default": null,
+                      "help": "",
+                      "label": "Brief",
+                      "name": "brief",
+                      "required": true,
+                      "type": "long_text"
+                    }
+                  ]
+                },
+                "disabled": false,
+                "id": "n_start",
+                "key": "start",
+                "kind": "start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "title": "Start"
+              },
+              {
+                "config": {
+                  "format": "text",
+                  "instructions": "",
+                  "json_fields": [],
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat"
+                  },
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  },
+                  "prompt": "{{start.brief}}"
+                },
+                "disabled": false,
+                "id": "n_draft",
+                "key": "draft",
+                "kind": "generate",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "title": "Generate draft"
+              },
+              {
+                "config": {
+                  "editable": true,
+                  "message": "Check this result before continuing.",
+                  "show": "{{draft.text}}"
+                },
+                "disabled": false,
+                "id": "n_review",
+                "key": "review",
+                "kind": "review",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "title": "Approve or edit"
+              }
+            ],
+            "notes": [],
+            "schema": "atelier.workflow/1",
+            "settings": {
+              "default_model": {
+                "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            },
+            "viewport": null
+          },
+          "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+          "id": "bc99206a576240d19d104f95f297062a",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "kind": "graph",
+          "mode": "run",
+          "nodes": {
+            "n_draft": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:24.083587+00:00",
+              "output": {
+                "context_length": 16384,
+                "draft": true,
+                "model": {
+                  "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                  "model_id": "fake-chat",
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  }
+                },
+                "model_display_name": "fake-chat",
+                "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "prompt_version": 1,
+                "resolved_params": {},
+                "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.870352+00:00",
+              "state": "complete",
+              "warnings": []
+            },
+            "n_review": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": null,
+              "output": {
+                "value": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+              },
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:24.087285+00:00",
+              "state": "paused",
+              "warnings": []
+            },
+            "n_start": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:23.865930+00:00",
+              "output": {
+                "brief": "Synthetic offline event test"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.863048+00:00",
+              "state": "complete",
+              "warnings": []
+            }
+          },
+          "parent_run_id": null,
+          "results": [],
+          "snapshot_id": "2c8a6fa38d0345c487418462269b0dd3",
+          "source_available": false,
+          "stage": "Approve or edit",
+          "state": "running",
+          "updated_at": "2026-10-14T18:39:24.088208+00:00"
+        }
+      }
+    },
+    {
+      "kind": "run.updated",
+      "at": 1792003164112.2998,
+      "data": {
+        "paused_count": 2,
+        "run": {
+          "created_at": "2026-10-14T18:39:23.859663+00:00",
+          "def_id": "dd70e630519c4c2aa135fcef031d91e3",
+          "def_name": "Synthetic offline stream observer",
+          "error": null,
+          "graph": {
+            "edges": [
+              {
+                "id": "e1",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "nodes": [
+              {
+                "config": {
+                  "fields": [
+                    {
+                      "choices": [],
+                      "default": null,
+                      "help": "",
+                      "label": "Brief",
+                      "name": "brief",
+                      "required": true,
+                      "type": "long_text"
+                    }
+                  ]
+                },
+                "disabled": false,
+                "id": "n_start",
+                "key": "start",
+                "kind": "start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "title": "Start"
+              },
+              {
+                "config": {
+                  "format": "text",
+                  "instructions": "",
+                  "json_fields": [],
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat"
+                  },
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  },
+                  "prompt": "{{start.brief}}"
+                },
+                "disabled": false,
+                "id": "n_draft",
+                "key": "draft",
+                "kind": "generate",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "title": "Generate draft"
+              },
+              {
+                "config": {
+                  "editable": true,
+                  "message": "Check this result before continuing.",
+                  "show": "{{draft.text}}"
+                },
+                "disabled": false,
+                "id": "n_review",
+                "key": "review",
+                "kind": "review",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "title": "Approve or edit"
+              }
+            ],
+            "notes": [],
+            "schema": "atelier.workflow/1",
+            "settings": {
+              "default_model": {
+                "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            },
+            "viewport": null
+          },
+          "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+          "id": "bc99206a576240d19d104f95f297062a",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "kind": "graph",
+          "mode": "run",
+          "nodes": {
+            "n_draft": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:24.083587+00:00",
+              "output": {
+                "context_length": 16384,
+                "draft": true,
+                "model": {
+                  "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                  "model_id": "fake-chat",
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  }
+                },
+                "model_display_name": "fake-chat",
+                "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "prompt_version": 1,
+                "resolved_params": {},
+                "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.870352+00:00",
+              "state": "complete",
+              "warnings": []
+            },
+            "n_review": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": null,
+              "output": {
+                "value": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+              },
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:24.087285+00:00",
+              "state": "paused",
+              "warnings": []
+            },
+            "n_start": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:23.865930+00:00",
+              "output": {
+                "brief": "Synthetic offline event test"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.863048+00:00",
+              "state": "complete",
+              "warnings": []
+            }
+          },
+          "parent_run_id": null,
+          "results": [],
+          "snapshot_id": "2c8a6fa38d0345c487418462269b0dd3",
+          "source_available": false,
+          "stage": "Waiting for you: Approve or edit",
+          "state": "paused",
+          "updated_at": "2026-10-14T18:39:24.093609+00:00"
+        }
+      }
+    },
+    {
+      "kind": "run.updated",
+      "at": 1792003164112.4,
+      "data": {
+        "paused_count": 1,
+        "run": {
+          "created_at": "2026-10-14T18:39:23.859663+00:00",
+          "def_id": "dd70e630519c4c2aa135fcef031d91e3",
+          "def_name": "Synthetic offline stream observer",
+          "error": null,
+          "graph": {
+            "edges": [
+              {
+                "id": "e1",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "nodes": [
+              {
+                "config": {
+                  "fields": [
+                    {
+                      "choices": [],
+                      "default": null,
+                      "help": "",
+                      "label": "Brief",
+                      "name": "brief",
+                      "required": true,
+                      "type": "long_text"
+                    }
+                  ]
+                },
+                "disabled": false,
+                "id": "n_start",
+                "key": "start",
+                "kind": "start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "title": "Start"
+              },
+              {
+                "config": {
+                  "format": "text",
+                  "instructions": "",
+                  "json_fields": [],
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat"
+                  },
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  },
+                  "prompt": "{{start.brief}}"
+                },
+                "disabled": false,
+                "id": "n_draft",
+                "key": "draft",
+                "kind": "generate",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "title": "Generate draft"
+              },
+              {
+                "config": {
+                  "editable": true,
+                  "message": "Check this result before continuing.",
+                  "show": "{{draft.text}}"
+                },
+                "disabled": false,
+                "id": "n_review",
+                "key": "review",
+                "kind": "review",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "title": "Approve or edit"
+              }
+            ],
+            "notes": [],
+            "schema": "atelier.workflow/1",
+            "settings": {
+              "default_model": {
+                "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            },
+            "viewport": null
+          },
+          "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+          "id": "bc99206a576240d19d104f95f297062a",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "kind": "graph",
+          "mode": "run",
+          "nodes": {
+            "n_draft": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:24.083587+00:00",
+              "output": {
+                "context_length": 16384,
+                "draft": true,
+                "model": {
+                  "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                  "model_id": "fake-chat",
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  }
+                },
+                "model_display_name": "fake-chat",
+                "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "prompt_version": 1,
+                "resolved_params": {},
+                "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.870352+00:00",
+              "state": "complete",
+              "warnings": []
+            },
+            "n_review": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": null,
+              "output": null,
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:24.087285+00:00",
+              "state": "running",
+              "warnings": []
+            },
+            "n_start": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:23.865930+00:00",
+              "output": {
+                "brief": "Synthetic offline event test"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.863048+00:00",
+              "state": "complete",
+              "warnings": []
+            }
+          },
+          "parent_run_id": null,
+          "results": [],
+          "snapshot_id": "2c8a6fa38d0345c487418462269b0dd3",
+          "source_available": false,
+          "stage": "Approve or edit",
+          "state": "running",
+          "updated_at": "2026-10-14T18:39:24.088208+00:00"
+        }
+      }
+    },
+    {
+      "kind": "run.updated",
+      "at": 1792003164112.4,
+      "data": {
+        "paused_count": 2,
+        "run": {
+          "created_at": "2026-10-14T18:39:23.859663+00:00",
+          "def_id": "dd70e630519c4c2aa135fcef031d91e3",
+          "def_name": "Synthetic offline stream observer",
+          "error": null,
+          "graph": {
+            "edges": [
+              {
+                "id": "e1",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "nodes": [
+              {
+                "config": {
+                  "fields": [
+                    {
+                      "choices": [],
+                      "default": null,
+                      "help": "",
+                      "label": "Brief",
+                      "name": "brief",
+                      "required": true,
+                      "type": "long_text"
+                    }
+                  ]
+                },
+                "disabled": false,
+                "id": "n_start",
+                "key": "start",
+                "kind": "start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "title": "Start"
+              },
+              {
+                "config": {
+                  "format": "text",
+                  "instructions": "",
+                  "json_fields": [],
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat"
+                  },
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  },
+                  "prompt": "{{start.brief}}"
+                },
+                "disabled": false,
+                "id": "n_draft",
+                "key": "draft",
+                "kind": "generate",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "title": "Generate draft"
+              },
+              {
+                "config": {
+                  "editable": true,
+                  "message": "Check this result before continuing.",
+                  "show": "{{draft.text}}"
+                },
+                "disabled": false,
+                "id": "n_review",
+                "key": "review",
+                "kind": "review",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "title": "Approve or edit"
+              }
+            ],
+            "notes": [],
+            "schema": "atelier.workflow/1",
+            "settings": {
+              "default_model": {
+                "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            },
+            "viewport": null
+          },
+          "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+          "id": "bc99206a576240d19d104f95f297062a",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "kind": "graph",
+          "mode": "run",
+          "nodes": {
+            "n_draft": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:24.083587+00:00",
+              "output": {
+                "context_length": 16384,
+                "draft": true,
+                "model": {
+                  "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                  "model_id": "fake-chat",
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  }
+                },
+                "model_display_name": "fake-chat",
+                "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "prompt_version": 1,
+                "resolved_params": {},
+                "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.870352+00:00",
+              "state": "complete",
+              "warnings": []
+            },
+            "n_review": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": null,
+              "output": {
+                "value": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+              },
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:24.087285+00:00",
+              "state": "paused",
+              "warnings": []
+            },
+            "n_start": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:23.865930+00:00",
+              "output": {
+                "brief": "Synthetic offline event test"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.863048+00:00",
+              "state": "complete",
+              "warnings": []
+            }
+          },
+          "parent_run_id": null,
+          "results": [],
+          "snapshot_id": "2c8a6fa38d0345c487418462269b0dd3",
+          "source_available": false,
+          "stage": "Approve or edit",
+          "state": "running",
+          "updated_at": "2026-10-14T18:39:24.088208+00:00"
+        }
+      }
+    },
+    {
+      "kind": "run.updated",
+      "at": 1792003164112.4,
+      "data": {
+        "paused_count": 2,
+        "run": {
+          "created_at": "2026-10-14T18:39:23.859663+00:00",
+          "def_id": "dd70e630519c4c2aa135fcef031d91e3",
+          "def_name": "Synthetic offline stream observer",
+          "error": null,
+          "graph": {
+            "edges": [
+              {
+                "id": "e1",
+                "source": "n_start",
+                "source_port": "out",
+                "target": "n_draft",
+                "target_port": "in"
+              },
+              {
+                "id": "e2",
+                "source": "n_draft",
+                "source_port": "out",
+                "target": "n_review",
+                "target_port": "in"
+              }
+            ],
+            "nodes": [
+              {
+                "config": {
+                  "fields": [
+                    {
+                      "choices": [],
+                      "default": null,
+                      "help": "",
+                      "label": "Brief",
+                      "name": "brief",
+                      "required": true,
+                      "type": "long_text"
+                    }
+                  ]
+                },
+                "disabled": false,
+                "id": "n_start",
+                "key": "start",
+                "kind": "start",
+                "position": {
+                  "x": 320,
+                  "y": 80
+                },
+                "title": "Start"
+              },
+              {
+                "config": {
+                  "format": "text",
+                  "instructions": "",
+                  "json_fields": [],
+                  "model": {
+                    "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                    "model_id": "fake-chat"
+                  },
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  },
+                  "prompt": "{{start.brief}}"
+                },
+                "disabled": false,
+                "id": "n_draft",
+                "key": "draft",
+                "kind": "generate",
+                "position": {
+                  "x": 320,
+                  "y": 280
+                },
+                "title": "Generate draft"
+              },
+              {
+                "config": {
+                  "editable": true,
+                  "message": "Check this result before continuing.",
+                  "show": "{{draft.text}}"
+                },
+                "disabled": false,
+                "id": "n_review",
+                "key": "review",
+                "kind": "review",
+                "position": {
+                  "x": 320,
+                  "y": 480
+                },
+                "title": "Approve or edit"
+              }
+            ],
+            "notes": [],
+            "schema": "atelier.workflow/1",
+            "settings": {
+              "default_model": {
+                "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                "model_id": "fake-chat"
+              },
+              "keep_test_runs_days": 7
+            },
+            "viewport": null
+          },
+          "graph_hash": "75592adb5fd0ed2bef1f903d1158fb31ac1385f94a9a951d5277fcbe29776fea",
+          "id": "bc99206a576240d19d104f95f297062a",
+          "inputs": {
+            "brief": "Synthetic offline event test"
+          },
+          "kind": "graph",
+          "mode": "run",
+          "nodes": {
+            "n_draft": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:24.083587+00:00",
+              "output": {
+                "context_length": 16384,
+                "draft": true,
+                "model": {
+                  "connection_id": "5cbd385daeb647088a57c1bda311dbe8",
+                  "model_id": "fake-chat",
+                  "params": {
+                    "max_tokens": null,
+                    "reasoning": null,
+                    "seed": null,
+                    "temperature": null,
+                    "top_k": null,
+                    "top_p": null
+                  }
+                },
+                "model_display_name": "fake-chat",
+                "prompt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "prompt_version": 1,
+                "resolved_params": {},
+                "text": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.870352+00:00",
+              "state": "complete",
+              "warnings": []
+            },
+            "n_review": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": null,
+              "output": {
+                "value": "Fake runtime reply.\n\n- A clear first step\n- A useful second step\n\n```python\nprint('Hello')\n```\n\n| Item | Value |\n| --- | --- |\n| Example | 42 |"
+              },
+              "port": null,
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:24.087285+00:00",
+              "state": "paused",
+              "warnings": []
+            },
+            "n_start": {
+              "attempt": 1,
+              "error": null,
+              "finished_at": "2026-10-14T18:39:23.865930+00:00",
+              "output": {
+                "brief": "Synthetic offline event test"
+              },
+              "port": "out",
+              "progress": null,
+              "reused_from": null,
+              "started_at": "2026-10-14T18:39:23.863048+00:00",
+              "state": "complete",
+              "warnings": []
+            }
+          },
+          "parent_run_id": null,
+          "results": [],
+          "snapshot_id": "2c8a6fa38d0345c487418462269b0dd3",
+          "source_available": false,
+          "stage": "Waiting for you: Approve or edit",
+          "state": "paused",
+          "updated_at": "2026-10-14T18:39:24.093609+00:00"
+        }
+      }
+    }
+  ]
+}

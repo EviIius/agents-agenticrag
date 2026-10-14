@@ -383,3 +383,25 @@ WS-D, with its recommended defaults. The references and prototype are preserved;
 Next checkpoints are CI-A (waiting/reasoning indicator), CI-B (saved image turns
 in the composer), and CI-C (viewer, iteration and exports), each with review.
 The chat integration remains pending; no merge or live publication is authorized.
+
+
+## Studio and chat images — 14 October 2026
+
+The earlier CI-A/B/C pending rows are historical. CI-C is implemented on the
+isolated `codex/workflow-studio` branch with one full green 615-pass browser run,
+three existing skips; main/live are unchanged. Viewer, lineage/refinement,
+vision-gated upload, phone snap/dots and image exports pass automated checks.
+Physical iPhone acceptance of this new chat-image flow remains pending.
+
+The native workflow repair passes source binding, two complete factual drafts,
+review reload, approval, edited saving and immutable raw outputs. It stops after
+six calls when the cancellation timing probe misses its running window. A third
+finished draft also broadens the materials claim, so fidelity remains inconsistent.
+Streaming/RSS/driver cleanup capture defects are repaired. Event-triggered UI
+cancellation passes offline against fake runtime, not native. Native cancellation
+and recovery remain unverified; no seventh call or retry ran.
+
+See `WORKFLOW-STUDIO-NATIVE-REPAIR-REPORT.md`. No broader Search/grounding pass,
+Research restart, VoiceOver result, template/default change or main publication
+is implied. Remaining knowledge/logic blocks and reference-pixel editing are
+future scope; final main merge needs Jake's explicit okay.
