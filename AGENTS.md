@@ -1102,3 +1102,35 @@ new dependency/model/runtime, prompt or sampling change. Retain the H4/QA report
 and stop after CI-A. Prepare a concrete bounded local-LLM workflow test proposal
 for the later integrated builder; this continuation does not run that trial now.
 Main and the installed app stay intact; final merge/publication remain gated.
+
+**Chat images CI-A closeout — 13 October 2026:** Frozen source `76957979`
+replaces dots with Claude's Atelier mark, truthful phases and a seeded 36-word
+sequence, adds browser-local Playful/Plain, and starts live reasoning as a closed
+literal ticker. Expansion follows new text until manual scrolling; first answer
+text closes it into the existing Thought row. Original reasoning and SSE/rAF/send
+paths are preserved. Failed page reads do not inflate readable-page counts.
+Both reduced-motion triggers stop motion; outgoing words are immediately hidden.
+Cross-device synchronization of this one new preference remains future server work.
+
+Final checks pass: 646 Python / 101 frontend tests, all required coverage above
+80%, 110 contrast pairs and one complete browser invocation with 573 passes,
+three existing skips and zero failures in 56.6 minutes. All 112 new-state axe
+audits pass. Initial JS is 244,418 gzip bytes (+2,148 from WS-D); ordinary render
+p95 is 2.6 / 3 ms, ticker p95 0.5 / 1 ms, first-token overhead 77.79 / 61.39 ms.
+Retain initial focused failures and the deliberately interrupted 513-pass browser
+attempt (one interrupted, 59 unrun), stopped to fix reduced-motion word overlap.
+No test assertion, timeout or performance target was weakened.
+
+Historical 30,764 evidence/eval/fixture blobs, 15 workflow references, all 17
+supplied chat-image files, 537 frozen files and 335 core files verify preserved.
+1,202 final fresh outputs are archived, 1,162 historical files restored and 40 new
+fake captures relocated; 989 interrupted outputs are also retained. All available
+907 synthetic videos remain outside Git. Installed 97 server / 410 static files,
+main and service/route identity remain unchanged; local/verified HTTPS health pass.
+
+H4: `docs/CHAT-IMAGES-CI-A-REPORT.md`. Stop for CI-A review before CI-B/C.
+`docs/WORKFLOW-STUDIO-NATIVE-TRIAL-PLAN.md` proposes at most seven calls on the
+installed daily profile after integration; it is not executed. No server change,
+native inference, new dependency/model/runtime, prompt/sampling/default change,
+Research restart, main merge or live publication. No physical phone/VoiceOver
+pass is claimed; final merge/publication still require Jake's okay.
