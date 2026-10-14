@@ -34,7 +34,14 @@ async def accept(
     store = request.app.state.store
     images: Images = request.app.state.images
     # Compare the explicit body, not a moving implicit current leaf.
-    canonical = json.dumps({**body.model_dump(), "retry_id": retry_id}, sort_keys=True)
+    canonical = json.dumps(
+        {
+            **body.model_dump(),
+            "retry_id": retry_id,
+            "parent_specified": "parent_id" in body.model_fields_set,
+        },
+        sort_keys=True,
+    )
     async with images.lock:
         old = await store.one(
             "SELECT * FROM chat_image_requests WHERE request_key=?", (body.request_key,)

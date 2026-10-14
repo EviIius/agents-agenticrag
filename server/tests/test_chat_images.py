@@ -200,3 +200,25 @@ async def test_active_text_guard_validation_and_prompt_title(
         <= 48
     )
     assert title_from_prompt("  Synthetic\n harbor ") == "Synthetic harbor"
+
+
+async def test_implicit_parent_and_explicit_root_are_different_requests(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+) -> None:
+    app, client, _ = chat_app
+    app.state.images.engine = FakeEngine()
+    cid = await new(client)
+    first = (await client.post(f"/api/chats/{cid}/images", json=inputs(1))).json()
+    body = inputs(1)
+    second = await client.post(f"/api/chats/{cid}/images", json=body)
+    assert second.status_code == 202
+    assert second.json()["user"]["parent_id"] == first["assistant"]["id"]
+    conflict = await client.post(f"/api/chats/{cid}/images", json={**body, "parent_id": None})
+    assert conflict.status_code == 409
+    # An implicit parent is resolved only once, even if the selected leaf changes.
+    await client.patch(f"/api/chats/{cid}", json={"current_leaf_id": first["user"]["id"]})
+    duplicate = await client.post(f"/api/chats/{cid}/images", json=body)
+    assert duplicate.json()["assistant"]["id"] == second.json()["assistant"]["id"]
+    current = (await client.get(f"/api/chats/{cid}")).json()
+    assert len(current["messages"]) == 4
+    assert current["chat"]["current_leaf_id"] == first["user"]["id"]

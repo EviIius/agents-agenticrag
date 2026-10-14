@@ -531,34 +531,35 @@ export const MessageRow = memo(function MessageRow({
           {renderSources?.(message, sources ?? [], reads ?? [])}
         </>
       )}
-      {message.status !== "streaming" && message.kind !== "image" && (
-        <div
-          data-slot="message-footer"
-          data-role={message.role}
-          data-last={lastAssistant || undefined}
-          className="flex flex-wrap items-center justify-between gap-x-3"
-        >
-          <div data-slot="message-actions">
-            <MessageActions
-              message={message}
-              models={models}
-              onRegenerateWith={(m) => onRegenerateWith?.(message, m)}
-              messages={all}
-              onEdit={() => {
-                setEditing(message.id);
-                setDraft(message.content);
-              }}
-              onRegenerate={() => onRegenerate(message)}
-              onBranch={onBranch}
-            />
-          </div>
-          {message.role === "assistant" && (
-            <div data-slot="message-stats" className="min-w-0 text-right">
-              <StatsLine message={message} />
+      {message.status !== "streaming" &&
+        (message.kind !== "image" || message.role === "user") && (
+          <div
+            data-slot="message-footer"
+            data-role={message.role}
+            data-last={lastAssistant || undefined}
+            className="flex flex-wrap items-center justify-between gap-x-3"
+          >
+            <div data-slot="message-actions">
+              <MessageActions
+                message={message}
+                models={models}
+                onRegenerateWith={(m) => onRegenerateWith?.(message, m)}
+                messages={all}
+                onEdit={() => {
+                  setEditing(message.id);
+                  setDraft(message.content);
+                }}
+                onRegenerate={() => onRegenerate(message)}
+                onBranch={onBranch}
+              />
             </div>
-          )}
-        </div>
-      )}
+            {message.role === "assistant" && (
+              <div data-slot="message-stats" className="min-w-0 text-right">
+                <StatsLine message={message} />
+              </div>
+            )}
+          </div>
+        )}
     </article>
   );
   return import.meta.env.DEV ? (

@@ -214,6 +214,44 @@ test("image command, independent drafts, cancellation, removed outputs and faile
   await expect(page.getByText("From a deleted chat").first()).toBeVisible();
 });
 
+test("image and text user siblings remain reachable without offering text edit for images", async ({
+  page,
+  request,
+}) => {
+  await enter(page);
+  await prompt(page).fill("Synthetic image root branch");
+  await page.getByRole("button", { name: "Create image", exact: true }).click();
+  await expect(turn(page).locator("img")).toBeVisible();
+  const cid = new URL(page.url()).pathname.split("/").at(-1);
+  const detail = await request.get(`/api/chats/${cid}`).then((r) => r.json());
+  const imageUser = detail.messages.find(
+    (row: { role: string }) => row.role === "user",
+  );
+  const accepted = await request.post(`/api/chats/${cid}/messages`, {
+    data: { content: "Synthetic text sibling branch", parent_id: null },
+  });
+  expect(accepted.status()).toBe(202);
+  const textUser = (await accepted.json()).user_message;
+  await page.goto(`/c/${cid}`);
+  const textRow = page.locator(`[data-message-id="${textUser.id}"]`);
+  await expect(
+    textRow.getByRole("button", { name: "Previous branch" }),
+  ).toBeEnabled();
+  await textRow.getByRole("button", { name: "Previous branch" }).click();
+  const imageRow = page.locator(`[data-message-id="${imageUser.id}"]`);
+  await expect(imageRow).toContainText("Synthetic image root branch");
+  await expect(
+    imageRow.getByRole("button", { name: "Edit message" }),
+  ).toHaveCount(0);
+  await expect(
+    imageRow.getByRole("button", { name: "Next branch" }),
+  ).toBeEnabled();
+  await page.reload();
+  await imageRow.getByRole("button", { name: "Next branch" }).click();
+  await expect(textRow).toContainText("Synthetic text sibling branch");
+  await expect(turn(page)).toHaveCount(0);
+});
+
 test("fixed seeds are optional, validated per image and sent exactly", async ({
   page,
 }) => {
