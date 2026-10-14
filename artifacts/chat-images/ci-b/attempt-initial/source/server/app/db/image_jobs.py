@@ -1,0 +1,49 @@
+"""Read durable image state without constructing or scheduling a worker."""
+
+import json
+
+from ..errors import AppError
+from ..schemas import ImageJob, ImageOrigin
+from .core import Store
+
+
+async def image_job(store: Store, identifier: str) -> ImageJob:
+    row = await store.one(
+        "SELECT j.*,a.sha256,a.bytes,a.metadata_bytes,r.chat_id,r.assistant_id,"
+        "c.title FROM image_jobs j LEFT JOIN image_artifacts a ON a.job_id=j.id "
+        "LEFT JOIN chat_image_origins o ON o.job_id=j.id "
+        "LEFT JOIN chat_image_requests r ON r.request_key=o.request_key "
+        "LEFT JOIN chats c ON c.id=r.chat_id WHERE j.id=?",
+        (identifier,),
+    )
+    if not row:
+        raise AppError("not_found", "Image job not found.", 404)
+    spec = json.loads(row["input_json"])
+    return ImageJob(
+        **{
+            key: row[key]
+            for key in (
+                "id",
+                "parent_id",
+                "state",
+                "stage",
+                "completed_steps",
+                "error",
+                "created_at",
+                "updated_at",
+                "sha256",
+            )
+        },
+        prompt=spec["prompt"],
+        seed=spec["seed"],
+        image_bytes=row["bytes"] or 0,
+        metadata_bytes=row["metadata_bytes"] or 0,
+        origin=ImageOrigin(
+            chat_id=row["chat_id"],
+            message_id=row["assistant_id"],
+            title=row["title"],
+            deleted=row["title"] is None,
+        )
+        if row["chat_id"]
+        else None,
+    )

@@ -1,0 +1,91 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+All checks passed!
+. scripts/tool-env.sh; uv run --directory server ruff format --check app tests
+158 files already formatted
+. scripts/tool-env.sh; uv run --directory server mypy app tests
+Success: no issues found in 156 source files
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_coverage.py
+........................................................................ [ 11%]
+........................................................................ [ 22%]
+........................................................................ [ 33%]
+........................................................................ [ 44%]
+................................................F....................... [ 55%]
+........................................................................ [ 66%]
+........................................................................ [ 77%]
+........................................................................ [ 88%]
+........................................................................ [ 99%]
+....                                                                     [100%]
+=================================== FAILURES ===================================
+__________________________ test_phase3_prompt_hashes ___________________________
+
+    def test_phase3_prompt_hashes() -> None:
+        values = {
+            "search/planner.py": PLANNER,
+            "search/prompt.py": ANSWER,
+            "default-system": DEFAULTS["default_system_prompt"],
+        }
+        tree = ast.parse((ROOT / "server/app/runs/titles.py").read_text())
+        message = next(
+            n
+            for n in ast.walk(tree)
+            if isinstance(n, ast.Call)
+            and isinstance(n.func, ast.Name)
+            and n.func.id == "ProviderMessage"
+        )
+        values["runs/titles.py"] = json.dumps(
+            [
+                n.value
+                for n in ast.walk(message.args[1])
+                if isinstance(n, ast.Constant) and isinstance(n.value, str)
+            ],
+            ensure_ascii=False,
+        )
+        # Also freeze attachment/date wrapper strings; this conservatively includes error literals.
+        tree = ast.parse((ROOT / "server/app/runs/context.py").read_text())
+        function = next(
+            n for n in tree.body if isinstance(n, ast.AsyncFunctionDef) and n.name == "assemble"
+        )
+        values["runs/context.py"] = json.dumps(
+            [
+                n.value
+                for n in ast.walk(function)
+                if isinstance(n, ast.Constant) and isinstance(n.value, str)
+            ],
+            ensure_ascii=False,
+        )
+        match = re.search(
+            r"### 6\.2 Prompt.*?```text\n(.*?)\n```",
+            (ROOT / "docs/TRANSCRIPTION-SPEC.md").read_text(),
+            re.S,
+        )
+        assert match is not None
+        values["transcription-cleanup-spec"] = match.group(1)
+        actual = {name: hashlib.sha256(value.encode()).hexdigest() for name, value in values.items()}
+        expected = json.loads((ROOT / "artifacts/baseline/prompt-hashes-phase3.json").read_text())
+>       assert actual == expected, (
+            "Prompt changes require linked before/after eval evidence, "
+            "then an intentional baseline update."
+        )
+E       AssertionError: Prompt changes require linked before/after eval evidence, then an intentional baseline update.
+E       assert {'search/plan...239b2b4', ...} == {'default-sys...1de92cf', ...}
+E         
+E         Omitting 5 identical items, use -vv to show
+E         Differing items:
+E         {'runs/context.py': '534f8eb96dee7773791deafe4b292d1276e492c7f37e3d105518eb7373ee0ca8'} != {'runs/context.py': 'ddcea7cba59ef71493d84d3ec632ad2a5d5a0c288040285e80f021ec4855b3bc'}
+E         Use -v to get more diff
+
+tests/test_prompt_hashes.py:70: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_prompt_hashes.py::test_phase3_prompt_hashes - AssertionErro...
+1 failed, 651 passed in 304.75s (0:05:04)
+providers line coverage: 368/418 = 88.0%
+runs line coverage: 389/435 = 89.4%
+search line coverage: 1564/1741 = 89.8%
+transcribe line coverage: 690/740 = 93.2%
+documents line coverage: 196/203 = 96.6%
+library line coverage: 762/823 = 92.6%
+images line coverage: 628/709 = 88.6%
+workflows line coverage: 2692/3017 = 89.2%
+backup.py line coverage: 106/113 = 93.8%
+capacity.py line coverage: 55/58 = 94.8%
+make: *** [check] Error 1

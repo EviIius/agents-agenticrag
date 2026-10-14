@@ -1,0 +1,580 @@
+import { WorkingLine } from "./WorkingLine";
+import { Thinking } from "./Thinking";
+import { workingPhase } from "@/lib/status-words";
+import { useFreshRows } from "@/stores/fresh";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { DocumentChip } from "./DocumentChip";
+import { AudioChip } from "./AudioChip";
+import {
+  lazy,
+  memo,
+  Profiler,
+  useMemo,
+  type Dispatch,
+  type SetStateAction,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
+import { TriangleAlert, ImagePlus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import type { Message, Source, WebRead, Model, Bootstrap } from "@/lib/api";
+import { MessageActions } from "./MessageActions";
+import { StatsLine } from "./StatsLine";
+import { SearchActivity } from "./SearchActivity";
+import { messageError } from "@/lib/errors";
+import { SourcesSheet } from "./SourcesSheet";
+const Markdown = lazy(() => import("./Markdown"));
+const ImageTurn = lazy(() => import("./ImageTurn"));
+type LiveThreadProps = {
+  onImageAction?: (message: Message, action: "retry" | "cancel") => void;
+  pending?: Message | null;
+  position?: number;
+  onScrollChange?: (scrolled: boolean) => void;
+  onRegenerateWith?: (message: Message, model: Model) => void;
+  models?: Model[];
+  selectedModel?: Model;
+  connections?: Bootstrap["connections"];
+  onSettings?: (pane?: string) => void;
+  onChatSettings?: () => void;
+  onNew?: () => void;
+  messages: Message[];
+  all: Message[];
+  stage?: string;
+  steps?: { label: string; detail: string; status: string }[];
+  scrollRef: RefObject<HTMLDivElement | null>;
+  onAboveBottomChange: (above: boolean) => void;
+  onRegenerate: (message: Message, force?: boolean) => void;
+  onEdit: (message: Message, text: string) => Promise<boolean>;
+  onBranch: (id: string) => void;
+  sources?: Record<string, Source[]>;
+  reads?: Record<string, WebRead[]>;
+  renderSources?: (
+    message: Message,
+    sources: Source[],
+    reads: WebRead[],
+  ) => React.ReactNode;
+};
+export function LiveThread({
+  messages,
+  all,
+  onImageAction,
+  stage,
+  steps,
+  scrollRef,
+  onAboveBottomChange,
+  onRegenerate,
+  onEdit,
+  onBranch,
+  sources,
+  reads,
+  renderSources,
+  selectedModel,
+  models = [],
+  connections = [],
+  onSettings,
+  onChatSettings,
+  onNew,
+  onRegenerateWith,
+  pending,
+  position,
+  onScrollChange,
+}: LiveThreadProps) {
+  const [editing, setEditing] = useState<string | null>(null),
+    [draft, setDraft] = useState("");
+  const stick = useRef(true);
+  const handlers = useRef({
+    onImageAction,
+    onRegenerate,
+    onEdit,
+    onBranch,
+    onSettings,
+    onChatSettings,
+    onNew,
+    onRegenerateWith,
+    renderSources,
+  });
+  useEffect(() => {
+    handlers.current = {
+      onImageAction,
+      onRegenerate,
+      onEdit,
+      onBranch,
+      onSettings,
+      onChatSettings,
+      onNew,
+      onRegenerateWith,
+      renderSources,
+    };
+  });
+  const stable = useMemo(
+    () => ({
+      onImageAction: (message: Message, action: "retry" | "cancel") =>
+        handlers.current.onImageAction?.(message, action),
+      onRegenerate: (message: Message, force?: boolean) =>
+        handlers.current.onRegenerate(message, force),
+      onEdit: (message: Message, text: string) =>
+        handlers.current.onEdit(message, text),
+      onBranch: (id: string) => handlers.current.onBranch(id),
+      onSettings: (pane?: string) => handlers.current.onSettings?.(pane),
+      onChatSettings: () => handlers.current.onChatSettings?.(),
+      onNew: () => handlers.current.onNew?.(),
+      onRegenerateWith: (message: Message, model: Model) =>
+        handlers.current.onRegenerateWith?.(message, model),
+    }),
+    [],
+  );
+  const [announcement, setAnnouncement] = useState("");
+  const last = [...messages]
+    .reverse()
+    .find((message) => message.role === "assistant");
+  const previous = useRef<{ id: string; status: string } | null>(null);
+  useEffect(() => {
+    let text = "";
+    if (
+      last?.status === "streaming" &&
+      (previous.current?.id !== last.id ||
+        previous.current.status !== "streaming")
+    )
+      text = "Generating response";
+    else if (
+      last &&
+      previous.current?.id === last.id &&
+      previous.current.status === "streaming" &&
+      last.status !== "streaming"
+    )
+      text =
+        last.status === "error" || last.status === "interrupted"
+          ? `Response failed: ${last.error?.message ?? "An error occurred"}`
+          : last.status === "stopped"
+            ? "Response stopped"
+            : "Response complete";
+    previous.current = last ? { id: last.id, status: last.status } : null;
+    if (!text) return;
+    setAnnouncement("");
+    const frame = requestAnimationFrame(() => setAnnouncement(text));
+    return () => cancelAnimationFrame(frame);
+  }, [last?.id, last?.status, last?.error?.message]);
+  useEffect(() => {
+    const listener = () => {
+      const last = [...messages]
+        .reverse()
+        .find((m) => m.role === "user" && m.kind !== "image");
+      if (last) {
+        setEditing(last.id);
+        setDraft(last.content);
+      }
+    };
+    window.addEventListener("workbench:edit-last", listener);
+    return () => window.removeEventListener("workbench:edit-last", listener);
+  }, [messages]);
+  useEffect(() => {
+    if (stick.current && scrollRef.current)
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [messages, steps, pending, scrollRef]);
+  return (
+    <>
+      <p className="sr-only" role="status">
+        {announcement}
+      </p>
+      <div
+        ref={scrollRef}
+        className="thread-scroll"
+        data-testid="thread"
+        role="log"
+        aria-live="off"
+        aria-label="Conversation"
+        onScroll={() => {
+          const e = scrollRef.current;
+          if (e) {
+            stick.current = e.scrollHeight - e.clientHeight - e.scrollTop < 80;
+            onAboveBottomChange(!stick.current);
+            onScrollChange?.(e.scrollTop > 0);
+          }
+        }}
+      >
+        <div className="thread-column">
+          {messages.map((message) => (
+            <MessageRow
+              key={message.id}
+              message={message}
+              lastAssistant={last?.id === message.id}
+              all={all}
+              position={message.status === "streaming" ? position : undefined}
+              stage={message.status === "streaming" ? stage : undefined}
+              steps={message.status === "streaming" ? steps : undefined}
+              sources={sources?.[message.id]}
+              reads={reads?.[message.id]}
+              renderSources={renderSources}
+              selectedModel={selectedModel}
+              models={models}
+              connections={connections}
+              {...stable}
+              editing={editing === message.id ? editing : null}
+              draft={editing === message.id ? draft : ""}
+              setEditing={setEditing}
+              setDraft={setDraft}
+            />
+          ))}
+          {pending && <OptimisticRow message={pending} />}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function useFreshRow(id: string) {
+  const fresh = useFreshRows((state) => Boolean(state.ids[id]));
+  const reduced = useReducedMotion();
+  useEffect(() => {
+    if (!fresh) return;
+    if (reduced) {
+      useFreshRows.getState().clear(id);
+      return;
+    }
+    const timeout = setTimeout(() => useFreshRows.getState().clear(id), 400);
+    return () => clearTimeout(timeout);
+  }, [fresh, reduced, id]);
+  return fresh;
+}
+function OptimisticRow({ message }: { message: Message }) {
+  const fresh = useFreshRow(message.id);
+  return (
+    <div data-testid="optimistic-send">
+      <article
+        aria-label="user message"
+        data-message-id={message.id}
+        id={`m-${message.id}`}
+        data-fresh={fresh || undefined}
+        onAnimationEnd={(event) => {
+          if (event.target === event.currentTarget)
+            useFreshRows.getState().clear(message.id);
+        }}
+        className="min-w-0 py-4"
+      >
+        <h2 className="sr-only">You said</h2>
+        <div className="user-bubble ml-auto w-fit">
+          <p className="whitespace-pre-wrap break-words">{message.content}</p>
+          {message.attachments?.map((attachment) => (
+            <p key={attachment.id} className="text-xs text-fg-2">
+              {attachment.filename}
+            </p>
+          ))}
+        </div>
+      </article>
+      <WorkingLine
+        id={message.id}
+        began={Date.parse(message.created_at)}
+        phase={{ kind: "working", label: "Working", announcement: "Working" }}
+      />
+    </div>
+  );
+}
+
+type MessageRowProps = Omit<
+  LiveThreadProps,
+  "messages" | "scrollRef" | "onAboveBottomChange" | "sources" | "reads"
+> & {
+  message: Message;
+  lastAssistant?: boolean;
+  sources?: Source[];
+  reads?: WebRead[];
+  editing: string | null;
+  draft: string;
+  setEditing: Dispatch<SetStateAction<string | null>>;
+  setDraft: Dispatch<SetStateAction<string>>;
+};
+export const MessageRow = memo(function MessageRow({
+  message,
+  lastAssistant = true,
+  position,
+  all,
+  stage,
+  steps,
+  onRegenerate,
+  onEdit,
+  onBranch,
+  sources,
+  reads,
+  renderSources,
+  selectedModel,
+  models = [],
+  connections = [],
+  onSettings,
+  onChatSettings,
+  onNew,
+  onRegenerateWith,
+  onImageAction,
+  editing,
+  draft,
+  setEditing,
+  setDraft,
+}: MessageRowProps) {
+  const fresh = useFreshRow(message.id);
+  const content = (
+    <article
+      aria-label={`${message.role} message`}
+      className="min-w-0 py-4"
+      data-fresh={fresh || undefined}
+      onAnimationEnd={(event) => {
+        if (event.target === event.currentTarget)
+          useFreshRows.getState().clear(message.id);
+      }}
+      data-message-id={message.id}
+      id={`m-${message.id}`}
+      style={
+        message.status !== "streaming"
+          ? { contentVisibility: "auto", containIntrinsicSize: "auto 180px" }
+          : undefined
+      }
+      aria-busy={message.status === "streaming"}
+    >
+      <h2 className="sr-only">
+        {message.role === "user"
+          ? "You said"
+          : `${message.model?.model_id ?? "Assistant"} replied`}
+      </h2>
+      {message.role === "user" ? (
+        editing === message.id ? (
+          <div>
+            {!!message.attachments?.length && (
+              <p className="mb-3 text-xs text-fg-2">
+                Attachments aren't carried over when you edit. Ask a follow-up
+                instead.
+              </p>
+            )}
+            <Textarea
+              aria-label="Edit message"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+            />
+            <div className="mt-2 flex gap-2">
+              <Button variant="outline" onClick={() => setEditing(null)}>
+                Cancel
+              </Button>
+              <Button
+                disabled={!draft.trim()}
+                onClick={async () => {
+                  if (await onEdit(message, draft)) setEditing(null);
+                }}
+              >
+                Send
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="user-bubble ml-auto w-fit">
+            {message.kind === "image" && (
+              <p className="mb-1 flex items-center gap-1 text-xs text-fg-2">
+                <ImagePlus className="size-3" />
+                Image
+                {(all.find((row) => row.parent_id === message.id)?.images
+                  ?.length ?? 1) > 1
+                  ? ` · ${all.find((row) => row.parent_id === message.id)?.images?.length} images`
+                  : ""}
+              </p>
+            )}
+            <p className="whitespace-pre-wrap break-words">{message.content}</p>
+            {(message.attachments ?? []).map((a) =>
+              a.kind === "audio" ? (
+                <AudioChip key={a.id} attachment={a} model={selectedModel} />
+              ) : a.document ? (
+                <DocumentChip key={a.id} attachment={a} model={selectedModel} />
+              ) : (
+                <a
+                  className="block text-xs text-brand"
+                  key={a.id}
+                  href={"/api/attachments/" + a.id}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {a.filename}
+                </a>
+              ),
+            )}
+          </div>
+        )
+      ) : message.kind === "image" ? (
+        <Suspense fallback={<p role="status">Loading images…</p>}>
+          <ImageTurn
+            message={message}
+            all={all}
+            onBranch={onBranch}
+            onAction={onImageAction}
+          />
+        </Suspense>
+      ) : (
+        <>
+          {message.stats?.dropped_message_count ? (
+            <p className="mb-4 border-b border-line pb-3 text-xs text-fg-3">
+              Earlier messages are outside the model's context window
+            </p>
+          ) : null}
+          <p className="mb-4 text-xs text-fg-3 break-all">
+            {message.model?.display_name}
+          </p>
+          {!message.reasoning && (
+            <WorkingLine
+              id={message.id}
+              began={Date.parse(message.created_at)}
+              phase={workingPhase(message, stage, steps, position)}
+            />
+          )}
+          <SearchActivity
+            message={message}
+            sources={sources ?? []}
+            steps={message.status === "streaming" ? steps : undefined}
+            onRetry={() => onRegenerate(message, true)}
+          />
+          {message.reasoning && (
+            <Thinking
+              id={message.id}
+              phase={workingPhase(message, stage, steps, position) ?? undefined}
+              text={message.reasoning}
+              duration={message.stats?.reasoning_ms}
+              live={message.status === "streaming" && !message.content}
+            />
+          )}
+          <Suspense
+            fallback={
+              <div
+                role="status"
+                aria-label="Loading formatted answer"
+                className="space-y-3 py-3"
+              >
+                <div className="skeleton h-4 w-4/5" />
+                <div className="skeleton h-4 w-3/5" />
+              </div>
+            }
+          >
+            <Markdown
+              text={message.content}
+              sources={sources}
+              streaming={message.status === "streaming"}
+            />
+          </Suspense>
+          {message.error && (
+            <div
+              role="alert"
+              className="mt-4 rounded-lg border border-line p-4"
+            >
+              <p className="flex items-start gap-2 text-sm text-danger">
+                <TriangleAlert className="size-4 shrink-0" />
+                {messageError(message, models, connections)}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {message.error.code !== "context_overflow" &&
+                  message.error.code !== "model_not_found" && (
+                    <Button
+                      variant="outline"
+                      onClick={() => onRegenerate(message)}
+                    >
+                      Retry
+                    </Button>
+                  )}
+                {message.error.code === "runtime_unreachable" && (
+                  <Button
+                    variant="outline"
+                    onClick={() => onSettings?.("Connections")}
+                  >
+                    Open settings
+                  </Button>
+                )}
+                {message.error.code === "model_not_found" && (
+                  <Button
+                    variant="outline"
+                    onClick={() => onSettings?.("Models")}
+                  >
+                    Choose model
+                  </Button>
+                )}
+                {message.error.code === "model_load_failed" && (
+                  <Button
+                    variant="outline"
+                    onClick={() => onSettings?.("Models")}
+                  >
+                    Models
+                  </Button>
+                )}
+                {message.error.code === "context_overflow" && (
+                  <>
+                    <Button variant="outline" onClick={onNew}>
+                      Start new chat
+                    </Button>
+                    <Button variant="outline" onClick={onChatSettings}>
+                      Chat controls
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+          {!renderSources &&
+            (message.web?.status === "used" ||
+              message.library?.status === "used") && (
+              <>
+                <SourcesSheet
+                  message={message}
+                  sources={sources ?? []}
+                  reads={reads ?? []}
+                />
+                {message.web?.notice?.code === "uncited" && (
+                  <p className="mb-3 text-xs text-fg-3">
+                    This answer doesn't cite specific sources.
+                  </p>
+                )}
+              </>
+            )}
+          {renderSources?.(message, sources ?? [], reads ?? [])}
+        </>
+      )}
+      {message.status !== "streaming" && message.kind !== "image" && (
+        <div
+          data-slot="message-footer"
+          data-role={message.role}
+          data-last={lastAssistant || undefined}
+          className="flex flex-wrap items-center justify-between gap-x-3"
+        >
+          <div data-slot="message-actions">
+            <MessageActions
+              message={message}
+              models={models}
+              onRegenerateWith={(m) => onRegenerateWith?.(message, m)}
+              messages={all}
+              onEdit={() => {
+                setEditing(message.id);
+                setDraft(message.content);
+              }}
+              onRegenerate={() => onRegenerate(message)}
+              onBranch={onBranch}
+            />
+          </div>
+          {message.role === "assistant" && (
+            <div data-slot="message-stats" className="min-w-0 text-right">
+              <StatsLine message={message} />
+            </div>
+          )}
+        </div>
+      )}
+    </article>
+  );
+  return import.meta.env.DEV ? (
+    <Profiler
+      id={message.id}
+      onRender={(id, phase, actualDuration) =>
+        window.dispatchEvent(
+          new CustomEvent("workbench:message-render", {
+            detail: { id, phase, actualDuration },
+          }),
+        )
+      }
+    >
+      {content}
+    </Profiler>
+  ) : (
+    content
+  );
+});

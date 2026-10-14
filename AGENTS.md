@@ -1147,3 +1147,38 @@ Preserve Claude's UI and supplied files. No new dependency, model, runtime,
 native inference, prompt, sampling/default change or Research. CI-C viewer,
 iteration and export remain next checkpoint. Retain H4/QA evidence and stop after
 CI-B. Main/live publication and the bounded native workflow trial remain gated.
+
+**Chat images CI-B closeout — 14 October 2026:** Frozen source `3825196a`
+implements Claude's unified image composer and durable chat turns with additive
+migration 013, atomic/idempotent job acceptance, explicit/implicit parent identity,
+scoped cancellation, retry/user branch navigation and deleted-chat origins.
+Both image roles are excluded from text context; titles use the prompt without a
+model call. Existing jobs/capacity/SSE remain; real steps drive progress, observed
+completions reveal once, history is immediate, and saving uses the existing dialog.
+
+Checks pass: 653 Python / 104 frontend, required coverage above 80%, 110 contrast
+pairs and one complete browser invocation with 595 passes, three existing skips,
+zero failures (1.0 hour). All 112 new-state axe checks pass. Initial JS is 246,848
+gzip bytes (+2,430); render p95 2.4 / 3 ms and first-token overhead 74.37 / 67.65 ms.
+Retain focused failures and the deliberately interrupted first full run (314
+passes, one interrupted, 281 unrun); concrete parent/branch fixes precede the
+final full run. That interrupted run's temporary trace/recordings were overwritten
+by a focused run and are unavailable; its source/log and available captures remain.
+No test threshold/timeout/assertion was weakened and no skip was added.
+
+552 frozen files, 323 core files, 33,141 historical blobs, 15 workflow references
+and all 17 supplied chat-image files verify preserved. Archive retains 1,206 fresh
+outputs, restores 1,166 historical files and relocates 40 fake captures. All 584
+available final synthetic videos remain outside Git. Exact unchanged interrupted
+copies reference original Git blobs (7,305 copies / 1,960,959,222 bytes avoided).
+Installed 97 server / 410 static hashes and main remain unchanged; local and
+verified HTTPS health pass. No service/route change, main merge or deployment.
+
+H4: `docs/CHAT-IMAGES-CI-B-REPORT.md`; test ledger records explicitly approved UI
+replacements. G9's existing native Web accuracy release gate remains open: 56
+zero-inference payload comparisons over 25 original questions prove context
+parity, not a new real-model accuracy pass. No native inference, new dependency/
+model/runtime, prompt/sampling/default change or Research restart. No physical
+phone/VoiceOver pass claimed. Stop for CI-B review before CI-C; viewer/iteration/
+exports and the bounded local-LLM workflow trial remain next reviewed work.
+Final merge/publication still require Jake's explicit okay.
