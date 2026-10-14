@@ -1302,3 +1302,41 @@ fully tested f8e301c2 candidate. Factual drafts retain their review requirement;
 no general grounding, physical-phone or VoiceOver qualification is implied.
 Future WS-E/reference editing and Research remain separately gated. This merge
 operation preserves the installed service and production data.
+
+**User authorization — 14 October 2026 (Studio/chat-images live rollout):** Jake
+said “Then go ahead” after the controlled-rollout recommendation. Publish the
+reviewed main checkpoint, preserving the complete current installed application,
+service configuration and database/data as a private fallback. A verified snapshot
+and rehearsed whole-backup restore are sufficient; rewriting the general deploy
+script is not required. Approve a narrow G9 release exception for this checkpoint's
+unchanged ordinary prompts and 56 recorded request/context parity comparisons.
+This does not qualify factual grounding, excuse new regressions, or create a
+general G9 waiver. Factual workflow outputs remain drafts requiring review.
+Preserve the existing interpreter, model/worker, defaults, sampling, bind/port,
+launchd label and Tailscale route. Check the deployed UI/API and migration, with
+physical iPhone smoke observations requested after rollout and not invented.
+Retain H4 deployment/rollback evidence; WS-E, reference editing, Research and
+additional inference experiments remain separately gated.
+
+**Studio/chat-images deployment closeout — 14 October 2026:** Reviewed main
+`93b1fd21` is installed on the unchanged service/route. All 556 frozen source/test
+files match CI-C; 113 installed server and 420 current-build static files verify.
+The private complete app/data/plist fallback and copied-data schema 10 → 13 → 10
+startup/restore rehearsal pass. All 45 pre-existing table projections remain
+unchanged through production migration; schema 13 integrity/FKs pass. The service
+returns healthy after 1.604 s; local and verified HTTPS health/new API/build hashes
+pass and production `/design` remains 404. Preserve 3,542 non-cache installed venv
+and 33 transcription files, exact plist, image selector, Ollama 0.35.0 and route.
+No additional inference, prompt/default/sampling/runtime/model change occurs.
+
+Published Chromium desktop and instrumented WebKit phone-geometry checks pass
+for home, Canvas/Outline, chat Image mode/count and Gallery, with synthetic
+definitions archived. Retain the preflight empty SQLite-sidecar manifest stop
+(before live bootout), initial observer's rename-selector mistake, and second
+smoke's unclassified phone error flag. The instrumented phone recheck reports no
+page error or inference; do not claim the earlier flag's cause was proven or a
+product fix was made. No live screenshot or physical-phone/VoiceOver pass is
+invented. H4: `docs/WORKFLOW-STUDIO-DEPLOYMENT-REPORT.md`. G9 has only the explicitly
+accepted checkpoint exception, not a grounding qualification. Factual drafts
+require review; physical phone observations, WS-E/reference editing and Research
+retain their separately stated status/gates.
