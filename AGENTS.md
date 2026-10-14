@@ -1289,3 +1289,16 @@ Research/Search restart, native image job or phone/VoiceOver pass. The missing
 native control gate is closed. Stop for final branch review; merge and live
 publication still require Jake's explicit okay. Factual outputs require review,
 G9 remains open and future WS-E/reference editing remains separately gated.
+
+
+**User acceptance and merge authorization — 14 October 2026:** Jake said
+“Go ahead” after Codex recommended merging the reviewed checkpoint following
+native cancellation/recovery verification. Accept the branch review and merge
+`codex/workflow-studio` into main, pushing the reviewed source/history to GitHub.
+Retain a source fallback to the accepted pre-Studio main and all earlier trial
+failures. Preserve the untracked original Claude documents outside the checkout
+before Git writes their identical tracked copies. Product source remains the
+fully tested f8e301c2 candidate. Factual drafts retain their review requirement;
+no general grounding, physical-phone or VoiceOver qualification is implied.
+Future WS-E/reference editing and Research remain separately gated. This merge
+operation preserves the installed service and production data.
