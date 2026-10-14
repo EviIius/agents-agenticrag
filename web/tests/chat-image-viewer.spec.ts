@@ -132,6 +132,14 @@ test("viewer traverses the conversation, zooms from/to the frame and restores fo
   await viewer(page)
     .getByRole("button", { name: "Save image", exact: true })
     .click();
+  await expect(
+    page.getByRole("dialog", { name: "Save image", exact: true }),
+  ).toBeVisible();
+  await page.keyboard.press("ArrowRight");
+  await expect(
+    page.getByRole("dialog", { name: "Save image", exact: true }),
+  ).toBeVisible();
+  await expect(viewer(page).getByText("2 / 3", { exact: true })).toBeVisible();
   await page
     .getByRole("dialog", { name: "Save image", exact: true })
     .getByRole("button", { name: "Close image save" })

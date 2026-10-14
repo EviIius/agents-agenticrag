@@ -118,7 +118,6 @@ export function ImageViewer({
   function finish() {
     clearTimeout(timer.current);
     onClose();
-    if (after.current) requestAnimationFrame(after.current);
   }
   useEffect(() => {
     if (closing && reduced) finish();
@@ -197,12 +196,18 @@ export function ImageViewer({
           onCloseAutoFocus={(event) => {
             event.preventDefault();
             if (frame.isConnected) frame.focus({ preventScroll: true });
+            after.current?.();
           }}
           onEscapeKeyDown={(event) => {
             event.preventDefault();
             close();
           }}
           onKeyDown={(event) => {
+            if (
+              event.target instanceof Element &&
+              event.target.closest('[role="dialog"]') !== event.currentTarget
+            )
+              return;
             if (
               !event.defaultPrevented &&
               (event.key === "ArrowLeft" || event.key === "ArrowRight")

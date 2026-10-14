@@ -478,6 +478,10 @@ test("5A controls wait for the requested chat instead of exposing an empty draft
     await route.continue();
   });
   await page.goto("/c/" + chat.id);
+  // Hold chat detail, while waiting for the separate model/header bootstrap.
+  await expect(
+    page.getByRole("button", { name: "Choose model", exact: true }),
+  ).toContainText("fake-chat");
   await open(page);
   const panel = controls(page);
   await expect(panel.getByRole("status")).toHaveText("Loading chat controls…");
