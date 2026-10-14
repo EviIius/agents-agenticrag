@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Composer } from "@/components/chat/Composer";
 import ImageTurn from "@/components/chat/ImageTurn";
 import type { Message } from "@/lib/api";
+import type { ImageComposerCommand } from "@/lib/composer-drafts";
 import type { ImageJob } from "@/lib/image-events";
 import { useUI } from "@/stores/ui";
 
@@ -25,6 +26,7 @@ export const frameStates = [
 export default function ChatImagesPreview() {
   const [state, setState] = useState("step 2"),
     [count, setCount] = useState(2);
+  const [command, setCommand] = useState<ImageComposerCommand>();
   const ui = useUI();
   const jobs: ImageJob[] = Array.from({ length: count }, (_, i) => ({
     id: String(i + 1).repeat(32),
@@ -126,11 +128,28 @@ export default function ChatImagesPreview() {
           message={reply}
           all={[user, reply]}
           preview
+          vision
+          onIteration={(job, action, position) => {
+            if (action === "refine")
+              setCommand({
+                key: crypto.randomUUID(),
+                mode: "image",
+                refinement: { job, position },
+              });
+            else if (action === "ask")
+              setCommand({ key: crypto.randomUUID(), mode: "chat" });
+            else setState("queued");
+          }}
           onBranch={() => {}}
           onAction={() => setState("queued")}
         />
         <div className="mt-6">
-          <Composer images previewImages initialImageMode />
+          <Composer
+            images
+            previewImages
+            initialImageMode
+            imageCommand={command}
+          />
         </div>
       </section>
     </main>

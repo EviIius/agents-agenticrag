@@ -1,3 +1,5 @@
+import type { ImageIteration } from "./ImageActions";
+import type { ImageJob } from "@/lib/image-events";
 import { WorkingLine } from "./WorkingLine";
 import { Thinking } from "./Thinking";
 import { workingPhase } from "@/lib/status-words";
@@ -30,6 +32,7 @@ import { SourcesSheet } from "./SourcesSheet";
 const Markdown = lazy(() => import("./Markdown"));
 const ImageTurn = lazy(() => import("./ImageTurn"));
 type LiveThreadProps = {
+  onImageIteration?: ImageIteration;
   onImageAction?: (message: Message, action: "retry" | "cancel") => void;
   pending?: Message | null;
   position?: number;
@@ -62,6 +65,7 @@ export function LiveThread({
   messages,
   all,
   onImageAction,
+  onImageIteration,
   stage,
   steps,
   scrollRef,
@@ -88,6 +92,7 @@ export function LiveThread({
   const stick = useRef(true);
   const handlers = useRef({
     onImageAction,
+    onImageIteration,
     onRegenerate,
     onEdit,
     onBranch,
@@ -100,6 +105,7 @@ export function LiveThread({
   useEffect(() => {
     handlers.current = {
       onImageAction,
+      onImageIteration,
       onRegenerate,
       onEdit,
       onBranch,
@@ -112,6 +118,8 @@ export function LiveThread({
   });
   const stable = useMemo(
     () => ({
+      onImageIteration: ((...args) =>
+        handlers.current.onImageIteration?.(...args)) as ImageIteration,
       onImageAction: (message: Message, action: "retry" | "cancel") =>
         handlers.current.onImageAction?.(message, action),
       onRegenerate: (message: Message, force?: boolean) =>
@@ -126,6 +134,13 @@ export function LiveThread({
         handlers.current.onRegenerateWith?.(message, model),
     }),
     [],
+  );
+  const threadImages = useMemo(
+    () =>
+      messages.flatMap((row) =>
+        row.role === "assistant" ? (row.images ?? []) : [],
+      ),
+    [messages],
   );
   const [announcement, setAnnouncement] = useState("");
   const last = [...messages]
@@ -203,6 +218,7 @@ export function LiveThread({
               message={message}
               lastAssistant={last?.id === message.id}
               all={all}
+              threadImages={message.kind === "image" ? threadImages : undefined}
               position={message.status === "streaming" ? position : undefined}
               stage={message.status === "streaming" ? stage : undefined}
               steps={message.status === "streaming" ? steps : undefined}
@@ -279,6 +295,7 @@ type MessageRowProps = Omit<
   "messages" | "scrollRef" | "onAboveBottomChange" | "sources" | "reads"
 > & {
   message: Message;
+  threadImages?: ImageJob[];
   lastAssistant?: boolean;
   sources?: Source[];
   reads?: WebRead[];
@@ -289,6 +306,8 @@ type MessageRowProps = Omit<
 };
 export const MessageRow = memo(function MessageRow({
   message,
+  threadImages,
+  onImageIteration,
   lastAssistant = true,
   position,
   all,
@@ -404,6 +423,9 @@ export const MessageRow = memo(function MessageRow({
             all={all}
             onBranch={onBranch}
             onAction={onImageAction}
+            threadImages={threadImages}
+            onIteration={onImageIteration}
+            vision={selectedModel?.vision === true}
           />
         </Suspense>
       ) : (

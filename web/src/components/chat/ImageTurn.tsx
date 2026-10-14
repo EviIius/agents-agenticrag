@@ -1,21 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-  Download,
   Copy,
-  Info,
-  MoreHorizontal,
   RotateCcw,
   Square,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { api, type Message } from "@/lib/api";
+import { type Message } from "@/lib/api";
 import {
   imageActive,
   claimImageReveal,
   type ImageJob,
   useImageJobs,
-  receiveImages,
 } from "@/lib/image-events";
 import { imageTurnStatus } from "@/lib/image-state";
 import { siblings } from "@/lib/tree";
@@ -25,20 +21,8 @@ import { CopyFeedback } from "./CopyFeedback";
 import { AtelierMark } from "./AtelierMark";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/app/IconButton";
-import { FileSaveDialog } from "@/components/app/FileSaveDialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
+import { ImageActions, type ImageIteration } from "./ImageActions";
+import { ImageViewer } from "./ImageViewer";
 
 export function ImageBranches({
   message,
@@ -81,13 +65,26 @@ export default function ImageTurn({
   onBranch,
   onAction,
   preview = false,
+  threadImages,
+  onIteration,
+  vision = false,
 }: {
+  threadImages?: ImageJob[];
+  onIteration?: ImageIteration;
+  vision?: boolean;
   message: Message;
   all: Message[];
   onBranch: (id: string) => void;
   onAction?: (message: Message, action: "retry" | "cancel") => void;
   preview?: boolean;
 }) {
+  const [viewer, setViewer] = useState<{
+    job: ImageJob;
+    frame: HTMLElement;
+  } | null>(null);
+  const [position, setPosition] = useState(0);
+  const frames = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
   const jobs = message.images ?? [],
     active = jobs.some(imageActive);
   const queue = useImageJobs((state) => state.jobs);
@@ -100,6 +97,17 @@ export default function ImageTurn({
     <div data-slot="image-turn">
       <p className="mb-3 text-xs text-fg-3">FLUX.2 klein 4B</p>
       <div
+        ref={frames}
+        onScroll={() => {
+          const row = frames.current;
+          if (row && row.firstElementChild)
+            setPosition(
+              Math.round(
+                row.scrollLeft /
+                  ((row.firstElementChild as HTMLElement).offsetWidth + 8),
+              ),
+            );
+        }}
         className={`image-frames image-count-${jobs.length}`}
         tabIndex={jobs.length === 3 ? 0 : undefined}
         role="group"
@@ -111,10 +119,47 @@ export default function ImageTurn({
             job={job}
             next={job.state === "queued" && jobs.slice(0, i).some(imageActive)}
             preview={preview}
+            position={i + 1}
+            vision={vision}
+            onIteration={onIteration}
+            onOpen={(frame) => setViewer({ job, frame })}
             onRetry={() => onAction?.(message, "retry")}
           />
         ))}
       </div>
+      {jobs.length === 3 && (
+        <div className="image-position-dots" aria-label="Image position">
+          {jobs.map((job, i) => (
+            <button
+              key={job.id}
+              aria-label={`Show image ${i + 1}`}
+              aria-current={position === i ? "true" : undefined}
+              onClick={() => {
+                const row = frames.current,
+                  target = row?.children[i] as HTMLElement | undefined;
+                if (row && target)
+                  row.scrollTo({
+                    left: target.offsetLeft - row.offsetLeft,
+                    behavior: reduced ? "instant" : "smooth",
+                  });
+              }}
+            >
+              <span />
+            </button>
+          ))}
+        </div>
+      )}
+      {viewer && (
+        <ImageViewer
+          job={viewer.job}
+          frame={viewer.frame}
+          jobs={threadImages ?? jobs}
+          onClose={() => setViewer(null)}
+          onIteration={onIteration}
+          vision={vision}
+          preview={preview}
+        />
+      )}
       <div
         className="mt-3 flex min-h-8 items-center gap-2 text-sm text-fg-2"
         role="status"
@@ -174,7 +219,15 @@ export function ImageFrame({
   next = false,
   onRetry,
   preview = false,
+  position = 1,
+  onIteration,
+  onOpen,
+  vision = false,
 }: {
+  position?: number;
+  onIteration?: ImageIteration;
+  onOpen?: (frame: HTMLElement) => void;
+  vision?: boolean;
   job: ImageJob;
   next?: boolean;
   onRetry?: () => void;
@@ -184,12 +237,7 @@ export function ImageFrame({
     [failed, setFailed] = useState(false),
     [reveal, setReveal] = useState(false),
     [loadAttempt, setLoadAttempt] = useState(0);
-  const [saving, setSaving] = useState(false),
-    [details, setDetails] = useState(false),
-    [removing, setRemoving] = useState(false),
-    [busy, setBusy] = useState(false);
-  const reduced = useReducedMotion(),
-    copy = useCopyFeedback();
+  const reduced = useReducedMotion();
   useEffect(() => {
     if (reduced) setReveal(false);
   }, [reduced]);
@@ -226,6 +274,23 @@ export function ImageFrame({
     >
       <div
         className="image-frame"
+        role={saved && !failed ? "button" : undefined}
+        tabIndex={saved && !failed ? 0 : undefined}
+        aria-label={saved && !failed ? `Open image ${position}` : undefined}
+        onClick={(event) => {
+          if (saved && !(event.target as Element).closest("button"))
+            onOpen?.(event.currentTarget);
+        }}
+        onKeyDown={(event) => {
+          if (
+            saved &&
+            event.target === event.currentTarget &&
+            (event.key === "Enter" || event.key === " ")
+          ) {
+            event.preventDefault();
+            onOpen?.(event.currentTarget);
+          }
+        }}
         data-frozen={job.state === "cancelling" || undefined}
       >
         {(working || (saved && !decoded)) && (
@@ -311,135 +376,14 @@ export function ImageFrame({
         )}
       </div>
       {saved && (
-        <div className="image-frame-actions">
-          <IconButton label="Save image" onClick={() => setSaving(true)}>
-            <Download />
-          </IconButton>
-          <IconButton
-            label="Copy image prompt"
-            onClick={() => void copy.copy(job.prompt)}
-          >
-            {!copy.copied && <Copy />}
-            <CopyFeedback {...copy} />
-          </IconButton>
-          <IconButton label="Image details" onClick={() => setDetails(true)}>
-            <Info />
-          </IconButton>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <IconButton label="More image actions">
-                <MoreHorizontal />
-              </IconButton>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onSelect={() => setRemoving(true)}>
-                Remove image
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      )}
-      {saving && (
-        <FileSaveDialog
-          title="Save image"
-          closeLabel="Close image save"
-          initial="png"
-          options={[
-            {
-              format: "png",
-              label: "Image (.png)",
-              url: `/api/images/jobs/${job.id}/output/png`,
-              filename: `Atelier-${job.id.slice(0, 8)}.png`,
-            },
-            {
-              format: "json",
-              label: "Details (.json)",
-              url: `/api/images/jobs/${job.id}/output/json`,
-              filename: `Atelier-${job.id.slice(0, 8)}.json`,
-            },
-          ]}
-          onClose={() => setSaving(false)}
-          preview={preview ? "ready" : undefined}
+        <ImageActions
+          job={job}
+          position={position}
+          onIteration={onIteration}
+          vision={vision}
+          preview={preview}
         />
       )}
-      <Dialog open={details} onOpenChange={setDetails}>
-        <DialogContent>
-          <DialogTitle>Image details</DialogTitle>
-          <DialogDescription>Exact inputs and saved output.</DialogDescription>
-          <p className="break-words whitespace-pre-wrap text-sm">
-            {job.prompt}
-          </p>
-          <dl className="space-y-2 text-sm">
-            {[
-              ["Seed", job.seed],
-              ["Model", "FLUX.2 klein 4B"],
-              ["Size", "1024 × 1024"],
-              ["Steps", job.steps],
-              [
-                "Time",
-                job.elapsed_seconds == null
-                  ? "Unavailable"
-                  : `${job.elapsed_seconds.toFixed(1)} s`,
-              ],
-              ["File size", `${(job.image_bytes / 1e6).toFixed(2)} MB`],
-              ["Created", new Date(job.created_at).toLocaleString()],
-            ].map(([label, value]) => (
-              <div key={label} className="flex gap-3">
-                <dt className="text-fg-3">{label}</dt>
-                <dd className="break-words">{value}</dd>
-              </div>
-            ))}
-          </dl>
-        </DialogContent>
-      </Dialog>
-      <Dialog
-        open={removing}
-        onOpenChange={(open) => !busy && setRemoving(open)}
-      >
-        <DialogContent>
-          <DialogTitle>Remove this image?</DialogTitle>
-          <DialogDescription>
-            This removes the image from your Mac and every chat that shows it.
-            Its prompt, job history and existing backups are kept.
-          </DialogDescription>
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              disabled={busy}
-              onClick={() => setRemoving(false)}
-            >
-              Keep
-            </Button>
-            <Button
-              disabled={busy}
-              onClick={async () => {
-                if (preview) {
-                  setRemoving(false);
-                  return;
-                }
-                setBusy(true);
-                try {
-                  await api(
-                    `/images/jobs/${job.id}/output`,
-                    undefined,
-                    "DELETE",
-                  );
-                  receiveImages([
-                    await api<ImageJob>(`/images/jobs/${job.id}`),
-                  ]);
-                  setRemoving(false);
-                } catch {
-                  toast.error("Couldn't remove this image. Try again.");
-                } finally {
-                  setBusy(false);
-                }
-              }}
-            >
-              Remove
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

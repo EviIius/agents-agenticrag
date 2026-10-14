@@ -1182,3 +1182,17 @@ model/runtime, prompt/sampling/default change or Research restart. No physical
 phone/VoiceOver pass claimed. Stop for CI-B review before CI-C; viewer/iteration/
 exports and the bounded local-LLM workflow trial remain next reviewed work.
 Final merge/publication still require Jake's explicit okay.
+
+**User authorization — 14 October 2026 (CI-C and native workflow trial):** Jake
+asked “Continue to CI-C and then the test.” Accept CI-B's review and implement
+Claude's CI-C viewer, iteration, vision-gated attachment action, exports and phone
+scroll-snap behavior on the isolated branch. Preserve the supplied UI and files;
+Refine records lineage and edits the prompt only, not reference-image pixels.
+After CI-C verification, execute `docs/WORKFLOW-STUDIO-NATIVE-TRIAL-PLAN.md` in a
+separate synthetic data folder: the installed daily profile, at most seven native
+calls and ten minutes, stopping on the first failure without retry. This request
+closes the intermediate review stop for that named sequence; retain both H4
+reports. No new model/dependency/runtime, application-authored prompt, sampling
+change, Research restart or native image concurrency. Main, live service and
+production data remain unchanged. Stop after the trial for review; final merge
+and publication still require Jake's explicit okay.

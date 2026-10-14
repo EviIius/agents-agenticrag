@@ -1,3 +1,5 @@
+import type { ImageComposerCommand } from "@/lib/composer-drafts";
+import type { ImageIteration } from "@/components/chat/ImageActions";
 import { FoldersGroup } from "./FoldersGroup";
 import { WorkspaceContext } from "./WorkspaceNavigation";
 import type { FolderAction } from "./FolderDialog";
@@ -365,6 +367,12 @@ export function LiveAppShell() {
     queryKey: ["image-status"],
     queryFn: () => api<components["schemas"]["ImageStatus"]>("/images/status"),
   });
+  const [imageCommand, setImageCommand] = useState<{
+    chat?: string;
+    command: ImageComposerCommand;
+  }>();
+  const iterationChat = useRef(chatId);
+  iterationChat.current = chatId;
   const chatImages = useChatImages({
     chatId,
     query,
@@ -374,6 +382,44 @@ export function LiveAppShell() {
     messages: detail.data?.messages ?? [],
     enabled: !workspace,
   });
+  const iterateImage: ImageIteration = (job, action, position) => {
+    if (action === "more") {
+      void chatImages.send(job.prompt, 1, undefined, job.id);
+      return;
+    }
+    if (action === "refine") {
+      setImageCommand({
+        chat: chatId,
+        command: {
+          key: crypto.randomUUID(),
+          mode: "image",
+          refinement: { job, position },
+        },
+      });
+      return;
+    }
+    if (current?.vision !== true) return;
+    const origin = chatId;
+    void (async () => {
+      try {
+        const response = await fetch(`/api/images/jobs/${job.id}/output/png`);
+        if (!response.ok) throw new Error("Couldn't open this image.");
+        const blob = await response.blob();
+        if (iterationChat.current !== origin) return;
+        setImageCommand({
+          chat: origin,
+          command: { key: crypto.randomUUID(), mode: "chat" },
+        });
+        await upload([
+          new File([blob], `Atelier-image-${job.id.slice(0, 8)}.png`, {
+            type: "image/png",
+          }),
+        ]);
+      } catch {
+        toast.error("Couldn't attach this image. Try again.");
+      }
+    })();
+  };
   const saveParams = async (prompt: string | null, params: Params) => {
     if (chatId)
       return mutate(
@@ -462,6 +508,11 @@ export function LiveAppShell() {
         new URLSearchParams(routeSearch).has("image")
       }
       onImageSend={chatImages.send}
+      imageCommand={
+        imageCommand && imageCommand.chat === chatId
+          ? imageCommand.command
+          : undefined
+      }
       optimistic={Boolean(chatId)}
       suggestions={!chatId}
       audioExtensions={audioExtensions}
@@ -849,6 +900,7 @@ export function LiveAppShell() {
           ) : (
             <>
               <LiveThread
+                onImageIteration={iterateImage}
                 onImageAction={(message, action) =>
                   void chatImages.action(message, action)
                 }

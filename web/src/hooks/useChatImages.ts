@@ -94,10 +94,15 @@ export function useChatImages({
     void query.invalidateQueries({ queryKey: ["context", id] });
   }
 
-  async function send(prompt: string, count: number, fixed?: number[]) {
+  async function send(
+    prompt: string,
+    count: number,
+    fixed?: number[],
+    sourceJob?: string,
+  ) {
     if (busy || blocked) return false;
     const origin = chatId ?? "new";
-    const signature = JSON.stringify([prompt, count, fixed]);
+    const signature = JSON.stringify([prompt, count, fixed, sourceJob]);
     let saved = submissions.get(origin);
     if (!saved || saved.signature !== signature) {
       saved = {
@@ -129,6 +134,7 @@ export function useChatImages({
         prompt,
         count,
         seeds: saved.seeds,
+        ...(sourceJob ? { source_job_id: sourceJob } : {}),
       });
       commit(id, response, saved.chat);
       submissions.delete(origin);

@@ -33,7 +33,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { imageDrafts, drafts } from "@/lib/composer-drafts";
+import {
+  imageDrafts,
+  drafts,
+  imageRefinements,
+  type ImageComposerCommand,
+} from "@/lib/composer-drafts";
 import { validImageSeed } from "@/lib/image-seeds";
 export function Composer({
   draftKey,
@@ -43,6 +48,7 @@ export function Composer({
   initialImageMode = false,
   imageBusy = false,
   onImageSend,
+  imageCommand,
   starter = "",
   optimistic = false,
   running = false,
@@ -75,10 +81,12 @@ export function Composer({
   imageStatus?: import("@/lib/api-types").components["schemas"]["ImageStatus"];
   initialImageMode?: boolean;
   imageBusy?: boolean;
+  imageCommand?: ImageComposerCommand;
   onImageSend?: (
     prompt: string,
     count: number,
     seeds?: number[],
+    sourceJob?: string,
   ) => Promise<boolean>;
   optimistic?: boolean;
   libraryControl?: React.ComponentProps<typeof LibraryControl>;
@@ -111,6 +119,9 @@ export function Composer({
   );
   const [imageValue, setImageValue] = useState(() =>
     draftKey ? (imageDrafts.get(draftKey) ?? "") : "",
+  );
+  const [refinement, setRefinement] = useState(() =>
+    draftKey ? imageRefinements.get(draftKey) : undefined,
   );
   const [imageMode, setImageMode] = useState(initialImageMode);
   const [count, setCount] = useState(1);
@@ -196,6 +207,24 @@ export function Composer({
   const contextLabel = context
     ? `${estimatedInput.toLocaleString()} of ${context.context_length.toLocaleString()} total tokens; ${budget.available.toLocaleString()} input allowance; ${budget.reserve.toLocaleString()} reserved for response; 256 safety margin`
     : "Context usage unavailable";
+  useLayoutEffect(() => {
+    if (!imageCommand) return;
+    revision.current++;
+    setImageMode(imageCommand.mode === "image");
+    if (imageCommand.refinement) {
+      setRefinement(imageCommand.refinement);
+      setImageValue(imageCommand.refinement.job.prompt);
+      if (draftKey) imageRefinements.set(draftKey, imageCommand.refinement);
+    }
+    const frame = requestAnimationFrame(() => {
+      const field = textarea.current;
+      if (field) {
+        field.focus();
+        field.setSelectionRange(field.value.length, field.value.length);
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [imageCommand?.key]); // eslint-disable-line react-hooks/exhaustive-deps
   const send = async () => {
     if (imageMode) {
       if (
@@ -213,6 +242,7 @@ export function Composer({
         submitted,
         count,
         fixedSeeds ? seeds.slice(0, count).map(Number) : undefined,
+        refinement?.job.id,
       );
       if (
         accepted !== false &&
@@ -220,8 +250,15 @@ export function Composer({
         imageDrafts.get(draftKey) === submitted
       )
         imageDrafts.delete(draftKey);
-      if (accepted !== false && mounted.current && revision.current === version)
+      if (
+        accepted !== false &&
+        mounted.current &&
+        revision.current === version
+      ) {
         setImageValue("");
+        setRefinement(undefined);
+        if (draftKey) imageRefinements.delete(draftKey);
+      }
       return;
     }
     if (!running && !disabled && !waiting && value.trim()) {
@@ -270,6 +307,33 @@ export function Composer({
             e.target.value = "";
           }}
         />
+        {imageMode && refinement && (
+          <div
+            className="mb-3 flex w-fit max-w-full items-center gap-2 rounded-lg border border-line bg-surface-2 px-2 py-1 text-sm text-fg-2"
+            data-slot="image-refinement"
+          >
+            <img
+              className="size-8 rounded object-cover"
+              src={`/api/images/jobs/${refinement.job.id}/output/png`}
+              alt=""
+            />
+            <span>
+              Refining image {refinement.position} · seed {refinement.job.seed}
+            </span>
+            <IconButton
+              label="Remove refinement source"
+              type="button"
+              onClick={() => {
+                revision.current++;
+                setRefinement(undefined);
+                if (draftKey) imageRefinements.delete(draftKey);
+                textarea.current?.focus();
+              }}
+            >
+              <X />
+            </IconButton>
+          </div>
+        )}
         {!imageMode && (
           <>
             {uploads.map((upload) => (
