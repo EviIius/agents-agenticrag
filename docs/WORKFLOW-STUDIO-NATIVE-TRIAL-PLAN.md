@@ -1,7 +1,8 @@
 # First local-LLM Workflow Studio trial
 
-Prepared 13 October 2026. **Not executed.** Run after CI-B/C integration and its
-review, on `codex/workflow-studio` with a separate synthetic data folder. Main,
+Prepared 13 October 2026. **Executed 14 October; failed the first semantic gate
+and stopped after two calls.** See `WORKFLOW-STUDIO-NATIVE-TRIAL-REPORT.md`.
+The frozen plan below was executed after CI-B/C integration and its review, on `codex/workflow-studio` with a separate synthetic data folder. Main,
 installed chats, service port, Tailscale and current default stay intact.
 
 ## Purpose
@@ -83,3 +84,21 @@ Before starting, verify CI-A/B/C and Studio regression evidence, the isolated da
 path and the seven-call budget. Stop with results and a recommendation before any
 merge/publication or expansion. Physical iPhone results are recorded only when
 actually observed or supplied by Jake; VoiceOver remains outside the work list.
+
+## Execution clarification — 14 October 2026
+
+Jake explicitly authorized CI-C followed by this bounded trial. The implemented
+WS-B/D catalogue has eight block types; a separate Compose text block belongs to
+later Studio scope. This first graph therefore uses Start → Outline → Draft →
+Approve or edit → Save results, with the existing host Save block binding the
+reviewed value directly. The originally unspecified identity Compose step is
+absorbed into Save's formatting, without a model call or engine change. Do not
+claim that a distinct Compose block was tested. The seven-call budget and all
+other acceptance checks remain. Retain this deviation in the report.
+
+The isolated host reads only public runtime metadata and the selected profile's
+saved sampling defaults through the installed app's model endpoint; it never
+reads installed chats, files, keys or database contents. It copies those defaults
+into its new trial database, preserving the request pipeline. A transport guard
+counts calls before network delivery and captures exact synthetic request/response
+bytes. No load/unload, title, search, embedding or native image call is permitted.

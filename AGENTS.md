@@ -1196,3 +1196,31 @@ reports. No new model/dependency/runtime, application-authored prompt, sampling
 change, Research restart or native image concurrency. Main, live service and
 production data remain unchanged. Stop after the trial for review; final merge
 and publication still require Jake's explicit okay.
+
+
+**CI-C and native workflow trial closeout — 14 October 2026:** Frozen source
+`f8e301c2` completes Claude's viewer, iteration, vision-gated attachment, phone
+snap/dots and image exports on `codex/workflow-studio`. Final check/build pass:
+654 Python / 104 frontend, 110 contrast pairs and one full browser invocation with
+615 passes, three existing skips and zero failures in 1.0 hour. Retain all prior
+failed/interrupted attempts and concrete portal/contrast/draft/focus fixes; no
+assertion, timeout, target or skip was weakened. Initial JS is 247,594 gzip bytes
+(+746 from CI-B); 16 new viewer/refine axe audits pass. All historical reference/
+eval bytes, 556 frozen files, 322 core files, main and installed 97 server / 410
+static files verify intact; local/verified HTTPS health pass. G9 remains open.
+
+The authorized native trial stops after two actual daily-profile calls at its
+first manual semantic gate: recurrence and broader material provision are invented.
+Exact outline-to-draft binding and a visible paused review are observed, but no
+reload/approval/edit, second run, in-flight cancellation or recovery pass is
+claimed. Save never runs. Both model streams close and trial capacity releases;
+cleanup cancels the paused run. Retain setup's zero-call SPA-route failure, empty
+browser event observer (wrong legacy endpoint) and unavailable RSS measurement.
+Native NDJSON, exact requests, durable snapshots and synthetic video/frame remain.
+No retry, new inference, sampling/prompt/default/runtime change or native image job.
+
+H4 reports: `docs/CHAT-IMAGES-CI-C-REPORT.md` and
+`docs/WORKFLOW-STUDIO-NATIVE-TRIAL-REPORT.md`. Stop for review before more native
+experiments or Studio/reference-edit expansion. No main merge, live publication,
+Research restart or physical iPhone/VoiceOver pass; final merge/publication still
+require Jake's explicit okay.
