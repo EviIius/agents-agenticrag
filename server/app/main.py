@@ -35,6 +35,7 @@ from .db.core import Store, connect
 from .documents.service import Extractor
 from .errors import AppError, register_handlers
 from .images.jobs import Images
+from .images.uploads import ImageUploads
 from .library.ingest import Library
 from .library.pipeline import Pipeline as LibraryPipeline
 from .providers.registry import Registry
@@ -59,6 +60,8 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
             app.state.store = Store(db)
             app.state.config = config
             app.state.documents = Extractor()
+            app.state.image_uploads = ImageUploads()
+            app.state.image_uploads.recover(config.data_dir / "attachments")
             app.state.documents.recover(config.data_dir / "attachments")
             app.state.capacity = Capacity(
                 config.data_dir / "native.lock" if config.image_home else None
@@ -112,6 +115,7 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
                 await app.state.library.close()
                 await app.state.backups.close()
                 await app.state.documents.close()
+                await app.state.image_uploads.close()
                 await app.state.transcription.close()
                 await app.state.runs.close()
                 await app.state.registry.close()

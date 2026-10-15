@@ -6,7 +6,11 @@ import { api, type Attachment, type Bootstrap, type Model } from "@/lib/api";
 import { useTranscripts } from "@/stores/transcripts";
 import { attachTranscription } from "@/lib/sse";
 import type { AudioUpload } from "@/components/chat/AudioChip";
-import { prepareImage, uploadWithProgress } from "@/lib/attachments";
+import {
+  isImageFile,
+  prepareImage,
+  uploadWithProgress,
+} from "@/lib/attachments";
 import {
   useAudioExtensions,
   transcriptionStatusQuery,
@@ -115,7 +119,7 @@ export function useUploads({
           }
           continue;
         }
-        if (file.type.startsWith("image/")) {
+        if (isImageFile(file)) {
           if (current?.vision !== true)
             throw new Error("Images need a vision model.");
           if (file.size > 20 * 1024 * 1024)

@@ -13,6 +13,7 @@ from ..db import attachments as records
 from ..db.connections import now, uid
 from ..documents.extract import UPLOAD_LIMIT, error
 from ..errors import AppError, error_response
+from ..images.uploads import HEIF_EXTENSIONS, is_heif, unreadable
 from ..schemas import Attachment, DocumentText
 from ..transcribe.engine import AUDIO
 from ..transcribe.jobs import TranscriptionManager
@@ -94,7 +95,7 @@ async def upload(
 ) -> Attachment:
     filename = Path(file.filename or "attachment").name
     suffix = Path(filename).suffix.lower()
-    image = suffix in {".png", ".jpg", ".jpeg", ".webp", ".gif"}
+    image = suffix in {".png", ".jpg", ".jpeg", ".webp", ".gif"} | HEIF_EXTENSIONS
     if suffix in AUDIO:
         manager: TranscriptionManager = request.app.state.transcription
         status = await manager.engine.status()
@@ -147,6 +148,14 @@ async def upload(
         raise AppError("file_too_large", "Image limit is 20 MB; text file limit is 512 KB.", 413)
     mime = "text/plain"
     if image:
+        if is_heif(data):
+            data = await request.app.state.image_uploads.convert(
+                data, request.app.state.config.data_dir / "attachments"
+            )
+            filename = str(Path(filename).with_suffix(".png"))
+            suffix = ".png"
+        elif suffix in HEIF_EXTENSIONS:
+            raise unreadable()
         signatures = [
             (b"\x89PNG\r\n\x1a\n", "image/png"),
             (b"\xff\xd8\xff", "image/jpeg"),

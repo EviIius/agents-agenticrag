@@ -282,6 +282,8 @@ export function DesignPage() {
           "idle_timeout",
           "provider_error",
           "interrupted",
+          "image_unreadable",
+          "image_dimensions",
         ].map((code) => (
           <p
             key={code}

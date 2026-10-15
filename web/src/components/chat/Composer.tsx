@@ -126,6 +126,14 @@ export function Composer({
     draftKey ? imageRefinements.get(draftKey) : undefined,
   );
   const [imageMode, setImageMode] = useState(initialImageMode);
+  const previousAttachments = useRef(new Set(files.map((file) => file.id)));
+  useEffect(() => {
+    const incoming = files.some(
+      (file) => !previousAttachments.current.has(file.id),
+    );
+    previousAttachments.current = new Set(files.map((file) => file.id));
+    if (incoming) setImageMode(false);
+  }, [files]);
   const [count, setCount] = useState(1);
   const [seeds, setSeeds] = useState(["", "", ""]);
   const imageAvailable = previewImages || Boolean(imageStatus?.available);
@@ -419,10 +427,10 @@ export function Composer({
           value={visibleValue}
           onChange={(event) => updateDraft(event.target.value)}
           onPaste={(event) => {
-            if (imageMode) return;
             const files = Array.from(event.clipboardData.files);
             if (files.length) {
               event.preventDefault();
+              setImageMode(false);
               onAttach?.(files);
             }
           }}

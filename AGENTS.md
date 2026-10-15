@@ -1369,3 +1369,14 @@ the probe's SQL-line formatting cleanup preserves its AST, with no repeat call.
 H4: `docs/IMAGE-RESIDENCY-QWEN38-REPORT.md`. Jake's post-fix phone retry is pending;
 no general profile, full-context concurrent decode, factual-answer or VoiceOver
 qualification is claimed. Research and later Studio scope remain gated.
+
+**User acceptance and upload repair — 14 October 2026:** Jake confirms the
+workflow completed successfully and generated images in chat. Close the current
+Qwen3.8 image-admission phone retry with that observation only. He also reports
+an image attachment failure and asks to repair file uploads. The supplied file
+has HEIC contents despite its PNG extension. Repair content detection and bounded
+normalization using the Mac's existing codec, with synthetic format/chooser/paste/
+drop/error tests and ordinary upload regression checks. Keep the supplied photo
+and its filename out of repository evidence. No new dependency, model call,
+reference-image editing feature, prompt/sampling/default change or Research.
+Publish the verified repair on the existing service/route with a private fallback.

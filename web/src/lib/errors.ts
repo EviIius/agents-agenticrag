@@ -20,6 +20,9 @@ export function errorCopy(
     document_unreadable: "Couldn't read this file. It may be damaged.",
     document_too_large: "Documents can be up to 50 MB and 1,500 pages.",
     document_timeout: "This document took too long to read.",
+    image_unreadable:
+      "Couldn't open this image. Export it as a JPEG or PNG and try again.",
+    image_dimensions: "This image is too large to open.",
     runtime_unreachable: `Can't reach ${name} at ${host}. Is it running?`,
     model_not_found: `${title} isn't available on ${name} anymore.`,
     model_load_failed: `${name} couldn't load ${title}, most likely not enough memory. Eject other models or pick a smaller one.`,

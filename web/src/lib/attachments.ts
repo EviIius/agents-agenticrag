@@ -1,6 +1,52 @@
 import { ApiError } from "./api";
+export function isImageFile(file: File): boolean {
+  return (
+    file.type.startsWith("image/") ||
+    /\.(png|jpe?g|webp|gif|heic|heif)$/i.test(file.name)
+  );
+}
+
+export function isHeifHeader(bytes: Uint8Array): boolean {
+  if (bytes.length < 16) return false;
+  const text = (start: number) =>
+    String.fromCharCode(...bytes.slice(start, start + 4));
+  if (text(4) !== "ftyp") return false;
+  const size = new DataView(
+    bytes.buffer,
+    bytes.byteOffset,
+    bytes.byteLength,
+  ).getUint32(0);
+  if (size < 16) return false;
+  const brands = [text(8)];
+  for (let i = 16; i + 4 <= Math.min(size, bytes.length); i += 4)
+    brands.push(text(i));
+  return (
+    !brands.some((brand) => ["avif", "avis"].includes(brand)) &&
+    brands.some((brand) =>
+      ["heic", "heix", "hevc", "hevx", "heim", "heis", "mif1", "msf1"].includes(
+        brand,
+      ),
+    )
+  );
+}
+
 export async function prepareImage(file: File): Promise<File> {
-  const image = await createImageBitmap(file);
+  // A renamed HEIC is still HEIC. Let the Mac's bounded codec normalize it.
+  if (isHeifHeader(new Uint8Array(await file.slice(0, 256).arrayBuffer()))) {
+    const name = /\.(png|jpe?g|webp|gif|heic|heif)$/i.test(file.name)
+      ? file.name
+      : file.name + ".heic";
+    return new File([file], name, { type: "image/heic" });
+  }
+  let image: ImageBitmap;
+  try {
+    image = await createImageBitmap(file);
+  } catch {
+    throw new ApiError(
+      "image_unreadable",
+      "Couldn't open this image. Export it as a JPEG or PNG and try again.",
+    );
+  }
   const scale = Math.min(1, 2048 / Math.max(image.width, image.height));
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(image.width * scale);
