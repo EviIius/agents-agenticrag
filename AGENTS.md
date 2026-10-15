@@ -1371,8 +1371,9 @@ no general profile, full-context concurrent decode, factual-answer or VoiceOver
 qualification is claimed. Research and later Studio scope remain gated.
 
 **User acceptance and upload repair — 14 October 2026:** Jake confirms the
-workflow completed successfully and generated images in chat. Close the current
-Qwen3.8 image-admission phone retry with that observation only. He also reports
+workflow completed successfully and generated images in chat. Record functional
+acceptance of the Qwen3.8 image-admission fix; the device is unspecified, so do
+not claim a physical-phone pass. He also reports
 an image attachment failure and asks to repair file uploads. The supplied file
 has HEIC contents despite its PNG extension. Repair content detection and bounded
 normalization using the Mac's existing codec, with synthetic format/chooser/paste/
@@ -1380,3 +1381,25 @@ drop/error tests and ordinary upload regression checks. Keep the supplied photo
 and its filename out of repository evidence. No new dependency, model call,
 reference-image editing feature, prompt/sampling/default change or Research.
 Publish the verified repair on the existing service/route with a private fallback.
+
+**Image upload repair closeout — 14 October 2026:** The supplied PNG-named file
+contains HEIC. Content detection and the bounded existing macOS codec now normalize
+HEIC/HEIF to PNG without another package/model call. Actual successful uploads show
+their chat chips; programmatic recording restoration preserves explicit Image mode.
+Retain the initial candidate's three image-chat regressions and interrupted full
+attempt (282 pass / 3 fail / 1 interrupted); its completed-upload revision remedy
+passes the original cases and a new restoration test. No existing test was weakened.
+Final checks: 673 Python / 109 frontend, 110 contrast pairs, 627 browser passes /
+three existing skips / zero failures in one full run. Initial JS 248,048 gzip bytes.
+
+Candidate `cdc66a3d` is live on the exact service/route with a complete private
+app/data/plist fallback, unchanged schema 13 and all 55 old-table projections.
+Local/verified HTTPS health, 420 build files and integrity/FKs pass. Codex verifies
+the actual supplied file in live Chromium and WebKit: 201, visible chip and decoded
+PNG; only its own test uploads are deleted. No real photo, filename or live screenshot
+is saved in repository evidence; no inference or model/runtime/default change.
+Retain the live observer's initial raster-vs-oriented-dimensions assertion failure;
+PNG orientation 5 explains the transposition, and the corrected observer passes
+without a product change. This is browser verification, not a physical-phone pass.
+H4: `docs/IMAGE-UPLOAD-HEIC-REPORT.md`. Research, additional Studio scope and
+reference-image editing remain gated; factual grounding remains unqualified.

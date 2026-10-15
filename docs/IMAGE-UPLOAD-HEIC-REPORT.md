@@ -9,8 +9,8 @@ produce a genuine PNG. New attachments also leave Image creation mode so their c
 chips remain visible. No new package, model call, prompt or schema change.
 
 Jake separately reports that the repaired Brief to images workflow and chat image
-generation both succeeded. This closes that previous phone retry, not the new upload
-check or other untested phone/VoiceOver checks.
+generation both succeeded. This confirms the previous fix functionally; the device
+is unspecified, so no physical-phone or other untested check is marked passed.
 
 ## Done-when checklist
 
@@ -18,12 +18,12 @@ check or other untested phone/VoiceOver checks.
 | --- | --- | --- |
 | Reproduce format mismatch without retaining the photo | Passed | Header/metadata inspected; real file decoded transiently; no personal media fixture |
 | HEIC/HEIF and renamed HEIC upload as real PNG | Passed | `server/tests/test_image_uploads.py`; browser chooser/paste/drop cases |
-| Existing PNG, JPEG, WebP, GIF and document uploads | Passed, focused | Chromium/WebKit format matrix and document suite: 16 passes |
+| Existing PNG, JPEG, WebP, GIF and document uploads | Passed | Format/document suites in the complete Chromium/WebKit run |
 | Conversion bounds and cleanup | Passed | 20 MB input/output limits, 2048-pixel long edge, 100-million-pixel decode ceiling, two codecs at once, 20-second subprocess timeout; cancellation/reaping/recovery tests |
 | Attachment visible when leaving Image creation | Passed, final focused checks | Successful upload revision drives the mode switch; restored drafts do not |
 | Full code check | Passed | 673 Python, 109 frontend; all static guards pass |
-| Full browser regression | Pending | One complete invocation running |
-| Published repair and actual supplied-file upload | Pending | Private app/data/plist fallback and no-inference verification prepared |
+| Full browser regression | Passed | One complete invocation: 627 passes, three existing skips, zero failures |
+| Published repair and actual supplied-file upload | Passed | Live Chromium/WebKit: 201, visible chip, stored PNG decodes, own test uploads deleted; zero model calls |
 
 ## Changed files
 
@@ -45,8 +45,9 @@ No reference-image editing or other image-generation feature is added.
 ## Runtime observations
 
 The selected chat model reports `vision: true`; no model-name heuristic is used.
-The supplied file transiently decoded to PNG, 2048 × 1536, 4,042,931 bytes; the
-temporary source/output directory was removed. Its original is unchanged. Photo
+The supplied file decoded to PNG, raster 2048 × 1536, 4,042,931 bytes; its EXIF
+orientation 5 makes both browsers decode it at 1536 × 2048. Conversion temporary
+directories were removed, and the original is unchanged. Photo
 contents and its filename are absent from Git, screenshots and test evidence.
 HEIC normalization requires macOS's existing codec; a decode failure gives an
 actionable JPEG/PNG export message. New codecs are not downloaded.
@@ -56,19 +57,19 @@ actionable JPEG/PNG export message. New codecs are not downloaded.
 | Gate | Result / evidence |
 | --- | --- |
 | G1 | Final `make check`: 673 Python, 109 frontend, 110 contrast pairs; all guarded packages exceed 80% coverage; `artifacts/image-upload-heic/check-final.txt` |
-| G2 | Pending one complete Chromium/WebKit invocation; corrected upload/chat-image focused suite: 34 passes |
+| G2 | One complete `make e2e`: 627 passed / 3 existing skips / 0 failed, 1.0 h; `full-run/e2e.txt`; corrected focused suite also 34/34 |
 | G3 | New tests only; no existing test assertion, timeout, target or skip changed |
-| G4 | Final initial JS 248,048 gzip bytes; previous 247,594 (+454), budget 256,000; full-suite performance artifacts pending |
+| G4 | Initial JS 248,048 gzip bytes; previous 247,594 (+454), budget 256,000. Streaming render p95 3.6 ms Chromium / 3 ms WebKit (<8); first-token overhead 84.48 / 68.95 ms (<150); 300-message checks pass |
 | G5 | Eight new synthetic upload/error axe audits, both themes at 390/1440: zero serious/critical findings; no horizontal overflow |
 | G6–G8 | API-additive, old-row migration and frozen-prompt guards in `make check`; no API/schema/prompt edit |
 | G9 | Search/runs/providers untouched; no new inference/eval. Existing factual-grounding limitation remains |
 | G10 | Ordinary request/parameter guards unchanged and included in checks |
 | G11 | Synthetic captures only; supplied image used transiently and privately; privacy audit in checks |
-| G12 | Existing service/route publication checks pending; no deployment config change |
+| G12 | Exact plist/route unchanged; one worker at 127.0.0.1:8787; local/verified HTTPS health, exact index/SW hashes and production `/design` 404 pass |
 | G13 | Motion CSS untouched; full motion regression included |
 | G14 | Both new error codes use production `errorCopy` in `/design` |
-| G15 | No migration; schema stays 13; private code/data/plist fallback prepared |
-| G16 | Previous generation retry accepted by Jake; repaired upload not physically checked by him yet |
+| G15 | No migration; schema 13, all 55 old-table projections preserved; private full app/data/plist fallback retained |
+| G16 | Previous generation fix functionally accepted by Jake; physical device unspecified; repaired upload not physically checked by him yet |
 
 ## Core unchanged
 
@@ -76,7 +77,7 @@ The full browser invocation covers C1–C5 chat/stop/resume/long streams/branche
 C6 model selection, C7 explicit parameters, C8 web citations/errors, C9 transcript
 retention/downloads, C10 mobile composer, C11 PWA/shortcuts, C14 Markdown safety,
 C15 performance and C16 ordinary accessibility. Python checks retain C12 read-only
-legacy import and C13 deployment invariants. Final run status is pending.
+legacy import and C13 deployment invariants. Both full commands passed.
 
 ## Test-diff ledger
 
@@ -98,24 +99,38 @@ pending restoration, removal and draft rollback do not increment it. A new brows
 case uploads a synthetic recording, restores it and checks explicit Image mode across
 navigation/reload. No existing test or gate is weakened. First-attempt raw log and
 677 regenerated files are retained separately; traces/videos remain private.
-The three original failed cases pass in the focused Chromium/WebKit recheck; final complete
-regression remains pending. Evidence: `artifacts/image-upload-heic/attempt-1-stopped/`.
+The three original failed cases pass in the focused Chromium/WebKit recheck and
+the fresh complete run. Evidence: `artifacts/image-upload-heic/attempt-1-stopped/`.
 
 ## Screenshots and evidence
 
 `artifacts/image-upload-heic/screenshots/fake-upload-{chromium,webkit}-{390,1440}-{light,dark}.png`
 contains only the synthetic gradient's attachment chip and actionable failure copy.
-The phone dark screenshot has been inspected by Codex; no actual phone screen or
-photo has been captured. Additional regression evidence will be retained here,
-with historical tracked artifacts restored after capture.
+The phone dark and desktop light screenshots were inspected by Codex; no actual
+phone screen or photo was captured. Fresh full-run captures and performance JSON
+are retained separately, and all 1,313 regenerated historical artifacts were
+archived privately before restoring their tracked baseline bytes. Earlier failed
+attempt data remains separate. Public text logs trim trailing whitespace; raw logs
+and complete browser videos/traces remain private.
 
 ## Deployment / rollback
 
-Pending full checks. The prepared publisher preserves the current entire app/data
-and exact plist privately, copies only three changed server files and the built
-frontend, keeps previous hashed assets for open tabs, and checks unchanged schema,
-old table projections, local/verified Tailscale health and build hashes. No model
-generation is needed to verify upload, and no service identity is changed.
+Candidate `cdc66a3d` is live. The publisher preserved the current entire app/data
+and exact plist privately under `~/.local/share/workbench/qa/image-upload-heic-20261014/release/`,
+copied three server files and the 420-file frontend build, and kept previous hashed
+assets for open tabs. Restart to healthy: 1.853 s. Schema 13, integrity/FKs, all 55
+old-table projections, exact plist/route, local/verified Tailscale health and build
+hashes pass. No runtime/model/dependency/default/sampling change or new model call.
+Publication summary: `artifacts/image-upload-heic/publication.json`.
+
+The actual supplied file uploads and decodes through both live browser UIs, with
+visible attachment chips. Only the observer's own new attachments were removed,
+and absence was checked. Zero inference, screenshots, traces or videos. The first
+live observer incorrectly required bitmap dimensions to equal PNG raster dimensions;
+the retained PNG orientation 5 explains their transposition. It cleaned up its upload.
+The observer was corrected to allow that orientation and both final checks pass;
+no product source, test assertion or release target changed. Raw initial observer
+failure stays private. Final summary: `artifacts/image-upload-heic/live-upload.json`.
 
 ## Known limitations / open questions
 
