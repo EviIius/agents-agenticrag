@@ -18,6 +18,12 @@ from .files import REVISION
 
 # A measured combination, identified by runtime digest/context/size, not its name.
 QUALIFIED_DIGEST = "f8a791a5edd0075fb64ff3bd94a3140bfa791992db1bdda0daac587f2b6afbcb"
+# Candidate extension: promote only after its separately reviewed memory probe.
+# Exact runtime identities; aliases do not change admission or memory limits.
+QUALIFIED_DIGESTS = (
+    QUALIFIED_DIGEST,
+    "09386c7af8487c073bfb845833462d30d0d48ad69428c301b909dc159c028b0a",
+)
 
 
 class Engine:
@@ -68,7 +74,7 @@ class Engine:
         # No implicit unload, load, keep-alive refresh or model-name heuristic.
         if (
             any(
-                row.get("digest") != QUALIFIED_DIGEST
+                row.get("digest") not in QUALIFIED_DIGESTS
                 or row.get("context_length") != 32768
                 or not isinstance(row.get("size_vram"), int)
                 or not 0 < row["size_vram"] <= 21827095100

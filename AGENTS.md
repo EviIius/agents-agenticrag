@@ -1340,3 +1340,32 @@ invented. H4: `docs/WORKFLOW-STUDIO-DEPLOYMENT-REPORT.md`. G9 has only the expli
 accepted checkpoint exception, not a grounding qualification. Factual drafts
 require review; physical phone observations, WS-E/reference editing and Research
 retain their separately stated status/gates.
+
+**User authorization — 14 October 2026 (current Qwen3.8 image admission):** Jake
+reports image_capacity failures in Brief to images and chat images with the
+already-installed Qwen3.8 32K profile loaded. He approved “the one-image check and
+fix” after reviewing the two-file candidate and 61 passing offline tests.
+Execute `docs/IMAGE-RESIDENCY-QWEN38-PLAN.md`: one synthetic native image with the
+current reported digest/context kept resident, original worker/settings and all
+existing memory/capacity/reaping guards; no text-model probe, retry, download,
+keep-alive override or automatic unloading. Stop on the first failure. If native
+resource/output checks and regression checks pass, publish the narrow shared
+admission/picker fix with a current code/plist/database fallback on the unchanged
+service/route; request retry on the phone. No broader model qualification,
+factual-answer claim, Research or later Studio scope follows.
+
+**Current Qwen3.8 image admission closeout — 14 October 2026:** The one approved
+synthetic image passes with the current 32K digest resident before/during/after:
+15.09 s total, 10.55 s generation, zero swap growth, 18.66 GB MLX peak, health
+<=49.4 ms, valid PNG/metadata, worker reaping and capacity release. Exactly one
+image and zero text calls; no management/expiry refresh, retry or new model.
+The narrow engine/shared-workflow qualification fix is live after full checks
+(664 Python, 104 frontend; 61 targeted). Context/VRAM/count/swap/cache limits stay
+unchanged. Exact live admission, current profile in the workflow list and local/
+verified HTTPS health pass without another generation. Current app/plist/database
+and prior whole Studio app/data fallbacks are private and retained; service,
+route, schema 13 and frontend are unchanged. Native executed source is frozen;
+the probe's SQL-line formatting cleanup preserves its AST, with no repeat call.
+H4: `docs/IMAGE-RESIDENCY-QWEN38-REPORT.md`. Jake's post-fix phone retry is pending;
+no general profile, full-context concurrent decode, factual-answer or VoiceOver
+qualification is claimed. Research and later Studio scope remain gated.

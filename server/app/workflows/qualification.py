@@ -3,7 +3,7 @@
 from urllib.parse import urlsplit
 
 from ..errors import AppError
-from ..images.engine import QUALIFIED_DIGEST
+from ..images.engine import QUALIFIED_DIGESTS
 from ..providers.registry import Registry
 
 
@@ -22,7 +22,7 @@ async def image_models(registry: Registry) -> list[dict[str, str]]:
         qualified = {
             row.get("name")
             for row in tags.get("models", [])
-            if row.get("digest") == QUALIFIED_DIGEST
+            if row.get("digest") in QUALIFIED_DIGESTS
         }
         result.extend(
             {"connection_id": m.connection_id, "model_id": m.model_id}
