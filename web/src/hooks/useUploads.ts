@@ -25,6 +25,7 @@ export function useUploads({
   current?: Model;
 }) {
   const [files, setFiles] = useState<Attachment[]>([]);
+  const [attachmentVersion, setAttachmentVersion] = useState(0);
   const audioExtensions = useAudioExtensions(Boolean(bootstrap.data));
   const [uploads, setUploads] = useState<AudioUpload[]>([]);
   const uploadControllers = useRef(new Map<string, AbortController>());
@@ -97,6 +98,7 @@ export function useUploads({
               controller.signal,
             );
             setFiles((files) => [...files, attachment]);
+            setAttachmentVersion((version) => version + 1);
             if (audio) attachTranscription(attachment);
             setUploads((uploads) =>
               uploads.filter((upload) => upload.id !== id),
@@ -130,6 +132,7 @@ export function useUploads({
         form.append("file", file);
         const a = await api<Attachment>("/attachments", form);
         setFiles((f) => [...f, a]);
+        setAttachmentVersion((version) => version + 1);
       } catch (e) {
         toast.error(failureCopy(e), { description: failureDetail(e) });
       }
@@ -137,6 +140,7 @@ export function useUploads({
   };
   return {
     files,
+    attachmentVersion,
     setFiles,
     effectiveFiles,
     waitingForTranscript,

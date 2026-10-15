@@ -258,6 +258,7 @@ export function LiveAppShell() {
   const {
     setFiles,
     effectiveFiles,
+    attachmentVersion,
     waitingForTranscript,
     uploads,
     setUploads,
@@ -529,6 +530,7 @@ export function LiveAppShell() {
       onSend={(text) => onSend(text)}
       error={chatImages.error || sendError}
       files={effectiveFiles}
+      attachmentVersion={attachmentVersion}
       uploads={uploads}
       transcriptionReady={Boolean(bootstrap.data?.features.transcription)}
       webBlocked={webBlocked}

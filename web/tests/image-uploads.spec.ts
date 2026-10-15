@@ -116,6 +116,52 @@ test("attaching an image leaves creation mode and exposes its chat chip", async 
   ).toBeVisible();
 });
 
+test("restoring a pending recording preserves explicitly requested Image mode", async ({
+  page,
+  request,
+}) => {
+  const response = await request.post("/api/attachments", {
+    multipart: {
+      file: {
+        name: "Synthetic restored recording.wav",
+        mimeType: "audio/wav",
+        buffer: Buffer.from("fake"),
+      },
+    },
+  });
+  expect(response.status()).toBe(201);
+  const recording = await response.json();
+  try {
+    await page.goto("/?image=1");
+    await expect(
+      page.getByRole("textbox", { name: "Image prompt", exact: true }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Leave image mode", exact: true })
+      .click();
+    await expect(
+      page.getByRole("button", {
+        name: "Open transcript for Synthetic restored recording.wav",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Create image", exact: true })
+      .first()
+      .click();
+    await expect(
+      page.getByRole("textbox", { name: "Image prompt", exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await settle(page);
+    await expect(
+      page.getByRole("textbox", { name: "Image prompt", exact: true }),
+    ).toBeVisible();
+  } finally {
+    await request.delete(`/api/attachments/${recording.id}`);
+  }
+});
+
 test("unreadable image gives useful upload feedback", async ({ page }) => {
   await page.locator("input[type=file]").setInputFiles({
     name: "fake-broken.png",

@@ -20,7 +20,7 @@ check or other untested phone/VoiceOver checks.
 | HEIC/HEIF and renamed HEIC upload as real PNG | Passed | `server/tests/test_image_uploads.py`; browser chooser/paste/drop cases |
 | Existing PNG, JPEG, WebP, GIF and document uploads | Passed, focused | Chromium/WebKit format matrix and document suite: 16 passes |
 | Conversion bounds and cleanup | Passed | 20 MB input/output limits, 2048-pixel long edge, 100-million-pixel decode ceiling, two codecs at once, 20-second subprocess timeout; cancellation/reaping/recovery tests |
-| Attachment visible when leaving Image creation | Passed | Composer chooser, paste and drop browser checks |
+| Attachment visible when leaving Image creation | Passed, final focused checks | Successful upload revision drives the mode switch; restored drafts do not |
 | Full code check | Passed | 673 Python, 109 frontend; all static guards pass |
 | Full browser regression | Pending | One complete invocation running |
 | Published repair and actual supplied-file upload | Pending | Private app/data/plist fallback and no-inference verification prepared |
@@ -28,7 +28,7 @@ check or other untested phone/VoiceOver checks.
 ## Changed files
 
 - Server: `app/images/uploads.py`, `app/api/attachments.py`, `app/main.py`.
-- Web: image preparation/detection, upload hook, Composer attachment visibility,
+- Web: image preparation/detection, upload hook, shell/Composer upload revision,
   actionable error copy and its `/design` previews.
 - Tests: new Python/frontend/browser upload cases and a generated synthetic 32 × 16
   PNG/HEIC fixture, with its standard-library/native-codec generator.
@@ -55,10 +55,10 @@ actionable JPEG/PNG export message. New codecs are not downloaded.
 
 | Gate | Result / evidence |
 | --- | --- |
-| G1 | `make check`: 673 Python, 109 frontend, 110 contrast pairs; all guarded packages exceed 80% coverage; `artifacts/image-upload-heic/check.txt` |
-| G2 | Pending one complete Chromium/WebKit invocation; final focused upload suite: 10 passes |
+| G1 | Final `make check`: 673 Python, 109 frontend, 110 contrast pairs; all guarded packages exceed 80% coverage; `artifacts/image-upload-heic/check-final.txt` |
+| G2 | Pending one complete Chromium/WebKit invocation; corrected upload/chat-image focused suite: 34 passes |
 | G3 | New tests only; no existing test assertion, timeout, target or skip changed |
-| G4 | Initial JS 248,007 gzip bytes; previous 247,594 (+413), budget 256,000; full-suite performance artifacts pending |
+| G4 | Final initial JS 248,048 gzip bytes; previous 247,594 (+454), budget 256,000; full-suite performance artifacts pending |
 | G5 | Eight new synthetic upload/error axe audits, both themes at 390/1440: zero serious/critical findings; no horizontal overflow |
 | G6–G8 | API-additive, old-row migration and frozen-prompt guards in `make check`; no API/schema/prompt edit |
 | G9 | Search/runs/providers untouched; no new inference/eval. Existing factual-grounding limitation remains |
@@ -84,6 +84,22 @@ No existing test file was edited. New tests cover actual synthetic HEIC conversi
 regular bytes/text, invalid contents, timeout/cancellation, stale temporary cleanup,
 header detection, chooser/paste/drop and attachment visibility. Existing assertions,
 release thresholds and three existing browser skips are unchanged.
+
+## First full-run failure and correction
+
+Candidate `5dc9148f` failed three Chromium chat-image cases because its new-file
+effect treated restored pending recordings as new uploads and disabled explicit
+Image mode during initial load. This is a product regression introduced by that
+candidate, not a test flake. Stop retained at 282 passes / 3 failures / 1 interrupted /
+342 not run in 27.1 minutes. No publication occurred.
+
+The refinement uses a revision incremented only after an actual successful upload;
+pending restoration, removal and draft rollback do not increment it. A new browser
+case uploads a synthetic recording, restores it and checks explicit Image mode across
+navigation/reload. No existing test or gate is weakened. First-attempt raw log and
+677 regenerated files are retained separately; traces/videos remain private.
+The three original failed cases pass in the focused Chromium/WebKit recheck; final complete
+regression remains pending. Evidence: `artifacts/image-upload-heic/attempt-1-stopped/`.
 
 ## Screenshots and evidence
 

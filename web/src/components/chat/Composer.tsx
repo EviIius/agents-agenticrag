@@ -62,6 +62,7 @@ export function Composer({
   onWebChange,
   onAttach,
   files = [],
+  attachmentVersion = 0,
   onRemove,
   context,
   thinkValue,
@@ -111,6 +112,7 @@ export function Composer({
   onWebChange?: (value: boolean) => void;
   onAttach?: (files: File[]) => void;
   files?: import("@/lib/api").Attachment[];
+  attachmentVersion?: number;
   onRemove?: (id: string) => void;
   context?: { used_tokens: number; context_length: number; reserve?: number };
   thinkValue?: string;
@@ -126,14 +128,12 @@ export function Composer({
     draftKey ? imageRefinements.get(draftKey) : undefined,
   );
   const [imageMode, setImageMode] = useState(initialImageMode);
-  const previousAttachments = useRef(new Set(files.map((file) => file.id)));
+  const previousAttachmentVersion = useRef(attachmentVersion);
   useEffect(() => {
-    const incoming = files.some(
-      (file) => !previousAttachments.current.has(file.id),
-    );
-    previousAttachments.current = new Set(files.map((file) => file.id));
+    const incoming = attachmentVersion !== previousAttachmentVersion.current;
+    previousAttachmentVersion.current = attachmentVersion;
     if (incoming) setImageMode(false);
-  }, [files]);
+  }, [attachmentVersion]);
   const [count, setCount] = useState(1);
   const [seeds, setSeeds] = useState(["", "", ""]);
   const imageAvailable = previewImages || Boolean(imageStatus?.available);
