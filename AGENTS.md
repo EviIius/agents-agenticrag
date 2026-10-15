@@ -1403,3 +1403,19 @@ PNG orientation 5 explains the transposition, and the corrected observer passes
 without a product change. This is browser verification, not a physical-phone pass.
 H4: `docs/IMAGE-UPLOAD-HEIC-REPORT.md`. Research, additional Studio scope and
 reference-image editing remain gated; factual grounding remains unqualified.
+
+**Chat motion repair — 15 October 2026:** Jake reports Claude's chat animations
+look static and asks to restore them. The installed saved Reduce motion preference
+is Always; its origin is not established. Restored Follow system through the
+existing settings API, preserving OS reduced motion. No product source, static
+asset, service, prompt, runtime, sampling, dependency or model change is required.
+Compared the original chat prototype in Chromium/WebKit and added temporal
+regressions measuring repeated drawing/thinking cycles and actual send entrance,
+rather than treating an animation name or still screenshot as proof. Installed
+bundle checks intercept all API traffic with synthetic fixtures; no real chat
+history/model call is used. All 10 installed checks, 36 focused fake-runtime
+browser checks and full make check (673 Python / 109 frontend, 110 contrast pairs)
+pass. Both reduced-motion triggers remain verified. H4 and separate synthetic
+evidence: `docs/CHAT-MOTION-AUDIT-REPORT.md`. Already-open phone pages need reopening
+to hydrate the preference; no physical-phone pass is invented. Historical evidence
+and private before/after preference records/videos are retained.
