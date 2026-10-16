@@ -6,7 +6,7 @@ Work started 15 October; review continued 16 October 2026.
 
 Reviewed Claude's full spec, prompts, prototype and all 29 reference images. The proposal is sound: it removes a redundant picker step, keeps uploads beside the draft, and reduces the phone toolbar to one row. AT-A implements §§2, 3 and 6 on `codex/attachments-redesign`, based on `55477ff1033938e7cc2b8560fad41ceeaa9f7a72`. J-U1, J-U3, J-U4 and J-U5 are adopted. AT-B and release await Jake's review.
 
-Final browser evidence is being completed. No main merge, installed-app edit, publication, service restart, dependency, server/schema/prompt change or real model call is part of this checkpoint.
+AT-A is complete for branch review. One full browser invocation passed 677 tests with three existing skips and zero failures. The tested source is `be5a839cbba6c61b48c0523c6430ae03a65d855f`; draft PR: [#2](https://github.com/EviIius/agents-agenticrag/pull/2). No main merge, installed-app edit, publication, service restart, dependency, server/schema/prompt change or real model call is part of this checkpoint.
 
 ## Assessment of the supplied design
 
@@ -21,16 +21,16 @@ Final browser evidence is being completed. No main merge, installed-app edit, pu
 
 | Item | Status | Evidence |
 |---|---|---|
-| AT-AC1 native picker target | Pending final run | `attachments-redesign.spec.ts` combined accept/hit test |
-| AT-AC2 desktop picker/shortcut, feature-dependent audio accept | Pending final run | Browser chooser checks; `file-kinds.test.ts`; unavailable-engine check |
-| AT-AC3 mixed classification | Unit implementation complete | `file-kinds.test.ts` and actual format/document/recording browser tests |
-| AT-AC4 immediate previews, URL lifecycle | Pending final run | Held-response upload and cancellation checks, including an already-open viewer |
-| AT-AC5 progress and cancel | Pending final run | Real XHR/fake upload, abort and original-file retry checks |
-| AT-AC6 inline problems | Pending final run | `/design?attachments`, actual unreadable/network/limit checks |
-| AT-AC7 retained vision warning | Pending final run | Warning → runtime-reported vision selection → enabled Send |
-| AT-AC8 waiting Send ring | Pending final run | Held-response and transcription checks |
-| AT-AC9 two rows, tools/chips, no exclusivity toast | Pending final run | 390 px tools test and retained Library answer integration |
-| AT-AC16 keyboard/focus and Image entry | Pending final run | Tools Enter/Space/arrows/Escape/chips and image-mode regressions |
+| AT-AC1 native picker target | Pass | `attachments-redesign.spec.ts` combined accept/hit test |
+| AT-AC2 desktop picker/shortcut, feature-dependent audio accept | Pass | Browser chooser checks; `file-kinds.test.ts`; unavailable-engine check |
+| AT-AC3 mixed classification | Pass | `file-kinds.test.ts` and actual format/document/recording browser tests |
+| AT-AC4 immediate previews, URL lifecycle | Pass | Held-response upload and cancellation checks, including an already-open viewer |
+| AT-AC5 progress and cancel | Pass | Real XHR/fake upload, abort and original-file retry checks |
+| AT-AC6 inline problems | Pass | `/design?attachments`, actual unreadable/network/limit checks |
+| AT-AC7 retained vision warning | Pass | Warning → runtime-reported vision selection → enabled Send |
+| AT-AC8 waiting Send ring | Pass | Held-response and transcription checks |
+| AT-AC9 two rows, tools/chips, no exclusivity toast | Pass | 390 px tools test and retained Library answer integration |
+| AT-AC16 keyboard/focus and Image entry | Pass | Tools Enter/Space/arrows/Escape/chips and image-mode regressions |
 
 ## Changed files
 
@@ -48,23 +48,25 @@ Only fake runtime/engine fixtures were used. No new actual model call or native 
 
 ## Test output
 
-`make check` passed: 673 Python tests, 121 frontend tests and 110 contrast pairs, including types/lint/API/prompt/privacy/motion guards. One complete `make e2e` invocation is pending. Earlier attempts and their corrections are retained in the private QA directory and indexed in `retained-attempts.json`. They caught photo hit-area overlap, hidden-background focus, dark hover contrast, native-input overflow, exit-ghost accessibility, test multipart forwarding, moved status/action selectors, recording-menu exit preconditions and an unwired preparation spinner. A positive temporal check now measures spinner movement under normal motion and no movement under both reduced-motion triggers. The first full run was intentionally stopped after 27 passes to correct square-only photo zoom; it is not presented as a green full run. The first portrait assertion expected PNG although existing opaque-image normalization correctly returns JPEG; that expectation was corrected, with both browsers passing and the codec unchanged.
+`make check` passed: 673 Python tests, 121 frontend tests and 110 contrast pairs, including types/lint/API/prompt/privacy/motion guards. One complete `make e2e` invocation passed: **677 passed / 3 existing skips / 0 failed** across Chromium and WebKit (1.1 hours), using the exact source hashes in `executed-web-source.json`. The final logs are `check.txt` and `e2e.txt`. Earlier attempts and their corrections are retained in the private QA directory and indexed in `retained-attempts.json`. They caught photo hit-area overlap, hidden-background focus, dark hover contrast, native-input overflow, exit-ghost accessibility, test multipart forwarding, moved status/action selectors, recording-menu exit preconditions and an unwired preparation spinner. A positive temporal check now measures spinner movement under normal motion and no movement under both reduced-motion triggers. The first full run was intentionally stopped after 27 passes to correct square-only photo zoom; it is not presented as a green full run. The first portrait assertion expected PNG although existing opaque-image normalization correctly returns JPEG; that expectation was corrected, with both browsers passing and the codec unchanged.
 
-The first completed full invocation (664 pass / 13 fail / 3 existing skips) is **not qualified**. Its three causes and retained traces are indexed separately: an empty Tools menu in a legacy fixture, duplicate global Tools selectors while a picker exits, and geometry sampled before chip entrance ended. The remedy preserves all existing size/time thresholds, provides the fixture with a working Search control, disables truly empty menus, and scopes/settles real interactions. Final full-run verification remains pending. A later source review found the no-vision-model menu could lack a menuitem; its disabled-placeholder remedy passes axe in both engines and has its own design state. The intermediate run was stopped after 46 passes, with one interruption and 633 unrun; it is retained and not a passing full run.
+The first completed full invocation (664 pass / 13 fail / 3 existing skips) is **not qualified**. Its three causes and retained traces are indexed separately: an empty Tools menu in a legacy fixture, duplicate global Tools selectors while a picker exits, and geometry sampled before chip entrance ended. The remedy preserves all existing size/time thresholds, provides the fixture with a working Search control, disables truly empty menus, and scopes/settles real interactions. The final full run verifies those remedies in both engines. A later source review found the no-vision-model menu could lack a menuitem; its disabled-placeholder remedy passes axe in both engines and has its own design state. The intermediate run was stopped after 46 passes, with one interruption and 633 unrun; it is retained and not a passing full run.
+
+The three unchanged WebKit skips are the real-time timeout gate (run once in Chromium), duplicate review screenshot capture (interaction checks still run in WebKit), and offline reload (Playwright WebKit navigation limitation; physical Safari review remains required). Their source files are unchanged from base main.
 
 ## Screenshots
 
-Synthetic state screenshots and axe reports: `artifacts/attachments/at-a/browser/`. Source reference images remain in `docs/next/attachments/reference/`. Videos and failed traces are private under `~/.local/share/workbench/qa/attachments-redesign-20261015/`; no native picker was captured.
+Synthetic state screenshots and axe reports: `artifacts/attachments/at-a/browser/`: 26 states × eight engine/width/theme combinations, 208 state scans with zero serious/critical findings, plus Tools scans. There are 216 synthetic screenshots. `accessibility-summary.json` indexes the state coverage. Representative final Tools, warning, preparation/progress and ready screenshots were visually reviewed by Codex; this is not Jake’s physical-phone verification. Source reference images remain in `docs/next/attachments/reference/`. Videos and failed traces are private under `~/.local/share/workbench/qa/attachments-redesign-20261015/`; no native picker was captured.
 
 ## Gates
 
 | Gate | Status | Evidence |
 |---|---|---|
 | G-1 check/coverage | Pass | `check.txt`: 673 Python, 121 frontend; required coverage gates pass |
-| G-2 one complete browser run | Pending | `e2e.txt` |
+| G-2 one complete browser run | Pass | `e2e.txt`: 677 pass / 3 existing skips / zero failures |
 | G-3 approved UI test adaptations | Pass | Ledger below; no skip/timeout/performance changes |
-| G-4 budgets | Bundle pass; browser timing pending | `bundle.json`, full-run performance outputs |
-| G-5 axe/keyboard/contrast | Pending | New state scans plus full existing suite |
+| G-4 budgets | Pass | `bundle.json`, `performance/summary.json`; measurements below |
+| G-5 axe/keyboard/contrast | Pass | New state scans plus full existing suite |
 | G-6 additive API | No API edits | Full check/API additive guard |
 | G-7 additive database | No database edits | Existing migration preservation tests |
 | G-8 frozen prompts | No prompt edits | Hash guard; source comparison |
@@ -72,8 +74,8 @@ Synthetic state screenshots and axe reports: `artifacts/attachments/at-a/browser
 | G-10 request parity | Pass | 24 raw before/after comparisons: ordinary/web/Library/scoped Library × Auto/Off/On × Chromium/WebKit; `payload-parity-fake.json` |
 | G-11 privacy | Pass | Synthetic fixtures only; check privacy guard; reference and evidence image review |
 | G-12 deployment invariants | No deployment | Existing deployment/PWA tests; main/installed trees unchanged |
-| G-13 reduced motion | Pending | Both triggers in old and new browser tests |
-| G-14 every AT-A state on design | Implemented, verification pending | `/design?attachments` |
+| G-13 reduced motion | Pass | Both triggers in old and new browser tests |
+| G-14 every AT-A state on design | Pass | `/design?attachments` |
 | G-15 rollback rehearsal | Not applicable | No migration or publication |
 | G-16 Jake's phone check | Not checked | Branch review required before release; no physical-phone pass claimed |
 
@@ -105,9 +107,20 @@ Existing test edits are listed below. No test is deleted or skipped, and no time
 
 Previous initial JavaScript: 248,048 gzip bytes. Limit: 256,000 and no more than 8,192 added bytes. Current measurement: **254,207 gzip bytes**, an increase of **6,159** from 248,048; 1,793 bytes under the fixed limit and within the 8,192-byte increment cap. No added dependency.
 
+Performance from the same complete run (unchanged limits):
+
+| Measurement | Chromium | WebKit | Limit |
+|---|---:|---:|---:|
+| First-token UI overhead | 72.3 ms | 67.0 ms | <150 ms |
+| Streaming render p95, 100 tokens/s | 3.1 ms | 3.0 ms | ≤8 ms |
+| Rows rerendering during stream | 1 | 1 | Only active row |
+| 300-message scroll median frame | 16.7 ms | 17.0 ms | <20 ms |
+
+The current run’s performance and coverage are retained under this checkpoint. 1,347 tracked historical artifacts were restored after preserving this run privately; 40 new files produced in old phase directories were moved to that private archive. See `historical-artifact-preservation.json`. Earlier reports and native trial evidence are unchanged.
+
 ## Core unchanged
 
-Final full-run evidence is pending. The following original core assertions remain, with the approved UI relocation adapters described above.
+The final full browser run and full check pass all applicable original core assertions, with the approved UI relocation adapters described above. No new skip, raised timeout or relaxed performance threshold is introduced.
 
 | Core | Browser/server guard |
 |---|---|

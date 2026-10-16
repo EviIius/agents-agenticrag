@@ -1431,3 +1431,18 @@ change until Jake's final approval. Web only: no server, schema, prompt, model-c
 or dependency changes. Reuse existing request fields and runtime capabilities.
 Use synthetic files and never capture the native device picker. Push the branch
 and open a draft PR; retain the AT-A report and full regression evidence.
+
+
+**Attachments AT-A technical closeout — 16 October 2026:** Claude’s source package
+and all 29 references are preserved; AT-A is implemented on
+`codex/attachments-redesign` in draft PR #2. Tested source `be5a839c` passes full
+make check (673 Python / 121 frontend, 110 contrast pairs) and one complete browser
+run (677 passed / three existing skips / zero failures). Retain the failed and
+interrupted attempts, test-diff ledger, 24 exact fake-runtime request comparisons,
+208 state scans, 216 synthetic screenshots and frozen source manifests. Initial
+JS is 254,207 gzip bytes; both engines meet the unchanged timing budgets. Earlier
+tracked evidence is restored with this run preserved separately. Main, installed
+app, server/API/schema/prompts/dependencies and model defaults remain unchanged;
+no native inference or deployment occurred. Physical iPhone review is not claimed.
+H4: `docs/ATTACHMENTS-AT-A-REPORT.md`. Stop for AT-A review before AT-B; merge and
+publication remain gated by Jake’s final approval.
