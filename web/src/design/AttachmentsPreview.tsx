@@ -36,6 +36,7 @@ export const attachmentStates = [
   "uploading",
   "reading",
   "warning",
+  "no vision model",
   "over budget",
   "too large",
   "unsupported",
@@ -301,8 +302,8 @@ export default function AttachmentsPreview() {
             "fake-text": "item,price\nSynthetic sample,12",
           },
         }}
-        model={state === "warning" ? base : model}
-        visionModels={[base, vision]}
+        model={["warning", "no vision model"].includes(state) ? base : model}
+        visionModels={state === "no vision model" ? [base] : [base, vision]}
         onChooseModel={(m) => {
           setModel(m as typeof vision);
           if (state === "warning") setState("ready");

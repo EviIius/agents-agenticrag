@@ -137,6 +137,17 @@ test("retained photos warn and block sending until a reported vision model is se
   await expect(
     page.getByRole("button", { name: "Send message", exact: true }),
   ).toBeEnabled();
+  await page.goto("/design?attachments&state=no+vision+model");
+  await page.getByRole("button", { name: "Switch model", exact: true }).click();
+  await expect(
+    page.getByRole("menuitem", { name: "No vision models are available." }),
+  ).toBeDisabled();
+  const axe = await new AxeBuilder({ page }).analyze();
+  expect(
+    axe.violations.filter((v) =>
+      ["serious", "critical"].includes(v.impact ?? ""),
+    ),
+  ).toEqual([]);
 });
 test("tray photos use the existing viewer without generation actions; cards preview real text", async ({
   page,

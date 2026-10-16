@@ -461,9 +461,9 @@ export function AttachmentTray({
                     {!visionModels.some(
                       (m) => m.vision === true && !m.hidden,
                     ) && (
-                      <p className="p-3 text-sm text-fg-2">
+                      <DropdownMenuItem disabled>
                         No vision models are available.
-                      </p>
+                      </DropdownMenuItem>
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>

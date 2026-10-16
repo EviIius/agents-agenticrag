@@ -15,6 +15,7 @@ for (const width of [390, 1440])
       for (const state of [
         "preparing",
         "HEIC",
+        "no vision model",
         "too large",
         "unreadable",
         "unavailable",

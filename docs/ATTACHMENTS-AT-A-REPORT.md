@@ -50,7 +50,7 @@ Only fake runtime/engine fixtures were used. No new actual model call or native 
 
 `make check` passed: 673 Python tests, 121 frontend tests and 110 contrast pairs, including types/lint/API/prompt/privacy/motion guards. One complete `make e2e` invocation is pending. Earlier attempts and their corrections are retained in the private QA directory and indexed in `retained-attempts.json`. They caught photo hit-area overlap, hidden-background focus, dark hover contrast, native-input overflow, exit-ghost accessibility, test multipart forwarding, moved status/action selectors, recording-menu exit preconditions and an unwired preparation spinner. A positive temporal check now measures spinner movement under normal motion and no movement under both reduced-motion triggers. The first full run was intentionally stopped after 27 passes to correct square-only photo zoom; it is not presented as a green full run. The first portrait assertion expected PNG although existing opaque-image normalization correctly returns JPEG; that expectation was corrected, with both browsers passing and the codec unchanged.
 
-The first completed full invocation (664 pass / 13 fail / 3 existing skips) is **not qualified**. Its three causes and retained traces are indexed separately: an empty Tools menu in a legacy fixture, duplicate global Tools selectors while a picker exits, and geometry sampled before chip entrance ended. The remedy preserves all existing size/time thresholds, provides the fixture with a working Search control, disables truly empty menus, and scopes/settles real interactions. Final full-run verification remains pending.
+The first completed full invocation (664 pass / 13 fail / 3 existing skips) is **not qualified**. Its three causes and retained traces are indexed separately: an empty Tools menu in a legacy fixture, duplicate global Tools selectors while a picker exits, and geometry sampled before chip entrance ended. The remedy preserves all existing size/time thresholds, provides the fixture with a working Search control, disables truly empty menus, and scopes/settles real interactions. Final full-run verification remains pending. A later source review found the no-vision-model menu could lack a menuitem; its disabled-placeholder remedy passes axe in both engines and has its own design state. The intermediate run was stopped after 46 passes, with one interruption and 633 unrun; it is retained and not a passing full run.
 
 ## Screenshots
 
@@ -103,7 +103,7 @@ Existing test edits are listed below. No test is deleted or skipped, and no time
 
 ## Budgets
 
-Previous initial JavaScript: 248,048 gzip bytes. Limit: 256,000 and no more than 8,192 added bytes. Current measurement: **254,178 gzip bytes**, an increase of **6,130** from 248,048; 1,822 bytes under the fixed limit and within the 8,192-byte increment cap. No added dependency.
+Previous initial JavaScript: 248,048 gzip bytes. Limit: 256,000 and no more than 8,192 added bytes. Current measurement: **254,207 gzip bytes**, an increase of **6,159** from 248,048; 1,793 bytes under the fixed limit and within the 8,192-byte increment cap. No added dependency.
 
 ## Core unchanged
 
