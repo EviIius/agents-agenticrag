@@ -5,8 +5,8 @@ import { Thinking } from "./Thinking";
 import { workingPhase } from "@/lib/status-words";
 import { useFreshRows } from "@/stores/fresh";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { DocumentChip } from "./DocumentChip";
-import { AudioChip } from "./AudioChip";
+import type { AttachmentLocal } from "@/hooks/useUploads";
+import type { AttachmentTray } from "./AttachmentTray";
 import {
   lazy,
   memo,
@@ -29,9 +29,33 @@ import { StatsLine } from "./StatsLine";
 import { SearchActivity } from "./SearchActivity";
 import { messageError } from "@/lib/errors";
 import { SourcesSheet } from "./SourcesSheet";
+import MessageAttachments from "./MessageAttachments";
 const Markdown = lazy(() => import("./Markdown"));
 const ImageTurn = lazy(() => import("./ImageTurn"));
+function Attachments({
+  message,
+  local,
+  model,
+  fixtures,
+}: {
+  message: Message;
+  local?: Record<string, AttachmentLocal>;
+  model?: Model;
+  fixtures?: React.ComponentProps<typeof AttachmentTray>["fixtures"];
+}) {
+  if (!message.attachments?.length) return null;
+  return (
+    <MessageAttachments
+      attachments={message.attachments}
+      local={local}
+      model={model}
+      fixtures={fixtures}
+    />
+  );
+}
 type LiveThreadProps = {
+  attachmentLocal?: Record<string, AttachmentLocal>;
+  attachmentFixtures?: React.ComponentProps<typeof AttachmentTray>["fixtures"];
   onImageIteration?: ImageIteration;
   onImageAction?: (message: Message, action: "retry" | "cancel") => void;
   pending?: Message | null;
@@ -86,6 +110,8 @@ export function LiveThread({
   pending,
   position,
   onScrollChange,
+  attachmentLocal,
+  attachmentFixtures,
 }: LiveThreadProps) {
   const [editing, setEditing] = useState<string | null>(null),
     [draft, setDraft] = useState("");
@@ -228,6 +254,10 @@ export function LiveThread({
               selectedModel={selectedModel}
               models={models}
               connections={connections}
+              attachmentLocal={
+                message.attachments?.length ? attachmentLocal : undefined
+              }
+              attachmentFixtures={attachmentFixtures}
               {...stable}
               editing={editing === message.id ? editing : null}
               draft={editing === message.id ? draft : ""}
@@ -235,7 +265,14 @@ export function LiveThread({
               setDraft={setDraft}
             />
           ))}
-          {pending && <OptimisticRow message={pending} />}
+          {pending && (
+            <OptimisticRow
+              message={pending}
+              local={attachmentLocal}
+              model={selectedModel}
+              fixtures={attachmentFixtures}
+            />
+          )}
         </div>
       </div>
     </>
@@ -256,7 +293,17 @@ function useFreshRow(id: string) {
   }, [fresh, reduced, id]);
   return fresh;
 }
-function OptimisticRow({ message }: { message: Message }) {
+function OptimisticRow({
+  message,
+  local,
+  model,
+  fixtures,
+}: {
+  message: Message;
+  local?: Record<string, AttachmentLocal>;
+  model?: Model;
+  fixtures?: React.ComponentProps<typeof AttachmentTray>["fixtures"];
+}) {
   const fresh = useFreshRow(message.id);
   return (
     <div data-testid="optimistic-send">
@@ -272,13 +319,14 @@ function OptimisticRow({ message }: { message: Message }) {
         className="min-w-0 py-4"
       >
         <h2 className="sr-only">You said</h2>
+        <Attachments
+          message={message}
+          local={local}
+          model={model}
+          fixtures={fixtures}
+        />
         <div className="user-bubble ml-auto w-fit">
           <p className="whitespace-pre-wrap break-words">{message.content}</p>
-          {message.attachments?.map((attachment) => (
-            <p key={attachment.id} className="text-xs text-fg-2">
-              {attachment.filename}
-            </p>
-          ))}
         </div>
       </article>
       <WorkingLine
@@ -331,6 +379,8 @@ export const MessageRow = memo(function MessageRow({
   draft,
   setEditing,
   setDraft,
+  attachmentLocal,
+  attachmentFixtures,
 }: MessageRowProps) {
   const fresh = useFreshRow(message.id);
   const content = (
@@ -385,36 +435,29 @@ export const MessageRow = memo(function MessageRow({
             </div>
           </div>
         ) : (
-          <div className="user-bubble ml-auto w-fit">
-            {message.kind === "image" && (
-              <p className="mb-1 flex items-center gap-1 text-xs text-fg-2">
-                <ImagePlus className="size-3" />
-                Image
-                {(all.find((row) => row.parent_id === message.id)?.images
-                  ?.length ?? 1) > 1
-                  ? ` · ${all.find((row) => row.parent_id === message.id)?.images?.length} images`
-                  : ""}
+          <>
+            <Attachments
+              message={message}
+              local={attachmentLocal}
+              model={selectedModel}
+              fixtures={attachmentFixtures}
+            />
+            <div className="user-bubble ml-auto w-fit">
+              {message.kind === "image" && (
+                <p className="mb-1 flex items-center gap-1 text-xs text-fg-2">
+                  <ImagePlus className="size-3" />
+                  Image
+                  {(all.find((row) => row.parent_id === message.id)?.images
+                    ?.length ?? 1) > 1
+                    ? ` · ${all.find((row) => row.parent_id === message.id)?.images?.length} images`
+                    : ""}
+                </p>
+              )}
+              <p className="whitespace-pre-wrap break-words">
+                {message.content}
               </p>
-            )}
-            <p className="whitespace-pre-wrap break-words">{message.content}</p>
-            {(message.attachments ?? []).map((a) =>
-              a.kind === "audio" ? (
-                <AudioChip key={a.id} attachment={a} model={selectedModel} />
-              ) : a.document ? (
-                <DocumentChip key={a.id} attachment={a} model={selectedModel} />
-              ) : (
-                <a
-                  className="block text-xs text-brand"
-                  key={a.id}
-                  href={"/api/attachments/" + a.id}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {a.filename}
-                </a>
-              ),
-            )}
-          </div>
+            </div>
+          </>
         )
       ) : message.kind === "image" ? (
         <Suspense fallback={<p role="status">Loading images…</p>}>

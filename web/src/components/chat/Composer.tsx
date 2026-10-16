@@ -1,4 +1,4 @@
-import { AttachmentTray, attachmentIssues } from "./AttachmentTray";
+import { attachmentIssues } from "@/lib/attachment-issues";
 import { ToolsMenu } from "./ToolsMenu";
 import { ToolChips } from "./ToolChips";
 import { fileAccept } from "@/lib/file-kinds";
@@ -7,7 +7,14 @@ import type { AttachmentLocal } from "@/hooks/useUploads";
 import { contextBudget } from "@/lib/context-budget";
 import { LibraryControl } from "./LibraryControl";
 import { type AudioUpload } from "./AudioChip";
-import { useRef, useState, useLayoutEffect, useEffect } from "react";
+import {
+  lazy,
+  Suspense,
+  useRef,
+  useState,
+  useLayoutEffect,
+  useEffect,
+} from "react";
 import {
   ArrowUp,
   Plus,
@@ -37,6 +44,9 @@ import {
   type ImageComposerCommand,
 } from "@/lib/composer-drafts";
 import { validImageSeed } from "@/lib/image-seeds";
+const AttachmentTray = lazy(() =>
+  import("./AttachmentTray").then((m) => ({ default: m.AttachmentTray })),
+);
 export function Composer({
   draftKey,
   images = false,
@@ -79,6 +89,7 @@ export function Composer({
   onRetryUpload,
   visionModels,
   onChooseModel,
+  onDiscardPasted,
 }: {
   attachmentFixtures?: React.ComponentProps<typeof AttachmentTray>["fixtures"];
   attachmentLocal?: Record<string, AttachmentLocal>;
@@ -86,6 +97,7 @@ export function Composer({
   onRetryUpload?: (id: string) => void;
   visionModels?: import("@/lib/api").Model[];
   onChooseModel?: (model: import("@/lib/api").Model) => void;
+  onDiscardPasted?: (key: string) => void;
   draftKey?: string;
   images?: boolean;
   previewImages?: boolean;
@@ -119,7 +131,10 @@ export function Composer({
   onStop?: () => void;
   web?: boolean;
   onWebChange?: (value: boolean) => void;
-  onAttach?: (files: File[]) => void;
+  onAttach?: (
+    files: File[],
+    pasted?: { characters: number },
+  ) => string[] | void;
   files?: import("@/lib/api").Attachment[];
   attachmentVersion?: number;
   onRemove?: (id: string) => void;
@@ -184,6 +199,43 @@ export function Composer({
   };
   const fileInput = useRef<HTMLInputElement>(null);
   const textarea = useRef<HTMLTextAreaElement>(null);
+  const hasFiles = files.length > 0 || uploads.length > 0;
+  const [showTray, setShowTray] = useState(hasFiles);
+  useEffect(() => {
+    if (hasFiles) setShowTray(true);
+  }, [hasFiles]);
+  const pasteSerial = useRef({ image: 0, text: 0 });
+  const [pasted, setPasted] = useState<{
+    key: string;
+    text: string;
+    before: string;
+    start: number;
+    end: number;
+  }>();
+  useEffect(() => {
+    if (!pasted || disabled) return;
+    const timer = setTimeout(() => setPasted(undefined), 10000);
+    return () => clearTimeout(timer);
+  }, [pasted, disabled]);
+  const keepPastedText = () => {
+    if (!pasted || disabled) return;
+    const field = textarea.current;
+    const unchanged = value === pasted.before;
+    const start = unchanged
+      ? pasted.start
+      : (field?.selectionStart ?? value.length);
+    const end = unchanged ? pasted.end : (field?.selectionEnd ?? start);
+    onDiscardPasted?.(pasted.key);
+    updateDraft(value.slice(0, start) + pasted.text + value.slice(end));
+    setPasted(undefined);
+    requestAnimationFrame(() => {
+      field?.focus();
+      field?.setSelectionRange(
+        start + pasted.text.length,
+        start + pasted.text.length,
+      );
+    });
+  };
   useLayoutEffect(() => {
     if (textarea.current) {
       textarea.current.style.height = "auto";
@@ -299,10 +351,13 @@ export function Composer({
     if (!running && !disabled && !waiting && !warned && value.trim()) {
       const submitted = value;
       const version = revision.current;
+      const pasteKey = pasted?.key;
       if (optimistic) setValue("");
       const accepted = await onSend?.(submitted);
       if (accepted !== false)
         uploads.filter((u) => u.failed).forEach((u) => onCancelUpload?.(u.id));
+      if (accepted !== false && mounted.current)
+        setPasted((old) => (old?.key === pasteKey ? undefined : old));
       if (
         draftKey &&
         revision.current === version &&
@@ -378,22 +433,39 @@ export function Composer({
             </IconButton>
           </div>
         )}
-        {!imageMode && (
-          <AttachmentTray
-            fixtures={attachmentFixtures}
-            files={files}
-            uploads={uploads}
-            local={attachmentLocal}
-            model={model}
-            reserve={context?.reserve}
-            contextWarning={contextWarning}
-            onRemove={onRemove}
-            onCancel={onCancelUpload}
-            onRetry={onRetryUpload}
-            onPreviewLoaded={onPreviewLoaded}
-            visionModels={visionModels}
-            onChooseModel={onChooseModel}
-          />
+        {!imageMode && (showTray || hasFiles) && (
+          <Suspense
+            fallback={
+              <div className="attachment-tray-loading" role="status">
+                Preparing files…
+              </div>
+            }
+          >
+            <AttachmentTray
+              fixtures={attachmentFixtures}
+              files={files}
+              uploads={uploads}
+              local={attachmentLocal}
+              model={model}
+              reserve={context?.reserve}
+              contextWarning={contextWarning}
+              onRemove={onRemove}
+              onCancel={onCancelUpload}
+              onRetry={onRetryUpload}
+              onPreviewLoaded={onPreviewLoaded}
+              visionModels={visionModels}
+              onChooseModel={onChooseModel}
+            />
+          </Suspense>
+        )}
+        {!imageMode && pasted && (
+          <p className="composer-paste-note" role="status">
+            Long paste attached as a file.{" "}
+            <button type="button" disabled={disabled} onClick={keepPastedText}>
+              Keep as text
+            </button>
+            {!value.trim() && <span> Add a message to send it.</span>}
+          </p>
         )}
         <textarea
           ref={textarea}
@@ -417,12 +489,57 @@ export function Composer({
           value={visibleValue}
           onChange={(event) => updateDraft(event.target.value)}
           onPaste={(event) => {
-            const files = Array.from(event.clipboardData.files);
-            if (files.length) {
+            const incoming = Array.from(event.clipboardData.files);
+            if (incoming.length && onAttach) {
               event.preventDefault();
               setImageMode(false);
-              onAttach?.(files);
+              onAttach(
+                incoming.map((file) => {
+                  if (
+                    !file.type.startsWith("image/") &&
+                    !/\.(png|jpe?g|gif|webp|avif|heic|heif)$/i.test(file.name)
+                  )
+                    return file;
+                  const ext =
+                    file.name.match(
+                      /\.(png|jpe?g|gif|webp|avif|heic|heif)$/i,
+                    )?.[1] ?? "png";
+                  return new File(
+                    [file],
+                    `Pasted image ${++pasteSerial.current.image}.${ext}`,
+                    { type: file.type, lastModified: file.lastModified },
+                  );
+                }),
+              );
+              return;
             }
+            const text = event.clipboardData.getData("text/plain");
+            if (
+              imageMode ||
+              text.length <= 4000 ||
+              !onAttach ||
+              !onDiscardPasted
+            )
+              return;
+            event.preventDefault();
+            const key = onAttach(
+              [
+                new File(
+                  [text],
+                  `Pasted text ${++pasteSerial.current.text}.txt`,
+                  { type: "text/plain" },
+                ),
+              ],
+              { characters: text.length },
+            )?.[0];
+            if (key)
+              setPasted({
+                key,
+                text,
+                before: value,
+                start: event.currentTarget.selectionStart,
+                end: event.currentTarget.selectionEnd,
+              });
           }}
           onKeyDown={(event) => {
             if (!imageMode && event.key === "ArrowUp" && !value) {

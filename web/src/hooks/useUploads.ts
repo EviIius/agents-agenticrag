@@ -17,14 +17,18 @@ export type AttachmentLocal = {
   url?: string;
   order: number;
   stagger?: number;
+  characters?: number;
 };
+const noRetainedPreviews: string[] = [];
 export function useUploads({
   query,
   bootstrap,
+  retainedPreviewIds = noRetainedPreviews,
 }: {
   query: QueryClient;
   bootstrap: { data?: Bootstrap };
   current?: Model;
+  retainedPreviewIds?: string[];
 }) {
   const [files, setFiles] = useState<Attachment[]>([]);
   const [attachmentVersion, setAttachmentVersion] = useState(0);
@@ -32,6 +36,8 @@ export function useUploads({
   const [uploads, setUploads] = useState<AudioUpload[]>([]);
   const [local, setLocal] = useState<Record<string, AttachmentLocal>>({});
   const resources = useRef(new Map<string, string>());
+  const previews = useRef(new Map<string, HTMLImageElement>());
+  const completed = useRef(new Map<string, string>());
   const originals = useRef(new Map<string, File>());
   const slots = useRef(new Set<string>());
   const uploadControllers = useRef(new Map<string, AbortController>());
@@ -54,6 +60,9 @@ export function useUploads({
       (file) => file.kind === "audio" && file.transcript?.status !== "ready",
     );
   const releasePreview = (id: string) => {
+    const image = previews.current.get(id);
+    if (image) image.onload = image.onerror = null;
+    previews.current.delete(id);
     const url = resources.current.get(id);
     if (url) URL.revokeObjectURL(url);
     resources.current.delete(id);
@@ -64,13 +73,19 @@ export function useUploads({
   useEffect(() => {
     mounted.current = true;
     const controllers = uploadControllers.current,
-      urls = resources.current;
+      urls = resources.current,
+      images = previews.current;
     return () => {
       mounted.current = false;
       controllers.forEach((controller) => controller.abort());
       urls.forEach((url) => URL.revokeObjectURL(url));
       controllers.clear();
       urls.clear();
+      images.forEach((image) => {
+        image.onload = image.onerror = null;
+      });
+      images.clear();
+      completed.current.clear();
       originals.current.clear();
     };
   }, []);
@@ -78,20 +93,26 @@ export function useUploads({
     const ids = new Set([
       ...files.map((f) => f.id),
       ...uploads.map((u) => u.id),
+      ...retainedPreviewIds,
     ]);
     for (const [id, url] of resources.current)
-      if (!ids.has(id)) {
+      if (!ids.has(id) && !previews.current.has(id)) {
         URL.revokeObjectURL(url);
         resources.current.delete(id);
       }
     for (const id of slots.current) if (!ids.has(id)) slots.current.delete(id);
     setLocal((old) => {
-      const entries = Object.entries(old).filter(([id]) => ids.has(id));
+      const entries = Object.entries(old).filter(
+        ([id]) => ids.has(id) || previews.current.has(id),
+      );
       return entries.length === Object.keys(old).length
         ? old
         : Object.fromEntries(entries);
     });
-  }, [files, uploads]);
+    for (const [key, id] of completed.current)
+      if (!ids.has(id) && !previews.current.has(id))
+        completed.current.delete(key);
+  }, [files, uploads, retainedPreviewIds, local]);
   const restored = useRef(false);
   const pendingRecordings = useQuery({
     queryKey: ["pending-recordings"],
@@ -180,7 +201,17 @@ export function useUploads({
       });
       slots.current.delete(id);
       slots.current.add(attachment.id);
+      completed.current.set(id, attachment.id);
       setFiles((old) => [...old, attachment]);
+      if (url) {
+        const image = new Image();
+        previews.current.set(attachment.id, image);
+        image.onload = () => {
+          if (mounted.current) releasePreview(attachment.id);
+        };
+        image.onerror = () => previews.current.delete(attachment.id);
+        image.src = `/api/attachments/${attachment.id}`;
+      }
       setAttachmentVersion((version) => version + 1);
       if (kind === "audio") attachTranscription(attachment);
       setUploads((old) => old.filter((item) => item.id !== id));
@@ -211,9 +242,11 @@ export function useUploads({
     uploadControllers.current.set(id, controller);
     queue.current = queue.current.then(() => execute(id, file, controller));
   };
-  const upload = async (incoming: File[]) => {
+  const upload = (incoming: File[], pasted?: { characters: number }) => {
+    const ids: string[] = [];
     for (const [stagger, file] of incoming.entries()) {
       const id = crypto.randomUUID();
+      ids.push(id);
       const kind = fileKind(
         file,
         bootstrap.data?.attachment_extensions ?? { text: [], document: [] },
@@ -227,7 +260,7 @@ export function useUploads({
       const order = ++serial.current;
       setLocal((old) => ({
         ...old,
-        [id]: { key: id, url, order, stagger },
+        [id]: { key: id, url, order, stagger, characters: pasted?.characters },
       }));
       setUploads((old) => [
         ...old,
@@ -246,6 +279,20 @@ export function useUploads({
       setAttachmentVersion((version) => version + 1);
       if (!limit) enqueue(id, file);
     }
+    return ids;
+  };
+  const discardPasted = (key: string) => {
+    const id = completed.current.get(key);
+    if (!id) {
+      cancelUpload(key);
+      return;
+    }
+    completed.current.delete(key);
+    slots.current.delete(id);
+    setFiles((old) => old.filter((f) => f.id !== id));
+    releasePreview(id);
+    // Only the unsubmitted text upload created by this paste is discarded.
+    void api(`/attachments/${id}`, undefined, "DELETE").catch(() => undefined);
   };
   const retryUpload = (id: string) => {
     const file = originals.current.get(id);
@@ -285,5 +332,6 @@ export function useUploads({
     releasePreview,
     cancelUpload,
     retryUpload,
+    discardPasted,
   };
 }

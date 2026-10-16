@@ -68,6 +68,7 @@ const FolderDialog = lazy(() => import("./FolderDialog"));
 const WorkflowNotifier = lazy(
   () => import("@/components/workflows/WorkflowNotifier"),
 );
+const DropOverlay = lazy(() => import("@/components/chat/DropOverlay"));
 export function LiveAppShell() {
   const ui = useUI(),
     navigate = useNavigate();
@@ -255,6 +256,15 @@ export function LiveAppShell() {
       : selected
         ? { ...selected, loaded: null }
         : undefined);
+  const retainedPreviewIds = useMemo(
+    () => [
+      ...(detail.data?.messages ?? []).flatMap(
+        (m) => m.attachments?.map((a) => a.id) ?? [],
+      ),
+      ...(pending?.attachments?.map((a) => a.id) ?? []),
+    ],
+    [detail.data?.messages, pending],
+  );
   const {
     setFiles,
     effectiveFiles,
@@ -265,12 +275,40 @@ export function LiveAppShell() {
     releasePreview,
     cancelUpload,
     retryUpload,
+    discardPasted,
     dragging,
     setDragging,
     dragDepth,
     audioExtensions,
     upload,
-  } = useUploads({ query, bootstrap, current });
+  } = useUploads({ query, bootstrap, current, retainedPreviewIds });
+  const allowFileDrop = !workspace && !ui.settings && !ui.panel && !ui.sidebar;
+  const [dropTarget, setDropTarget] = useState(false);
+  const [hasDragged, setHasDragged] = useState(false);
+  useEffect(() => {
+    dragDepth.current = 0;
+    setDragging(false);
+    setDropTarget(false);
+  }, [pathname, allowFileDrop, dragDepth, setDragging]);
+  useEffect(() => {
+    if (!dragging) return;
+    const cancel = (event: KeyboardEvent | Event) => {
+      if (event instanceof KeyboardEvent && event.key !== "Escape") return;
+      if (event instanceof KeyboardEvent) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      dragDepth.current = 0;
+      setDragging(false);
+      setDropTarget(false);
+    };
+    window.addEventListener("keydown", cancel, true);
+    window.addEventListener("blur", cancel);
+    return () => {
+      window.removeEventListener("keydown", cancel, true);
+      window.removeEventListener("blur", cancel);
+    };
+  }, [dragging, dragDepth, setDragging]);
   useEffect(() => {
     if (models.data?.length) void import("@/components/chat/Markdown");
   }, [models.data]);
@@ -570,7 +608,8 @@ export function LiveAppShell() {
             : undefined
         }
         onCancelUpload={cancelUpload}
-        onAttach={(incoming) => void upload(incoming)}
+        onAttach={upload}
+        onDiscardPasted={discardPasted}
         onRemove={(id) => {
           const remove = () => {
             setFiles((files) => files.filter((file) => file.id !== id));
@@ -778,10 +817,22 @@ export function LiveAppShell() {
         )}
         <main
           className="app-main"
-          onDragOver={(e) => e.preventDefault()}
+          data-file-drag={dragging || undefined}
+          data-drop-target={dropTarget || undefined}
+          onDragOver={(e) => {
+            if (!allowFileDrop || !e.dataTransfer.types.includes("Files"))
+              return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "copy";
+            setDropTarget(
+              dragging && !!(e.target as Element).closest?.(".composer"),
+            );
+          }}
           onDragEnter={(e) => {
-            if (!workspace && e.dataTransfer.types.includes("Files")) {
+            if (allowFileDrop && e.dataTransfer.types.includes("Files")) {
+              e.preventDefault();
               dragDepth.current++;
+              setHasDragged(true);
               setDragging(true);
             }
           }}
@@ -789,22 +840,23 @@ export function LiveAppShell() {
             if (--dragDepth.current <= 0) {
               dragDepth.current = 0;
               setDragging(false);
+              setDropTarget(false);
             }
           }}
           onDrop={(e) => {
+            if (!allowFileDrop || !e.dataTransfer.types.includes("Files"))
+              return;
             e.preventDefault();
             dragDepth.current = 0;
             setDragging(false);
-            if (!workspace) void upload(Array.from(e.dataTransfer.files));
+            setDropTarget(false);
+            upload(Array.from(e.dataTransfer.files));
           }}
         >
-          {dragging && (
-            <div
-              role="status"
-              className="pointer-events-none absolute inset-4 z-40 flex items-center justify-center rounded-xl border-2 border-dashed border-brand bg-bg/80 text-sm"
-            >
-              Drop images, documents, text files or recordings
-            </div>
+          {hasDragged && (
+            <Suspense fallback={null}>
+              <DropOverlay active={dragging} />
+            </Suspense>
           )}
           {workspace ? (
             studio ? null : (
@@ -928,6 +980,7 @@ export function LiveAppShell() {
           ) : (
             <>
               <LiveThread
+                attachmentLocal={attachmentLocal}
                 onImageIteration={iterateImage}
                 onImageAction={(message, action) =>
                   void chatImages.action(message, action)

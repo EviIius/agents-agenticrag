@@ -1334,3 +1334,62 @@ article[data-fresh="true"] {
 .attachment-presence[data-fresh] {
   animation-delay: calc(var(--attachment-index, 0) * 40ms);
 }
+
+/* AT-B: file drops animate while held; sent/history attachments never replay. */
+@keyframes attachment-drop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes attachment-drop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes attachment-drop-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--fan-rotate, 0deg));
+  }
+  50% {
+    transform: translateY(-3px) rotate(var(--fan-rotate, 0deg));
+  }
+}
+.attachment-drop[data-state="open"] {
+  animation: attachment-drop-fade 120ms var(--ease-out) both;
+}
+.attachment-drop[data-state="open"] .attachment-drop-card {
+  animation: attachment-drop-in 200ms var(--ease-out) both;
+}
+.attachment-drop[data-state="closed"] {
+  animation: attachment-drop-out 120ms var(--ease-out) both;
+}
+.attachment-drop-fan .attachment-badge {
+  transform: rotate(var(--fan-rotate, 0deg));
+}
+.attachment-drop[data-state="open"] .attachment-drop-fan .attachment-badge {
+  animation: attachment-drop-bob 1.6s ease-in-out infinite;
+}
+.attachment-drop-fan .attachment-badge:nth-child(2) {
+  animation-delay: -200ms;
+}
+.attachment-drop-fan .attachment-badge:last-child {
+  animation-delay: -400ms;
+}
+
+@keyframes attachment-drop-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

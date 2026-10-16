@@ -87,7 +87,9 @@ export function AttachmentTile({
         : upload.phase === "reading"
           ? "Reading pages…"
           : `Uploading ${percent}%`
-    : `${suffix(name).slice(1).toUpperCase() || "Text"} · ${fileSize(file?.bytes ?? 0)}`;
+    : local?.characters != null
+      ? `${local.characters.toLocaleString()} characters`
+      : `${suffix(name).slice(1).toUpperCase() || "Text"} · ${fileSize(file?.bytes ?? 0)}`;
   return (
     <div
       className={`attachment-tile ${photo ? "attachment-photo" : "attachment-file-card"}`}

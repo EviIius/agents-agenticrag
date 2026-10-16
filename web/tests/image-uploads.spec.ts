@@ -240,7 +240,13 @@ test("HEIC paste and drop share the chooser normalization path", async ({
       page.getByRole("button", { name: "Leave image mode", exact: true }),
     ).not.toBeVisible();
     await page
-      .getByRole("button", { name: "Remove fake-pasted.png", exact: true })
+      .getByRole("button", {
+        name:
+          eventType === "paste"
+            ? "Remove Pasted image 1.png"
+            : "Remove fake-pasted.png",
+        exact: true,
+      })
       .click();
   }
 });

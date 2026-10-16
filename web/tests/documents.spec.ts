@@ -236,7 +236,7 @@ test("5B paste and drop documents use the same upload path", async ({
     );
   }, bytes);
   await expect(
-    page.getByText("Drop images, documents, text files or recordings"),
+    page.getByRole("heading", { name: "Drop to attach", exact: true }),
   ).toBeVisible();
   await page.locator(".app-main").evaluate((node, bytes) => {
     const data = new DataTransfer();

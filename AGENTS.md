@@ -1446,3 +1446,13 @@ app, server/API/schema/prompts/dependencies and model defaults remain unchanged;
 no native inference or deployment occurred. Physical iPhone review is not claimed.
 H4: `docs/ATTACHMENTS-AT-A-REPORT.md`. Stop for AT-A review before AT-B; merge and
 publication remain gated by Jake’s final approval.
+
+**User acceptance and authorization — 16 October 2026 (attachments AT-B):** Jake
+said “go ahead with part 2” after the AT-A report. Proceed with AT-B on the existing
+`codex/attachments-redesign` branch: the drop overlay, pasted images, recommended
+J-U2 long-paste conversion with Keep as text, sent attachment grids/cards and their
+optimistic handoff. This accepts AT-A for continuation without inventing a physical
+phone check. Preserve existing request bodies, explicit sampling and server/schema/
+prompt/dependency invariants. Use synthetic evidence and retain all attempts.
+Stop with the AT-B H4 report and update draft PR #2. No merge, publisher, installed
+app change or service restart is authorized.
