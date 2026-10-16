@@ -1456,3 +1456,19 @@ phone check. Preserve existing request bodies, explicit sampling and server/sche
 prompt/dependency invariants. Use synthetic evidence and retain all attempts.
 Stop with the AT-B H4 report and update draft PR #2. No merge, publisher, installed
 app change or service restart is authorized.
+
+
+**Attachments AT-B technical closeout — 16 October 2026:** Part B is implemented
+on `codex/attachments-redesign` in draft PR #2. Tested source `ff5f589e` passes
+full make check (673 Python / 121 frontend, 110 contrast pairs) and one complete
+browser invocation (699 passed / three existing skips / zero failures). All seven
+new behavior checks pass in both engines, along with 120 synthetic state scans,
+24 exact original-main request comparisons and the unchanged performance budgets.
+Initial JS is 254,448 gzip bytes. Retain failed harness attempts, the motion-guard
+cursor correction and the intentionally interrupted first full attempt separately.
+Historical tracked evidence, including AT-A, is restored; this run is preserved
+under `artifacts/attachments/at-b/`. Server, API, schema, prompts, dependencies,
+sampling, main and the installed app remain unchanged; no native inference or
+publication occurred. Physical iPhone acceptance is not claimed. H4:
+`docs/ATTACHMENTS-AT-B-REPORT.md`. Stop for AT-B review; merge/publication remain
+gated by Jake's final approval.
