@@ -1,3 +1,4 @@
+import { webTool } from "./helpers";
 import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
@@ -14,12 +15,8 @@ for (const width of [390, 1440])
         theme,
       );
       await page.goto("/");
-      await expect(
-        page.getByRole("button", { name: "Web search", exact: true }),
-      ).toBeVisible();
-      await page
-        .getByRole("button", { name: "Web search", exact: true })
-        .click();
+      await expect(await webTool(page)).toBeVisible();
+      await (await webTool(page)).click();
       await page
         .locator(".composer textarea")
         .fill("Who lost the 2021 NBA Finals? Show a table.");
@@ -126,7 +123,7 @@ test("search activity appears within 300ms and collapses after completion", asyn
     },
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Web search", exact: true }).click();
+  await (await webTool(page)).click();
   await page
     .locator(".composer textarea")
     .fill("Who lost the 2021 NBA Finals? Show a table.");
@@ -190,7 +187,7 @@ test("a late streaming chat snapshot cannot erase the completed SSE answer", asy
     },
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Web search", exact: true }).click();
+  await (await webTool(page)).click();
   let intercepted = false;
   let release!: () => void;
   const hold = new Promise<void>((resolve) => {

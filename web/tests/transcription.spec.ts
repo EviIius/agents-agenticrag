@@ -1,3 +1,4 @@
+import { webTool, recordingAction } from "./helpers";
 import { settle } from "./helpers";
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
@@ -63,18 +64,12 @@ test("T-1/T-2/T-5 upload, transcript views, downloads, local chat and follow-up"
   await expect(page.locator(".composer textarea")).toHaveValue(
     "Summarize this recording.",
   );
-  await expect(
-    page.getByRole("button", {
-      name: "Web search",
-      exact: true,
-    }),
-  ).toHaveAttribute("aria-disabled", "true");
-  await expect(
-    page.getByRole("button", { name: "Web search", exact: true }),
-  ).toHaveAttribute("title", "Search is off in chats with a recording");
-  await expect(
-    page.getByRole("button", { name: "Web search", exact: true }),
-  ).toHaveAttribute("aria-pressed", "false");
+  await expect(await webTool(page)).toHaveAttribute("aria-disabled", "true");
+  await expect(await webTool(page)).toHaveAttribute(
+    "aria-description",
+    "Search is off in chats with a recording",
+  );
+  await expect(await webTool(page)).toHaveAttribute("aria-checked", "false");
   await page.getByRole("button", { name: "Send message" }).click();
   await expect(page).toHaveURL(/\/c\//);
   await expect(
@@ -142,9 +137,9 @@ test("T-3/T-4 reload while transcribing, cancel, retry and remove", async ({
     .getByRole("menuitem", { name: "Transcribe again", exact: true })
     .click();
   await expect(page.getByTestId("audio-chip")).toContainText("Transcribing");
-  await page.getByRole("button", { name: "Cancel transcription" }).click();
+  await (await recordingAction(page, "Cancel transcription")).click();
   await expect(page.getByTestId("audio-chip")).toContainText("Cancelled");
-  await page.getByRole("button", { name: "Retry", exact: true }).click();
+  await (await recordingAction(page, "Retry")).click();
   await ready(page);
   await page
     .getByRole("button", {
@@ -157,7 +152,7 @@ test("T-3/T-4 reload while transcribing, cancel, retry and remove", async ({
   await expect(page.getByTestId("audio-chip")).toContainText(
     "Synthetic decoder failure",
   );
-  await page.getByRole("button", { name: "Retry", exact: true }).click();
+  await (await recordingAction(page, "Retry")).click();
   await expect(page.getByTestId("audio-chip")).toContainText(
     "Synthetic decoder failure",
   );
@@ -168,7 +163,9 @@ test("T-6 too-large transcript warns; switching model changes budget", async ({
   await upload(page, "#fake:words 9000");
   await ready(page);
   await expect(page.getByTestId("audio-chip")).toContainText("≈13,500 tokens");
-  await expect(page.getByTestId("audio-chip")).toContainText("input allowance");
+  await expect(page.locator(".attachment-status")).toContainText(
+    "this model takes",
+  );
   await page
     .getByRole("button", { name: "Choose model", exact: true })
     .first()
@@ -177,9 +174,7 @@ test("T-6 too-large transcript warns; switching model changes budget", async ({
   await expect(
     page.getByRole("button", { name: "Choose model", exact: true }).first(),
   ).toContainText("fake-vision");
-  await expect(page.getByTestId("audio-chip")).not.toContainText(
-    "input allowance",
-  );
+  await expect(page.locator(".attachment-status")).toHaveCount(0);
 });
 test("transcript allowance follows user output limits and saved model defaults", async ({
   page,
@@ -199,8 +194,8 @@ test("transcript allowance follows user output limits and saved model defaults",
   await page.reload();
   await upload(page, "#fake:words 9000");
   await ready(page);
-  await expect(page.getByTestId("audio-chip")).toContainText(
-    "12,032-token input allowance",
+  await expect(page.locator(".attachment-status")).toContainText(
+    "this model takes 12,032 after reserving 4,096",
   );
   await expect(page.locator(".composer [role=img]")).toHaveAttribute(
     "aria-label",
@@ -210,6 +205,7 @@ test("transcript allowance follows user output limits and saved model defaults",
     path: `../artifacts/reliability/context-budget/input-reserved-${browserName}.png`,
   });
   await page
+    .locator(".attachment-status")
     .getByRole("button", { name: "Chat controls", exact: true })
     .click();
   await page
@@ -222,9 +218,7 @@ test("transcript allowance follows user output limits and saved model defaults",
     .getByRole("button", { name: "Save settings", exact: true })
     .click();
   await page.getByRole("button", { name: "Close chat controls" }).click();
-  await expect(page.getByTestId("audio-chip")).not.toContainText(
-    "input allowance",
-  );
+  await expect(page.locator(".attachment-status")).toHaveCount(0);
   await expect(page.locator(".composer [role=img]")).toHaveAttribute(
     "aria-label",
     /15,104 input allowance; 1,024 reserved/,
@@ -256,9 +250,7 @@ test("transcript allowance follows user output limits and saved model defaults",
   await page.goto("/");
   await upload(page, "#fake:words 9000");
   await ready(page);
-  await expect(page.getByTestId("audio-chip")).not.toContainText(
-    "input allowance",
-  );
+  await expect(page.locator(".attachment-status")).toHaveCount(0);
   await expect(page.locator(".composer [role=img]")).toHaveAttribute(
     "aria-label",
     /1,024 reserved/,
@@ -280,13 +272,9 @@ test("T-9 unavailable engine menu and settings", async ({ page }) => {
     await route.fulfill({ json });
   });
   await page.reload();
-  await page.getByRole("button", { name: "Add attachment" }).click();
   await expect(
-    page.getByRole("menuitem", {
-      name: "Recordings need the transcription engine",
-    }),
-  ).toHaveAttribute("data-disabled", "");
-  await page.keyboard.press("Escape");
+    page.locator('.composer input[type="file"]'),
+  ).not.toHaveAttribute("accept", /\.wav/);
   await page.route("**/api/transcription/status", (route) =>
     route.fulfill({ json: { configured: false, ready: false, checks: [] } }),
   );

@@ -261,8 +261,10 @@ export function LiveAppShell() {
     attachmentVersion,
     waitingForTranscript,
     uploads,
-    setUploads,
-    uploadControllers,
+    local: attachmentLocal,
+    releasePreview,
+    cancelUpload,
+    retryUpload,
     dragging,
     setDragging,
     dragDepth,
@@ -438,7 +440,7 @@ export function LiveAppShell() {
   const webBlocked =
     bootstrap.data?.settings["transcription.block_web"] !== false &&
     (effectiveFiles.some((file) => file.kind === "audio") ||
-      uploads.some((upload) => !upload.failed) ||
+      uploads.some((upload) => !upload.failed && upload.kind === "audio") ||
       visiblePath(
         detail.data?.messages ?? [],
         detail.data?.chat.current_leaf_id ?? null,
@@ -472,18 +474,22 @@ export function LiveAppShell() {
         return "Library text can only go to a local model";
     }
   })();
-  const exclusivityNote = () => {
-    if (!sessionStorage.getItem("workbench-library-note")) {
-      toast("Library and web search can't be combined in one message.");
-      sessionStorage.setItem("workbench-library-note", "1");
-    }
-  };
+  const [composerNote, setComposerNote] = useState<{ text: string } | null>(
+    null,
+  );
+  useEffect(() => {
+    if (!composerNote) return;
+    const timer = setTimeout(() => setComposerNote(null), 4000);
+    return () => clearTimeout(timer);
+  }, [composerNote]);
   const toggleLibrary = (value: boolean) => {
     if (value && libraryReason) return;
     setLibrary(value);
     if (value) {
       setWeb(false);
-      exclusivityNote();
+      setComposerNote({
+        text: "Search is off while Library is on. They work one at a time.",
+      });
     }
     if (chatId)
       void mutate("/chats/" + chatId, { library_enabled: value }, "PATCH");
@@ -492,130 +498,145 @@ export function LiveAppShell() {
     setWeb(value);
     if (value) {
       setLibrary(false);
-      if (effectiveLibrary) exclusivityNote();
+      if (effectiveLibrary)
+        setComposerNote({
+          text: "Library is off while Search is on. They work one at a time.",
+        });
     }
     if (chatId)
       void mutate("/chats/" + chatId, { web_enabled: value }, "PATCH");
   };
   const composer = (
-    <Composer
-      key={chatId ?? "new"}
-      draftKey={chatId ?? "new"}
-      images
-      imageStatus={imageStatus.data}
-      imageBusy={chatImages.busy}
-      initialImageMode={
-        Boolean(routeState?.imageMode) ||
-        new URLSearchParams(routeSearch).has("image")
-      }
-      onImageSend={chatImages.send}
-      onImageCommandApplied={(key) =>
-        setImageCommand((saved) =>
-          saved?.command.key === key ? undefined : saved,
-        )
-      }
-      imageCommand={
-        imageCommand && imageCommand.chat === chatId
-          ? imageCommand.command
-          : undefined
-      }
-      optimistic={Boolean(chatId)}
-      suggestions={!chatId}
-      audioExtensions={audioExtensions}
-      attachmentExtensions={bootstrap.data?.attachment_extensions}
-      model={current}
-      disabled={!current || busy || chatImages.busy || !!loadingModel}
-      running={running}
-      onStop={stop}
-      onSend={(text) => onSend(text)}
-      error={chatImages.error || sendError}
-      files={effectiveFiles}
-      attachmentVersion={attachmentVersion}
-      uploads={uploads}
-      transcriptionReady={Boolean(bootstrap.data?.features.transcription)}
-      webBlocked={webBlocked}
-      libraryControl={
-        bootstrap.data?.features.library
-          ? {
-              enabled: effectiveLibrary,
-              reason: libraryReason,
-              scope,
-              collections: libraryIndex.data?.collections ?? [],
-              onToggle: toggleLibrary,
-              onScope: (next) => {
-                setLibraryScope(next);
-                if (chatId)
-                  void mutate(
-                    "/chats/" + chatId,
-                    { library_scope: next },
-                    "PATCH",
-                  );
-              },
-            }
-          : undefined
-      }
-      onCancelUpload={(id) => {
-        uploadControllers.current.get(id)?.abort();
-        setUploads((uploads) => uploads.filter((upload) => upload.id !== id));
-      }}
-      onAttach={(incoming) => void upload(incoming)}
-      onRemove={(id) => {
-        const remove = () => {
-          setFiles((files) => files.filter((file) => file.id !== id));
-          detachTranscription(id);
-          useTranscripts.getState().remove(id);
-        };
-        if (
-          effectiveFiles.find((file) => file.id === id)?.kind === "audio" ||
-          effectiveFiles.find((file) => file.id === id)?.document
-        )
-          void api(`/attachments/${id}`, undefined, "DELETE").then(
-            remove,
-            (error) =>
-              toast.error(failureCopy(error), {
-                description: failureDetail(error),
-              }),
-          );
-        else remove();
-      }}
-      context={
-        current
-          ? {
-              used_tokens:
-                (context.data?.used_tokens ?? 0) +
-                effectiveFiles.reduce(
-                  (total, a) =>
-                    total +
-                    (a.kind === "image"
-                      ? 800
-                      : a.kind === "audio"
-                        ? (a.transcript?.token_estimate ?? 0)
-                        : (a.document?.token_estimate ??
-                          Math.round(a.bytes * 0.3))),
-                  0,
-                ),
-              context_length: current.context_length ?? 8192,
-              reserve:
-                typeof chatParams.max_tokens === "number"
-                  ? chatParams.max_tokens
-                  : typeof current.params_defaults?.max_tokens === "number"
-                    ? current.params_defaults.max_tokens
-                    : undefined,
-            }
-          : undefined
-      }
-      thinkValue={chatParams.reasoning as string | undefined}
-      onThinkChange={(value) => {
-        const p = { ...chatParams, reasoning: value };
-        if (chatId) void mutate("/chats/" + chatId, { params: p }, "PATCH");
-        else {
-          setDraftOverridden(true);
-          setDraftParams(p);
+    <>
+      <Composer
+        key={chatId ?? "new"}
+        draftKey={chatId ?? "new"}
+        images
+        imageStatus={imageStatus.data}
+        imageBusy={chatImages.busy}
+        initialImageMode={
+          Boolean(routeState?.imageMode) ||
+          new URLSearchParams(routeSearch).has("image")
         }
-      }}
-      web={detail.data?.chat.web_enabled ?? web}
-      onWebChange={bootstrap.data?.features.web_search ? toggleWeb : undefined}
-    />
+        onImageSend={chatImages.send}
+        onImageCommandApplied={(key) =>
+          setImageCommand((saved) =>
+            saved?.command.key === key ? undefined : saved,
+          )
+        }
+        imageCommand={
+          imageCommand && imageCommand.chat === chatId
+            ? imageCommand.command
+            : undefined
+        }
+        optimistic={Boolean(chatId)}
+        suggestions={!chatId}
+        audioExtensions={audioExtensions}
+        attachmentExtensions={bootstrap.data?.attachment_extensions}
+        model={current}
+        disabled={!current || busy || chatImages.busy || !!loadingModel}
+        running={running}
+        onStop={stop}
+        onSend={(text) => onSend(text)}
+        error={chatImages.error || sendError}
+        files={effectiveFiles}
+        attachmentLocal={attachmentLocal}
+        onPreviewLoaded={releasePreview}
+        onRetryUpload={retryUpload}
+        visionModels={models.data}
+        onChooseModel={(model) => void changeModel(model)}
+        attachmentVersion={attachmentVersion}
+        uploads={uploads}
+        transcriptionReady={Boolean(bootstrap.data?.features.transcription)}
+        webBlocked={webBlocked}
+        libraryControl={
+          bootstrap.data?.features.library
+            ? {
+                enabled: effectiveLibrary,
+                reason: libraryReason,
+                scope,
+                collections: libraryIndex.data?.collections ?? [],
+                onToggle: toggleLibrary,
+                onScope: (next) => {
+                  setLibraryScope(next);
+                  if (chatId)
+                    void mutate(
+                      "/chats/" + chatId,
+                      { library_scope: next },
+                      "PATCH",
+                    );
+                },
+              }
+            : undefined
+        }
+        onCancelUpload={cancelUpload}
+        onAttach={(incoming) => void upload(incoming)}
+        onRemove={(id) => {
+          const remove = () => {
+            setFiles((files) => files.filter((file) => file.id !== id));
+            releasePreview(id);
+            detachTranscription(id);
+            useTranscripts.getState().remove(id);
+          };
+          if (
+            effectiveFiles.find((file) => file.id === id)?.kind === "audio" ||
+            effectiveFiles.find((file) => file.id === id)?.document
+          )
+            void api(`/attachments/${id}`, undefined, "DELETE").then(
+              remove,
+              (error) =>
+                toast.error(failureCopy(error), {
+                  description: failureDetail(error),
+                }),
+            );
+          else remove();
+        }}
+        context={
+          current
+            ? {
+                used_tokens:
+                  (context.data?.used_tokens ?? 0) +
+                  effectiveFiles.reduce(
+                    (total, a) =>
+                      total +
+                      (a.kind === "image"
+                        ? 800
+                        : a.kind === "audio"
+                          ? (a.transcript?.token_estimate ?? 0)
+                          : (a.document?.token_estimate ??
+                            Math.round(a.bytes * 0.3))),
+                    0,
+                  ),
+                context_length: current.context_length ?? 8192,
+                reserve:
+                  typeof chatParams.max_tokens === "number"
+                    ? chatParams.max_tokens
+                    : typeof current.params_defaults?.max_tokens === "number"
+                      ? current.params_defaults.max_tokens
+                      : undefined,
+              }
+            : undefined
+        }
+        thinkValue={chatParams.reasoning as string | undefined}
+        onThinkChange={(value) => {
+          const p = { ...chatParams, reasoning: value };
+          if (chatId) void mutate("/chats/" + chatId, { params: p }, "PATCH");
+          else {
+            setDraftOverridden(true);
+            setDraftParams(p);
+          }
+        }}
+        web={detail.data?.chat.web_enabled ?? web}
+        onWebChange={
+          bootstrap.data?.features.web_search ? toggleWeb : undefined
+        }
+      />
+      {composerNote && (
+        <p className="composer-note" role="status">
+          {composerNote.text}
+        </p>
+      )}
+    </>
   );
   const panel =
     chatId && !detail.data ? (

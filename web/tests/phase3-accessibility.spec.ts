@@ -1,3 +1,4 @@
+import { webTool } from "./helpers";
 import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
@@ -152,14 +153,12 @@ test("keyboard walkthrough send stop regenerate branch model switch citation", a
   await expect(page).toHaveURL("http://127.0.0.1:5173/");
   await expect(page.getByRole("heading", { name: /Good / })).toBeVisible();
   await settle(page);
-  const toggle = page.getByRole("button", { name: "Web search", exact: true });
+  const toggle = await webTool(page);
   await expect(toggle).toBeVisible();
   await toggle.focus();
   await expect(toggle).toBeFocused();
   await page.keyboard.press("Enter");
-  await expect(
-    page.getByRole("button", { name: "Web search", exact: true }),
-  ).toHaveAttribute("aria-pressed", "true");
+  await expect(await webTool(page)).toHaveAttribute("aria-checked", "true");
   await composer.focus();
   await composer.fill("Who lost the 2021 NBA Finals? Show a table.");
   await page.keyboard.press("Control+Enter");

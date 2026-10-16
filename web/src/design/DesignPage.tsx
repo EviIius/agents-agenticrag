@@ -70,6 +70,7 @@ const webMessage: Message = {
     ranking: "keyword",
   },
 };
+const AttachmentsPreview = lazy(() => import("./AttachmentsPreview"));
 const ImagesPreview = lazy(() => import("./ImagesPreview"));
 const ChatImagesPreview = lazy(() => import("./ChatImagesPreview"));
 const WorkflowsPreview = lazy(() => import("./WorkflowsPreview"));
@@ -79,6 +80,12 @@ const WorkingPreview = lazy(() => import("./WorkingPreview"));
 const Markdown = lazy(() => import("@/components/chat/Markdown"));
 const LibraryAnswersPreview = lazy(() => import("./LibraryAnswersPreview"));
 export function DesignPage() {
+  if (new URLSearchParams(location.search).has("attachments"))
+    return (
+      <Suspense fallback={<p>Loading attachments…</p>}>
+        <AttachmentsPreview />
+      </Suspense>
+    );
   if (new URLSearchParams(location.search).has("chat-images"))
     return (
       <Suspense fallback={<p>Loading chat images…</p>}>

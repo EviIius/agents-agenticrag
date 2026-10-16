@@ -1,3 +1,4 @@
+import { FileBadge, FileName } from "./AttachmentTile";
 import { failureCopy, failureDetail } from "@/lib/errors";
 import { contextBudget } from "@/lib/context-budget";
 import { useCleanup } from "@/hooks/useCleanup";
@@ -36,9 +37,12 @@ export type AudioUpload = {
   id: string;
   filename: string;
   percent: number;
-  kind?: "document";
+  kind?: import("@/lib/file-kinds").FileKind;
   failed?: boolean;
   reason?: string;
+  phase?: "preparing" | "uploading" | "reading" | "error";
+  retryable?: boolean;
+  format?: string;
 };
 export function UploadChip({
   upload,
@@ -99,12 +103,14 @@ export function AudioChip({
   onRemove,
   fixture,
   reserve,
+  compact = false,
 }: {
   attachment: Attachment;
   model?: Model;
   onRemove?: () => void;
   fixture?: Transcript;
   reserve?: number;
+  compact?: boolean;
 }) {
   const live = useTranscripts((state) => state.attachments[attachment.id]);
   const item = fixture ? attachment : (live ?? attachment);
@@ -181,36 +187,65 @@ export function AudioChip({
         data-slot="audio-chip"
         data-live={meta?.status === "transcribing" || cleaning || undefined}
         data-testid="audio-chip"
-        className={`mb-2 flex max-w-full flex-wrap items-center gap-2 rounded-lg border p-2 ${tooLarge && ready ? "border-warning text-warning" : "border-line bg-surface-2"}`}
+        className={
+          compact
+            ? "attachment-file-card attachment-audio-card"
+            : `mb-2 flex max-w-full flex-wrap items-center gap-2 rounded-lg border p-2 ${tooLarge && ready ? "border-warning text-warning" : "border-line bg-surface-2"}`
+        }
+        data-attachment-tile={compact || undefined}
+        data-issue={tooLarge && ready ? "warning" : undefined}
       >
-        <AudioLines className="size-4 shrink-0" aria-hidden />
+        {compact ? (
+          <FileBadge name={item.filename} kind="audio" />
+        ) : (
+          <AudioLines className="size-4 shrink-0" aria-hidden />
+        )}
         <button
           type="button"
-          className="min-h-11 min-w-0 flex-1 text-left text-xs"
+          className={
+            compact
+              ? "attachment-audio-open"
+              : "min-h-11 min-w-0 flex-1 text-left text-xs"
+          }
           disabled={!ready}
           aria-label={
             ready ? `Open transcript for ${item.filename}` : item.filename
           }
           onClick={() => setOpen(true)}
+          aria-describedby={compact ? `audio-meta-${item.id}` : undefined}
+          title={label}
         >
-          <span className="block truncate font-medium">{item.filename}</span>
+          {compact ? (
+            <FileName name={item.filename} />
+          ) : (
+            <span className="block truncate font-medium">{item.filename}</span>
+          )}
           <span
             data-slot="activity-label"
             data-live={meta?.status === "transcribing" || cleaning || undefined}
-            className="block break-words text-fg-2"
+            className={
+              compact ? "attachment-meta" : "block break-words text-fg-2"
+            }
             role="status"
           >
-            {label}
+            {compact && ready && !!meta?.word_count && !cleaning
+              ? `${meta?.cleanup?.status === "ready" ? "Cleaned" : "Ready"} · ${duration(meta?.duration_seconds ?? 0)}`
+              : label}
           </span>
+          {compact && (
+            <span id={`audio-meta-${item.id}`} className="sr-only">
+              {label}
+            </span>
+          )}
           {item.audio_available === false && (
-            <span className="block text-fg-3">
+            <span className={compact ? "sr-only" : "block text-fg-3"}>
               {ready
                 ? "Transcript saved · audio removed"
                 : "Audio removed · upload again to retry"}
             </span>
           )}
         </button>
-        {cleaning ? (
+        {cleaning && !compact ? (
           <IconButton
             type="button"
             label="Cancel clean-up"
@@ -219,7 +254,9 @@ export function AudioChip({
           >
             <Square />
           </IconButton>
-        ) : meta && ["queued", "transcribing"].includes(meta.status) ? (
+        ) : !compact &&
+          meta &&
+          ["queued", "transcribing"].includes(meta.status) ? (
           <IconButton
             type="button"
             label="Cancel transcription"
@@ -227,16 +264,17 @@ export function AudioChip({
           >
             <Square />
           </IconButton>
-        ) : !ready && item.audio_available !== false ? (
+        ) : !compact && !ready && item.audio_available !== false ? (
           <Button type="button" variant="outline" onClick={() => void retry()}>
             Retry
           </Button>
-        ) : ready ? (
+        ) : ready || compact ? (
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <IconButton
                 type="button"
                 label={`Recording actions for ${item.filename}`}
+                className={compact ? "attachment-card-menu" : undefined}
               >
                 <Ellipsis />
               </IconButton>
@@ -245,16 +283,41 @@ export function AudioChip({
               align="end"
               className="max-w-[calc(100vw-2rem)]"
             >
-              <DropdownMenuItem onSelect={() => setOpen(true)}>
+              {cleaning && (
+                <DropdownMenuItem onSelect={cleanup.cancel}>
+                  Cancel clean-up
+                </DropdownMenuItem>
+              )}
+              {meta && ["queued", "transcribing"].includes(meta.status) && (
+                <DropdownMenuItem onSelect={cancel}>
+                  Cancel transcription
+                </DropdownMenuItem>
+              )}
+              {compact &&
+                !ready &&
+                meta &&
+                ["failed", "cancelled"].includes(meta.status) &&
+                item.audio_available !== false && (
+                  <DropdownMenuItem onSelect={() => void retry()}>
+                    Retry
+                  </DropdownMenuItem>
+                )}
+              <DropdownMenuItem
+                disabled={!ready}
+                onSelect={() => setOpen(true)}
+              >
                 Open transcript
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              {[
-                "txt",
-                "srt",
-                "json",
-                ...(item.audio_available !== false ? ["audio"] : []),
-              ].map((format) => (
+              {(ready
+                ? [
+                    "txt",
+                    "srt",
+                    "json",
+                    ...(item.audio_available !== false ? ["audio"] : []),
+                  ]
+                : []
+              ).map((format) => (
                 <DropdownMenuItem
                   key={format}
                   onSelect={() =>
@@ -271,7 +334,7 @@ export function AudioChip({
                 </DropdownMenuItem>
               ))}
               <DropdownMenuSeparator />
-              {model && !!meta?.word_count && (
+              {ready && model && !!meta?.word_count && (
                 <DropdownMenuItem
                   disabled={cleanup.busy}
                   onSelect={cleanup.start}
@@ -280,14 +343,24 @@ export function AudioChip({
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem
-                disabled={item.audio_available === false}
+                disabled={
+                  item.audio_available === false ||
+                  cleaning ||
+                  meta?.status === "queued" ||
+                  meta?.status === "transcribing"
+                }
                 onSelect={() => void retry("mix")}
               >
                 Transcribe again
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="whitespace-normal"
-                disabled={item.audio_available === false}
+                disabled={
+                  item.audio_available === false ||
+                  cleaning ||
+                  meta?.status === "queued" ||
+                  meta?.status === "transcribing"
+                }
                 onSelect={() => void retry("split")}
               >
                 Transcribe again, one speaker per channel
@@ -308,7 +381,7 @@ export function AudioChip({
             </DropdownMenuContent>
           </DropdownMenu>
         ) : null}
-        {ready && tooLarge && (
+        {!compact && ready && tooLarge && (
           <Button
             type="button"
             variant="outline"
@@ -320,7 +393,7 @@ export function AudioChip({
             Choose model
           </Button>
         )}
-        {!ready && onRemove && (
+        {!compact && !ready && onRemove && (
           <IconButton
             label={`Remove ${item.filename}`}
             type="button"
@@ -329,7 +402,7 @@ export function AudioChip({
             <Trash2 />
           </IconButton>
         )}
-        {ready && tooLarge && (
+        {!compact && ready && tooLarge && (
           <p className="w-full break-words text-xs text-warning">
             About {meta?.token_estimate?.toLocaleString()} input tokens exceeds
             the {budget.available.toLocaleString()}-token input allowance.{" "}
@@ -337,6 +410,16 @@ export function AudioChip({
             response. Choose a model with a larger context or lower Max output
             tokens in Chat controls.
           </p>
+        )}
+        {compact && onRemove && (
+          <button
+            type="button"
+            className="attachment-remove"
+            aria-label={`Remove ${item.filename}`}
+            onClick={onRemove}
+          >
+            <X />
+          </button>
         )}
       </div>
       {downloadSession.value && (

@@ -1419,3 +1419,15 @@ pass. Both reduced-motion triggers remain verified. H4 and separate synthetic
 evidence: `docs/CHAT-MOTION-AUDIT-REPORT.md`. Already-open phone pages need reopening
 to hydrate the preference; no physical-phone pass is invented. Historical evidence
 and private before/after preference records/videos are retained.
+
+**User authorization — 15 October 2026 (attachments and composer):** Jake asks
+to assess and implement Claude's attachments redesign. Build
+`docs/next/attachments/ATTACHMENTS-SPEC.md` on `codex/attachments-redesign` only,
+stopping for review after AT-A and AT-B. Adopt the recommended Part A decisions
+J-U1, J-U3, J-U4 and J-U5: direct native picking, retained images with a blocking
+vision warning, Tools/chips and an isolated branch. Long-paste conversion belongs
+to AT-B's later review. No main merge, publisher, service restart or installed-app
+change until Jake's final approval. Web only: no server, schema, prompt, model-call
+or dependency changes. Reuse existing request fields and runtime capabilities.
+Use synthetic files and never capture the native device picker. Push the branch
+and open a draft PR; retain the AT-A report and full regression evidence.

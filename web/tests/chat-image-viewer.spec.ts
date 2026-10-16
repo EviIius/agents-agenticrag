@@ -1,3 +1,4 @@
+import { enterImageMode } from "./helpers";
 import {
   test,
   expect,
@@ -255,7 +256,7 @@ test("iteration preserves text draft, source lineage, removable chip and uncerta
   await page.getByRole("button", { name: "Leave image mode" }).click();
   const text = page.locator(".composer textarea");
   await text.fill("Synthetic saved text draft");
-  await page.getByRole("button", { name: "Create image", exact: true }).click();
+  await enterImageMode(page);
   await field.fill("Synthetic refined cobalt shapes");
   const bodies: unknown[] = [];
   await page.route("**/api/chats/*/images", async (route) => {

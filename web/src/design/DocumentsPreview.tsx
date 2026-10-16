@@ -42,6 +42,7 @@ export function DocumentsPreview() {
   );
   const [state, setState] = useState("PDF");
   const [open, setOpen] = useState(true);
+  const [web, setWeb] = useState(false);
   const item =
     state === "Word"
       ? {
@@ -137,6 +138,8 @@ export function DocumentsPreview() {
               )}
               <Composer
                 model={fixtureModels[0]}
+                web={web}
+                onWebChange={setWeb}
                 context={{
                   used_tokens: item.document?.token_estimate ?? 0,
                   context_length: 16384,

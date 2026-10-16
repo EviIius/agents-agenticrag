@@ -1,3 +1,4 @@
+import { webTool } from "./helpers";
 import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
@@ -213,9 +214,7 @@ for (const width of [390, 1440])
       await page
         .getByRole("button", { name: "Search the web", exact: true })
         .click();
-      await expect(
-        page.getByRole("button", { name: "Web search", exact: true }),
-      ).toHaveAttribute("aria-pressed", "true");
+      await expect(await webTool(page)).toHaveAttribute("aria-checked", "true");
       await expect(page.locator(".composer textarea")).toHaveValue(
         "Search the web for ",
       );

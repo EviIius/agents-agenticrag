@@ -1,21 +1,18 @@
-import { DocumentChip } from "./DocumentChip";
+import { AttachmentTray, attachmentIssues } from "./AttachmentTray";
+import { ToolsMenu } from "./ToolsMenu";
+import { ToolChips } from "./ToolChips";
+import { fileAccept } from "@/lib/file-kinds";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import type { AttachmentLocal } from "@/hooks/useUploads";
 import { contextBudget } from "@/lib/context-budget";
 import { LibraryControl } from "./LibraryControl";
-import { AudioChip, UploadChip, type AudioUpload } from "./AudioChip";
-import {
-  useRef,
-  useState,
-  useLayoutEffect,
-  useEffect,
-  useCallback,
-} from "react";
+import { type AudioUpload } from "./AudioChip";
+import { useRef, useState, useLayoutEffect, useEffect } from "react";
 import {
   ArrowUp,
   Plus,
-  Brain,
   X,
   Square,
-  Globe,
   ImageIcon,
   MoreHorizontal,
   ChevronDown,
@@ -76,7 +73,19 @@ export function Composer({
   onCancelUpload,
   webBlocked = false,
   libraryControl,
+  attachmentFixtures,
+  attachmentLocal,
+  onPreviewLoaded,
+  onRetryUpload,
+  visionModels,
+  onChooseModel,
 }: {
+  attachmentFixtures?: React.ComponentProps<typeof AttachmentTray>["fixtures"];
+  attachmentLocal?: Record<string, AttachmentLocal>;
+  onPreviewLoaded?: (id: string) => void;
+  onRetryUpload?: (id: string) => void;
+  visionModels?: import("@/lib/api").Model[];
+  onChooseModel?: (model: import("@/lib/api").Model) => void;
   draftKey?: string;
   images?: boolean;
   previewImages?: boolean;
@@ -149,30 +158,9 @@ export function Composer({
       imageDrafts.set(draftKey, imageValue);
     }
   }, [draftKey, value, imageValue]);
-  const [attachmentMenuOpen, setAttachmentMenuOpen] = useState(false);
-  const restoreAttachmentBackground = useRef<() => void>(() => {});
-  const bindAttachmentMenu = useCallback((node: HTMLDivElement | null) => {
-    restoreAttachmentBackground.current();
-    if (!node?.isConnected) return;
-    const changed: HTMLElement[] = [];
-    let current: HTMLElement | null = node;
-    while (current && current !== document.body) {
-      for (const sibling of current.parentElement?.children ?? []) {
-        if (
-          sibling instanceof HTMLElement &&
-          sibling !== current &&
-          !sibling.inert
-        ) {
-          sibling.inert = true;
-          changed.push(sibling);
-        }
-      }
-      current = current.parentElement;
-    }
-    restoreAttachmentBackground.current = () => {
-      for (const sibling of changed) sibling.inert = false;
-    };
-  }, []);
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const toolsButton = useRef<HTMLButtonElement>(null);
+  const coarse = useMediaQuery("(pointer: coarse)");
   const revision = useRef(0),
     mounted = useRef(true);
   useEffect(() => {
@@ -199,7 +187,7 @@ export function Composer({
   useLayoutEffect(() => {
     if (textarea.current) {
       textarea.current.style.height = "auto";
-      textarea.current.style.height = `${Math.min(textarea.current.scrollHeight, window.innerHeight * 0.4)}px`;
+      textarea.current.style.height = `${Math.min(textarea.current.scrollHeight, 200, window.innerHeight * 0.4)}px`;
     }
   }, [visibleValue]);
   const waiting =
@@ -207,6 +195,32 @@ export function Composer({
     files.some(
       (file) => file.kind === "audio" && file.transcript?.status !== "ready",
     );
+  const fileCount = files.length + uploads.filter((u) => !u.failed).length;
+  const waitingCount =
+    uploads.filter((u) => !u.failed).length +
+    files.filter((f) => f.kind === "audio" && f.transcript?.status !== "ready")
+      .length;
+  const uploadProgress = Math.round(
+    (uploads.filter((u) => !u.failed).reduce((sum, u) => sum + u.percent, 0) +
+      files.length * 100) /
+      Math.max(1, fileCount),
+  );
+  const indeterminate =
+    files.some((f) => f.kind === "audio" && f.transcript?.status !== "ready") ||
+    uploads.some(
+      (u) => !u.failed && ["preparing", "reading"].includes(u.phase ?? ""),
+    );
+  useEffect(() => {
+    if (imageMode || coarse || fileCount >= 8) return;
+    const listener = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "u") {
+        event.preventDefault();
+        fileInput.current?.click();
+      }
+    };
+    window.addEventListener("keydown", listener);
+    return () => window.removeEventListener("keydown", listener);
+  }, [imageMode, coarse, fileCount]);
   const recordingReady = files.some(
     (file) => file.kind === "audio" && file.transcript?.status === "ready",
   );
@@ -217,6 +231,17 @@ export function Composer({
   const contextLabel = context
     ? `${estimatedInput.toLocaleString()} of ${context.context_length.toLocaleString()} total tokens; ${budget.available.toLocaleString()} input allowance; ${budget.reserve.toLocaleString()} reserved for response; 256 safety margin`
     : "Context usage unavailable";
+  const contextWarning =
+    files.some((f) => f.document || f.kind === "audio") &&
+    context &&
+    estimatedInput > budget.available
+      ? `This message and its attachments may exceed the input allowance (${budget.available.toLocaleString()} tokens after reserving ${budget.reserve.toLocaleString()} for the response and 256 for safety). Lower Max output tokens in Chat controls, choose a larger context or remove an attachment.`
+      : undefined;
+  const warned =
+    !!contextWarning ||
+    attachmentIssues(files, uploads, model, context?.reserve).some(
+      (issue) => issue.kind === "warning",
+    );
   useLayoutEffect(() => {
     if (!imageCommand) return;
     revision.current++;
@@ -271,11 +296,13 @@ export function Composer({
       }
       return;
     }
-    if (!running && !disabled && !waiting && value.trim()) {
+    if (!running && !disabled && !waiting && !warned && value.trim()) {
       const submitted = value;
       const version = revision.current;
       if (optimistic) setValue("");
       const accepted = await onSend?.(submitted);
+      if (accepted !== false)
+        uploads.filter((u) => u.failed).forEach((u) => onCancelUpload?.(u.id));
       if (
         draftKey &&
         revision.current === version &&
@@ -307,16 +334,23 @@ export function Composer({
             {error}
           </p>
         )}
-        <input
-          type="file"
-          multiple
-          hidden
-          ref={fileInput}
-          onChange={(e) => {
-            onAttach?.(Array.from(e.target.files ?? []));
-            e.target.value = "";
-          }}
-        />
+        {imageMode && (
+          <input
+            type="file"
+            multiple
+            hidden
+            ref={fileInput}
+            accept={fileAccept(
+              attachmentExtensions,
+              audioExtensions,
+              transcriptionReady,
+            )}
+            onChange={(e) => {
+              onAttach?.(Array.from(e.target.files ?? []));
+              e.target.value = "";
+            }}
+          />
+        )}
         {imageMode && refinement && (
           <div
             className="mb-3 flex w-fit max-w-full items-center gap-2 rounded-lg border border-line bg-surface-2 px-2 py-1 text-sm text-fg-2"
@@ -345,65 +379,21 @@ export function Composer({
           </div>
         )}
         {!imageMode && (
-          <>
-            {uploads.map((upload) => (
-              <UploadChip
-                key={upload.id}
-                upload={upload}
-                onCancel={() => onCancelUpload?.(upload.id)}
-              />
-            ))}
-            {files.map((file) =>
-              file.kind === "audio" ? (
-                <AudioChip
-                  key={file.id}
-                  attachment={file}
-                  model={model}
-                  reserve={context?.reserve}
-                  onRemove={() => onRemove?.(file.id)}
-                />
-              ) : file.document ? (
-                <DocumentChip
-                  key={file.id}
-                  attachment={file}
-                  model={model}
-                  reserve={context?.reserve}
-                  onRemove={() => onRemove?.(file.id)}
-                />
-              ) : (
-                <div
-                  key={file.id}
-                  data-slot="attachment-chip"
-                  className="mb-2 inline-flex max-w-full items-center rounded-md border border-line px-2 text-xs"
-                >
-                  <span className="truncate">{file.filename}</span>
-                  <IconButton
-                    label={`Remove ${file.filename}`}
-                    type="button"
-                    onClick={() => onRemove?.(file.id)}
-                  >
-                    <X />
-                  </IconButton>
-                </div>
-              ),
-            )}
-            {files.some(
-              (file) =>
-                file.document ||
-                (file.kind === "audio" &&
-                  (file.transcript?.token_estimate ?? 0) <= budget.available),
-            ) &&
-              context &&
-              estimatedInput > budget.available && (
-                <p role="status" className="mb-3 text-xs text-warning">
-                  This message and its attachments may exceed the input
-                  allowance ({budget.available.toLocaleString()} tokens after
-                  reserving {budget.reserve.toLocaleString()} for the response
-                  and 256 for safety). Lower Max output tokens in Chat controls,
-                  choose a larger context or remove an attachment.
-                </p>
-              )}
-          </>
+          <AttachmentTray
+            fixtures={attachmentFixtures}
+            files={files}
+            uploads={uploads}
+            local={attachmentLocal}
+            model={model}
+            reserve={context?.reserve}
+            contextWarning={contextWarning}
+            onRemove={onRemove}
+            onCancel={onCancelUpload}
+            onRetry={onRetryUpload}
+            onPreviewLoaded={onPreviewLoaded}
+            visionModels={visionModels}
+            onChooseModel={onChooseModel}
+          />
         )}
         <textarea
           ref={textarea}
@@ -459,152 +449,102 @@ export function Composer({
               void send();
             }
           }}
-          rows={2}
+          rows={1}
         />
-        <div className="flex min-w-0 flex-wrap items-center gap-1">
+        <div className="composer-tool-row-main">
           {!imageMode && (
             <>
-              <DropdownMenu
-                open={attachmentMenuOpen}
-                onOpenChange={setAttachmentMenuOpen}
-              >
-                <DropdownMenuTrigger asChild>
-                  <IconButton label="Add attachment" type="button">
-                    <Plus />
-                  </IconButton>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  ref={bindAttachmentMenu}
-                  onCloseAutoFocus={() => restoreAttachmentBackground.current()}
-                  align="start"
-                  onKeyDown={(event) => {
-                    // Escape also works before Radix's document listener mounts.
-                    if (event.key === "Escape") {
-                      event.preventDefault();
-                      setAttachmentMenuOpen(false);
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    className="composer-attach"
+                    title={
+                      fileCount >= 8
+                        ? "8 files is the limit for one message"
+                        : "Attach files · ⌘U"
                     }
-                  }}
-                >
-                  <DropdownMenuItem
-                    disabled={model?.vision !== true}
-                    onSelect={() => {
-                      if (fileInput.current) {
-                        fileInput.current.accept = "image/*";
-                        fileInput.current.click();
-                      }
-                    }}
                   >
-                    <span>
-                      Add image
-                      {!model?.vision && (
-                        <span className="block text-xs text-fg-3">
-                          Images need a vision model
-                        </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      aria-label="Attach files"
+                      aria-hidden={coarse || undefined}
+                      tabIndex={coarse ? -1 : 0}
+                      disabled={fileCount >= 8}
+                      onClick={() => {
+                        if (!coarse) fileInput.current?.click();
+                      }}
+                    >
+                      <Plus />
+                    </Button>
+                    <input
+                      type="file"
+                      multiple
+                      ref={fileInput}
+                      aria-label="Attach files"
+                      className="composer-file-input"
+                      disabled={fileCount >= 8}
+                      accept={fileAccept(
+                        attachmentExtensions,
+                        audioExtensions,
+                        transcriptionReady,
                       )}
-                    </span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={() => {
-                      if (fileInput.current) {
-                        fileInput.current.accept =
-                          attachmentExtensions?.text?.join(",") ?? "";
-                        fileInput.current.click();
-                      }
-                    }}
-                  >
-                    Add text file
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={() => {
-                      if (fileInput.current) {
-                        fileInput.current.accept =
-                          attachmentExtensions?.document?.join(",") ?? "";
-                        fileInput.current.click();
-                      }
-                    }}
-                  >
-                    Add document (PDF, Word)
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    disabled={!transcriptionReady}
-                    onSelect={() => {
-                      if (fileInput.current) {
-                        fileInput.current.accept = audioExtensions.join(",");
-                        fileInput.current.click();
-                      }
-                    }}
-                  >
-                    {transcriptionReady
-                      ? "Add recording"
-                      : "Recordings need the transcription engine"}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              {onWebChange && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  aria-label="Web search"
-                  aria-pressed={web && !webBlocked}
-                  aria-disabled={webBlocked}
-                  title={
-                    webBlocked
-                      ? "Search is off in chats with a recording"
-                      : undefined
-                  }
-                  className={`h-11 gap-2 px-2 rounded-full ${web && !webBlocked ? "bg-brand-soft text-brand" : ""}`}
-                  onClick={() => {
-                    if (!webBlocked) onWebChange(!web);
-                  }}
-                >
-                  <Globe className="size-4" />
-                  <span className="hidden text-xs sm:inline">Search</span>
-                </Button>
-              )}
+                      onChange={(e) => {
+                        onAttach?.(Array.from(e.target.files ?? []));
+                        e.target.value = "";
+                      }}
+                    />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {fileCount >= 8
+                    ? "8 files is the limit for one message"
+                    : "Attach files · ⌘U"}
+                </TooltipContent>
+              </Tooltip>
+              <ToolsMenu
+                open={toolsOpen}
+                onOpenChange={setToolsOpen}
+                buttonRef={toolsButton}
+                web={web}
+                onWebChange={onWebChange}
+                webBlocked={webBlocked}
+                library={libraryControl}
+                images={images}
+                imageAvailable={imageAvailable}
+                imageReason={imageStatus?.reason ?? undefined}
+                onImage={() => {
+                  setToolsOpen(false);
+                  toggleImage();
+                }}
+                model={model}
+                thinkValue={thinkValue}
+                onThinkChange={onThinkChange}
+              />
+              <ToolChips
+                web={web && !webBlocked}
+                library={libraryControl}
+                thinkValue={model?.reasoning ? thinkValue : undefined}
+                onWebChange={onWebChange}
+                onThinkChange={onThinkChange}
+                openTools={() => setToolsOpen(true)}
+                focusTools={() => toolsButton.current?.focus()}
+              />
             </>
           )}
-          {images && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span
-                  className="inline-flex"
-                  tabIndex={!imageAvailable && !imageMode ? 0 : undefined}
-                >
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className={`h-11 min-w-11 gap-2 rounded-full px-2 ${imageMode ? "bg-brand-soft text-brand" : ""}`}
-                    aria-label={imageMode ? "Leave image mode" : "Create image"}
-                    aria-pressed={imageMode}
-                    disabled={!imageAvailable && !imageMode}
-                    title={
-                      !imageAvailable
-                        ? (imageStatus?.reason ??
-                          "Connecting to the image service…")
-                        : undefined
-                    }
-                    onClick={toggleImage}
-                  >
-                    <ImageIcon className="size-4" />
-                    <span
-                      className={
-                        imageMode ? "text-xs" : "hidden text-xs sm:inline"
-                      }
-                    >
-                      Image
-                    </span>
-                    {imageMode && <X className="size-3" />}
-                  </Button>
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>
-                {!imageAvailable
-                  ? (imageStatus?.reason ?? "Connecting to the image service…")
-                  : imageMode
-                    ? "Leave image mode"
-                    : "Create images in this chat"}
-              </TooltipContent>
-            </Tooltip>
+          {imageMode && (
+            <Button
+              type="button"
+              variant="ghost"
+              className="h-11 rounded-full gap-2 bg-brand-soft text-brand"
+              aria-label="Leave image mode"
+              aria-pressed
+              onClick={toggleImage}
+            >
+              <ImageIcon className="size-4" />
+              Image
+              <X className="size-3" />
+            </Button>
           )}
           {imageMode && (
             <>
@@ -677,43 +617,7 @@ export function Composer({
               </DropdownMenu>
             </>
           )}
-          {!imageMode && (
-            <>
-              {libraryControl && <LibraryControl {...libraryControl} />}
-              {model?.reasoning && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="h-11 gap-2 px-2"
-                      aria-label={`Think: ${thinkValue ?? "Model default"}`}
-                    >
-                      <Brain className="size-4" />
-                      <span className="hidden text-xs sm:inline">Think</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    {["Model default", ...(model.reasoning?.options ?? [])].map(
-                      (level) => (
-                        <DropdownMenuItem
-                          key={level}
-                          onSelect={() => {
-                            onThinkChange?.(
-                              level === "Model default" ? null : level,
-                            );
-                          }}
-                        >
-                          {level[0].toUpperCase() + level.slice(1)}
-                        </DropdownMenuItem>
-                      ),
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </>
-          )}
-          <div className="ml-auto flex items-center gap-2">
+          <div className="composer-send-tools">
             {imageMode && (
               <span className="hidden text-xs text-fg-3 md:inline">
                 {imageStatus?.model ?? "FLUX.2 klein"} ·{" "}
@@ -728,7 +632,7 @@ export function Composer({
                       tabIndex={0}
                       role="img"
                       aria-label={contextLabel}
-                      className="flex size-11 items-center justify-center"
+                      className="composer-context"
                     >
                       <svg
                         viewBox="0 0 20 20"
@@ -772,9 +676,29 @@ export function Composer({
             <Tooltip>
               <TooltipTrigger asChild>
                 <span
-                  className="inline-flex"
+                  className="composer-send-wrap"
                   tabIndex={waiting ? 0 : undefined}
                 >
+                  {waiting && !imageMode && (
+                    <svg
+                      className="composer-send-ring"
+                      data-indeterminate={indeterminate || undefined}
+                      viewBox="0 0 48 48"
+                      role="progressbar"
+                      aria-label={`Waiting for ${waitingCount} ${waitingCount === 1 ? "file" : "files"}`}
+                      aria-valuenow={indeterminate ? undefined : uploadProgress}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                    >
+                      <circle
+                        cx="24"
+                        cy="24"
+                        r="21"
+                        pathLength="100"
+                        strokeDasharray={`${indeterminate ? 24 : uploadProgress} 100`}
+                      />
+                    </svg>
+                  )}
                   <Button
                     type={running ? "button" : "submit"}
                     size="icon"
@@ -793,7 +717,7 @@ export function Composer({
                           !imageValue.trim() ||
                           !validSeeds ||
                           !completeSeeds
-                        : disabled || waiting || !value.trim())
+                        : disabled || waiting || warned || !value.trim())
                     }
                     onClick={running ? onStop : undefined}
                     className={`size-11 rounded-full disabled:bg-surface-3 disabled:text-fg-2 disabled:opacity-100 ${running ? "bg-surface-3 text-fg" : "bg-brand text-on-brand"}`}
@@ -810,9 +734,7 @@ export function Composer({
                     ? "Set one valid seed for each image, or leave all empty"
                     : "Create image"
                   : waiting
-                    ? uploads.some((u) => u.kind === "document" && !u.failed)
-                      ? "Waiting for the document"
-                      : "Waiting for the transcript"
+                    ? `Waiting for ${waitingCount} ${waitingCount === 1 ? "file" : "files"}`
                     : running
                       ? "Stop generating"
                       : imageMode

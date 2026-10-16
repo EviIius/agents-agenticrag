@@ -1,3 +1,4 @@
+import { openAttachmentPicker } from "./helpers";
 import { fakeAppPort } from "../test-runtime";
 import {
   test,
@@ -49,15 +50,21 @@ test("5B document picker, extracted review, Word table, send capture and edit no
   page,
   request,
 }) => {
-  await page.getByRole("button", { name: "Add attachment" }).click();
-  const choosing = page.waitForEvent("filechooser");
-  await page
-    .getByRole("menuitem", { name: "Add document (PDF, Word)", exact: true })
-    .click();
-  const chooser = await choosing;
+  const chooser = await openAttachmentPicker(page);
+  const bootstrap = await (await request.get("/api/bootstrap")).json();
+  const engine = await (await request.get("/api/transcription/status")).json();
   await expect(page.locator("input[type=file]")).toHaveAttribute(
     "accept",
-    ".docx,.pdf",
+    [
+      ...new Set([
+        "image/*",
+        ".heic",
+        ".heif",
+        ...bootstrap.attachment_extensions.document,
+        ...bootstrap.attachment_extensions.text,
+        ...(bootstrap.features.transcription ? engine.audio_extensions : []),
+      ]),
+    ].join(","),
   );
   await chooser.setFiles([fixtures + "two-pages.pdf", fixtures + "table.docx"]);
   const chips = page.locator("[data-slot=document-chip]");
@@ -126,11 +133,14 @@ test("5B document context warning follows model switch and removal deletes text"
     .locator("input[type=file]")
     .setInputFiles(fixtures + "large-text.pdf");
   const item = await (await uploaded).json();
-  await expect(page.locator("[data-slot=document-chip]")).toContainText(
-    "Choose a model with a larger context",
+  await expect(page.locator(".attachment-status")).toContainText(
+    "this model takes",
+  );
+  await expect(page.locator(".attachment-status")).toContainText(
+    "after reserving",
   );
   await expect(
-    page.getByText(/This message and its attachments may exceed/),
+    page.getByRole("button", { name: "Chat controls", exact: true }).last(),
   ).toBeVisible();
   const tokens = await page
     .locator(".composer [role=img]")
@@ -143,9 +153,7 @@ test("5B document context warning follows model switch and removal deletes text"
   await expect(
     page.getByRole("button", { name: "Choose model" }),
   ).toContainText("fake-vision");
-  await expect(
-    page.getByText(/This message and its attachments may exceed/),
-  ).toHaveCount(0);
+  await expect(page.locator(".attachment-status")).toHaveCount(0);
   await expect(page.locator("[data-slot=document-chip]")).not.toContainText(
     "Choose a model with a larger context",
   );
@@ -167,17 +175,16 @@ test("5B scanned, encrypted and damaged errors retain usable composer", async ({
   ]) {
     await page.locator("input[type=file]").setInputFiles(fixtures + file);
     await expect(page.getByText(text, { exact: false }).first()).toBeVisible();
-    await page.getByRole("button", { name: "Remove failed upload" }).click();
+    await page
+      .getByRole("button", { name: `Remove ${file}`, exact: true })
+      .click();
     await expect(page.locator("[data-slot=document-chip]")).toHaveCount(0);
   }
   await page.locator(".composer textarea").fill("Still editable");
   await expect(
     page.getByRole("button", { name: "Send message" }),
   ).toBeEnabled();
-  await page.getByRole("button", { name: "Add attachment" }).click();
-  const choosing = page.waitForEvent("filechooser");
-  await page.getByRole("menuitem", { name: "Add text file" }).click();
-  const chooser = await choosing;
+  const chooser = await openAttachmentPicker(page);
   await expect(page.locator("input[type=file]")).toHaveAttribute(
     "accept",
     /\.swift/,

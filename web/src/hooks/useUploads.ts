@@ -1,24 +1,26 @@
-import { failureCopy, failureDetail } from "@/lib/errors";
-import { useEffect, useRef, useState } from "react";
+import { failureCopy } from "@/lib/errors";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { useQuery, type QueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { api, type Attachment, type Bootstrap, type Model } from "@/lib/api";
 import { useTranscripts } from "@/stores/transcripts";
 import { attachTranscription } from "@/lib/sse";
 import type { AudioUpload } from "@/components/chat/AudioChip";
-import {
-  isImageFile,
-  prepareImage,
-  uploadWithProgress,
-} from "@/lib/attachments";
+import { prepareImage, uploadWithProgress } from "@/lib/attachments";
+import { fileKind, fileLimit } from "@/lib/file-kinds";
 import {
   useAudioExtensions,
   transcriptionStatusQuery,
 } from "./useAudioExtensions";
+
+export type AttachmentLocal = {
+  key: string;
+  url?: string;
+  order: number;
+  stagger?: number;
+};
 export function useUploads({
   query,
   bootstrap,
-  current,
 }: {
   query: QueryClient;
   bootstrap: { data?: Bootstrap };
@@ -28,18 +30,68 @@ export function useUploads({
   const [attachmentVersion, setAttachmentVersion] = useState(0);
   const audioExtensions = useAudioExtensions(Boolean(bootstrap.data));
   const [uploads, setUploads] = useState<AudioUpload[]>([]);
+  const [local, setLocal] = useState<Record<string, AttachmentLocal>>({});
+  const resources = useRef(new Map<string, string>());
+  const originals = useRef(new Map<string, File>());
+  const slots = useRef(new Set<string>());
   const uploadControllers = useRef(new Map<string, AbortController>());
+  const queue = useRef(Promise.resolve());
+  const serial = useRef(0);
+  const mounted = useRef(true);
   const [dragging, setDragging] = useState(false);
   const dragDepth = useRef(0);
   const transcriptState = useTranscripts((state) => state.attachments);
-  const effectiveFiles = files.map((file) =>
-    file.kind === "audio" ? (transcriptState[file.id] ?? file) : file,
+  const effectiveFiles = useMemo(
+    () =>
+      files.map((file) =>
+        file.kind === "audio" ? (transcriptState[file.id] ?? file) : file,
+      ),
+    [files, transcriptState],
   );
   const waitingForTranscript =
-    uploads.some((upload) => !upload.failed) ||
+    uploads.some((item) => !item.failed) ||
     effectiveFiles.some(
       (file) => file.kind === "audio" && file.transcript?.status !== "ready",
     );
+  const releasePreview = (id: string) => {
+    const url = resources.current.get(id);
+    if (url) URL.revokeObjectURL(url);
+    resources.current.delete(id);
+    setLocal((old) =>
+      old[id]?.url ? { ...old, [id]: { ...old[id], url: undefined } } : old,
+    );
+  };
+  useEffect(() => {
+    mounted.current = true;
+    const controllers = uploadControllers.current,
+      urls = resources.current;
+    return () => {
+      mounted.current = false;
+      controllers.forEach((controller) => controller.abort());
+      urls.forEach((url) => URL.revokeObjectURL(url));
+      controllers.clear();
+      urls.clear();
+      originals.current.clear();
+    };
+  }, []);
+  useEffect(() => {
+    const ids = new Set([
+      ...files.map((f) => f.id),
+      ...uploads.map((u) => u.id),
+    ]);
+    for (const [id, url] of resources.current)
+      if (!ids.has(id)) {
+        URL.revokeObjectURL(url);
+        resources.current.delete(id);
+      }
+    for (const id of slots.current) if (!ids.has(id)) slots.current.delete(id);
+    setLocal((old) => {
+      const entries = Object.entries(old).filter(([id]) => ids.has(id));
+      return entries.length === Object.keys(old).length
+        ? old
+        : Object.fromEntries(entries);
+    });
+  }, [files, uploads]);
   const restored = useRef(false);
   const pendingRecordings = useQuery({
     queryKey: ["pending-recordings"],
@@ -49,94 +101,171 @@ export function useUploads({
   useEffect(() => {
     if (!pendingRecordings.data || restored.current) return;
     restored.current = true;
-    setFiles((files) => [
-      ...files,
-      ...pendingRecordings.data.filter(
-        (item) => !files.some((file) => file.id === item.id),
-      ),
+    const pending = pendingRecordings.data.slice(
+      0,
+      Math.max(0, 8 - slots.current.size),
+    );
+    pending.forEach((file) => slots.current.add(file.id));
+    setFiles((old) => [
+      ...old,
+      ...pending.filter((f) => !old.some((item) => item.id === f.id)),
     ]);
-    pendingRecordings.data.forEach(attachTranscription);
+    pending.forEach(attachTranscription);
   }, [pendingRecordings.data]);
-  const upload = async (incoming: File[]) => {
-    for (let file of incoming) {
-      try {
-        const suffix = "." + file.name.split(".").at(-1)?.toLowerCase();
-        const extensions = await query.ensureQueryData(
-          transcriptionStatusQuery,
+  const cancelUpload = (id: string) => {
+    uploadControllers.current.get(id)?.abort();
+    uploadControllers.current.delete(id);
+    originals.current.delete(id);
+    slots.current.delete(id);
+    releasePreview(id);
+    setUploads((old) => old.filter((item) => item.id !== id));
+  };
+  const execute = async (
+    id: string,
+    file: File,
+    controller: AbortController,
+  ) => {
+    const update = (patch: Partial<AudioUpload>) => {
+      if (mounted.current && !controller.signal.aborted)
+        setUploads((old) =>
+          old.map((item) => (item.id === id ? { ...item, ...patch } : item)),
         );
-        const audio = (extensions.audio_extensions ?? []).includes(suffix);
-        const document =
-          bootstrap.data?.attachment_extensions?.document?.includes(suffix);
-        if (audio || document) {
-          if (audio && !bootstrap.data?.features.transcription)
-            throw new Error("Recordings need the transcription engine");
-          if (file.size > 4 * 1024 ** 3)
-            throw new Error("Recordings can be up to 4 GB.");
-          if (document && file.size > 50 * 1024 ** 2)
-            throw new Error("Documents can be up to 50 MB and 1,500 pages.");
-          const id = crypto.randomUUID(),
-            controller = new AbortController();
-          uploadControllers.current.set(id, controller);
-          setUploads((uploads) => [
-            ...uploads,
-            {
-              id,
-              filename: file.name,
-              percent: 0,
-              ...(document ? { kind: "document" as const } : {}),
-            },
-          ]);
-          try {
-            const attachment = await uploadWithProgress(
-              file,
-              (percent) =>
-                setUploads((uploads) =>
-                  uploads.map((upload) =>
-                    upload.id === id ? { ...upload, percent } : upload,
-                  ),
-                ),
-              controller.signal,
-            );
-            setFiles((files) => [...files, attachment]);
-            setAttachmentVersion((version) => version + 1);
-            if (audio) attachTranscription(attachment);
-            setUploads((uploads) =>
-              uploads.filter((upload) => upload.id !== id),
-            );
-          } catch (error) {
-            if (error instanceof DOMException && error.name === "AbortError")
-              setUploads((uploads) =>
-                uploads.filter((upload) => upload.id !== id),
-              );
-            else
-              setUploads((uploads) =>
-                uploads.map((upload) =>
-                  upload.id === id
-                    ? { ...upload, failed: true, reason: failureCopy(error) }
-                    : upload,
-                ),
-              );
-          } finally {
-            uploadControllers.current.delete(id);
-          }
-          continue;
-        }
-        if (isImageFile(file)) {
-          if (current?.vision !== true)
-            throw new Error("Images need a vision model.");
-          if (file.size > 20 * 1024 * 1024)
-            throw new Error("Image limit is 20 MB.");
-          file = await prepareImage(file);
-        }
-        const form = new FormData();
-        form.append("file", file);
-        const a = await api<Attachment>("/attachments", form);
-        setFiles((f) => [...f, a]);
-        setAttachmentVersion((version) => version + 1);
-      } catch (e) {
-        toast.error(failureCopy(e), { description: failureDetail(e) });
+    };
+    try {
+      if (controller.signal.aborted) return;
+      const status = await query.ensureQueryData(transcriptionStatusQuery);
+      const extensions = bootstrap.data?.attachment_extensions ?? {
+        text: [],
+        document: [],
+      };
+      const kind = fileKind(file, extensions, status.audio_extensions ?? []);
+      update({ kind });
+      if (kind === "unsupported")
+        throw new Error(
+          `Can't attach ${file.name.includes(".") ? file.name.slice(file.name.lastIndexOf(".")) : "this type of"} files. Images, PDF, Word, text and recordings work.`,
+        );
+      if (kind === "audio" && !bootstrap.data?.features.transcription)
+        throw new Error("Recordings need the transcription engine.");
+      const limit = fileLimit(kind);
+      if (file.size > limit.bytes)
+        throw new Error(`‘${file.name}’ is over ${limit.label}.`);
+      let prepared = file;
+      if (kind === "image") prepared = await prepareImage(file);
+      if (controller.signal.aborted) return;
+      update({
+        phase: "uploading",
+        format: prepared.type === "image/heic" ? "HEIC" : undefined,
+      });
+      const attachment = await uploadWithProgress(
+        prepared,
+        (percent) => {
+          update({
+            percent,
+            phase:
+              percent === 100 && kind === "document" ? "reading" : "uploading",
+          });
+        },
+        controller.signal,
+      );
+      if (controller.signal.aborted || !mounted.current) return;
+      const url = resources.current.get(id);
+      if (url) {
+        resources.current.delete(id);
+        resources.current.set(attachment.id, url);
       }
+      setLocal((old) => {
+        const next = { ...old, [attachment.id]: old[id] };
+        delete next[id];
+        return next;
+      });
+      slots.current.delete(id);
+      slots.current.add(attachment.id);
+      setFiles((old) => [...old, attachment]);
+      setAttachmentVersion((version) => version + 1);
+      if (kind === "audio") attachTranscription(attachment);
+      setUploads((old) => old.filter((item) => item.id !== id));
+      originals.current.delete(id);
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      slots.current.delete(id);
+      update({
+        failed: true,
+        phase: "error",
+        reason:
+          error instanceof Error && error.message === "Upload didn't finish"
+            ? `‘${file.name}’ didn't finish uploading.`
+            : failureCopy(error) === "Something went wrong. Try again." &&
+                error instanceof Error
+              ? error.message
+              : failureCopy(error),
+        retryable:
+          error instanceof TypeError ||
+          (error instanceof Error && error.message === "Upload didn't finish"),
+      });
+    } finally {
+      uploadControllers.current.delete(id);
     }
+  };
+  const enqueue = (id: string, file: File) => {
+    const controller = new AbortController();
+    uploadControllers.current.set(id, controller);
+    queue.current = queue.current.then(() => execute(id, file, controller));
+  };
+  const upload = async (incoming: File[]) => {
+    for (const [stagger, file] of incoming.entries()) {
+      const id = crypto.randomUUID();
+      const kind = fileKind(
+        file,
+        bootstrap.data?.attachment_extensions ?? { text: [], document: [] },
+        audioExtensions,
+      );
+      const url = kind === "image" ? URL.createObjectURL(file) : undefined;
+      if (url) resources.current.set(id, url);
+      const limit = slots.current.size >= 8;
+      if (!limit) slots.current.add(id);
+      originals.current.set(id, file);
+      const order = ++serial.current;
+      setLocal((old) => ({
+        ...old,
+        [id]: { key: id, url, order, stagger },
+      }));
+      setUploads((old) => [
+        ...old,
+        {
+          id,
+          filename: file.name,
+          kind,
+          percent: 0,
+          phase: limit ? "error" : "preparing",
+          failed: limit,
+          reason: limit ? "8 files is the limit for one message." : undefined,
+        },
+      ]);
+      // A user pick reveals its tray immediately, including inline failures.
+      // Restored durable recordings never go through this path.
+      setAttachmentVersion((version) => version + 1);
+      if (!limit) enqueue(id, file);
+    }
+  };
+  const retryUpload = (id: string) => {
+    const file = originals.current.get(id);
+    if (!file || slots.current.size >= 8 || uploadControllers.current.has(id))
+      return;
+    slots.current.add(id);
+    setUploads((old) =>
+      old.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              failed: false,
+              reason: undefined,
+              phase: "preparing",
+              percent: 0,
+            }
+          : item,
+      ),
+    );
+    enqueue(id, file);
   };
   return {
     files,
@@ -152,5 +281,9 @@ export function useUploads({
     dragDepth,
     audioExtensions,
     upload,
+    local,
+    releasePreview,
+    cancelUpload,
+    retryUpload,
   };
 }

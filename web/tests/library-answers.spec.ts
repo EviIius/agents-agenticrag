@@ -1,3 +1,4 @@
+import { openTools, webTool, libraryTool } from "./helpers";
 import { test, expect, type APIRequestContext } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir } from "node:fs/promises";
@@ -72,22 +73,25 @@ for (const width of [390, 1440])
       );
       await page.goto("/");
       await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
-      const library = page.getByRole("button", {
-        name: "Library",
-        exact: true,
-      });
-      await expect(library).toHaveAttribute("aria-disabled", "false");
-      await page
-        .getByRole("button", { name: "Web search", exact: true })
-        .click();
-      await expect(
-        page.getByRole("button", { name: "Web search", exact: true }),
-      ).toHaveAttribute("aria-pressed", "true");
+      const library = await libraryTool(page);
+      await expect(library).toBeEnabled();
+      await (await webTool(page)).click();
+      await expect(await webTool(page)).toHaveAttribute("aria-checked", "true");
       await library.click();
-      await expect(library).toHaveAttribute("aria-pressed", "true");
+      await expect(page.locator(".composer-note")).toHaveText(
+        "Search is off while Library is on. They work one at a time.",
+      );
       await expect(
-        page.getByRole("button", { name: "Web search", exact: true }),
-      ).toHaveAttribute("aria-pressed", "false");
+        page.getByText(
+          "Library and web search can't be combined in one message.",
+          { exact: true },
+        ),
+      ).toHaveCount(0);
+      await expect(library).toHaveAttribute("aria-checked", "true");
+      await expect(await webTool(page)).toHaveAttribute(
+        "aria-checked",
+        "false",
+      );
       await page
         .getByRole("button", { name: "Choose Library collections" })
         .click();
@@ -171,21 +175,37 @@ test("7B Library touch targets and reasoning toolbar fit at 320 pixels", async (
   });
   await page.setViewportSize({ width: 320, height: 900 });
   await page.goto("/");
-  await expect(page.getByRole("button", { name: /^Think:/ })).toBeVisible();
-  for (const name of ["Library", "Choose Library collections"]) {
-    const button = page.getByRole("button", { name, exact: true });
-    await expect(button).toBeVisible();
-    const box = await button.boundingBox();
+  await openTools(page);
+  await expect(
+    page.getByRole("menuitemradio", { name: "Model default", exact: true }),
+  ).toBeVisible();
+  await (await libraryTool(page)).click();
+  await expect(await libraryTool(page)).toBeChecked();
+  await page.keyboard.press("Escape");
+  for (const name of ["Tools", "Attach files"]) {
+    const control =
+      name === "Attach files" &&
+      (await page.locator(".composer input[type=file]").isVisible())
+        ? page.locator(".composer input[type=file]")
+        : page.getByRole("button", { name, exact: true });
+    const box = await control.boundingBox();
     expect(box).not.toBeNull();
     expect(box!.width).toBeGreaterThanOrEqual(44);
     expect(box!.height).toBeGreaterThanOrEqual(44);
     expect(box!.x).toBeGreaterThanOrEqual(0);
     expect(box!.x + box!.width).toBeLessThanOrEqual(320);
   }
-  await page.getByRole("button", { name: "Library", exact: true }).click();
-  await expect(
-    page.getByRole("button", { name: "Library", exact: true }),
-  ).toHaveAttribute("aria-pressed", "true");
+  const scope = page.getByRole("button", {
+    name: "Choose Library collections",
+    exact: true,
+  });
+  await expect(scope).toBeVisible();
+  await settle(page);
+  const scopeBox = await scope.boundingBox();
+  expect(scopeBox!.height).toBeGreaterThanOrEqual(36);
+  expect(scopeBox!.width).toBeGreaterThanOrEqual(22);
+  expect(scopeBox!.x).toBeGreaterThanOrEqual(0);
+  expect(scopeBox!.x + scopeBox!.width).toBeLessThanOrEqual(320);
   const send = await page
     .getByRole("button", { name: "Send message", exact: true })
     .boundingBox();
@@ -199,26 +219,16 @@ test("7B Library touch targets and reasoning toolbar fit at 320 pixels", async (
 test("7B disabled Library can be turned off; missing files and failure notices", async ({
   page,
   request,
-}, testInfo) => {
+}) => {
   await request.delete("/api/library", { data: { confirmation: "DELETE" } });
   await request.post("/api/library/embedding", { data: { embedding: null } });
   await page.goto("/");
-  const library = page.getByRole("button", { name: "Library", exact: true });
+  const library = await libraryTool(page);
   await expect(library).toHaveAttribute("aria-disabled", "true");
-  if (testInfo.project.name === "webkit") {
-    await page
-      .getByRole("button", { name: "Choose Library collections" })
-      .click();
-    await expect(page.getByLabel("Library scope")).toContainText(
-      "Choose an embedding model",
-    );
-    await page.keyboard.press("Escape");
-  } else {
-    await library.focus();
-    await expect(page.getByRole("tooltip")).toContainText(
-      "Choose an embedding model",
-    );
-  }
+  await expect(
+    page.getByRole("menu", { name: "Tools", exact: true }),
+  ).toContainText("Choose an embedding model");
+  await page.keyboard.press("Escape");
   const conn = (await (await request.get("/api/connections")).json())[0];
   const item = await (
     await request.post("/api/chats", {
@@ -234,8 +244,8 @@ test("7B disabled Library can be turned off; missing files and failure notices",
   await expect(page.getByTestId("library-activity")).toContainText(
     "No ready files in this scope",
   );
-  await library.click();
-  await expect(library).toHaveAttribute("aria-pressed", "false");
+  await (await libraryTool(page)).click();
+  await expect(await libraryTool(page)).not.toBeChecked();
 });
 
 test("7B all synthetic answer states axe and keyboard", async ({
