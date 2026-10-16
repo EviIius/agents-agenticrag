@@ -36,6 +36,12 @@ for (const width of [390, 1440])
           await expect(
             page.getByRole("dialog", { name: "What the model received" }),
           ).toBeVisible();
+        if (state.startsWith("document_"))
+          await expect(
+            page
+              .locator(".composer")
+              .getByRole("button", { name: "Tools", exact: true }),
+          ).toBeDisabled();
         await settle(page);
         const scan = await new AxeBuilder({ page }).analyze();
         const violations = scan.violations.filter((v) =>
@@ -51,7 +57,7 @@ for (const width of [390, 1440])
           await page.getByRole("button", { name: "Close document" }).click();
       }
       await page.getByRole("button", { name: "PDF", exact: true }).click();
-      await page.getByRole("button", { name: "Add attachment" }).click();
+      await page.getByRole("button", { name: "Tools", exact: true }).click();
       await settle(page);
       const menuScan = await new AxeBuilder({ page }).analyze();
       expect(

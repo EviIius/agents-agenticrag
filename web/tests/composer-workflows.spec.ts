@@ -1,3 +1,4 @@
+import { enterImageMode, openTools } from "./helpers";
 import { test, expect, type Page } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 import AxeBuilder from "@axe-core/playwright";
@@ -50,7 +51,8 @@ test("Composer image acceptance retry preserves seed/key, saving and unsent chat
       await route.abort("failed");
     } else await route.continue();
   });
-  const createImage = page.getByRole("button", {
+  await openTools(page);
+  const createImage = page.getByRole("menuitem", {
     name: "Create image",
     exact: true,
   });
@@ -205,7 +207,7 @@ test("Image cancellation stays in composer and Workflows returns to the same sav
     exact: true,
   });
   await message.fill("Synthetic saved-chat draft");
-  await page.getByRole("button", { name: "Create image", exact: true }).click();
+  await enterImageMode(page);
   await page
     .getByRole("textbox", { name: "Image prompt", exact: true })
     .fill("Synthetic cancellable composer #slow");

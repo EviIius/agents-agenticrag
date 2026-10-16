@@ -1,3 +1,4 @@
+import { FileBadge, FileName } from "./AttachmentTile";
 import { lazy, Suspense, useState } from "react";
 import { FileText, X } from "lucide-react";
 import type { Attachment, Model } from "@/lib/api";
@@ -10,12 +11,14 @@ export function DocumentChip({
   onRemove,
   fixture,
   reserve,
+  compact = false,
 }: {
   attachment: Attachment;
   model?: Model;
   onRemove?: () => void;
   fixture?: { text: string } | "loading" | "error";
   reserve?: number;
+  compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const meta = attachment.document;
@@ -25,25 +28,47 @@ export function DocumentChip({
     <>
       <div
         data-slot="document-chip"
-        className={`mb-2 flex max-w-full items-center gap-2 rounded-lg border p-2 ${tooLarge ? "border-warning text-warning" : "border-line bg-surface-2"}`}
+        className={
+          compact
+            ? "attachment-file-card attachment-document-card"
+            : `mb-2 flex max-w-full items-center gap-2 rounded-lg border p-2 ${tooLarge ? "border-warning text-warning" : "border-line bg-surface-2"}`
+        }
+        data-attachment-tile={compact || undefined}
+        data-issue={tooLarge ? "warning" : undefined}
       >
-        <FileText className="size-4 shrink-0" aria-hidden />
+        {compact ? (
+          <FileBadge name={attachment.filename} kind="document" />
+        ) : (
+          <FileText className="size-4 shrink-0" aria-hidden />
+        )}
         <button
           type="button"
-          className="min-h-11 min-w-0 flex-1 text-left text-xs"
+          className={
+            compact
+              ? "attachment-audio-open"
+              : "min-h-11 min-w-0 flex-1 text-left text-xs"
+          }
           aria-label={`Review document ${attachment.filename}`}
           onClick={() => setOpen(true)}
         >
-          <span className="block truncate font-medium">
-            {attachment.filename}
-          </span>
-          <span className="block break-words text-fg-2">
+          {compact ? (
+            <FileName name={attachment.filename} />
+          ) : (
+            <span className="block truncate font-medium">
+              {attachment.filename}
+            </span>
+          )}
+          <span
+            className={
+              compact ? "attachment-meta" : "block break-words text-fg-2"
+            }
+          >
             {meta?.pages != null
               ? `${meta.pages.toLocaleString()} ${meta.pages === 1 ? "page" : "pages"} · `
               : "Word document · "}
             ≈{meta?.token_estimate.toLocaleString()} tokens
           </span>
-          {tooLarge && (
+          {!compact && tooLarge && (
             <span className="block break-words text-warning">
               About {meta?.token_estimate.toLocaleString()} input tokens exceeds
               the {budget.available.toLocaleString()}-token input allowance.{" "}
@@ -56,6 +81,7 @@ export function DocumentChip({
         {onRemove && (
           <IconButton
             type="button"
+            className={compact ? "attachment-remove" : undefined}
             label={`Remove ${attachment.filename}`}
             onClick={onRemove}
           >

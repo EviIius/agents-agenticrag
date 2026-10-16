@@ -1,4 +1,4 @@
-import { settle } from "./helpers";
+import { settle, openTools } from "./helpers";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir } from "node:fs/promises";
@@ -233,13 +233,13 @@ for (const width of [390, 1440]) {
     if (width < 640)
       await page.getByRole("button", { name: "Close", exact: true }).click();
     else await page.keyboard.press("Escape");
-    await page.getByRole("button", { name: /Think:/ }).click();
+    await openTools(page);
     await expect(
-      page.getByRole("menuitem", { name: "On", exact: true }),
+      page.getByRole("menuitemradio", { name: "On", exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByRole("menuitem", { name: "Off", exact: true }),
+      page.getByRole("menuitemradio", { name: "Off", exact: true }),
     ).toBeVisible();
-    await page.getByRole("menuitem", { name: "Off", exact: true }).click();
+    await page.getByRole("menuitemradio", { name: "Off", exact: true }).click();
   });
 }

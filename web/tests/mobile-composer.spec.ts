@@ -36,9 +36,12 @@ test("touch composer accepts typing before and after mobile overlays", async ({
   await page.getByRole("button", { name: "Chat controls", exact: true }).tap();
   await page.getByRole("button", { name: "Close chat controls" }).tap();
   await typeByTouch();
-  await page.getByRole("button", { name: "Add attachment" }).tap();
-  await page.getByRole("menu", { name: "Add attachment", exact: true }).focus();
-  await page.keyboard.press("Escape");
+  const chooser = page.waitForEvent("filechooser");
+  await page.locator('.composer input[type="file"]').tap();
+  await (await chooser).setFiles([]);
+  await expect(
+    page.getByRole("menu", { name: "Add attachment", exact: true }),
+  ).toHaveCount(0);
   await typeByTouch();
   await composer.tap();
   await page.keyboard.type("Synthetic mobile request");

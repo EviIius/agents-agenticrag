@@ -25,17 +25,25 @@ export default function DocumentSheet({
   open,
   onOpenChange,
   fixture,
+  textFile = false,
 }: {
   attachment: Attachment;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   fixture?: { text: string } | "loading" | "error";
+  textFile?: boolean;
 }) {
   const phone = useMediaQuery("(max-width:639px)");
   const feedback = useCopyFeedback();
   const fetched = useQuery({
     queryKey: ["document-text", attachment.id],
-    queryFn: () => api<{ text: string }>(`/attachments/${attachment.id}/text`),
+    queryFn: async () => {
+      if (!textFile)
+        return api<{ text: string }>(`/attachments/${attachment.id}/text`);
+      const response = await fetch(`/api/attachments/${attachment.id}`);
+      if (!response.ok) throw new Error("Could not open the file");
+      return { text: await response.text() };
+    },
     enabled: open && !fixture,
     staleTime: Infinity,
   });
@@ -48,7 +56,7 @@ export default function DocumentSheet({
     <div className="relative shrink-0 border-b border-line p-5 pr-16 text-left">
       <Title className="text-base">What the model received</Title>
       <Description className="break-words">
-        {attachment.filename} · Extracted text only
+        {attachment.filename} · {textFile ? "Text file" : "Extracted text only"}
       </Description>
       <IconButton
         label="Close document"

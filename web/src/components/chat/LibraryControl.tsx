@@ -1,4 +1,4 @@
-import { BookOpen, Check, ChevronDown } from "lucide-react";
+import { BookOpen, Check, ChevronDown, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +21,8 @@ export function LibraryControl({
   collections,
   onToggle,
   onScope,
+  compact = false,
+  onDisabled,
 }: {
   enabled: boolean;
   reason?: string;
@@ -28,36 +30,43 @@ export function LibraryControl({
   collections: components["schemas"]["LibraryCollectionInfo"][];
   onToggle: (enabled: boolean) => void;
   onScope: (scope: Scope) => void;
+  compact?: boolean;
+  onDisabled?: () => void;
 }) {
   const [tipOpen, setTipOpen] = useState(false);
   return (
-    <div className="flex shrink-0 items-center">
-      <Tooltip open={tipOpen} onOpenChange={setTipOpen}>
-        <TooltipTrigger asChild>
-          <Button
-            type="button"
-            variant="ghost"
-            aria-label="Library"
-            aria-pressed={enabled}
-            aria-disabled={!enabled && !!reason}
-            aria-description={reason}
-            onFocus={() => {
-              if (reason) setTipOpen(true);
-            }}
-            className={`h-11 min-w-11 gap-2 rounded-full px-2 ${enabled ? "bg-brand-soft text-brand" : ""}`}
-            onClick={() => {
-              if (enabled || !reason) onToggle(!enabled);
-              else setTipOpen(true);
-            }}
-          >
-            <BookOpen className="size-4" />
-            <span className="hidden text-xs sm:inline">Library</span>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          {reason ?? "Answer using your Library files"}
-        </TooltipContent>
-      </Tooltip>
+    <div
+      className={compact ? "composer-tool-chip" : "flex shrink-0 items-center"}
+      data-slot={compact ? "tool-chip" : undefined}
+    >
+      {!compact && (
+        <Tooltip open={tipOpen} onOpenChange={setTipOpen}>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              aria-label="Library"
+              aria-pressed={enabled}
+              aria-disabled={!enabled && !!reason}
+              aria-description={reason}
+              onFocus={() => {
+                if (reason) setTipOpen(true);
+              }}
+              className={`h-11 min-w-11 gap-2 rounded-full px-2 ${enabled ? "bg-brand-soft text-brand" : ""}`}
+              onClick={() => {
+                if (enabled || !reason) onToggle(!enabled);
+                else setTipOpen(true);
+              }}
+            >
+              <BookOpen className="size-4" />
+              <span className="hidden text-xs sm:inline">Library</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {reason ?? "Answer using your Library files"}
+          </TooltipContent>
+        </Tooltip>
+      )}
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -65,8 +74,20 @@ export function LibraryControl({
             size="icon"
             variant="ghost"
             aria-label="Choose Library collections"
-            className="h-11 w-11"
+            className={compact ? "library-scope-chip" : "h-11 w-11"}
           >
+            {compact && (
+              <>
+                <BookOpen className="size-4" />
+                <span className="chip-label">
+                  {scope?.collection_ids?.length === 1
+                    ? (collections.find(
+                        (c) => c.id === scope.collection_ids![0],
+                      )?.name ?? "Library")
+                    : "Library"}
+                </span>
+              </>
+            )}
             <ChevronDown className="size-3" />
           </Button>
         </PopoverTrigger>
@@ -115,8 +136,33 @@ export function LibraryControl({
               Choose a collection or All files.
             </p>
           )}
+          {compact && (
+            <Button
+              type="button"
+              variant="ghost"
+              className="mt-2 w-full justify-start"
+              onClick={() => {
+                onToggle(false);
+                onDisabled?.();
+              }}
+            >
+              Turn Library off
+            </Button>
+          )}
         </PopoverContent>
       </Popover>
+      {compact && (
+        <button
+          type="button"
+          aria-label="Turn Library off"
+          onClick={() => {
+            onToggle(false);
+            onDisabled?.();
+          }}
+        >
+          <X />
+        </button>
+      )}
     </div>
   );
 }

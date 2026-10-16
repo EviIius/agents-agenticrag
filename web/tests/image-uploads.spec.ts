@@ -1,3 +1,4 @@
+import { enterImageMode } from "./helpers";
 import { expect, test } from "@playwright/test";
 import { mkdir, readFile } from "node:fs/promises";
 import AxeBuilder from "@axe-core/playwright";
@@ -75,10 +76,12 @@ test("image chooser accepts PNG, JPEG, WebP, GIF, HEIC and renamed HEIC", async 
     expect(["image/png", "image/jpeg"]).toContain(attachment.mime_type);
     await expect(
       page
-        .locator("[data-slot=attachment-chip]")
+        .locator("[data-slot=attachment-chip]:not([inert] *)")
         .filter({ hasText: attachment.filename }),
     ).toBeVisible();
-    await expect(page.locator("[data-slot=attachment-chip]")).toHaveCount(1);
+    await expect(
+      page.locator("[data-slot=attachment-chip]:not([inert] *)"),
+    ).toHaveCount(1);
     await page
       .getByRole("button", {
         name: `Remove ${attachment.filename}`,
@@ -86,31 +89,29 @@ test("image chooser accepts PNG, JPEG, WebP, GIF, HEIC and renamed HEIC", async 
       })
       .click();
   }
-  await expect(page.locator("[data-slot=attachment-chip]")).toHaveCount(0);
+  await expect(
+    page.locator("[data-slot=attachment-chip]:not([inert] *)"),
+  ).toHaveCount(0);
 });
 
 test("attaching an image leaves creation mode and exposes its chat chip", async ({
   page,
 }) => {
-  await page
-    .getByRole("button", { name: "Create image", exact: true })
-    .first()
-    .click();
+  await enterImageMode(page);
   await expect(
     page.getByRole("textbox", { name: "Image prompt" }),
   ).toBeVisible();
   await page
     .locator("input[type=file]")
     .setInputFiles("../server/tests/fixtures/images/fake-synthetic.png");
-  await expect(page.locator("[data-slot=attachment-chip]")).toHaveCount(1);
+  await expect(
+    page.locator("[data-slot=attachment-chip]:not([inert] *)"),
+  ).toHaveCount(1);
   await expect(
     page.getByRole("button", { name: "Leave image mode", exact: true }),
   ).not.toBeVisible();
   // Existing chat attachments do not prevent an explicit later switch back.
-  await page
-    .getByRole("button", { name: "Create image", exact: true })
-    .first()
-    .click();
+  await enterImageMode(page);
   await expect(
     page.getByRole("textbox", { name: "Image prompt" }),
   ).toBeVisible();
@@ -145,10 +146,7 @@ test("restoring a pending recording preserves explicitly requested Image mode", 
         exact: true,
       }),
     ).toBeVisible();
-    await page
-      .getByRole("button", { name: "Create image", exact: true })
-      .first()
-      .click();
+    await enterImageMode(page);
     await expect(
       page.getByRole("textbox", { name: "Image prompt", exact: true }),
     ).toBeVisible();
@@ -163,6 +161,11 @@ test("restoring a pending recording preserves explicitly requested Image mode", 
 });
 
 test("unreadable image gives useful upload feedback", async ({ page }) => {
+  let requests = 0;
+  page.on("request", (r) => {
+    if (r.method() === "POST" && r.url().endsWith("/api/attachments"))
+      requests++;
+  });
   await page.locator("input[type=file]").setInputFiles({
     name: "fake-broken.png",
     mimeType: "image/png",
@@ -175,7 +178,18 @@ test("unreadable image gives useful upload feedback", async ({ page }) => {
       )
       .first(),
   ).toBeVisible();
-  await expect(page.locator("[data-slot=attachment-chip]")).toHaveCount(0);
+  await expect(
+    page.locator(
+      '[data-slot=attachment-chip]:not([inert] *)[data-issue="error"]',
+    ),
+  ).toHaveCount(1);
+  expect(requests).toBe(0);
+  await page
+    .locator(".composer textarea")
+    .fill("Synthetic request without the failed upload");
+  await expect(
+    page.getByRole("button", { name: "Send message", exact: true }),
+  ).toBeEnabled();
 });
 
 test("HEIC paste and drop share the chooser normalization path", async ({
@@ -184,10 +198,7 @@ test("HEIC paste and drop share the chooser normalization path", async ({
   const bytes = [
     ...(await readFile("../server/tests/fixtures/images/fake-synthetic.heic")),
   ];
-  await page
-    .getByRole("button", { name: "Create image", exact: true })
-    .first()
-    .click();
+  await enterImageMode(page);
   for (const eventType of ["paste", "drop"]) {
     const uploading = page.waitForResponse(
       (response) =>
@@ -222,12 +233,20 @@ test("HEIC paste and drop share the chooser normalization path", async ({
     const response = await uploading;
     expect(response.status()).toBe(201);
     expect((await response.json()).mime_type).toBe("image/png");
-    await expect(page.locator("[data-slot=attachment-chip]")).toHaveCount(1);
+    await expect(
+      page.locator("[data-slot=attachment-chip]:not([inert] *)"),
+    ).toHaveCount(1);
     await expect(
       page.getByRole("button", { name: "Leave image mode", exact: true }),
     ).not.toBeVisible();
     await page
-      .getByRole("button", { name: "Remove fake-pasted.png", exact: true })
+      .getByRole("button", {
+        name:
+          eventType === "paste"
+            ? "Remove Pasted image 1.png"
+            : "Remove fake-pasted.png",
+        exact: true,
+      })
       .click();
   }
 });
@@ -248,7 +267,9 @@ test("synthetic upload chip and failure stay accessible in both themes and width
       await page
         .locator("input[type=file]")
         .setInputFiles("../server/tests/fixtures/images/fake-synthetic.heic");
-      await expect(page.locator("[data-slot=attachment-chip]")).toHaveCount(1);
+      await expect(
+        page.locator("[data-slot=attachment-chip]:not([inert] *)"),
+      ).toHaveCount(1);
       await page.locator("input[type=file]").setInputFiles({
         name: "fake-broken.png",
         mimeType: "image/png",

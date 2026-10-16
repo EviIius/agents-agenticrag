@@ -21,6 +21,7 @@ import type { ImageJob } from "@/lib/image-events";
 import { ImageActions, type ImageIteration } from "./ImageActions";
 
 type Point = { x: number; y: number };
+export type ViewerPhoto = { id: string; prompt: string; url: string };
 export function ImageViewer({
   job: initial,
   jobs,
@@ -30,8 +31,8 @@ export function ImageViewer({
   vision,
   preview,
 }: {
-  job: ImageJob;
-  jobs: ImageJob[];
+  job: ImageJob | ViewerPhoto;
+  jobs: (ImageJob | ViewerPhoto)[];
   frame: HTMLElement;
   onClose: () => void;
   onIteration?: ImageIteration;
@@ -39,7 +40,7 @@ export function ImageViewer({
   preview?: boolean;
 }) {
   const available = jobs.filter(
-    (job) => job.state === "complete" && job.image_bytes > 0,
+    (job) => "url" in job || (job.state === "complete" && job.image_bytes > 0),
   );
   const [id, setId] = useState(initial.id),
     [closing, setClosing] = useState(false),
@@ -67,11 +68,19 @@ export function ImageViewer({
   }, []);
   const reduced = useReducedMotion();
   const job = available.find((job) => job.id === id) ?? initial;
+  const imageUrl = "url" in job ? job.url : `/api/images/jobs/${id}/output/png`;
+  useEffect(() => setFailed(false), [imageUrl]);
   const index = available.findIndex((job) => job.id === id);
   const position =
-    jobs
-      .filter((row) => row.origin?.message_id === job.origin?.message_id)
-      .findIndex((row) => row.id === job.id) + 1;
+    "url" in job
+      ? index + 1
+      : jobs
+          .filter(
+            (row) =>
+              !("url" in row) &&
+              row.origin?.message_id === job.origin?.message_id,
+          )
+          .findIndex((row) => row.id === job.id) + 1;
   function source() {
     return (
       document.querySelector<HTMLElement>(
@@ -155,7 +164,10 @@ export function ImageViewer({
         ? 1
         : Math.max(
             1,
-            (img.current?.naturalWidth ?? 1024) / Math.max(1, fit.size),
+            Math.max(
+              img.current?.naturalWidth ?? 1024,
+              img.current?.naturalHeight ?? 1024,
+            ) / Math.max(1, fit.size),
           ),
     );
     setOffset({ x: 0, y: 0 });
@@ -225,7 +237,9 @@ export function ImageViewer({
           <header className="image-viewer-bar">
             <button
               className={`image-viewer-prompt ${expanded ? "is-expanded" : ""}`}
-              aria-label="Expand image prompt"
+              aria-label={
+                "url" in job ? "Expand file name" : "Expand image prompt"
+              }
               aria-expanded={expanded}
               onClick={() => setExpanded(!expanded)}
             >
@@ -364,7 +378,7 @@ export function ImageViewer({
                     ref={img}
                     key={id}
                     draggable={false}
-                    src={`/api/images/jobs/${id}/output/png`}
+                    src={imageUrl}
                     alt={job.prompt}
                     onError={() => setFailed(true)}
                     className="image-viewer-output"
@@ -394,19 +408,22 @@ export function ImageViewer({
             )}
           </div>
           <footer className="image-viewer-footer">
-            <ImageActions
-              key={id}
-              job={job}
-              position={position}
-              viewer
-              preview={preview}
-              vision={vision}
-              onIteration={
-                onIteration
-                  ? (job, action, n) => close(() => onIteration(job, action, n))
-                  : undefined
-              }
-            />
+            {!("url" in job) && (
+              <ImageActions
+                key={id}
+                job={job}
+                position={position}
+                viewer
+                preview={preview}
+                vision={vision}
+                onIteration={
+                  onIteration
+                    ? (job, action, n) =>
+                        close(() => onIteration(job, action, n))
+                    : undefined
+                }
+              />
+            )}
             <IconButton
               label={zoom > 1 ? "Fit image" : "Zoom to actual size"}
               onClick={() => toggleZoom()}

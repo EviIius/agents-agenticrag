@@ -1,3 +1,4 @@
+import { enterImageMode, openTools } from "./helpers";
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir, writeFile } from "node:fs/promises";
@@ -30,10 +31,13 @@ test("saved image turn handles a lost response, automatic seeds, drafts, saving 
   await page.goto("/");
   const text = page.locator(".composer textarea");
   await text.fill("Synthetic unsent text draft");
+  await openTools(page);
   await expect(
-    page.getByRole("button", { name: "Create image", exact: true }),
+    page.getByRole("menuitem", { name: "Create image", exact: true }),
   ).toBeEnabled();
-  await page.getByRole("button", { name: "Create image", exact: true }).click();
+  await page
+    .getByRole("menuitem", { name: "Create image", exact: true })
+    .click();
   await prompt(page).fill("Synthetic saved cobalt circle #slow");
   const bodies: Record<string, unknown>[] = [];
   await page.route("**/api/chats/*/images", async (route) => {
@@ -173,16 +177,18 @@ test("image command, independent drafts, cancellation, removed outputs and faile
   request,
 }) => {
   await page.goto("/");
+  await openTools(page);
   await expect(
-    page.getByRole("button", { name: "Create image", exact: true }),
+    page.getByRole("menuitem", { name: "Create image", exact: true }),
   ).toBeEnabled();
+  await page.keyboard.press("Escape");
   await page
     .locator(".composer textarea")
     .fill("/image Synthetic cancel circle #slow");
   await expect(prompt(page)).toHaveValue("Synthetic cancel circle #slow");
   await page.getByRole("button", { name: "Leave image mode" }).click();
   await page.locator(".composer textarea").fill("Synthetic separate text");
-  await page.getByRole("button", { name: "Create image", exact: true }).click();
+  await enterImageMode(page);
   await expect(prompt(page)).toHaveValue("Synthetic cancel circle #slow");
   await page.getByRole("button", { name: "Create image", exact: true }).click();
   await turn(page).getByRole("button", { name: "Cancel", exact: true }).click();

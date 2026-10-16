@@ -1,3 +1,4 @@
+import { openAttachmentPicker } from "./helpers";
 import { settle } from "./helpers";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
@@ -29,15 +30,14 @@ test.beforeEach(async ({ page, request }) => {
     });
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Add attachment" }).click();
-  await expect(
-    page.getByRole("menuitem", { name: "Add recording", exact: true }),
-  ).toBeVisible();
-  await page.getByRole("menu", { name: "Add attachment", exact: true }).focus();
-  await page.keyboard.press("Escape");
+  await (await openAttachmentPicker(page)).setFiles([]);
+  await expect(page.locator('input[type="file"]')).toHaveAttribute(
+    "accept",
+    /\.wav/,
+  );
   await expect(
     page.getByRole("menu", { name: "Add attachment", exact: true }),
-  ).not.toBeVisible();
+  ).toHaveCount(0);
   await page.locator('input[type="file"]').setInputFiles({
     name: "Synthetic recording.wav",
     mimeType: "audio/wav",

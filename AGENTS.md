@@ -1419,3 +1419,68 @@ pass. Both reduced-motion triggers remain verified. H4 and separate synthetic
 evidence: `docs/CHAT-MOTION-AUDIT-REPORT.md`. Already-open phone pages need reopening
 to hydrate the preference; no physical-phone pass is invented. Historical evidence
 and private before/after preference records/videos are retained.
+
+**User authorization — 15 October 2026 (attachments and composer):** Jake asks
+to assess and implement Claude's attachments redesign. Build
+`docs/next/attachments/ATTACHMENTS-SPEC.md` on `codex/attachments-redesign` only,
+stopping for review after AT-A and AT-B. Adopt the recommended Part A decisions
+J-U1, J-U3, J-U4 and J-U5: direct native picking, retained images with a blocking
+vision warning, Tools/chips and an isolated branch. Long-paste conversion belongs
+to AT-B's later review. No main merge, publisher, service restart or installed-app
+change until Jake's final approval. Web only: no server, schema, prompt, model-call
+or dependency changes. Reuse existing request fields and runtime capabilities.
+Use synthetic files and never capture the native device picker. Push the branch
+and open a draft PR; retain the AT-A report and full regression evidence.
+
+
+**Attachments AT-A technical closeout — 16 October 2026:** Claude’s source package
+and all 29 references are preserved; AT-A is implemented on
+`codex/attachments-redesign` in draft PR #2. Tested source `be5a839c` passes full
+make check (673 Python / 121 frontend, 110 contrast pairs) and one complete browser
+run (677 passed / three existing skips / zero failures). Retain the failed and
+interrupted attempts, test-diff ledger, 24 exact fake-runtime request comparisons,
+208 state scans, 216 synthetic screenshots and frozen source manifests. Initial
+JS is 254,207 gzip bytes; both engines meet the unchanged timing budgets. Earlier
+tracked evidence is restored with this run preserved separately. Main, installed
+app, server/API/schema/prompts/dependencies and model defaults remain unchanged;
+no native inference or deployment occurred. Physical iPhone review is not claimed.
+H4: `docs/ATTACHMENTS-AT-A-REPORT.md`. Stop for AT-A review before AT-B; merge and
+publication remain gated by Jake’s final approval.
+
+**User acceptance and authorization — 16 October 2026 (attachments AT-B):** Jake
+said “go ahead with part 2” after the AT-A report. Proceed with AT-B on the existing
+`codex/attachments-redesign` branch: the drop overlay, pasted images, recommended
+J-U2 long-paste conversion with Keep as text, sent attachment grids/cards and their
+optimistic handoff. This accepts AT-A for continuation without inventing a physical
+phone check. Preserve existing request bodies, explicit sampling and server/schema/
+prompt/dependency invariants. Use synthetic evidence and retain all attempts.
+Stop with the AT-B H4 report and update draft PR #2. No merge, publisher, installed
+app change or service restart is authorized.
+
+
+**Attachments AT-B technical closeout — 16 October 2026:** Part B is implemented
+on `codex/attachments-redesign` in draft PR #2. Tested source `ff5f589e` passes
+full make check (673 Python / 121 frontend, 110 contrast pairs) and one complete
+browser invocation (699 passed / three existing skips / zero failures). All seven
+new behavior checks pass in both engines, along with 120 synthetic state scans,
+24 exact original-main request comparisons and the unchanged performance budgets.
+Initial JS is 254,448 gzip bytes. Retain failed harness attempts, the motion-guard
+cursor correction and the intentionally interrupted first full attempt separately.
+Historical tracked evidence, including AT-A, is restored; this run is preserved
+under `artifacts/attachments/at-b/`. Server, API, schema, prompts, dependencies,
+sampling, main and the installed app remain unchanged; no native inference or
+publication occurred. Physical iPhone acceptance is not claimed. H4:
+`docs/ATTACHMENTS-AT-B-REPORT.md`. Stop for AT-B review; merge/publication remain
+gated by Jake's final approval.
+
+**User acceptance and authorization — 16 October 2026 (attachments release):**
+After the readiness report, Jake said “Go ahead and implement”. Accept the AT-A
+and AT-B branch reports for release without inventing a physical phone check.
+Merge `codex/attachments-redesign` into main with an explicit merge commit; run
+the full check and one complete browser suite on main before publication. Publish
+only the verified web assets using the existing static-only publisher protocol,
+with the current server baseline pinned, unchanged service/route and a private
+static/database rollback. No program-source, server/schema/prompt/dependency or
+native inference change is authorized by this release. Preserve all attempts and
+historical evidence, report the merge and published hashes/rollback path, then
+request Jake's short physical-iPhone acceptance check. Do not publish failed gates.
