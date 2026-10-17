@@ -1,0 +1,10 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+All checks passed!
+. scripts/tool-env.sh; uv run --directory server ruff format --check app tests
+165 files already formatted
+. scripts/tool-env.sh; uv run --directory server mypy app tests
+tests/test_image_embedding_release.py:424: error: Item "None" of "Store | None" has no attribute "rows"  [union-attr]
+tests/test_image_embedding_release.py:429: error: Incompatible types in assignment (expression has type "def run(manifest: Path, scratch: Path, notify: Any) -> Coroutine[Any, Any, int]", variable has type "def run(self, manifest: Path, scratch: Path, progress: Any) -> Coroutine[Any, Any, int]")  [assignment]
+tests/test_image_embedding_release.py:429: note: Error code "assignment" not covered by "type: ignore[method-assign]" comment
+Found 2 errors in 1 file (checked 163 source files)
+make: *** [check] Error 1

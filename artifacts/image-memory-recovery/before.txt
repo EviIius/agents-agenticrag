@@ -1,0 +1,96 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_________ test_image_handoff_releases_embedding_and_keeps_daily_model __________
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-153/test_image_handoff_releases_em0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10ccecc30>
+
+    @respx.mock
+    async def test_image_handoff_releases_embedding_and_keeps_daily_model(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        worker = tmp_path / "fake-worker.py"
+        worker.write_text("import json\nprint(json.dumps({'type':'finished'}),flush=True)\n")
+        capacity = Capacity()
+        engine = Engine(tmp_path, capacity)
+        monkeypatch.setattr(engine, "paths", lambda: (Path(sys.executable), worker, tmp_path))
+    
+        async def stable_swap() -> float:
+            return 0
+    
+        monkeypatch.setattr(engine, "swap", stable_swap)
+        loaded = [daily(), embedding()]
+        respx.get("http://127.0.0.1:11434/api/ps").mock(
+            side_effect=lambda _: __import__("httpx").Response(200, json={"models": loaded})
+        )
+        respx.post("http://127.0.0.1:11434/api/show").respond(200, json={"capabilities": ["embedding"]})
+        unloads: list[str] = []
+    
+        def release(request: Any) -> Any:
+            body = json.loads(request.content)
+            unloads.append(body["model"])
+            assert body == {"model": "synthetic-files", "messages": [], "keep_alive": 0, "stream": False}
+            assert capacity.busy
+            loaded[:] = [daily()]
+            return __import__("httpx").Response(200, json={"done": True, "done_reason": "unload"})
+    
+        respx.post("http://127.0.0.1:11434/api/chat").mock(side_effect=release)
+        events: list[dict[str, Any]] = []
+    
+        async def progress(event: dict[str, Any]) -> None:
+            events.append(event)
+    
+        async with capacity.lease(background=True), asyncio.timeout(5):
+>           assert await engine.run(tmp_path / "request.json", tmp_path, progress) == 0
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_image_embedding_release.py:65: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/images/engine.py:111: in run
+    await self.admit()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.images.engine.Engine object at 0x10cce8c20>
+
+    async def admit(self) -> None:
+        async with httpx.AsyncClient(timeout=5, trust_env=False) as client:
+            try:
+                response = await client.get("http://127.0.0.1:11434/api/ps")
+                response.raise_for_status()
+                models = response.json()["models"]
+            except (httpx.HTTPError, ValueError, KeyError) as exc:
+                raise AppError(
+                    "image_capacity",
+                    "Cannot verify loaded models. Retry when Ollama is reachable.",
+                    409,
+                ) from exc
+        if not isinstance(models, list) or any(not isinstance(row, dict) for row in models):
+            raise AppError(
+                "image_capacity",
+                "Invalid loaded-model report. Retry when Ollama is reachable.",
+                409,
+            )
+        # No implicit unload, load, keep-alive refresh or model-name heuristic.
+        if (
+            any(
+                row.get("digest") not in QUALIFIED_DIGESTS
+                or row.get("context_length") != 32768
+                or not isinstance(row.get("size_vram"), int)
+                or not 0 < row["size_vram"] <= 21827095100
+                for row in models
+            )
+            or len(models) > 1
+        ):
+>           raise AppError(
+                "image_capacity",
+                "A loaded model combination is not qualified for images. "
+                "Open Settings → Models and eject other loaded models, including Library/search "
+                "embedding models, or retry after they expire. Nothing was unloaded.",
+                409,
+            )
+E           app.errors.AppError: A loaded model combination is not qualified for images. Open Settings → Models and eject other loaded models, including Library/search embedding models, or retry after they expire. Nothing was unloaded.
+
+app/images/engine.py:85: AppError
+=========================== short test summary info ============================
+FAILED tests/test_image_embedding_release.py::test_image_handoff_releases_embedding_and_keeps_daily_model
+1 failed in 0.18s

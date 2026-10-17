@@ -1591,3 +1591,35 @@ Next proposed scope is `docs/HERMES-AND-PHOTO-EDITING-PLAN.md`: Hermes v0.22.2
 integration assessment before a custom agent loop; no Hermes install, 64K profile,
 native agent trial or photo-reference integration has occurred. Preserve the
 separate named-dependency/native-trial review and original grounding limitations.
+
+**User authorization — 17 October 2026 (image memory handoff):** Jake reported
+chat and Brief to images failing while a Library embedding model remained loaded,
+then selected “Release idle embedding models automatically.” On
+`codex/image-memory-recovery`, starting an image job may release only the app's
+configured local Library/Web search models that fresh runtime metadata reports
+as embedding-only, under the existing shared native Capacity lease. Keep a loaded
+qualified chat profile; preserve all digest/context/residency/count/swap limits.
+Validate the entire proposed remaining configuration before any release, recheck
+actual residency afterward, and never evict other chat/unknown models implicitly.
+Use existing job progress, cancellation and retry, preserving completed workflow
+blocks and all Library data/configuration. No new dependencies, weights, sampling,
+defaults, broad memory qualification or Research. Verify with synthetic tests
+and retain a report before publication; no new native generation trial is implied.
+This is a narrow exception to the previous no-automatic-unloading rule. It also
+records a physical-phone image failure in the repair release; do not close the
+pending phone acceptance or resume Hermes inference as if it passed.
+
+**Image memory handoff technical closeout — 17 October 2026:** Final source on
+`codex/image-memory-recovery` passes full make check (721 Python / 126 frontend,
+110 contrast pairs), 45 focused handoff/admission cases and 14 targeted
+Chromium/WebKit browser checks. Preserve the original failure and first-draft
+runtime-capability failure: the configured embedding model also reports auxiliary
+tools/thinking flags. The final rule requires embedding, allows those flags and
+excludes completion/unknown capabilities; it never infers capabilities from names.
+All 548 frozen source hashes and 425 build hashes match; initial JS is 254,964
+gzip bytes within the unchanged 256,000-byte limit. Candidate/previous startup
+on copied data and all 55 existing table projections pass, with a private full
+application/data/plist fallback. No real generation, unload or Hermes inference
+occurs during validation. H4: `docs/IMAGE-MEMORY-HANDOFF-REPORT.md`; raw evidence:
+`artifacts/image-memory-recovery/`. Publication/physical phone results must be
+recorded separately; do not claim phone acceptance or resume Hermes prematurely.
