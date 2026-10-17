@@ -1623,3 +1623,19 @@ application/data/plist fallback. No real generation, unload or Hermes inference
 occurs during validation. H4: `docs/IMAGE-MEMORY-HANDOFF-REPORT.md`; raw evidence:
 `artifacts/image-memory-recovery/`. Publication/physical phone results must be
 recorded separately; do not claim phone acceptance or resume Hermes prematurely.
+
+**Image memory handoff publication — 17 October 2026:** PR #4 is merged as
+`799b7f4f`; main matches all 548 tested source and 425 reproduced build hashes.
+The verified patch is live, healthy after 1.779 seconds, with 114 installed server
+hashes verified, unchanged schema 13, all 55 pre-existing table projections
+preserved and the original service/plist/interpreters/dependencies/worker controls
+and Tailscale route intact. Private full fallback and copied-data previous/candidate
+startup tests pass; source fallback tag is
+`checkpoint/pre-image-memory-handoff-2026-10-17`. Same-schema rollback preserves
+accepted live data. Actual HTTPS desktop/iPhone-profile UI checks pass using
+synthetic intercepted API data and no native requests; preserve their initial
+legacy PWA-evidence label and corrected observer record separately. No complete
+PWA suite rerun, physical phone pass, real generation/unload or Hermes execution
+is claimed. Jake's post-fix phone acceptance remains pending and the approved
+Hermes trial remains on hold for that prerequisite. H4/publication records:
+`docs/IMAGE-MEMORY-HANDOFF-REPORT.md`, `artifacts/image-memory-recovery/`.

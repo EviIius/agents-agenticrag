@@ -37,7 +37,7 @@ with the first draft.
 | Existing chat cancellation/SSE and workflow retry | Pass | Six Chromium/WebKit regression checks; completed text block stays on attempt 1 when failed image retries |
 | Full repository checks | Pass: 721 Python / 126 frontend, 110 contrast pairs | `artifacts/image-memory-recovery/check-final.txt` |
 | Build and initial JS budget | Pass | 425 build files; 254,964 gzip bytes, unchanged 256,000-byte ceiling |
-| Publication and fallback | Rehearsal passes; publication pending | Candidate/previous copied-data startup and all 55 table projections pass; private full fallback prepared |
+| Publication and fallback | Pass, live | PR #4 merged as `799b7f4f`; 114 server / 425 static hashes match; healthy in 1.779 s; all 55 tables preserved |
 | Physical iPhone check | Pending | No post-fix phone result or VoiceOver pass invented |
 
 ## Changed files
@@ -125,9 +125,37 @@ step count, process ownership, cancellation and output validation are unchanged.
 Every capture uses fabricated prompts and metadata. The user's screenshots and
 private media, filenames, messages and Library text are excluded.
 
+## Publication
+
+Published 17 October at 23:51:35 UTC after the final full check passed. Merged
+main reproduces all 548 tested source and 425 tested build hashes. Both local
+and normally verified Tailscale HTTPS health/workflow/image-status endpoints
+pass; HTML/service-worker hashes match and production `/design` remains disabled.
+The service identity, plist, interpreter, dependencies, schema 13, Tailscale
+route and existing transcription/image worker controls are unchanged.
+
+Actual installed HTTPS assets also pass Chromium and iPhone-profile WebKit
+typing, Tools/Model default, long-paste undo and photo tray/viewer/remove checks
+with intercepted synthetic API data, zero page errors and zero native requests.
+Service workers are blocked for that interception; no new complete PWA browser
+suite or physical iPhone observation is claimed. The copied observer's initial
+legacy full-PWA-suite label is preserved separately and corrected in its source
+and final output; the second observer invocation changes no product code or API
+assertion.
+
+Private full app/data/plist fallback:
+`~/.local/share/workbench/qa/image-memory-handoff-20261017`.
+Pushed source fallback tag: `checkpoint/pre-image-memory-handoff-2026-10-17`.
+The tested same-schema rollback restores the old application while retaining
+accepted current messages/files; it does not replace live data with an old DB.
+Source/release/controller evidence is in `artifacts/image-memory-recovery/`.
+No real inference or model release was performed during QA or deployment. The
+automatic release runs when the user next starts an image with eligible idle
+embedding models resident; actual generation and phone confirmation remain pending.
+
 ## Open questions for Jake
 
-After publication, retry the failed image block or use Try again in chat while
+Reload the published app, then retry the failed image block or use Try again in chat while
 the normal 32K chat model is selected. Configured idle embeddings should be
 released automatically, and Library should load its model on its next request.
 Physical verification and the repair release's short phone check remain pending;
