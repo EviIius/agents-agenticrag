@@ -1,5 +1,22 @@
 # Deferred fixes — resolved polish, 8 October 2026
 
+## Current QA repair checkpoint — 17 October 2026
+
+The older sections below retain their checkpoint history. Current implementation
+is on `codex/qa-roadmap-repairs` in draft PR #3 and is not deployed. The source
+draft rollback, unsupported thinking fallback, Document Start input and disabled
+embedding Eject defects are repaired. Auto is labeled Model default; long
+thinking has truthful guidance and Stop, and Aether is the display name.
+The frozen candidate passes 686 Python, 126 frontend and 711 browser tests,
+with three unchanged browser skips. The installed app remains unchanged;
+publication is the next review checkpoint.
+
+Full QA results and remaining limits are in
+[`QA-ROADMAP-REPAIRS-REPORT.md`](QA-ROADMAP-REPAIRS-REPORT.md). Preserve current image
+memory limits: the embedding recovery is explicit manual Eject, not automatic
+unloading. No hard thinking deadline, Answer now continuation, factual grounding
+qualification, agent/tool loop, new workflow block or routing is claimed.
+
 | Issue | Current action | Verification |
 |---|---|---|
 | iPhone recording menu clips its first action and reaches the home indicator. | Implemented safe-area collision padding and a scrollable visible-viewport height limit. Preserve unavailable retry entries and their explanation. | Synthetic portrait, landscape and keyboard-sized viewport checks; first/last action access, dismissal and focus return. See deferred polish report for results. |

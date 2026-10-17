@@ -55,7 +55,7 @@ async def test_image_iteration_lineage_and_export(
     assert not any(row["id"] == refined["assistant"]["id"] for row in exported)
     md = (await client.get(f"/api/chats/{cid}/export?format=md")).text
     for i, job in enumerate(first["assistant"]["images"], 1):
-        assert f"Image {i}: Atelier-image-{job['id'][:8]}.png · seed {job['seed']}" in md
+        assert f"Image {i}: Aether-image-{job['id'][:8]}.png · seed {job['seed']}" in md
     assert refined_prompt in md and "seed 77" in md
     assert "data:image" not in md and "data:image" not in str(data)
     assert not [body for body in runtime.state.captures if body.get("messages")]

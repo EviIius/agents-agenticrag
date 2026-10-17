@@ -270,13 +270,13 @@ export function WorkflowCard({
               format: "md",
               label: "Markdown (.md)",
               url: `/api/workflows/runs/${run.id}/export?format=md`,
-              filename: `Atelier-workflow-${run.id.slice(0, 8)}.md`,
+              filename: `Aether-workflow-${run.id.slice(0, 8)}.md`,
             },
             {
               format: "json",
               label: "Details and source (.json)",
               url: `/api/workflows/runs/${run.id}/export?format=json`,
-              filename: `Atelier-workflow-${run.id.slice(0, 8)}.json`,
+              filename: `Aether-workflow-${run.id.slice(0, 8)}.json`,
             },
           ]}
         />

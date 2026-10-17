@@ -273,16 +273,24 @@ test("New UI states match tokens and have no serious/critical axe findings in bo
   await mkdir(dir, { recursive: true });
   const results = [];
   for (const theme of ["light", "dark"]) {
+    await request.patch("/api/settings", {
+      data: { "appearance.theme": theme },
+    });
     await page.addInitScript(
       (v) => localStorage.setItem("workbench-theme", v),
       theme,
     );
-    await page.goto(`/workflows/${d.id}`);
-    await page.evaluate(
-      (v) => (document.documentElement.dataset.theme = v),
-      theme,
+    const modelMetadata = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === "/api/models" && response.ok(),
     );
+    await page.goto(`/workflows/${d.id}`);
+    await (await modelMetadata).finished();
+    await expect(page.locator(".wf-studio")).toBeVisible();
+    await expect(page.locator(".wf-save-status")).toHaveText("Saved");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
     await settle(page);
+    await expect(page.locator(".app-main")).toHaveCSS("opacity", "1");
     for (const state of ["canvas", "selected", "problems"]) {
       if (state === "selected") await block(page, "n_pack");
       if (state === "problems") {

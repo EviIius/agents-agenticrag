@@ -1,0 +1,103 @@
+npm notice run workbench-web@1.0.0-alpha.0 npx
+npm notice run 'playwright' test qa-repairs.spec.ts --project=chromium
+[WebServer] INFO:     Started server process [23286]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:18080 (Press CTRL+C to quit)
+[WebServer] INFO:     Started server process [23289]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:18787 (Press CTRL+C to quit)
+[WebServer] npm notice run workbench-web@1.0.0-alpha.0 dev
+[WebServer] npm notice run vite --host 127.0.0.1 --port 5173 --strictPort
+[WebServer] (node:23327) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "./test-runtime" without a file extension (vite.config.ts:4:28). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+Running 2 tests using 1 worker
+
+(node:23328) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] INFO httpx: HTTP Request: GET http://127.0.0.1:18080/api/tags "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: GET http://127.0.0.1:18080/api/ps "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/show "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/show "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/show "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/show "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/show "HTTP/1.1 200 OK"
+  ✘  1 [chromium] › tests/qa-repairs.spec.ts:3:1 › rejected send preserves both source and new-chat drafts across remounts (5.9s)
+(node:23336) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] INFO httpx: HTTP Request: GET http://127.0.0.1:18080/api/tags "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: GET http://127.0.0.1:18080/api/ps "HTTP/1.1 200 OK"
+  ✘  2 [chromium] › tests/qa-repairs.spec.ts:30:1 › a loaded Library embedding model can be explicitly ejected without changing the chat model (45.1s)
+
+
+  1) [chromium] › tests/qa-repairs.spec.ts:3:1 › rejected send preserves both source and new-chat drafts across remounts 
+
+    Error: expect(locator).toHaveValue(expected) failed
+
+    Locator:  locator('.composer textarea')
+    Expected: "Synthetic rejected source draft"
+    Received: ""
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveValue" locator('.composer textarea') with timeout 5000ms
+      - waiting for locator('.composer textarea')
+        14 × locator resolved to <textarea rows="1" aria-label="Message fake-chat" placeholder="Message fake-chat…"></textarea>
+           - unexpected value ""
+
+
+      25 |   await expect(page.getByRole("alert")).toHaveCount(0);
+      26 |   await page.evaluate((url) => { history.pushState({}, "", url); dispatchEvent(new PopStateEvent("popstate")); }, `/c/${chat.id}`);
+    > 27 |   await expect(field).toHaveValue("Synthetic rejected source draft");
+         |                       ^
+      28 | });
+      29 |
+      30 | test("a loaded Library embedding model can be explicitly ejected without changing the chat model", async ({ page, request }) => {
+        at /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/web/tests/qa-repairs.spec.ts:27:23
+
+    Error Context: test-results/qa-repairs-rejected-send-p-abe88-chat-drafts-across-remounts-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/qa-repairs-rejected-send-p-abe88-chat-drafts-across-remounts-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/qa-repairs-rejected-send-p-abe88-chat-drafts-across-remounts-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/qa-repairs.spec.ts:30:1 › a loaded Library embedding model can be explicitly ejected without changing the chat model 
+
+    Test timeout of 45000ms exceeded.
+
+    Error: locator.click: Test timeout of 45000ms exceeded.
+    Call log:
+      - waiting for getByRole('dialog', { name: 'Settings', exact: true }).getByRole('tab', { name: 'Models', exact: true })
+
+
+      50 |   }
+      51 |   const dialog = page.getByRole("dialog", { name: "Settings", exact: true });
+    > 52 |   await dialog.getByRole("tab", { name: "Models", exact: true }).click();
+         |                                                                  ^
+      53 |   const card = dialog.locator("div.rounded-lg").filter({ has: page.getByRole("heading", { name: "Synthetic Library embedding", exact: true }) });
+      54 |   await expect(card.getByRole("button", { name: "Eject", exact: true })).toBeEnabled();
+      55 |   expect(ejected).toEqual([]);
+        at /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/web/tests/qa-repairs.spec.ts:52:66
+
+    Error Context: test-results/qa-repairs-a-loaded-Librar-4939b-out-changing-the-chat-model-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/qa-repairs-a-loaded-Librar-4939b-out-changing-the-chat-model-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/qa-repairs-a-loaded-Librar-4939b-out-changing-the-chat-model-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › tests/qa-repairs.spec.ts:3:1 › rejected send preserves both source and new-chat drafts across remounts 
+    [chromium] › tests/qa-repairs.spec.ts:30:1 › a loaded Library embedding model can be explicitly ejected without changing the chat model 

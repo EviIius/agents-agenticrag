@@ -119,13 +119,13 @@ export function ImageActions({
               format: "png",
               label: "Image (.png)",
               url: `/api/images/jobs/${job.id}/output/png`,
-              filename: `Atelier-image-${job.id.slice(0, 8)}.png`,
+              filename: `Aether-image-${job.id.slice(0, 8)}.png`,
             },
             {
               format: "json",
               label: "Details (.json)",
               url: `/api/images/jobs/${job.id}/output/json`,
-              filename: `Atelier-${job.id.slice(0, 8)}.json`,
+              filename: `Aether-${job.id.slice(0, 8)}.json`,
             },
           ]}
           onClose={() => setSaving(false)}

@@ -386,13 +386,13 @@ export function RunCard({
               format: "md",
               label: "Markdown (.md)",
               url: `/api/workflows/runs/${run.id}/v2/export?format=md`,
-              filename: `Atelier-workflow-${run.id.slice(0, 8)}.md`,
+              filename: `Aether-workflow-${run.id.slice(0, 8)}.md`,
             },
             {
               format: "json",
               label: "Details and source (.json)",
               url: `/api/workflows/runs/${run.id}/v2/export?format=json`,
-              filename: `Atelier-workflow-${run.id.slice(0, 8)}.json`,
+              filename: `Aether-workflow-${run.id.slice(0, 8)}.json`,
             },
           ]}
         />
@@ -409,13 +409,13 @@ export function RunCard({
               format: "png",
               label: "Image (.png)",
               url: `/api/images/jobs/${savingImage}/output/png`,
-              filename: `Atelier-${savingImage.slice(0, 8)}.png`,
+              filename: `Aether-${savingImage.slice(0, 8)}.png`,
             },
             {
               format: "json",
               label: "Details (.json)",
               url: `/api/images/jobs/${savingImage}/output/json`,
-              filename: `Atelier-${savingImage.slice(0, 8)}.json`,
+              filename: `Aether-${savingImage.slice(0, 8)}.json`,
             },
           ]}
         />

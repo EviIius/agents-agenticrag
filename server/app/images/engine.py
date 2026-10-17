@@ -85,7 +85,8 @@ class Engine:
             raise AppError(
                 "image_capacity",
                 "A loaded model combination is not qualified for images. "
-                "Eject it in Models or retry after it expires. Nothing was unloaded.",
+                "Open Settings → Models and eject other loaded models, including Library/search "
+                "embedding models, or retry after they expire. Nothing was unloaded.",
                 409,
             )
 

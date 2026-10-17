@@ -8,6 +8,7 @@ import {
   type WorkingPhase,
 } from "@/lib/status-words";
 import { AtelierMark } from "./AtelierMark";
+import { Button } from "@/components/ui/button";
 
 function WorkingLabel({ text, live }: { text: string; live: boolean }) {
   const previous = useRef(text);
@@ -44,6 +45,7 @@ export function WorkingLine({
   open,
   controls,
   onToggle,
+  onStop,
 }: {
   id: string;
   phase: WorkingPhase | null;
@@ -52,6 +54,7 @@ export function WorkingLine({
   open?: boolean;
   controls?: string;
   onToggle?: () => void;
+  onStop?: () => void;
 }) {
   const playful = useUI((s) => s.statusWords === "playful");
   const clock = useActivityClock(
@@ -118,6 +121,20 @@ export function WorkingLine({
         </button>
       ) : (
         <div className="working-header">{header}</div>
+      )}
+      {phase?.kind === "thinking" && clock.elapsed >= 60 && (
+        <div className="mt-3 text-sm text-fg-2" data-testid="long-thinking">
+          <p role="status">
+            Still thinking after a minute. More thinking does not guarantee a
+            better answer. You can stop this reply and choose a lower level in
+            Tools for your next message.
+          </p>
+          {onStop && (
+            <Button variant="outline" onClick={onStop}>
+              Stop reply
+            </Button>
+          )}
+        </div>
       )}
     </div>
   );

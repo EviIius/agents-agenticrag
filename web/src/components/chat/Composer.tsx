@@ -3,6 +3,7 @@ import { ToolsMenu } from "./ToolsMenu";
 import { ToolChips } from "./ToolChips";
 import { fileAccept } from "@/lib/file-kinds";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useTextDraft } from "@/hooks/useTextDraft";
 import type { AttachmentLocal } from "@/hooks/useUploads";
 import { contextBudget } from "@/lib/context-budget";
 import { LibraryControl } from "./LibraryControl";
@@ -39,7 +40,9 @@ import {
 } from "@/components/ui/tooltip";
 import {
   imageDrafts,
-  drafts,
+  beginDraftSend,
+  finishDraftSend,
+  editDraft,
   imageRefinements,
   type ImageComposerCommand,
 } from "@/lib/composer-drafts";
@@ -142,9 +145,7 @@ export function Composer({
   thinkValue?: string;
   onThinkChange?: (value: string | null) => void;
 }) {
-  const [value, setValue] = useState(() =>
-    draftKey ? (drafts.get(draftKey) ?? starter) : starter,
-  );
+  const [value, setValue] = useTextDraft(draftKey, starter);
   const [imageValue, setImageValue] = useState(() =>
     draftKey ? (imageDrafts.get(draftKey) ?? "") : "",
   );
@@ -169,7 +170,6 @@ export function Composer({
   const completeSeeds = !fixedSeeds || seeds.slice(0, count).every(Boolean);
   useEffect(() => {
     if (draftKey) {
-      drafts.set(draftKey, value);
       imageDrafts.set(draftKey, imageValue);
     }
   }, [draftKey, value, imageValue]);
@@ -186,6 +186,7 @@ export function Composer({
   }, []);
   const updateDraft = (text: string) => {
     revision.current++;
+    if (draftKey && !imageMode) editDraft(draftKey);
     if (!imageMode && text.startsWith("/image ") && imageAvailable) {
       setImageMode(true);
       setImageValue(text.slice(7));
@@ -352,20 +353,16 @@ export function Composer({
       const submitted = value;
       const version = revision.current;
       const pasteKey = pasted?.key;
+      const submission = draftKey
+        ? beginDraftSend(draftKey, submitted, Boolean(optimistic))
+        : undefined;
       if (optimistic) setValue("");
       const accepted = await onSend?.(submitted);
+      if (submission) finishDraftSend(submission, accepted !== false);
       if (accepted !== false)
         uploads.filter((u) => u.failed).forEach((u) => onCancelUpload?.(u.id));
       if (accepted !== false && mounted.current)
         setPasted((old) => (old?.key === pasteKey ? undefined : old));
-      if (
-        draftKey &&
-        revision.current === version &&
-        accepted !== false &&
-        (drafts.get(draftKey) === submitted ||
-          (optimistic && drafts.get(draftKey) === ""))
-      )
-        drafts.delete(draftKey);
       if (!mounted.current || revision.current !== version) return;
       if (accepted === false && optimistic) setValue(submitted);
       else if (accepted !== false)
@@ -641,7 +638,7 @@ export function Composer({
               <ToolChips
                 web={web && !webBlocked}
                 library={libraryControl}
-                thinkValue={model?.reasoning ? thinkValue : undefined}
+                thinkValue={thinkValue}
                 onWebChange={onWebChange}
                 onThinkChange={onThinkChange}
                 openTools={() => setToolsOpen(true)}

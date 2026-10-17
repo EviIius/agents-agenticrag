@@ -75,6 +75,7 @@ type LiveThreadProps = {
   scrollRef: RefObject<HTMLDivElement | null>;
   onAboveBottomChange: (above: boolean) => void;
   onRegenerate: (message: Message, force?: boolean) => void;
+  onStop?: () => void;
   onEdit: (message: Message, text: string) => Promise<boolean>;
   onBranch: (id: string) => void;
   sources?: Record<string, Source[]>;
@@ -95,6 +96,7 @@ export function LiveThread({
   scrollRef,
   onAboveBottomChange,
   onRegenerate,
+  onStop,
   onEdit,
   onBranch,
   sources,
@@ -117,6 +119,7 @@ export function LiveThread({
     [draft, setDraft] = useState("");
   const stick = useRef(true);
   const handlers = useRef({
+    onStop,
     onImageAction,
     onImageIteration,
     onRegenerate,
@@ -130,6 +133,7 @@ export function LiveThread({
   });
   useEffect(() => {
     handlers.current = {
+      onStop,
       onImageAction,
       onImageIteration,
       onRegenerate,
@@ -144,6 +148,7 @@ export function LiveThread({
   });
   const stable = useMemo(
     () => ({
+      onStop: () => handlers.current.onStop?.(),
       onImageIteration: ((...args) =>
         handlers.current.onImageIteration?.(...args)) as ImageIteration,
       onImageAction: (message: Message, action: "retry" | "cancel") =>
@@ -362,6 +367,7 @@ export const MessageRow = memo(function MessageRow({
   stage,
   steps,
   onRegenerate,
+  onStop,
   onEdit,
   onBranch,
   sources,
@@ -501,6 +507,12 @@ export const MessageRow = memo(function MessageRow({
               text={message.reasoning}
               duration={message.stats?.reasoning_ms}
               live={message.status === "streaming" && !message.content}
+              startedAt={
+                message.stats?.ttft_ms != null
+                  ? Date.parse(message.created_at) + message.stats.ttft_ms
+                  : undefined
+              }
+              onStop={onStop}
             />
           )}
           <Suspense

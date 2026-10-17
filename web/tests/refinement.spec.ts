@@ -31,16 +31,16 @@ test("display name, PWA metadata and original internal storage key", async ({
   request,
 }) => {
   await page.goto("/");
-  await expect(page).toHaveTitle("Atelier");
+  await expect(page).toHaveTitle("Aether");
   const manifest = await (await request.get("/manifest.webmanifest")).json();
-  expect(manifest.name).toBe("Atelier");
-  expect(manifest.short_name).toBe("Atelier");
+  expect(manifest.name).toBe("Aether");
+  expect(manifest.short_name).toBe("Aether");
   expect(manifest.id).toBe("/");
   expect(
     await page
       .locator('meta[name="apple-mobile-web-app-title"]')
       .getAttribute("content"),
-  ).toBe("Atelier");
+  ).toBe("Aether");
   expect(
     await page.evaluate(() => localStorage.getItem("workbench-theme")),
   ).toBeTruthy();
@@ -131,7 +131,7 @@ test("offline guidance keeps technical failure behind Details", async ({
   await page.route("**/api/bootstrap", (route) => route.abort());
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "Can't reach Atelier" }),
+    page.getByRole("heading", { name: "Can't reach Aether" }),
   ).toBeVisible();
   await expect(
     page.getByText("Your Mac may be asleep or off the tailnet."),

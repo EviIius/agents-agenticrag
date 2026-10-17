@@ -53,7 +53,13 @@ export function ToolsMenu({
           ref={buttonRef}
           type="button"
           variant="outline"
-          disabled={!onWebChange && !library && !images && !model?.reasoning}
+          disabled={
+            !onWebChange &&
+            !library &&
+            !images &&
+            !model?.reasoning &&
+            !thinkValue
+          }
           className="composer-tools"
           aria-label="Tools"
         >
@@ -137,7 +143,7 @@ export function ToolsMenu({
             </span>
           </DropdownMenuItem>
         )}
-        {model?.reasoning && (
+        {(model?.reasoning || thinkValue) && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="flex items-center gap-2">
@@ -170,7 +176,7 @@ export function ToolsMenu({
                 }
               }}
             >
-              {["auto", ...model.reasoning.options].map((level) => (
+              {["auto", ...(model?.reasoning?.options ?? [])].map((level) => (
                 <DropdownMenuRadioItem
                   key={level}
                   value={level}
@@ -183,7 +189,7 @@ export function ToolsMenu({
                   }
                 >
                   {level === "auto"
-                    ? "Auto"
+                    ? "Model default"
                     : level[0].toUpperCase() + level.slice(1)}
                 </DropdownMenuRadioItem>
               ))}

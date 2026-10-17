@@ -94,7 +94,7 @@ async def export(
             indent=2,
         )
     else:
-        blocks = ["# Atelier workflow — draft for review", f"State: {run.state}"]
+        blocks = ["# Aether workflow — draft for review", f"State: {run.state}"]
         for step in run.steps:
             blocks.append(f"## {step.label}\n\n{step.state}")
             if step.output:
@@ -118,7 +118,7 @@ async def export(
         media_type="application/json" if format == "json" else "text/markdown",
         headers={
             "Content-Disposition": "attachment; "
-            f'filename="Atelier-workflow-{identifier[:8]}.{format}"',
+            f'filename="Aether-workflow-{identifier[:8]}.{format}"',
             "Cache-Control": "no-store",
         },
     )
