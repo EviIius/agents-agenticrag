@@ -2,6 +2,12 @@
 
 ## Current QA repair checkpoint — 17 October 2026
 
+**Release follow-up:** PR #3 is merged and the tested repairs/Aether display name
+are live. See `QA-ROADMAP-RELEASE-REPORT.md`; phone acceptance is pending. The
+paragraphs below retain the original branch-review status. Hermes assessment is
+now the next priority, ahead of a custom agent loop; reference-photo editing is
+tracked in `HERMES-AND-PHOTO-EDITING-PLAN.md`.
+
 The older sections below retain their checkpoint history. Current implementation
 is on `codex/qa-roadmap-repairs` in draft PR #3 and is not deployed. The source
 draft rollback, unsupported thinking fallback, Document Start input and disabled

@@ -1545,3 +1545,49 @@ existing cancellation, without a hard deadline or guaranteed Answer now response
 No factual-quality qualification or physical iPhone acceptance is claimed.
 Stop for checkpoint review before release; read-only chat tools, remaining
 workflow blocks, routing and shelved Research remain separately gated.
+
+**User acceptance and authorization — 17 October 2026 (QA repair release and
+next priorities):** Jake said “All right, then go ahead and do that” after the
+proposal to merge/deploy PR #3 with rollback, live health and phone acceptance.
+Accept the repair checkpoint and publish its exact tested source/build, with a
+private full application/data/plist fallback, unchanged interpreter/dependencies,
+service identity, port/bind and Tailscale route. Verify the merged source against
+all 560 frozen source/test/config hashes and the rebuilt 425-file manifest; reuse
+their completed full-suite evidence only if exact parity holds. This release has
+no schema/prompt/sampling/default or native-inference change. Preserve old hashed
+assets and existing worker/weights/config. Report live verification and request
+phone acceptance without inventing it.
+
+Jake also requested photo-reference editing and made Hermes Agent the next
+priority after fixes, merge and rename, ahead of a custom agent implementation.
+Research the official NousResearch Hermes project and prepare a concrete isolated
+integration/qualification plan. Record the photo-editing path and its identity,
+input, storage and resource checks. This authorizes research/design and roadmap
+reprioritization, not unreviewed dependency/runtime/model installation, Hermes
+inference, a production agent loop or reference-edit deployment. The existing
+named-dependency and native-trial review requirements remain. Research stays
+shelved; Hermes compatibility is not evidence of factual reliability.
+
+**QA repair release closeout — 17 October 2026:** PR #3 is merged as `dc427dc3`.
+All 560 frozen source/test/config hashes and 425 freshly reproduced build hashes
+match the completed repair suites (686 Python / 126 frontend / 110 contrast pairs;
+711 browser passes and three unchanged skips). Exact-source evidence is reused;
+no additional full-suite invocation is claimed. The verified application is live:
+114 installed server files, 425 current-build static files, preserved old hashed
+assets, unchanged schema 13 and all 55 pre-existing table projections preserved
+on copied startup and before live bootstrap. Full private app/data/plist fallback
+and candidate/previous copied-data startup checks pass with child network disabled.
+The original plist, service identity, 127.0.0.1:8787, one worker, Tailscale route,
+environment, dependencies and worker controls remain unchanged; PID becomes
+60537, healthy in 2.017 seconds. Ollama remains 0.35.0. Actual HTTPS Chromium and
+iPhone-profile WebKit UI checks pass with synthetic intercepted API traffic,
+zero native requests and no real media/text capture. Physical phone acceptance
+was requested and remains pending; no VoiceOver pass is claimed. H4 is
+`docs/QA-ROADMAP-RELEASE-REPORT.md`; source/rollback evidence is in
+`artifacts/qa-roadmap/release-20261017/`, fallback tag
+`checkpoint/pre-qa-roadmap-2026-10-17`. Same-schema ordinary rollback retains live
+data rather than replacing accepted messages/files with the older full snapshot.
+Next proposed scope is `docs/HERMES-AND-PHOTO-EDITING-PLAN.md`: Hermes v0.22.2
+integration assessment before a custom agent loop; no Hermes install, 64K profile,
+native agent trial or photo-reference integration has occurred. Preserve the
+separate named-dependency/native-trial review and original grounding limitations.

@@ -1,5 +1,9 @@
 # QA roadmap repairs — checkpoint 1 report
 
+Release follow-up: Jake accepted this checkpoint on 17 October; see
+[`QA-ROADMAP-RELEASE-REPORT.md`](QA-ROADMAP-RELEASE-REPORT.md). The statuses below
+describe the pre-release repair checkpoint and retain its original limitations.
+
 ## Summary
 
 Implements the reviewed repair checkpoint on `codex/qa-roadmap-repairs`, based on
