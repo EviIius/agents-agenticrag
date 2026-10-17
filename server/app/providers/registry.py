@@ -7,6 +7,7 @@ from ..db.connections import list_connections
 from ..db.core import Store
 from ..errors import AppError
 from ..schemas import ModelInfo
+from .base import validate_reasoning
 from .ollama import Ollama
 
 
@@ -98,7 +99,7 @@ class Registry:
             "SELECT params_json FROM model_prefs WHERE connection_id=? AND model_id=?",
             (model.connection_id, model.model_id),
         )
-        return {
+        params = {
             k: v
             for k, v in {
                 **(json.loads(str(pref["params_json"])) if pref else {}),
@@ -106,6 +107,8 @@ class Registry:
             }.items()
             if v is not None
         }
+        validate_reasoning(model, params.get("reasoning"))
+        return params
 
     async def close(self) -> None:
         for adapter in self.adapters.values():

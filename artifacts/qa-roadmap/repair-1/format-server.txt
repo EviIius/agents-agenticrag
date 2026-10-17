@@ -1,0 +1,101 @@
+E501 Line too long (104 > 100)
+  --> app/providers/base.py:15:101
+   |
+13 |         raise AppError(
+14 |             "reasoning_unsupported",
+15 |             "This model does not offer that thinking level. Choose a supported level or Model default.",
+   |                                                                                                     ^^^^
+16 |             422,
+17 |         )
+   |
+
+E501 Line too long (103 > 100)
+  --> tests/test_qa_repairs.py:26:101
+   |
+24 |                     "id": "start", "key": "start", "kind": "start", "title": "Start",
+25 |                     "config": {"fields": [
+26 |                         {"name": "document", "label": "Document", "type": "document", "required": True}
+   |                                                                                                     ^^^
+27 |                     ]},
+28 |                 },
+   |
+
+E501 Line too long (106 > 100)
+  --> tests/test_qa_repairs.py:31:101
+   |
+29 |                 {
+30 |                     "id": "save", "key": "save", "kind": "output", "title": "Save results",
+31 |                     "config": {"include": [{"label": "Document reference", "ref": "{{start.document}}"}]},
+   |                                                                                                     ^^^^^^
+32 |                 },
+33 |             ],
+   |
+
+E501 Line too long (112 > 100)
+  --> tests/test_qa_repairs.py:48:101
+   |
+46 |     try:
+47 |         with pytest.raises(AppError) as caught:
+48 |             adapter.payload(ChatRequest("fake-levels", [ProviderMessage("user", "Synthetic")], reasoning=level))
+   |                                                                                                     ^^^^^^^^^^^^
+49 |         assert caught.value.code == "reasoning_unsupported"
+50 |     finally:
+   |
+
+E501 Line too long (118 > 100)
+  --> tests/test_qa_repairs.py:59:101
+   |
+57 |         "connection_id": app.state.test_connection, "model_id": "fake-reasoning",
+58 |     })).json()
+59 |     assert (await client.patch(f"/api/chats/{chat['id']}", json={"params": {"reasoning": "high"}})).status_code == 200
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^
+60 |     before = len([c for c in runtime.state.captures if c.get("messages")])
+61 |     response = await client.post(f"/api/chats/{chat['id']}/messages", json={"content": "Synthetic question"})
+   |
+
+E501 Line too long (109 > 100)
+  --> tests/test_qa_repairs.py:61:101
+   |
+59 |     assert (await client.patch(f"/api/chats/{chat['id']}", json={"params": {"reasoning": "high"}})).status_code == 200
+60 |     before = len([c for c in runtime.state.captures if c.get("messages")])
+61 |     response = await client.post(f"/api/chats/{chat['id']}/messages", json={"content": "Synthetic question"})
+   |                                                                                                     ^^^^^^^^^
+62 |     assert response.status_code == 422
+63 |     assert response.json()["error"]["code"] == "reasoning_unsupported"
+   |
+
+E501 Line too long (120 > 100)
+  --> tests/test_qa_repairs.py:78:101
+   |
+76 |     assert item["kind"] == "text" and item["document"]
+77 |     graph = document_graph()
+78 |     definition = await app.state.workflow_graphs.defs.create(DefCreate(name="Synthetic document workflow", graph=graph))
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^
+79 |     response = await client.post(f"/api/workflows/defs/{definition.id}/runs", json={
+80 |         "request_key": "synthetic-document-" + name.replace(".", "-"), "inputs": {"document": item["id"]}
+   |
+
+E501 Line too long (105 > 100)
+  --> tests/test_qa_repairs.py:80:101
+   |
+78 |     definition = await app.state.workflow_graphs.defs.create(DefCreate(name="Synthetic document workflow", graph=graph))
+79 |     response = await client.post(f"/api/workflows/defs/{definition.id}/runs", json={
+80 |         "request_key": "synthetic-document-" + name.replace(".", "-"), "inputs": {"document": item["id"]}
+   |                                                                                                     ^^^^^
+81 |     })
+82 |     assert response.status_code == 202, response.text
+   |
+
+E501 Line too long (117 > 100)
+  --> tests/test_qa_repairs.py:91:101
+   |
+89 | async def test_document_start_rejects_plain_text_without_document_metadata(chat_app: Any) -> None:
+90 |     app, client, _ = chat_app
+91 |     item = (await client.post("/api/attachments", files={"file": ("synthetic.txt", b"Synthetic plain text")})).json()
+   |                                                                                                     ^^^^^^^^^^^^^^^^^
+92 |     with pytest.raises(AppError, match="file type"):
+93 |         await checked_inputs(app.state.workflow_graphs, document_graph(), {"document": item["id"]})
+   |
+
+Found 13 errors (4 fixed, 9 remaining).
+1 file reformatted, 163 files left unchanged

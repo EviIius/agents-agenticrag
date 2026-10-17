@@ -223,7 +223,7 @@ async def export(identifier: str, request: Request, format: str = "md") -> Respo
                 + m.content
                 + (
                     "\n".join(
-                        f"Image {i}: Atelier-image-{job.id[:8]}.png · seed {job.seed}"
+                        f"Image {i}: Aether-image-{job.id[:8]}.png · seed {job.seed}"
                         for i, job in enumerate(m.images or [], 1)
                     )
                     if m.kind == "image" and m.role == "assistant"

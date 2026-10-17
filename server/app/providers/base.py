@@ -2,7 +2,20 @@ from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from typing import Any, Literal, Protocol
 
+from ..errors import AppError
 from ..schemas import ModelInfo
+
+
+def validate_reasoning(model: ModelInfo, level: object) -> None:
+    if level is None or level == "off" and not model.reasoning:
+        return
+    if not model.reasoning or level not in model.reasoning.options:
+        raise AppError(
+            "reasoning_unsupported",
+            "This model does not offer that thinking level. "
+            "Choose a supported level or Model default.",
+            422,
+        )
 
 
 @dataclass
