@@ -148,7 +148,10 @@ with verified hashes to the private archive
 Original tracked evidence is restored byte-for-byte; no historical artifact diff
 remains. The archive manifest hash and counts are retained in
 `historical-evidence-preservation.json`. New checkpoint evidence stays in
-`artifacts/qa-roadmap/repair-1/`.
+`artifacts/qa-roadmap/repair-1/`. Raw command logs retain their original whitespace,
+including reporter trailing spaces and final blank lines; the source/documentation
+`git diff --check` excludes these raw `.txt` logs and passes. No raw test result
+is reformatted to make a formatting check pass.
 
 ## Screenshots
 
