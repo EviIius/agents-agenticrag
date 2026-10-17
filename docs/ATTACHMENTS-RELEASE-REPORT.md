@@ -4,7 +4,7 @@
 
 Jake approved the readiness report with “Go ahead and implement”. The redesign is merged into main with explicit merge commit `c6408a717a7872c42b55301e2961eb818a9aa5d7` (parents `55477ff1` and `d5540ee9`), and [PR #2](https://github.com/EviIius/agents-agenticrag/pull/2) is merged. The new UI is live at [Atelier](https://jakes-mac-mini.tailc4d343.ts.net/).
 
-Publication completed **2026-10-17T00:01:52.307843+00:00** (16 October locally). The program tree matches reviewed `ff5f589e` byte for byte. Automated checks passed on main before publication. The server, API/schema, prompts, settings, sampling, model defaults and Tailscale route were preserved. Physical iPhone acceptance is requested and **not checked**.
+Publication completed **2026-10-17T00:01:52.307843+00:00** (16 October locally). The program tree matches reviewed `ff5f589e` byte for byte. Automated checks passed on main before publication. The server, API/schema, prompts, settings, sampling, model defaults and Tailscale route were preserved. Physical iPhone acceptance is **user-confirmed**: Jake answered “These work” to the post-publication checklist on 16 October.
 
 ## Done-when checklist
 
@@ -20,7 +20,7 @@ Publication completed **2026-10-17T00:01:52.307843+00:00** (16 October locally).
 | Production design route | Pass | `/design` is 404 on both origins |
 | Private rollback | Pass | 567 old static files exactly verified; consistent SQLite backup integrity `ok`, directory 0700/database 0600 |
 | Published UI with isolated fixtures | Pass after fixture remedy | Actual HTTPS bundle in Chromium 1440 and iPhone 13 WebKit 390; Tools, paste/undo, photo/viewer/remove, no overflow, native input hit target ≥44 px; zero final errors/inference requests |
-| Physical iPhone | Not checked | Requested after publication; no invented response or native-picker capture |
+| Physical iPhone | User-confirmed | Jake: “These work” for the requested picker, tray/sent attachments, Tools and typing/sending checks; optional long-paste undo not separately confirmed |
 
 ## Changed files
 
@@ -74,7 +74,7 @@ The unchanged WebKit skips are the real-time long-response/idle gate executed in
 | G-13 reduced motion | Pass | Full main temporal/both-trigger suites |
 | G-14 design states | Pass | Fresh fixture scans; production route remains 404 |
 | G-15 migration rollback rehearsal | Not applicable | No migration; verified private static/database fallback |
-| G-16 phone | Not checked | Requested after publication; quote pending |
+| G-16 phone | User-confirmed | Jake: “These work”; `phone-check.json` records the scope and optional-check limitation |
 
 ## Core unchanged (C1–C16)
 
@@ -95,7 +95,7 @@ The unchanged WebKit skips are the real-time long-response/idle gate executed in
 | C13 deployment invariants | `test_deployment.py`, actual publication verification |
 | C14 untrusted content/SSRF | `foundation.spec.ts`, search SSRF units |
 | C15 performance | `performance.spec.ts`, chat timing/frame tests, bundle measurement |
-| C16 automated accessibility | Full axe/keyboard suites; physical phone pending |
+| C16 automated accessibility | Full axe/keyboard suites; requested phone usability checks user-confirmed, no VoiceOver pass |
 
 ## Budgets
 
@@ -121,6 +121,8 @@ Private directory: `/Users/evilius/.local/share/workbench/data/backups/composer-
 
 The complete old static tree and consistent `workbench.db` are retained and verified. Ordinary UI rollback restores saved assets using the publisher's atomic-copy order, index/service worker last; retain the current database because this release has no schema/data migration. Original main `55477ff1` and the reviewed branch remain in Git history. No restore is executed during this successful rollout.
 
-## Known limitations and next acceptance
+## Physical acceptance and remaining limitations
 
-Historical iPhone keyboard recovery after restart remains recorded with cause unproven. VoiceOver stays excluded; no pass is claimed. Automated typing/native-input-target checks pass, but Home Screen/native-picker behavior needs Jake's observation. Reopen Atelier (accept its update prompt if shown) and report the requested picker/tray/Tools/send checks; long-paste undo is optional. No further implementation approval is needed for the published release.
+On 16 October, Jake answered “These work” to the post-publication iPhone checklist: Home Screen/native picker, photo/PDF tray and sent attachments, Tools, and typing/sending. Record these as user-confirmed usability checks, without an instrumented timing measurement or native-picker capture. The optional long-paste → Keep as text check was not separately confirmed. The attachments release review stop is closed.
+
+Historical iPhone keyboard recovery after restart remains recorded with cause unproven. VoiceOver stays excluded; no pass is claimed. The separately reported Xhigh reasoning delay is not resolved or qualified by this attachment acceptance. No program or installed-app change accompanies this documentation update.

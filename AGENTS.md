@@ -1502,3 +1502,14 @@ H4: `docs/ATTACHMENTS-RELEASE-REPORT.md`; manifest/rollback in
 `artifacts/attachments/release-20261016/`. Physical iPhone acceptance is requested
 and not checked; no VoiceOver pass is claimed. Stop at phone review and address
 any reported regression within the reviewed scope.
+
+**User acceptance — 16 October 2026 (attachments iPhone closeout):** Jake
+answered “These work” to the requested post-publication Home Screen/native-picker,
+photo/PDF tray and sent-message, Tools, and typing/sending checks. Record the
+required checks as user-confirmed and close the attachments release review stop.
+The optional long-paste → Keep as text check was not separately confirmed; no
+instrumented phone timing, native-picker capture or VoiceOver pass is claimed.
+Retain historical limitations and the separate Xhigh reasoning-delay diagnosis.
+This acceptance changes no program, installed assets, model settings or inference
+authorization. Evidence: `docs/ATTACHMENTS-RELEASE-REPORT.md` and
+`artifacts/attachments/release-20261016/phone-check.json`.
