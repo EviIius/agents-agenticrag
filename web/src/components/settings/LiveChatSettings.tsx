@@ -279,7 +279,7 @@ export function LiveChatSettings({
             Save as model defaults
           </Button>
         )}
-        {model?.reasoning && (
+        {(model?.reasoning || params.reasoning) && (
           <label className="mb-5 block text-sm">
             Reasoning
             <Select
@@ -291,7 +291,7 @@ export function LiveChatSettings({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="default">Model default</SelectItem>
-                {model.reasoning.options.map((value) => (
+                {(model?.reasoning?.options ?? []).map((value) => (
                   <SelectItem key={value} value={value}>
                     {value[0].toUpperCase() + value.slice(1)}
                   </SelectItem>

@@ -30,6 +30,7 @@ const vision = {
 };
 export const attachmentStates = [
   "empty",
+  "unsupported thinking",
   "ready",
   "preparing",
   "HEIC",
@@ -63,13 +64,18 @@ export default function AttachmentsPreview() {
     [model, setModel] = useState<Model>(vision),
     [web, setWeb] = useState(false),
     [library, setLibrary] = useState(false),
-    [think, setThink] = useState<string>(),
+    [think, setThink] = useState<string | undefined>(
+      new URLSearchParams(location.search).get("state") ===
+        "unsupported thinking"
+        ? "xhigh"
+        : undefined,
+    ),
     [scope, setScope] =
       useState<import("@/components/chat/LibraryControl").Scope>(null);
   const [removed, setRemoved] = useState<string[]>([]);
   const ui = useUI();
   const files: Attachment[] =
-    state === "empty"
+    state === "empty" || state === "unsupported thinking"
       ? []
       : [
           {
@@ -258,6 +264,7 @@ export default function AttachmentsPreview() {
             onClick={() => {
               setState(name);
               setRemoved([]);
+              setThink(name === "unsupported thinking" ? "xhigh" : undefined);
             }}
           >
             Preview {name}
@@ -302,7 +309,13 @@ export default function AttachmentsPreview() {
             "fake-text": "item,price\nSynthetic sample,12",
           },
         }}
-        model={["warning", "no vision model"].includes(state) ? base : model}
+        model={
+          state === "unsupported thinking"
+            ? { ...base, reasoning: null }
+            : ["warning", "no vision model"].includes(state)
+              ? base
+              : model
+        }
         visionModels={state === "no vision model" ? [base] : [base, vision]}
         onChooseModel={(m) => {
           setModel(m as typeof vision);

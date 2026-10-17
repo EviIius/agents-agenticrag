@@ -638,7 +638,7 @@ export function Composer({
               <ToolChips
                 web={web && !webBlocked}
                 library={libraryControl}
-                thinkValue={model?.reasoning ? thinkValue : undefined}
+                thinkValue={thinkValue}
                 onWebChange={onWebChange}
                 onThinkChange={onThinkChange}
                 openTools={() => setToolsOpen(true)}

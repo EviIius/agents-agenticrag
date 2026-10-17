@@ -299,3 +299,54 @@ test("thinking elapsed excludes retrieval and its Stop reply cancels the active 
     if (runId) await request.post(`/api/runs/${runId}/cancel`, { data: {} });
   }
 });
+
+test("switching to a non-thinking model leaves a visible way to clear an unsupported saved level", async ({
+  page,
+  request,
+}) => {
+  const connection = (await (await request.get("/api/connections")).json())[0];
+  await request.patch("/api/settings", {
+    data: { auto_title: false, "web.default_on": false },
+  });
+  const chat = await (
+    await request.post("/api/chats", {
+      data: {
+        connection_id: connection.id,
+        model_id: "fake-reasoning",
+        web_enabled: false,
+      },
+    })
+  ).json();
+  await request.patch(`/api/chats/${chat.id}`, {
+    data: { params: { reasoning: "on" } },
+  });
+  await request.patch(`/api/chats/${chat.id}`, {
+    data: { model_id: "fake-chat" },
+  });
+  await page.goto(`/c/${chat.id}`);
+  const field = page.locator(".composer textarea");
+  await field.fill("Synthetic question after model switch");
+  await page.getByRole("button", { name: "Send message", exact: true }).click();
+  await expect(page.getByRole("alert")).toContainText("thinking level");
+  await expect(field).toHaveValue("Synthetic question after model switch");
+  await page.getByRole("button", { name: "Tools", exact: true }).click();
+  const reset = page.getByRole("menuitemradio", {
+    name: "Model default",
+    exact: true,
+  });
+  await expect(reset).toBeVisible();
+  await expect(page.getByRole("menuitemradio")).toHaveCount(1);
+  await reset.click();
+  await page.keyboard.press("Escape");
+  await expect
+    .poll(
+      async () =>
+        (await (await request.get(`/api/chats/${chat.id}`)).json()).chat.params
+          .reasoning,
+    )
+    .toBeNull();
+  await page.getByRole("button", { name: "Send message", exact: true }).click();
+  await expect(
+    page.getByText("Fake runtime reply.", { exact: false }),
+  ).toBeVisible();
+});
