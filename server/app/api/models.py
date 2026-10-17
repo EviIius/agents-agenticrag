@@ -4,6 +4,7 @@ from typing import cast
 from fastapi import APIRouter, Request
 
 from ..errors import AppError
+from ..providers.base import validate_reasoning
 from ..schemas import ModelAction, ModelInfo, ModelPrefs
 
 router = APIRouter(prefix="/api/models")
@@ -51,6 +52,8 @@ async def prefs(body: ModelPrefs, request: Request) -> dict[str, bool]:
     )
     if model is None:
         raise AppError("model_not_found", "Choose an available Ollama model.", 422)
+    if body.params is not None:
+        validate_reasoning(model, body.params.reasoning)
     limit = model.context_limit or model.context_max
     if body.context_length and limit and body.context_length > limit:
         raise AppError(

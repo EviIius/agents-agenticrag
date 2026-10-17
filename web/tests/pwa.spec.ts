@@ -86,7 +86,7 @@ test("offline PWA navigation", async ({ page, context, browserName }) => {
   await context.setOffline(true);
   await page.reload();
   await expect(
-    page.getByRole("heading", { name: "Can't reach Atelier" }),
+    page.getByRole("heading", { name: "Can't reach Aether" }),
   ).toBeVisible({ timeout: 15000 });
   await context.setOffline(false);
 });

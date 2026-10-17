@@ -183,7 +183,7 @@ export function ToolsMenu({
                   }
                 >
                   {level === "auto"
-                    ? "Auto"
+                    ? "Model default"
                     : level[0].toUpperCase() + level.slice(1)}
                 </DropdownMenuRadioItem>
               ))}

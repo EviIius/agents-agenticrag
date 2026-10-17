@@ -421,12 +421,14 @@ export function LiveSettingsPane({
               {m.loaded ? "Loaded" : "Not loaded"}
               {m.vision ? " · Vision" : ""}
               {m.reasoning ? " · Reasoning" : ""}
+              {m.embedding ? " · Library/search embedding model" : ""}
             </p>
             <div className="flex gap-2">
               <Button
                 variant="outline"
                 disabled={
-                  loading !== null || !m.chat_capable || (m.hidden && !m.loaded)
+                  loading !== null ||
+                  (!m.loaded && (!m.chat_capable || m.hidden))
                 }
                 onClick={() => {
                   loadingStarted.current = Date.now();

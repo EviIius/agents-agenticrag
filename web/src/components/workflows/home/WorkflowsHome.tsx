@@ -425,7 +425,7 @@ export function WorkflowCard({
               format: "json",
               label: "Workflow (.json)",
               url: `/api/workflows/defs/${def.id}`,
-              filename: `Atelier-workflow-${def.id.slice(0, 8)}.json`,
+              filename: `Aether-workflow-${def.id.slice(0, 8)}.json`,
             },
           ]}
         />

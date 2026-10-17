@@ -498,13 +498,13 @@ export function ImagesView({
               format: "png",
               label: "Image (.png)",
               url: `/api/images/jobs/${saving.id}/output/png`,
-              filename: `Atelier-${saving.id.slice(0, 8)}.png`,
+              filename: `Aether-${saving.id.slice(0, 8)}.png`,
             },
             {
               format: "json",
               label: "Details (.json)",
               url: `/api/images/jobs/${saving.id}/output/json`,
-              filename: `Atelier-${saving.id.slice(0, 8)}.json`,
+              filename: `Aether-${saving.id.slice(0, 8)}.json`,
             },
           ]}
           onClose={() => setSaving(undefined)}

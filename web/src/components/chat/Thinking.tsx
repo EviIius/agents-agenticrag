@@ -14,15 +14,19 @@ export function Thinking({
   live,
   duration,
   phase,
+  onStop,
+  startedAt,
 }: {
   id: string;
   text: string;
   live: boolean;
   duration?: number | null;
   phase?: WorkingPhase;
+  onStop?: () => void;
+  startedAt?: number;
 }) {
   const [open, setOpen] = useState(false),
-    [began] = useState(Date.now);
+    [began] = useState(() => startedAt ?? Date.now());
   const contentId = useId(),
     content = useRef<HTMLDivElement>(null),
     following = useRef(true),
@@ -68,6 +72,7 @@ export function Thinking({
           following.current = true;
           setOpen(!open);
         }}
+        onStop={onStop}
       />
       {!live && (
         <CollapsibleTrigger className="flex min-h-11 w-full items-center gap-2 px-3 text-sm text-fg-2">

@@ -132,7 +132,12 @@ async def checked_inputs(
         if field.type in {"recording", "document", "image"}:
             item = await attachments.attachment(manager.store, value)
             expected = "audio" if field.type == "recording" else field.type
-            if item.kind != expected:
+            matches = (
+                item.kind == "text" and item.document is not None
+                if field.type == "document"
+                else item.kind == expected
+            )
+            if not matches:
                 raise AppError(
                     "workflow_inputs", "Choose the file type requested by this input.", 422
                 )

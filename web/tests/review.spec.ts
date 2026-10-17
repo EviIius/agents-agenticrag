@@ -206,7 +206,7 @@ for (const width of [390, 1440])
       ).toEqual([]);
       await page.getByRole("button", { name: "Add all", exact: true }).click();
       await expect(
-        page.getByRole("heading", { name: "Welcome to Atelier" }),
+        page.getByRole("heading", { name: "Welcome to Aether" }),
       ).not.toBeVisible();
       await page.getByRole("button", { name: "Explain", exact: true }).click();
       await expect(page.locator(".composer textarea")).toHaveValue("Explain ");

@@ -70,7 +70,7 @@ async def output(identifier: str, format: Literal["png", "json"], request: Reque
     return FileResponse(
         path,
         media_type="image/png" if format == "png" else "application/json",
-        filename=f"Atelier-{identifier[:8]}.{format}",
+        filename=f"Aether-{identifier[:8]}.{format}",
         headers={"Cache-Control": "no-store"},
     )
 

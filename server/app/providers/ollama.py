@@ -145,13 +145,12 @@ class Ollama:
         if options:
             payload["options"] = options
         model = self.models.get(req.model_id)
-        if req.reasoning is not None and model and model.reasoning:
-            choice = (
-                req.reasoning
-                if req.reasoning in model.reasoning.options
-                else model.reasoning.options[0]
-            )
-            payload["think"] = {"off": False, "on": True}.get(choice, choice)
+        if req.reasoning is not None and model:
+            from .base import validate_reasoning
+
+            validate_reasoning(model, req.reasoning)
+            if model.reasoning:
+                payload["think"] = {"off": False, "on": True}.get(req.reasoning, req.reasoning)
         if req.json_schema:
             payload["format"] = req.json_schema
         return payload

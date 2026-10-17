@@ -1513,3 +1513,15 @@ Retain historical limitations and the separate Xhigh reasoning-delay diagnosis.
 This acceptance changes no program, installed assets, model settings or inference
 authorization. Evidence: `docs/ATTACHMENTS-RELEASE-REPORT.md` and
 `artifacts/attachments/release-20261016/phone-check.json`.
+
+**User authorization — 16 October 2026 (QA roadmap repair checkpoint):** Jake
+asked to implement the reviewed roadmap with proper QA of the fixes. Proceed on
+`codex/qa-roadmap-repairs` with `docs/QA-ROADMAP-REPAIRS-PLAN.md`: draft ownership,
+explicit thinking-level validation, workflow Document inputs, actionable manual
+release of loaded embedding models, truthful long-thinking guidance and the
+proposed Aether display rename. Preserve image memory admission limits; no hidden
+unload, new native inference, prompt/sampling/default change or dependency. Keep
+the installed app available and stop with H4 evidence before release. Agent/tool
+loops, new workflow block calls, routing and shelved Research are later separately
+reviewed checkpoints. Claude's pasted summary is planning input, not a substitute
+for original run logs or measured Mac/browser evidence.

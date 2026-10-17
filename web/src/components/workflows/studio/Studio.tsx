@@ -933,7 +933,7 @@ export function StudioEditor({
                 format: "json",
                 label: "Workflow (.json)",
                 url: `/api/workflows/defs/${store.getState().id}`,
-                filename: `Atelier-workflow-${store.getState().id.slice(0, 8)}.json`,
+                filename: `Aether-workflow-${store.getState().id.slice(0, 8)}.json`,
               },
             ]}
           />

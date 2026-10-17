@@ -452,7 +452,7 @@ export function LiveAppShell() {
           command: { key: crypto.randomUUID(), mode: "chat" },
         });
         await upload([
-          new File([blob], `Atelier-image-${job.id.slice(0, 8)}.png`, {
+          new File([blob], `Aether-image-${job.id.slice(0, 8)}.png`, {
             type: "image/png",
           }),
         ]);
@@ -980,6 +980,7 @@ export function LiveAppShell() {
           ) : (
             <>
               <LiveThread
+                onStop={stop}
                 attachmentLocal={attachmentLocal}
                 onImageIteration={iterateImage}
                 onImageAction={(message, action) =>

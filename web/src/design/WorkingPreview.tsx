@@ -13,6 +13,7 @@ const states = [
   "Unreadable pages",
   "Library search",
   "Thinking",
+  "Long thinking",
   "Answer",
   "Complete",
   "Stopped",
@@ -33,8 +34,21 @@ export default function WorkingPreview() {
   const message = fixtureMessage("assistant", "waiting");
   message.id = "synthetic-working-indicator";
   message.created_at = new Date(began).toISOString();
-  if (["Thinking", "Answer", "Complete"].includes(state))
+  if (["Thinking", "Long thinking", "Answer", "Complete"].includes(state))
     message.reasoning = thought;
+  if (state === "Long thinking") {
+    message.created_at = new Date(began - 61000).toISOString();
+    message.stats = {
+      ttft_ms: 0,
+      total_ms: 0,
+      completion_tokens: 0,
+      tokens_per_sec: 0,
+      tokens_estimated: true,
+      finish_reason: "stop",
+      context_length: 16384,
+      dropped_message_count: 0,
+    };
+  }
   if (["Answer", "Complete"].includes(state)) {
     message.content = "A synthetic answer, using the existing streaming row.";
     message.stats = {
@@ -188,6 +202,7 @@ export default function WorkingPreview() {
           scrollRef={scrollRef}
           onAboveBottomChange={() => {}}
           onRegenerate={() => {}}
+          onStop={() => setState("Stopped")}
           onEdit={async () => true}
           onBranch={() => {}}
         />
