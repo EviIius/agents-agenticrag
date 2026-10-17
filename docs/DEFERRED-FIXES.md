@@ -446,3 +446,18 @@ for this checkpoint. Main/live are unchanged and merge/publication need Jake's
 explicit okay. New-flow physical iPhone acceptance, general factual grounding,
 future WS-E blocks and reference-pixel editing remain separate; VoiceOver stays
 outside the current list and Research is shelved.
+
+## Idle embedding handoff for images — 17 October 2026
+
+Jake's physical phone check found the qualified chat plus idle Library embedding
+model rejected by the image guard. He approved automatic release of configured
+local embedding-only models at image preparation under the shared scheduler.
+The verified patch covers chat and workflow images, preserves the qualified chat
+and every existing image resource limit, and leaves Library data/config intact.
+The next Library embedding request uses its normal adapter to load as needed.
+
+Technical evidence passes: 721 Python / 126 frontend, 45 focused admission/handoff
+tests and 14 targeted Chromium/WebKit browser checks. Publication and physical
+phone acceptance are recorded in `IMAGE-MEMORY-HANDOFF-REPORT.md`. Other chat or
+unknown models and unqualified contexts still require an explicit choice. Hermes
+preparation remains preserved, with native execution awaiting the phone check.

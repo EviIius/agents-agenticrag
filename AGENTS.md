@@ -1608,3 +1608,18 @@ and retain a report before publication; no new native generation trial is implie
 This is a narrow exception to the previous no-automatic-unloading rule. It also
 records a physical-phone image failure in the repair release; do not close the
 pending phone acceptance or resume Hermes inference as if it passed.
+
+**Image memory handoff technical closeout — 17 October 2026:** Final source on
+`codex/image-memory-recovery` passes full make check (721 Python / 126 frontend,
+110 contrast pairs), 45 focused handoff/admission cases and 14 targeted
+Chromium/WebKit browser checks. Preserve the original failure and first-draft
+runtime-capability failure: the configured embedding model also reports auxiliary
+tools/thinking flags. The final rule requires embedding, allows those flags and
+excludes completion/unknown capabilities; it never infers capabilities from names.
+All 548 frozen source hashes and 425 build hashes match; initial JS is 254,964
+gzip bytes within the unchanged 256,000-byte limit. Candidate/previous startup
+on copied data and all 55 existing table projections pass, with a private full
+application/data/plist fallback. No real generation, unload or Hermes inference
+occurs during validation. H4: `docs/IMAGE-MEMORY-HANDOFF-REPORT.md`; raw evidence:
+`artifacts/image-memory-recovery/`. Publication/physical phone results must be
+recorded separately; do not claim phone acceptance or resume Hermes prematurely.

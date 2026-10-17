@@ -35,9 +35,9 @@ with the first draft.
 | Durable progress and existing retry | Pass | `test_handoff_progress_is_durable_and_pushes_to_existing_image_stream`; chat/workflow regression tests |
 | Desktop and phone-sized browser status | Pass | Eight Chromium/WebKit checks, both themes, 390/1440 widths; screenshots in `artifacts/image-memory-recovery/browser/` |
 | Existing chat cancellation/SSE and workflow retry | Pass | Six Chromium/WebKit regression checks; completed text block stays on attempt 1 when failed image retries |
-| Full repository checks | Pending final completion | `artifacts/image-memory-recovery/check-final.txt` |
+| Full repository checks | Pass: 721 Python / 126 frontend, 110 contrast pairs | `artifacts/image-memory-recovery/check-final.txt` |
 | Build and initial JS budget | Pass | 425 build files; 254,964 gzip bytes, unchanged 256,000-byte ceiling |
-| Publication and fallback | Pending technical gates | Release controller prepared; no live publication claimed in this version of the report |
+| Publication and fallback | Rehearsal passes; publication pending | Candidate/previous copied-data startup and all 55 table projections pass; private full fallback prepared |
 | Physical iPhone check | Pending | No post-fix phone result or VoiceOver pass invented |
 
 ## Changed files
@@ -103,7 +103,7 @@ step count, process ownership, cancellation and output validation are unchanged.
 - Exact runtime-shape reproduction: one retained failure, then one pass in 0.48 s.
 - New browser status checks: eight passed in 23.2 s.
 - Existing browser cancellation/SSE/workflow retry checks: six passed in 27.6 s.
-- Full `make check`: completion pending in this report draft.
+- Final full `make check`: **721 Python / 126 frontend**, 110 contrast pairs; lint, format, types, coverage, API types/additivity, motion and privacy all pass.
 - This narrow patch does not rerun or claim the previous entire 711-test browser
   suite. It runs all server/frontend checks and the 14 browser cases covering
   changed status, image cancellation/SSE, and workflow retry behavior.
