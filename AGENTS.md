@@ -1525,3 +1525,23 @@ the installed app available and stop with H4 evidence before release. Agent/tool
 loops, new workflow block calls, routing and shelved Research are later separately
 reviewed checkpoints. Claude's pasted summary is planning input, not a substitute
 for original run logs or measured Mac/browser evidence.
+
+**QA roadmap repair technical closeout — 17 October 2026:** Candidate
+`51bfae4a` on `codex/qa-roadmap-repairs` (application code `1a2224d9`) passes
+full make check: 686 Python / 126 frontend / 110 contrast pairs, and one complete
+browser invocation: 711 passed / three unchanged skips / zero failed. Retain
+baseline failures, the stale-thinking reset regression/correction, both interrupted
+full attempts and the Studio entrance-readiness failure with its 20 passing
+repeats. No assertions, release thresholds or existing skips are weakened.
+All 560 frozen source/test/config files and 425 build hashes match; initial JS
+is 254,975 gzip bytes against the unchanged 256,000-byte budget. Preserve generated
+historical evidence privately before restoring originals; checkpoint evidence is
+`artifacts/qa-roadmap/repair-1/`, H4 is `docs/QA-ROADMAP-REPAIRS-REPORT.md`, draft
+PR #3. The 102 recorded installed server/config hashes, PID 97687 and healthy
+local/normally verified HTTPS responses are unchanged. No native inference,
+runtime/model/dependency change, automatic unload, publication or restart occurs.
+Image recovery is explicit manual embedding Eject; long-thinking guidance uses
+existing cancellation, without a hard deadline or guaranteed Answer now response.
+No factual-quality qualification or physical iPhone acceptance is claimed.
+Stop for checkpoint review before release; read-only chat tools, remaining
+workflow blocks, routing and shelved Research remain separately gated.
