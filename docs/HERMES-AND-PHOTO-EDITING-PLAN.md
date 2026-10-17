@@ -1,5 +1,11 @@
 # Hermes integration and photo editing — proposed next checkpoints
 
+**H0 scope approved, 17 October:** Jake approved the isolated named dependency,
+64K profile and bounded comparison. His subsequent phone reply was “I haven’t
+checked yet”; installation/native execution await that prerequisite. Preparation
+and current limitations are in `HERMES-H0-PREPARATION-REPORT.md`. The original
+scope, call ceiling and quality criteria below remain unchanged.
+
 17 October 2026. Jake requested these capabilities and made Hermes the next
 priority after fixes, merge and rename. The QA repair release is complete;
 physical phone acceptance is pending. This document is a researched proposal,

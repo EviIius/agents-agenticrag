@@ -1591,3 +1591,33 @@ Next proposed scope is `docs/HERMES-AND-PHOTO-EDITING-PLAN.md`: Hermes v0.22.2
 integration assessment before a custom agent loop; no Hermes install, 64K profile,
 native agent trial or photo-reference integration has occurred. Preserve the
 separate named-dependency/native-trial review and original grounding limitations.
+
+**User authorization — 17 October 2026 (isolated Hermes H0):** Jake approved
+the named trial question: Hermes Agent v0.22.2 and its core dependencies in an
+isolated environment, a separate 64K test profile from the installed Qwen3.8
+weights, and the bounded comparison in `docs/HERMES-AND-PHOTO-EDITING-PLAN.md`.
+At most 42 native calls in total, three per delegated task, 180 seconds per task;
+count retries/auxiliary requests and stop on a failed gate. No optional dependency
+extras, new weights, production agent integration, model-default change, image
+limit change, automatic unload or release is included. Keep the live app and its
+interpreter intact. Use `codex/hermes-h0`, freeze source/dependencies/inputs before
+inference, preserve every outcome, and stop with the H4 feasibility report. The
+approval question conditions execution on the pending phone check; prepare source,
+dependency inventory and host-side tests while awaiting that result. Do not
+invent phone acceptance or interpret elapsed time as its confirmation.
+
+**Hermes H0 preparation status — 17 October 2026:** Jake replied “I haven’t
+checked yet” to the phone prerequisite. The isolated branch has the verified
+v0.22.2 checkout/lock inventory, six synthetic cases and 18 passing host-control
+tests; no package environment, Hermes import/process, 64K profile or native call
+exists yet. All 42 approved model calls remain unspent. Source review finds
+aiohttp absent from the core closure needed by the gateway API; do not add extras
+silently. Assess the supported Python library/callback path within core before
+native inference. All 560 frozen app/test/config, 114 installed server and 425
+installed static hashes verify; live health and PID 60537 are unchanged. Retain
+the initial import-order lint finding and passing final checks. H4 preparation
+report: `docs/HERMES-H0-PREPARATION-REPORT.md`, evidence `artifacts/hermes/h0/`.
+This is not H0 feasibility/quality acceptance. Await the phone result before the
+already-approved installation/profile/native stages; do not ask to approve the
+same scope again. Production integration, reference edits and Research remain
+outside this checkpoint.
