@@ -1484,3 +1484,21 @@ static/database rollback. No program-source, server/schema/prompt/dependency or
 native inference change is authorized by this release. Preserve all attempts and
 historical evidence, report the merge and published hashes/rollback path, then
 request Jake's short physical-iPhone acceptance check. Do not publish failed gates.
+
+
+**Attachments release closeout — 16 October 2026:** Jake's approved release is
+merged/pushed as `c6408a7` (PR #2 merged), published at 2026-10-17T00:01:52.307843+00:00.
+Post-merge main checks pass: 673 Python / 121 frontend, 110 contrast pairs and
+one complete browser run (699 passed / three existing skips / zero failed).
+All 425 release hashes reproduce the tested build; initial JS is 254,448 gzip
+bytes. Static-only publication preserves 114 server files, PID 97687 and exact
+service/plist/worker/bind/Tailscale route, settings/schema/prompts/sampling and
+model defaults. No runtime restart/install or native inference occurs. The full
+567-file static backup and private consistent DB are verified; 551 old hashed
+assets remain for open clients. Actual HTTPS Chromium/iPhone-profile UI checks
+pass after a retained synthetic EventSource-fixture MIME correction; no product
+source changed. Preserve all original/final observer logs and historical evidence.
+H4: `docs/ATTACHMENTS-RELEASE-REPORT.md`; manifest/rollback in
+`artifacts/attachments/release-20261016/`. Physical iPhone acceptance is requested
+and not checked; no VoiceOver pass is claimed. Stop at phone review and address
+any reported regression within the reviewed scope.
