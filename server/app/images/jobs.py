@@ -30,7 +30,7 @@ def now() -> str:
 class Images:
     def __init__(self, store: Store, data: Path, home: Path | None, capacity: Capacity) -> None:
         self.store, self.data, self.capacity = store, data, capacity
-        self.engine = Engine(home, capacity)
+        self.engine = Engine(home, capacity, store)
         self.folder = data / "images"
         self.folder.mkdir(mode=0o700, exist_ok=True)
         self.folder.chmod(0o700)
@@ -235,6 +235,8 @@ class Images:
                         return
                     if kind == "initializing":
                         await self.update(identifier, "preparing", "Loading image weights")
+                    elif kind == "releasing_embeddings":
+                        await self.update(identifier, "preparing", "Making room for images")
                     elif kind == "denoising":
                         done = event.get("completed_steps", 0)
                         if not isinstance(done, int) or not 0 <= done <= 4:

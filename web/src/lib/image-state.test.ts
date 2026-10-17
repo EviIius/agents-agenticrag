@@ -35,6 +35,11 @@ describe("Image turn truth", () => {
       "Loading the image model",
     );
     expect(
+      imageTurnStatus([
+        job({ state: "preparing", stage: "Making room for images" }),
+      ]),
+    ).toBe("Making room for images");
+    expect(
       imageTurnStatus(
         [job({ state: "queued" })],
         [job({ id: "older", created_at: "2026-10-13T14:59:00Z" })],

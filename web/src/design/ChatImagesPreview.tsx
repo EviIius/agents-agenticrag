@@ -10,6 +10,7 @@ import { useUI } from "@/stores/ui";
 export const frameStates = [
   "queued",
   "preparing",
+  "making-room",
   "step 0",
   "step 1",
   "step 2",
@@ -37,8 +38,15 @@ export default function ChatImagesPreview() {
         ? "running"
         : state === "removed"
           ? "complete"
-          : (state as ImageJob["state"]),
-    stage: state === "decoding" ? "Decoding image" : "Generating image",
+          : state === "making-room"
+            ? "preparing"
+            : (state as ImageJob["state"]),
+    stage:
+      state === "making-room"
+        ? "Making room for images"
+        : state === "decoding"
+          ? "Decoding image"
+          : "Generating image",
     completed_steps: state.startsWith("step")
       ? Number(state.slice(-1))
       : ["complete", "decoding"].includes(state)

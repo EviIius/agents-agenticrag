@@ -1,0 +1,14 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+E501 Line too long (102 > 100)
+  --> app/main.py:75:101
+   |
+73 |                 app.state.store, config.data_dir, config.image_home, app.state.capacity
+74 |             )
+75 |             app.state.images.engine.models_changed = lambda: setattr(app.state.registry, "updated", 0)
+   |                                                                                                     ^^
+76 |             app.state.runs = RunManager(app.state.store, app.state.registry, config.data_dir)
+77 |             app.state.search = Pipeline(app.state.runs, config.web_fixtures)
+   |
+
+Found 1 error.
+make: *** [check] Error 1

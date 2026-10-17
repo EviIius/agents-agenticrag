@@ -14,7 +14,10 @@ export function imageTurnStatus(jobs: ImageJob[], queue: ImageJob[] = []) {
       ).length;
       return `Waiting for your Mac${ahead ? ` · after ${ahead} image${ahead > 1 ? "s" : ""}` : ""}`;
     }
-    if (current.state === "preparing") return "Loading the image model";
+    if (current.state === "preparing")
+      return current.stage === "Making room for images"
+        ? current.stage
+        : "Loading the image model";
     if (current.stage === "Decoding image") return "Finishing";
     return `${jobs.length > 1 ? `Creating image ${index + 1} of ${jobs.length}` : "Creating"} · step ${Math.min(current.completed_steps + 1, current.steps)} of ${current.steps}`;
   }

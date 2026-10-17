@@ -9,6 +9,7 @@ const states = [
   "unavailable",
   "queued",
   "preparing",
+  "making-room",
   "running",
   "cancelling",
   "cancelled",
@@ -27,17 +28,21 @@ export default function ImagesPreview() {
     state:
       state === "removed" || state === "empty" || state === "unavailable"
         ? "complete"
-        : state,
+        : state === "making-room"
+          ? "preparing"
+          : state,
     stage:
       state === "running"
         ? "Generating image"
-        : state === "preparing"
-          ? "Initializing image model"
-          : state === "complete"
-            ? "Image saved"
-            : state === "queued"
-              ? "Waiting for capacity"
-              : state,
+        : state === "making-room"
+          ? "Making room for images"
+          : state === "preparing"
+            ? "Initializing image model"
+            : state === "complete"
+              ? "Image saved"
+              : state === "queued"
+                ? "Waiting for capacity"
+                : state,
     completed_steps: state === "complete" ? 4 : 2,
     steps: 4,
     created_at: "2026-10-10T15:00:00Z",
