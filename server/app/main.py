@@ -72,6 +72,9 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
             app.state.images = Images(
                 app.state.store, config.data_dir, config.image_home, app.state.capacity
             )
+            app.state.images.engine.models_changed = lambda: setattr(
+                app.state.registry, "updated", 0
+            )
             app.state.runs = RunManager(app.state.store, app.state.registry, config.data_dir)
             app.state.search = Pipeline(app.state.runs, config.web_fixtures)
             app.state.runs.web_hook = app.state.search

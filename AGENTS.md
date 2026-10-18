@@ -1621,3 +1621,61 @@ This is not H0 feasibility/quality acceptance. Await the phone result before the
 already-approved installation/profile/native stages; do not ask to approve the
 same scope again. Production integration, reference edits and Research remain
 outside this checkpoint.
+
+**User authorization — 17 October 2026 (image memory handoff):** Jake reported
+chat and Brief to images failing while a Library embedding model remained loaded,
+then selected “Release idle embedding models automatically.” On
+`codex/image-memory-recovery`, starting an image job may release only the app's
+configured local Library/Web search models that fresh runtime metadata reports
+as embedding-only, under the existing shared native Capacity lease. Keep a loaded
+qualified chat profile; preserve all digest/context/residency/count/swap limits.
+Validate the entire proposed remaining configuration before any release, recheck
+actual residency afterward, and never evict other chat/unknown models implicitly.
+Use existing job progress, cancellation and retry, preserving completed workflow
+blocks and all Library data/configuration. No new dependencies, weights, sampling,
+defaults, broad memory qualification or Research. Verify with synthetic tests
+and retain a report before publication; no new native generation trial is implied.
+This is a narrow exception to the previous no-automatic-unloading rule. It also
+records a physical-phone image failure in the repair release; do not close the
+pending phone acceptance or resume Hermes inference as if it passed.
+
+**Image memory handoff technical closeout — 17 October 2026:** Final source on
+`codex/image-memory-recovery` passes full make check (721 Python / 126 frontend,
+110 contrast pairs), 45 focused handoff/admission cases and 14 targeted
+Chromium/WebKit browser checks. Preserve the original failure and first-draft
+runtime-capability failure: the configured embedding model also reports auxiliary
+tools/thinking flags. The final rule requires embedding, allows those flags and
+excludes completion/unknown capabilities; it never infers capabilities from names.
+All 548 frozen source hashes and 425 build hashes match; initial JS is 254,964
+gzip bytes within the unchanged 256,000-byte limit. Candidate/previous startup
+on copied data and all 55 existing table projections pass, with a private full
+application/data/plist fallback. No real generation, unload or Hermes inference
+occurs during validation. H4: `docs/IMAGE-MEMORY-HANDOFF-REPORT.md`; raw evidence:
+`artifacts/image-memory-recovery/`. Publication/physical phone results must be
+recorded separately; do not claim phone acceptance or resume Hermes prematurely.
+
+**Image memory handoff publication — 17 October 2026:** PR #4 is merged as
+`799b7f4f`; main matches all 548 tested source and 425 reproduced build hashes.
+The verified patch is live, healthy after 1.779 seconds, with 114 installed server
+hashes verified, unchanged schema 13, all 55 pre-existing table projections
+preserved and the original service/plist/interpreters/dependencies/worker controls
+and Tailscale route intact. Private full fallback and copied-data previous/candidate
+startup tests pass; source fallback tag is
+`checkpoint/pre-image-memory-handoff-2026-10-17`. Same-schema rollback preserves
+accepted live data. Actual HTTPS desktop/iPhone-profile UI checks pass using
+synthetic intercepted API data and no native requests; preserve their initial
+legacy PWA-evidence label and corrected observer record separately. No complete
+PWA suite rerun, physical phone pass, real generation/unload or Hermes execution
+is claimed. Jake's post-fix phone acceptance remains pending and the approved
+Hermes trial remains on hold for that prerequisite. H4/publication records:
+`docs/IMAGE-MEMORY-HANDOFF-REPORT.md`, `artifacts/image-memory-recovery/`.
+
+**User acceptance — 17 October 2026 (repair and memory handoff phone check):**
+Jake selected “Both image paths and phone checks pass” after the explicit request
+to reopen Aether, ask a Library question, generate in chat, retry the failed
+workflow image block without Eject, and confirm typing/sending plus Thinking's
+Model default option. Record these as user-confirmed phone results; close the
+repair/memory-handoff phone stop. No instrumented timing or VoiceOver pass is
+claimed. The previously approved isolated Hermes v0.22.2 core/64K/42-call H0
+trial may now resume on its existing branch with all original gates and limits.
+This does not authorize production Hermes integration or photo-edit deployment.

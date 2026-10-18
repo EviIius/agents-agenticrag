@@ -1,0 +1,196 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________________ test_actual_embedding_capabilities_can_handoff ________________
+
+self = <app.images.engine.Engine object at 0x10d131400>
+progress = <function progress at 0x10d1241a0>
+
+    async def prepare_memory(self, progress: Callable[[dict[str, Any]], Awaitable[None]]) -> None:
+        models = await self.loaded()
+        if self.qualified(models):
+            return
+        allowed = await self.configured_embeddings()
+        candidates = [
+            row for row in models if isinstance(row.get("name"), str) and row["name"] in allowed
+        ]
+        remaining = [row for row in models if row not in candidates]
+        # No partial eviction if another chat/unknown profile would still block images.
+        if not candidates or not self.qualified(remaining):
+            await self.admit()
+            return
+        if self.capacity is None or not self.capacity.busy:
+            raise AppError("image_capacity", "Image preparation needs the shared model slot.", 409)
+    
+        # Bind release to this exact residency snapshot, not a name or capability guess.
+        def snapshot(rows: list[dict[str, Any]]) -> dict[str, tuple[Any, ...]]:
+            result = {}
+            for row in rows:
+                name = row.get("name")
+                if not isinstance(name, str) or not name or name in result:
+                    raise ValueError("Invalid residency identity")
+                result[name] = (row.get("digest"), row.get("context_length"), row.get("size_vram"))
+            return result
+    
+        attempted = False
+        try:
+            original = snapshot(models)
+            planned = {row["name"]: original[row["name"]] for row in candidates}
+            async with httpx.AsyncClient(timeout=5, trust_env=False) as client:
+                for row in candidates:
+                    response = await client.post(
+                        "http://127.0.0.1:11434/api/show", json={"model": row["name"]}
+                    )
+                    response.raise_for_status()
+                    metadata = response.json()
+                    if not isinstance(metadata, dict) or metadata.get("capabilities") != [
+                        "embedding"
+                    ]:
+>                       raise AppError(
+                            "image_capacity",
+                            "Another loaded model needs an explicit choice in Settings → Models "
+                            "before images can start. Nothing was unloaded.",
+                            409,
+                        )
+E                       app.errors.AppError: Another loaded model needs an explicit choice in Settings → Models before images can start. Nothing was unloaded.
+
+app/images/engine.py:180: AppError
+
+The above exception was the direct cause of the following exception:
+
+engine = <app.images.engine.Engine object at 0x10d131400>
+
+    @respx.mock
+    async def test_actual_embedding_capabilities_can_handoff(engine):
+        loaded = [daily(), embedding()]
+        metadata(loaded)
+        respx.post("http://127.0.0.1:11434/api/show").respond(200, json={"capabilities":["tools","thinking","embedding"]})
+        def release(request):
+            loaded[:] = [daily()]
+            return httpx.Response(200, json={"done":True,"done_reason":"unload"})
+        respx.post("http://127.0.0.1:11434/api/chat").mock(side_effect=release)
+        async with engine.capacity.lease():
+>           await engine.prepare_memory(progress)
+
+../artifacts/image-memory-recovery/baseline/metadata_reproduction.py:16: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.images.engine.Engine object at 0x10d131400>
+progress = <function progress at 0x10d1241a0>
+
+    async def prepare_memory(self, progress: Callable[[dict[str, Any]], Awaitable[None]]) -> None:
+        models = await self.loaded()
+        if self.qualified(models):
+            return
+        allowed = await self.configured_embeddings()
+        candidates = [
+            row for row in models if isinstance(row.get("name"), str) and row["name"] in allowed
+        ]
+        remaining = [row for row in models if row not in candidates]
+        # No partial eviction if another chat/unknown profile would still block images.
+        if not candidates or not self.qualified(remaining):
+            await self.admit()
+            return
+        if self.capacity is None or not self.capacity.busy:
+            raise AppError("image_capacity", "Image preparation needs the shared model slot.", 409)
+    
+        # Bind release to this exact residency snapshot, not a name or capability guess.
+        def snapshot(rows: list[dict[str, Any]]) -> dict[str, tuple[Any, ...]]:
+            result = {}
+            for row in rows:
+                name = row.get("name")
+                if not isinstance(name, str) or not name or name in result:
+                    raise ValueError("Invalid residency identity")
+                result[name] = (row.get("digest"), row.get("context_length"), row.get("size_vram"))
+            return result
+    
+        attempted = False
+        try:
+            original = snapshot(models)
+            planned = {row["name"]: original[row["name"]] for row in candidates}
+            async with httpx.AsyncClient(timeout=5, trust_env=False) as client:
+                for row in candidates:
+                    response = await client.post(
+                        "http://127.0.0.1:11434/api/show", json={"model": row["name"]}
+                    )
+                    response.raise_for_status()
+                    metadata = response.json()
+                    if not isinstance(metadata, dict) or metadata.get("capabilities") != [
+                        "embedding"
+                    ]:
+                        raise AppError(
+                            "image_capacity",
+                            "Another loaded model needs an explicit choice in Settings → Models "
+                            "before images can start. Nothing was unloaded.",
+                            409,
+                        )
+                response = await client.get("http://127.0.0.1:11434/api/tags")
+                response.raise_for_status()
+                tags = response.json()["models"]
+                if not isinstance(tags, list) or any(not isinstance(row, dict) for row in tags):
+                    raise ValueError("Invalid model identities")
+                for name, identity in planned.items():
+                    matches = [row for row in tags if row.get("name") == name]
+                    if (
+                        len(matches) != 1
+                        or not isinstance(identity[0], str)
+                        or not identity[0]
+                        or matches[0].get("digest") != identity[0]
+                    ):
+                        raise ValueError("Embedding alias changed")
+                if snapshot(await self.loaded()) != original:
+                    raise ValueError("Loaded configuration changed")
+                await progress({"type": "releasing_embeddings"})
+                for row in candidates:
+                    # The job owns Capacity already; adapter.unload() would acquire it twice.
+                    try:
+                        attempted = True
+                        response = await client.post(
+                            "http://127.0.0.1:11434/api/chat",
+                            json={
+                                "model": row["name"],
+                                "messages": [],
+                                "keep_alive": 0,
+                                "stream": False,
+                            },
+                        )
+                        response.raise_for_status()
+                        acknowledgement = response.json()
+                        if (
+                            not isinstance(acknowledgement, dict)
+                            or acknowledgement.get("done") is not True
+                            or acknowledgement.get("done_reason") != "unload"
+                        ):
+                            raise ValueError("Missing unload acknowledgement")
+                    finally:
+                        if self.models_changed:
+                            self.models_changed()
+                # Ollama acknowledges expiry before asynchronous VRAM release completes.
+                # Bounded resource verification; the UI still receives push/SSE progress.
+                async with asyncio.timeout(5):
+                    while True:
+                        current = await self.loaded()
+                        current_snapshot = snapshot(current)
+                        if any(
+                            name not in original or original[name] != identity
+                            for name, identity in current_snapshot.items()
+                        ):
+                            raise ValueError("Unexpected loaded configuration")
+                        if self.qualified(current):
+                            break
+                        await asyncio.sleep(0.1)
+            await self.admit()
+        except (httpx.HTTPError, ValueError, KeyError, TypeError, TimeoutError, AppError) as exc:
+>           raise AppError(
+                "image_capacity",
+                "Couldn’t finish freeing memory for images. Retry this image."
+                if attempted
+                else "Couldn’t safely prepare memory for images. Nothing was unloaded. "
+                "Check Settings → Models and retry.",
+                409,
+            ) from exc
+E           app.errors.AppError: Couldn’t safely prepare memory for images. Nothing was unloaded. Check Settings → Models and retry.
+
+app/images/engine.py:243: AppError
+=========================== short test summary info ============================
+FAILED ::test_actual_embedding_capabilities_can_handoff - app.errors.AppError...
+1 failed in 0.39s

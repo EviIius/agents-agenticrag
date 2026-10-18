@@ -113,3 +113,12 @@ integration assessment now takes priority over a custom agent loop; the concrete
 proposal and photo-editing scope are in `HERMES-AND-PHOTO-EDITING-PLAN.md`.
 Installation and native trials still require their named scoped approval under
 AGENTS.md. Nothing in this release installs Hermes or enables reference edits.
+
+## Physical phone closeout — 17 October 2026
+
+After the separately recorded image memory handoff fix, Jake explicitly selected
+“Both image paths and phone checks pass” to the combined image, typing/sending
+and Thinking → Model default checklist. Close the repair release phone review.
+No instrumented phone timing or VoiceOver pass is claimed. Evidence:
+`artifacts/image-memory-recovery/phone-check.json`. The previously approved
+isolated Hermes H0 trial can now resume under its original limits.

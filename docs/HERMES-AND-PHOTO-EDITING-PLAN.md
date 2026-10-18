@@ -11,6 +11,13 @@ priority after fixes, merge and rename. The QA repair release is complete;
 physical phone acceptance is pending. This document is a researched proposal,
 not an installation, native trial or product qualification.
 
+**17 October execution status:** Jake approved the pinned isolated Hermes/core
+dependency/64K-profile trial and its 42-call ceiling, then confirmed “Both image
+paths and phone checks pass” after the memory-handoff fix. The phone prerequisite
+is now closed. Resume the existing `codex/hermes-h0` preparation with the frozen
+source and cases; the proposal wording below is retained as the reviewed plan.
+Production wiring and photo-reference editing remain later review checkpoints.
+
 ## Recommended order
 
 1. Close the repair release's phone check and fix any reported regression.
