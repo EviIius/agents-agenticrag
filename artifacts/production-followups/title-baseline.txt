@@ -1,0 +1,252 @@
+FFFF.                                                                    [100%]
+=================================== FAILURES ===================================
+______ test_first_send_preserves_user_title_and_search_index[False-False] ______
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10aeb4c20>, <httpx.AsyncClient object at 0x10aeb70e0>, <fastapi.applications.FastAPI object at 0x10aeb4ad0>)
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10ae6d810>
+auto_title = False, during_preparation = False
+
+    @pytest.mark.parametrize("auto_title", [False, True])
+    @pytest.mark.parametrize("during_preparation", [False, True])
+    async def test_first_send_preserves_user_title_and_search_index(
+        chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+        monkeypatch: pytest.MonkeyPatch,
+        auto_title: bool,
+        during_preparation: bool,
+    ) -> None:
+        app, client, runtime = chat_app
+        await client.patch("/api/settings", json={"auto_title": auto_title})
+        chat = (
+            await client.post(
+                "/api/chats",
+                json={
+                    "connection_id": app.state.test_connection,
+                    "model_id": "fake-chat",
+                    "web_enabled": False,
+                },
+            )
+        ).json()
+        url = "/api/chats/" + chat["id"]
+        title = "Synthetic user chosen title"
+        entered, release = asyncio.Event(), asyncio.Event()
+        original = chat_api.assemble
+    
+        async def pause(*args: Any, **kwargs: Any) -> Any:
+            assembled = await original(*args, **kwargs)
+            entered.set()
+            await release.wait()
+            return assembled
+    
+        if during_preparation:
+            monkeypatch.setattr(chat_api, "assemble", pause)
+            pending = asyncio.create_task(
+                client.post(url + "/messages", json={"content": "First synthetic question"})
+            )
+            try:
+                await asyncio.wait_for(entered.wait(), 5)
+                assert (await client.patch(url, json={"title": title})).status_code == 200
+            finally:
+                release.set()
+            sent = await pending
+        else:
+            assert (await client.patch(url, json={"title": title})).status_code == 200
+            sent = await client.post(url + "/messages", json={"content": "First synthetic question"})
+        assert sent.status_code == 202, sent.text
+        await finish(app, sent.json())
+        detail = (await client.get(url)).json()
+>       assert detail["chat"]["title"] == title
+E       AssertionError: assert 'First synthetic question' == 'Synthetic user chosen title'
+E         
+E         - Synthetic user chosen title
+E         + First synthetic question
+
+tests/test_title_ownership.py:62: AssertionError
+______ test_first_send_preserves_user_title_and_search_index[False-True] _______
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10aff7620>, <httpx.AsyncClient object at 0x10ae6ec40>, <fastapi.applications.FastAPI object at 0x10aeb4830>)
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10ae6b460>
+auto_title = True, during_preparation = False
+
+    @pytest.mark.parametrize("auto_title", [False, True])
+    @pytest.mark.parametrize("during_preparation", [False, True])
+    async def test_first_send_preserves_user_title_and_search_index(
+        chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+        monkeypatch: pytest.MonkeyPatch,
+        auto_title: bool,
+        during_preparation: bool,
+    ) -> None:
+        app, client, runtime = chat_app
+        await client.patch("/api/settings", json={"auto_title": auto_title})
+        chat = (
+            await client.post(
+                "/api/chats",
+                json={
+                    "connection_id": app.state.test_connection,
+                    "model_id": "fake-chat",
+                    "web_enabled": False,
+                },
+            )
+        ).json()
+        url = "/api/chats/" + chat["id"]
+        title = "Synthetic user chosen title"
+        entered, release = asyncio.Event(), asyncio.Event()
+        original = chat_api.assemble
+    
+        async def pause(*args: Any, **kwargs: Any) -> Any:
+            assembled = await original(*args, **kwargs)
+            entered.set()
+            await release.wait()
+            return assembled
+    
+        if during_preparation:
+            monkeypatch.setattr(chat_api, "assemble", pause)
+            pending = asyncio.create_task(
+                client.post(url + "/messages", json={"content": "First synthetic question"})
+            )
+            try:
+                await asyncio.wait_for(entered.wait(), 5)
+                assert (await client.patch(url, json={"title": title})).status_code == 200
+            finally:
+                release.set()
+            sent = await pending
+        else:
+            assert (await client.patch(url, json={"title": title})).status_code == 200
+            sent = await client.post(url + "/messages", json={"content": "First synthetic question"})
+        assert sent.status_code == 202, sent.text
+        await finish(app, sent.json())
+        detail = (await client.get(url)).json()
+>       assert detail["chat"]["title"] == title
+E       AssertionError: assert 'First synthetic question' == 'Synthetic user chosen title'
+E         
+E         - Synthetic user chosen title
+E         + First synthetic question
+
+tests/test_title_ownership.py:62: AssertionError
+______ test_first_send_preserves_user_title_and_search_index[True-False] _______
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10b2602f0>, <httpx.AsyncClient object at 0x10b2398c0>, <fastapi.applications.FastAPI object at 0x10b260050>)
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10b09cc50>
+auto_title = False, during_preparation = True
+
+    @pytest.mark.parametrize("auto_title", [False, True])
+    @pytest.mark.parametrize("during_preparation", [False, True])
+    async def test_first_send_preserves_user_title_and_search_index(
+        chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+        monkeypatch: pytest.MonkeyPatch,
+        auto_title: bool,
+        during_preparation: bool,
+    ) -> None:
+        app, client, runtime = chat_app
+        await client.patch("/api/settings", json={"auto_title": auto_title})
+        chat = (
+            await client.post(
+                "/api/chats",
+                json={
+                    "connection_id": app.state.test_connection,
+                    "model_id": "fake-chat",
+                    "web_enabled": False,
+                },
+            )
+        ).json()
+        url = "/api/chats/" + chat["id"]
+        title = "Synthetic user chosen title"
+        entered, release = asyncio.Event(), asyncio.Event()
+        original = chat_api.assemble
+    
+        async def pause(*args: Any, **kwargs: Any) -> Any:
+            assembled = await original(*args, **kwargs)
+            entered.set()
+            await release.wait()
+            return assembled
+    
+        if during_preparation:
+            monkeypatch.setattr(chat_api, "assemble", pause)
+            pending = asyncio.create_task(
+                client.post(url + "/messages", json={"content": "First synthetic question"})
+            )
+            try:
+                await asyncio.wait_for(entered.wait(), 5)
+                assert (await client.patch(url, json={"title": title})).status_code == 200
+            finally:
+                release.set()
+            sent = await pending
+        else:
+            assert (await client.patch(url, json={"title": title})).status_code == 200
+            sent = await client.post(url + "/messages", json={"content": "First synthetic question"})
+        assert sent.status_code == 202, sent.text
+        await finish(app, sent.json())
+        detail = (await client.get(url)).json()
+>       assert detail["chat"]["title"] == title
+E       AssertionError: assert 'First synthetic question' == 'Synthetic user chosen title'
+E         
+E         - Synthetic user chosen title
+E         + First synthetic question
+
+tests/test_title_ownership.py:62: AssertionError
+_______ test_first_send_preserves_user_title_and_search_index[True-True] _______
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10b3474d0>, <httpx.AsyncClient object at 0x10b09e750>, <fastapi.applications.FastAPI object at 0x10b347380>)
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10b25cbb0>
+auto_title = True, during_preparation = True
+
+    @pytest.mark.parametrize("auto_title", [False, True])
+    @pytest.mark.parametrize("during_preparation", [False, True])
+    async def test_first_send_preserves_user_title_and_search_index(
+        chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+        monkeypatch: pytest.MonkeyPatch,
+        auto_title: bool,
+        during_preparation: bool,
+    ) -> None:
+        app, client, runtime = chat_app
+        await client.patch("/api/settings", json={"auto_title": auto_title})
+        chat = (
+            await client.post(
+                "/api/chats",
+                json={
+                    "connection_id": app.state.test_connection,
+                    "model_id": "fake-chat",
+                    "web_enabled": False,
+                },
+            )
+        ).json()
+        url = "/api/chats/" + chat["id"]
+        title = "Synthetic user chosen title"
+        entered, release = asyncio.Event(), asyncio.Event()
+        original = chat_api.assemble
+    
+        async def pause(*args: Any, **kwargs: Any) -> Any:
+            assembled = await original(*args, **kwargs)
+            entered.set()
+            await release.wait()
+            return assembled
+    
+        if during_preparation:
+            monkeypatch.setattr(chat_api, "assemble", pause)
+            pending = asyncio.create_task(
+                client.post(url + "/messages", json={"content": "First synthetic question"})
+            )
+            try:
+                await asyncio.wait_for(entered.wait(), 5)
+                assert (await client.patch(url, json={"title": title})).status_code == 200
+            finally:
+                release.set()
+            sent = await pending
+        else:
+            assert (await client.patch(url, json={"title": title})).status_code == 200
+            sent = await client.post(url + "/messages", json={"content": "First synthetic question"})
+        assert sent.status_code == 202, sent.text
+        await finish(app, sent.json())
+        detail = (await client.get(url)).json()
+>       assert detail["chat"]["title"] == title
+E       AssertionError: assert 'First synthetic question' == 'Synthetic user chosen title'
+E         
+E         - Synthetic user chosen title
+E         + First synthetic question
+
+tests/test_title_ownership.py:62: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_title_ownership.py::test_first_send_preserves_user_title_and_search_index[False-False]
+FAILED tests/test_title_ownership.py::test_first_send_preserves_user_title_and_search_index[False-True]
+FAILED tests/test_title_ownership.py::test_first_send_preserves_user_title_and_search_index[True-False]
+FAILED tests/test_title_ownership.py::test_first_send_preserves_user_title_and_search_index[True-True]
+4 failed, 1 passed in 1.40s

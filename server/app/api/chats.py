@@ -361,7 +361,8 @@ async def start_message(identifier: str, body: Send, request: Request) -> RunRes
             ),
         ),
         (
-            "UPDATE chats SET current_leaf_id=?,title=CASE WHEN NOT EXISTS(SELECT 1 F"
+            "UPDATE chats SET current_leaf_id=?,title=CASE WHEN title_source='fallback' "
+            "AND NOT EXISTS(SELECT 1 F"
             "ROM messages WHERE chat_id=? AND role='user' AND id!=?) THEN ? ELSE titl"
             "e END,updated_at=? WHERE id=?",
             (assistant_id, identifier, user_id, body.content[:60], date, identifier),

@@ -146,7 +146,7 @@ export function WorkflowHomeContent({
         <div>
           <h1>Workflows</h1>
           <p>
-            Chain models, search, images and recordings into repeatable steps.
+            Chain models, images and recordings into repeatable steps.
             <br />
             Runs keep going on your Mac when you close the app.
           </p>

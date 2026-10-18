@@ -1649,3 +1649,15 @@ repair/memory-handoff phone stop. No instrumented timing or VoiceOver pass is
 claimed. The previously approved isolated Hermes v0.22.2 core/64K/42-call H0
 trial may now resume on its existing branch with all original gates and limits.
 This does not authorize production Hermes integration or photo-edit deployment.
+
+**User continuation — 18 October 2026 (production follow-ups):** After the
+failed bounded native C1 report, Jake asked to continue. End that candidate and
+address the two confirmed pending QA roadmap defects under
+`docs/PRODUCTION-FOLLOWUPS-PLAN.md`: manual title ownership at first text send,
+including concurrent rename, and misleading Workflows search wording. Start
+`codex/production-followups` from accepted main e7ffea2b, preserving the native
+branch/evidence at 376205a3 and all old failed gates. Use synthetic reproduction,
+full checks/browser evidence and a draft PR; stop for review before release.
+No native inference, prompt/sampling/model/runtime/dependency/schema change,
+Research/agent restart, new workflow blocks, main merge or deployment. This
+checkpoint does not qualify factual answers or waive earlier reliability failures.

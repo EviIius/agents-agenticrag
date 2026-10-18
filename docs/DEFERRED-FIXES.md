@@ -1,5 +1,29 @@
 # Deferred fixes — resolved polish, 8 October 2026
 
+## Current status — 18 October 2026
+
+This section supersedes the historical pending/proposal entries below.
+
+- Live main is `e7ffea2b`: Aether rename, QA repairs, attachments, workflow/chat
+  images and idle embedding handoff are released. Jake confirmed both image
+  paths, typing/sending, Model default and Workflows on the phone.
+- The isolated native agent C1 candidate failed and stopped after one call; N1,
+  Hermes and PydanticAI trials remain preserved. No agent implementation is
+  integrated. No further prompt/framework campaign or Research restart is active.
+  Evidence: `codex/native-agent-loop` at `376205a3`,
+  `docs/AGENT-C1-RETEST-REPORT.md` on that branch.
+- Current narrow production follow-up is on `codex/production-followups`:
+  preserve manual titles at first text send (including a concurrent rename),
+  and remove the unavailable Search promise from Workflows home. QA/release
+  status is recorded in `PRODUCTION-FOLLOWUPS-REPORT.md`; no release is implied
+  by the earlier proposal or branch evidence.
+- Remaining product work: photo-reference editing and the disabled workflow
+  blocks. Their reviewed implementation/native-validation scopes are still
+  separate. Existing Search/Library remain available; factual reliability is
+  not newly qualified. Further quality repair needs a concrete failing example.
+- VoiceOver remains removed from the current work list. Its historical reported
+  failure is retained; no pass or new physical-phone timing is claimed.
+
 ## Current QA repair checkpoint — 17 October 2026
 
 **Release follow-up:** PR #3 is merged and the tested repairs/Aether display name
