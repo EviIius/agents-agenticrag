@@ -1734,3 +1734,32 @@ native calls, packages, application changes, main merge or deployment. H4:
 tasks/two series, first required failure stops, 12/12 full manual passes required.
 Review that scope before native execution; do not reset or resume the failed N1
 ledger, quietly lower targets or claim detection alone improved answers.
+
+
+**User authorization — 18 October 2026 (C1 citation retest):** Jake answered
+“CONTINUE” to the concrete ≤36-call retest following the offline coverage report.
+Proceed with `docs/AGENT-C1-RETEST-PLAN.md` on the isolated native branch. Use the
+already-frozen generic v2 reminder, same exact daily 32K profile/runtime/settings,
+original six tasks and H04 mapping in two ordered series. A new durable C1 ledger
+counts all attempts; never reset N1’s stopped four-call ledger. Stop immediately
+on the first required quality, citation, protocol, resource or budget failure;
+manual support/placement review precedes every successor. Require 12/12 full
+passes; warning detection alone is insufficient. No hidden retry, new candidate,
+package, model, main merge, deployment or N2/N3 is authorized. Preserve all old
+trials and original targets and stop with H4 results; a pass permits N2 review only.
+
+**Native C1 closeout — 18 October 2026:** The frozen generic v2 candidate fails
+H01 after one native request in 29.65 seconds. It asks for the specifications
+instead of using the available web_search/read_page tools, returning none of
+the required comparison facts or citations. No specification fact is invented,
+but absence of fabrication does not pass task completeness or citation gates.
+The detector reports not_checked with zero retrieved sources; it is not a pass.
+The ledger is stopped, manual failure is recorded, and post-stop task/request
+admission is refused. Eleven tasks remain unrun; no retry or next candidate.
+All 76 offline checks pass. Thirty-one resource samples show zero swap growth
+from 3,861 MiB already used, 19,508,609,678-byte model allocation and <=23.39 ms
+health. Original source/answers/grades, earlier stopped ledgers, all 548 main,
+114 installed server and 425 static hashes remain intact. No application change,
+main merge, deployment or later-stage qualification. H4:
+`docs/AGENT-C1-RETEST-REPORT.md`. End this candidate and retain existing Search/
+Library; no automatic prompt/framework campaign, N2/N3 or Research restart.
