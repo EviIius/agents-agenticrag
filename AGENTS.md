@@ -1681,3 +1681,31 @@ Stop for N0 review. Before any N1 inference, approve its bounded call scope,
 resolve H04's web/Library fixture conflict and experimental model admission;
 do not invent a production digest qualification. N2/N3 and looser time targets
 remain unapproved; previous trials, failures and original thresholds stay intact.
+
+**User continuation — 18 October 2026 (native loop N1):** After the N0 report and
+the explicit next-step description of a bounded daily-32K trial, Jake asked to
+“Continue with the research”. Proceed with N1 only, under
+`docs/AGENT-LOOP-N1-PLAN.md`: two ordered six-case series, at most 36 actual
+native requests total, model-default thinking, no sampling overrides, and stop
+on the first required correctness/support/citation/protocol/resource failure.
+Use the reviewed H04 Library-only fixture mapping with original source text and
+facts preserved. Admit the exact runtime digest/context/version for this isolated
+experiment only; do not invent a passing tool probe or production qualification.
+No extra native warm-up/probe, package, model download, default switch, main
+merge, deployment or Research product restart. Preserve prior stopped trials and
+all original N2 quality/time targets. N2/N3 and looser timing limits remain gated.
+
+**Native loop N1 closeout — 18 October 2026:** The original six-task/two-series
+trial stops at four native requests: H01 passes; H02 returns all four required
+facts correctly but puts its sole [1] before the list, leaving every factual
+bullet uncited despite the frozen per-bullet Library rule. Manual review fails
+that mandatory citation gate; the host's issued-ID/presence check alone misses
+placement coverage. No H03/H04/H05/H06 or second-series native task follows.
+All 196 frozen executed files, original records, old stopped ledgers and main/live
+hashes remain intact. Twenty-one fresh offline checks pass; no app source,
+dependency, prompt, sampling/default, main merge or deployment change. Maximum
+sampled swap growth is zero MiB from 3,909 MiB pre-existing swap, model allocation
+19,508,609,678 bytes; live health passes. Do not claim N1 qualification, consistent
+speed gain, real retrieval, dedicated injection/refusal coverage or native cancel
+testing. H4: `docs/AGENT-LOOP-N1-REPORT.md`. Preserve the stopped four-call ledger;
+further inference or citation-contract repairs require reviewed follow-up scope.
