@@ -23,7 +23,8 @@ class ProviderMessage:
     role: Literal["system", "user", "assistant", "tool"]
     content: str
     images: list[bytes] = field(default_factory=list)
-    tool_calls: list[dict[str, Any]] | None = None  # Reserved for a later agent spec.
+    tool_calls: list[dict[str, Any]] | None = None
+    tool_name: str | None = None
 
 
 @dataclass
@@ -34,6 +35,7 @@ class ChatRequest:
     context_length: int | None = None
     reasoning: str | None = None
     json_schema: dict[str, Any] | None = None
+    tools: list[dict[str, Any]] | None = None
 
 
 @dataclass
@@ -69,7 +71,7 @@ class Finish:
 class ToolCall:
     id: str
     name: str
-    arguments: str  # Reserved; never emitted by current chat.
+    arguments: str
 
 
 ProviderEvent = TextDelta | ReasoningDelta | Usage | Timing | Finish | ToolCall

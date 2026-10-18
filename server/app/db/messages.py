@@ -52,6 +52,8 @@ async def message(store: Store, identifier: str) -> Message:
             "library": LibraryInfo(**json.loads(row["library_json"]))
             if row["library_json"]
             else None,
+            "parts": json.loads(row["parts_json"]),
+            "agent": json.loads(row["agent_json"]) if row["agent_json"] else None,
             "images": [
                 await image_job(store, r["job_id"])
                 for r in await store.rows(
@@ -140,7 +142,7 @@ async def save(store: Store, msg: Message, final: bool = False) -> None:
     statements: list[tuple[str, tuple[object, ...]]] = [
         (
             "UPDATE messages SET content=?,reasoning=?,status=?,error_json=?,stats_js"
-            "on=?,web_json=?,library_json=?,updated_at=? WHERE id=?",
+            "on=?,web_json=?,library_json=?,parts_json=?,agent_json=?,updated_at=? WHERE id=?",
             (
                 msg.content,
                 msg.reasoning,
@@ -149,6 +151,8 @@ async def save(store: Store, msg: Message, final: bool = False) -> None:
                 msg.stats.model_dump_json() if msg.stats else None,
                 msg.web.model_dump_json() if msg.web else None,
                 msg.library.model_dump_json() if msg.library else None,
+                json.dumps([part.model_dump() for part in msg.parts]),
+                msg.agent.model_dump_json() if msg.agent else None,
                 now(),
                 msg.id,
             ),

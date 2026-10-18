@@ -1,0 +1,14 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+E501 Line too long (126 > 100)
+  --> tests/test_agent_web_parity.py:21:101
+   |
+19 | async def test_25_saved_web_cases_have_identical_payloads_and_answer_events() -> None:
+20 |     file = ROOT / "server/tests/fixtures/agent/ollama-main-e7ffea2b.py.txt"
+21 |     assert hashlib.sha256(file.read_bytes()).hexdigest() == "d44b20a4a82297dc8d26afe0a77ef6409e2ff2db8598621aebd9bb2d141a6488"
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+22 |     module = types.ModuleType("app.providers.n0_previous")
+23 |     module.__package__ = "app.providers"
+   |
+
+Found 1 error.
+make: *** [check] Error 1

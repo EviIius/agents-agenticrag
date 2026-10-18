@@ -1,4 +1,5 @@
 import asyncio
+import json
 from collections.abc import AsyncIterator, Awaitable, Callable
 from dataclasses import dataclass, field
 from typing import Any
@@ -64,6 +65,16 @@ class RunManager:
         return self.chat_locks.setdefault(chat_id, asyncio.Lock())
 
     async def recover(self) -> None:
+        for row in await self.store.rows(
+            "SELECT id,parts_json FROM messages WHERE status='streaming' AND agent_json IS NOT NULL"
+        ):
+            parts = json.loads(row["parts_json"])
+            for part in parts:
+                if (part.get("step") or {}).get("status") == "running":
+                    part["step"]["status"] = "stopped"
+            await self.store.execute(
+                "UPDATE messages SET parts_json=? WHERE id=?", (json.dumps(parts), row["id"])
+            )
         await self.store.execute(
             "UPDATE messages SET status='interrupted',error_json=?,updated_at=? WHERE"
             " status='streaming'",

@@ -1649,3 +1649,35 @@ repair/memory-handoff phone stop. No instrumented timing or VoiceOver pass is
 claimed. The previously approved isolated Hermes v0.22.2 core/64K/42-call H0
 trial may now resume on its existing branch with all original gates and limits.
 This does not authorize production Hermes integration or photo-edit deployment.
+
+**User authorization — 18 October 2026 (native loop N0):** Jake supplied Claude's
+review and native-loop plan, asked Codex to assess it and follow it if sound, and
+provided its local path. Adopt D1 and D2: close Hermes/PydanticAI as app-loop
+candidates while preserving both branches/evidence; implement
+`docs/next/agent-loop/NATIVE-AGENT-LOOP-PLAN.md` N0 only on an isolated branch.
+No native model calls, new dependencies, main merge or deployment. Use existing
+Pydantic models and native Ollama transport; preserve explicit thinking, sampling,
+keep-alive, scheduler, privacy and ordinary golden requests. Port tool support
+and controls, not the failed Research evidence selector or separate ranked answer.
+Freeze the new prompt; existing prompts stay byte-identical. Migration 014 is
+additive; use synthetic data and retain QA/H4 evidence. Stop after N0 review.
+D3 (36-call 32K N1), N2 and N3 remain unapproved. The plan's combined authorization
+paragraph must not pre-authorize N1. D4's proposed 120/240-second limits loosen
+the original 90/200-second targets and remain pending; no target is changed here.
+D5 model-tag removal is not approved. Research remains shelved as a product.
+
+**Native loop N0 technical closeout — 18 October 2026:** The isolated native
+adapter/Pydantic implementation passes full make check (798 Python / 126 frontend,
+110 contrast pairs) and one full Chromium/WebKit invocation (719 passed, three
+unchanged skips, zero failed). All 240 original native streams replay; ordinary
+golden payloads and 25-case/28-turn saved-answer transport parity pass. This is
+not a fresh G9 model-quality evaluation: N0 permits zero native calls. Preserve
+that open qualification boundary. Additive migration 014 and synthetic schema-14
+startup / restored schema-13 previous-app startup pass. Initial JS stays 254,964
+gzip bytes; dependencies, all 548 accepted main source hashes, 114 installed server
+and 425 installed static hashes remain intact. No main merge or deployment. H4:
+`docs/AGENT-LOOP-N0-REPORT.md`; assessment: `docs/NATIVE-AGENT-LOOP-REVIEW.md`.
+Stop for N0 review. Before any N1 inference, approve its bounded call scope,
+resolve H04's web/Library fixture conflict and experimental model admission;
+do not invent a production digest qualification. N2/N3 and looser time targets
+remain unapproved; previous trials, failures and original thresholds stay intact.

@@ -1708,6 +1708,98 @@ export interface components {
             /** Assistant Message Id */
             assistant_message_id: string;
         };
+        /** AgentInfo */
+        AgentInfo: {
+            /**
+             * Steps
+             * @default 0
+             */
+            steps: number;
+            /**
+             * Calls
+             * @default 0
+             */
+            calls: number;
+            /**
+             * Searches
+             * @default 0
+             */
+            searches: number;
+            /**
+             * Pages
+             * @default 0
+             */
+            pages: number;
+            /**
+             * Library Searches
+             * @default 0
+             */
+            library_searches: number;
+            /**
+             * Calculations
+             * @default 0
+             */
+            calculations: number;
+            /**
+             * Invalid Calls
+             * @default 0
+             */
+            invalid_calls: number;
+            /**
+             * Invalid Citations
+             * @default 0
+             */
+            invalid_citations: number;
+            /**
+             * Source Count
+             * @default 0
+             */
+            source_count: number;
+            /** Limit Reached */
+            limit_reached?: string | null;
+            notice?: components["schemas"]["ErrorDetail"] | null;
+        };
+        /** AgentPart */
+        AgentPart: {
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "text" | "tool";
+            /**
+             * Text
+             * @default
+             */
+            text: string;
+            step?: components["schemas"]["AgentStep"] | null;
+        };
+        /** AgentStep */
+        AgentStep: {
+            /** Id */
+            id: string;
+            /** Tool */
+            tool: string;
+            /** Arguments */
+            arguments?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Status
+             * @default running
+             * @enum {string}
+             */
+            status: "running" | "done" | "failed" | "stopped";
+            /**
+             * Detail
+             * @default
+             */
+            detail: string;
+            /**
+             * Ms
+             * @default 0
+             */
+            ms: number;
+        };
         /** Attachment */
         Attachment: {
             /** Id */
@@ -2935,6 +3027,9 @@ export interface components {
             kind: "text" | "image";
             /** Images */
             images?: components["schemas"]["ImageJob"][] | null;
+            /** Parts */
+            parts?: components["schemas"]["AgentPart"][];
+            agent?: components["schemas"]["AgentInfo"] | null;
         };
         /** MessageErrorData */
         MessageErrorData: {
@@ -2970,6 +3065,8 @@ export interface components {
             model_id: string;
             /** Display Name */
             display_name: string;
+            /** Digest */
+            digest?: string | null;
             /** Family */
             family?: string | null;
             /** Params */

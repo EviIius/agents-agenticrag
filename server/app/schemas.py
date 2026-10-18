@@ -190,6 +190,7 @@ class ModelInfo(BaseModel):
     connection_id: str
     model_id: str
     display_name: str
+    digest: str | None = None
     family: str | None = None
     params: str | None = None
     quant: str | None = None
@@ -585,6 +586,35 @@ class LibraryInfo(BaseModel):
     passage_count: int = 0
 
 
+class AgentStep(BaseModel):
+    id: str
+    tool: str
+    arguments: dict[str, Any] = Field(default_factory=dict)
+    status: Literal["running", "done", "failed", "stopped"] = "running"
+    detail: str = ""
+    ms: float = 0
+
+
+class AgentPart(BaseModel):
+    type: Literal["text", "tool"]
+    text: str = ""
+    step: AgentStep | None = None
+
+
+class AgentInfo(BaseModel):
+    steps: int = 0
+    calls: int = 0
+    searches: int = 0
+    pages: int = 0
+    library_searches: int = 0
+    calculations: int = 0
+    invalid_calls: int = 0
+    invalid_citations: int = 0
+    source_count: int = 0
+    limit_reached: str | None = None
+    notice: ErrorDetail | None = None
+
+
 class Message(BaseModel):
     id: str
     chat_id: str
@@ -602,6 +632,8 @@ class Message(BaseModel):
     created_at: str
     kind: Literal["text", "image"] = "text"
     images: list[ImageJob] | None = None
+    parts: list[AgentPart] = Field(default_factory=list)
+    agent: AgentInfo | None = None
 
 
 class ChatDetail(BaseModel):
@@ -722,7 +754,7 @@ class ClosedEvent(BaseModel):
 
 class ToolEvent(BaseModel):
     type: Literal["tool.started", "tool.finished"]
-    data: dict[str, Any]  # Reserved, never emitted.
+    data: dict[str, Any]
 
 
 class SearchEvent(BaseModel):

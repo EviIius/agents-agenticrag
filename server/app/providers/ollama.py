@@ -12,7 +12,16 @@ import httpx
 from ..capacity import Capacity
 from ..errors import AppError
 from ..schemas import ModelInfo, ReasoningCaps
-from .base import ChatRequest, Finish, ProviderEvent, ReasoningDelta, TextDelta, Timing, Usage
+from .base import (
+    ChatRequest,
+    Finish,
+    ProviderEvent,
+    ReasoningDelta,
+    TextDelta,
+    Timing,
+    ToolCall,
+    Usage,
+)
 from .thinktags import ThinkSplitter
 
 
@@ -103,6 +112,7 @@ class Ollama:
                     connection_id=self.connection_id,
                     model_id=name,
                     display_name=name,
+                    digest=tag.get("digest"),
                     family=details.get("family"),
                     params=details.get("parameter_size"),
                     quant=details.get("quantization_level"),
@@ -135,6 +145,10 @@ class Ollama:
             entry: dict[str, Any] = {"role": m.role, "content": m.content}
             if m.images:
                 entry["images"] = [base64.b64encode(i).decode() for i in m.images]
+            if m.tool_calls is not None:
+                entry["tool_calls"] = m.tool_calls
+            if m.tool_name is not None:
+                entry["tool_name"] = m.tool_name
             messages.append(entry)
         payload: dict[str, Any] = {
             "model": req.model_id,
@@ -153,6 +167,8 @@ class Ollama:
                 payload["think"] = {"off": False, "on": True}.get(req.reasoning, req.reasoning)
         if req.json_schema:
             payload["format"] = req.json_schema
+        if req.tools is not None:
+            payload["tools"] = req.tools
         return payload
 
     async def load(self, model_id: str, context_length: int | None) -> None:
@@ -189,6 +205,7 @@ class Ollama:
     async def native_stream(self, req: ChatRequest) -> AsyncGenerator[ProviderEvent, None]:
         splitter = ThinkSplitter()
         native = False
+        call_number = 0
         try:
             async with self.client.stream(
                 "POST", self.base_url + "/api/chat", json=self.payload(req)
@@ -211,6 +228,18 @@ class Ollama:
                     if chunk.get("error"):
                         raise runtime_error(500, str(chunk["error"]))
                     message = chunk.get("message", {})
+                    if req.tools is not None:
+                        for call in message.get("tool_calls", []):
+                            function = call.get("function", {})
+                            arguments = function.get("arguments")
+                            yield ToolCall(
+                                str(call.get("id") or f"call-{call_number}"),
+                                function.get("name")
+                                if isinstance(function.get("name"), str)
+                                else "",
+                                arguments if isinstance(arguments, str) else json.dumps(arguments),
+                            )
+                            call_number += 1
                     if "thinking" in message:
                         native = True
                         for event in splitter.end():
@@ -245,7 +274,7 @@ class Ollama:
             yield Finish("error", "runtime_unreachable")
         except AppError as exc:
             yield Finish("error", exc.code + ":" + exc.message)
-        except (ValueError, KeyError):
+        except (ValueError, KeyError, TypeError, AttributeError):
             yield Finish("error", "provider_error:Invalid Ollama response")
 
     async def complete_json(self, req: ChatRequest) -> dict[str, Any]:

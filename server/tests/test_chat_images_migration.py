@@ -28,7 +28,7 @@ async def test_chat_images_preserves_populated_v12_rows(tmp_path: Path) -> None:
     async with aiosqlite.connect(target) as db:
         await db.execute("PRAGMA foreign_keys=ON")
         await migrate(db)
-        assert await (await db.execute("PRAGMA user_version")).fetchone() == (13,)
+        assert await (await db.execute("PRAGMA user_version")).fetchone() == (14,)
         assert not await (await db.execute("PRAGMA foreign_key_check")).fetchall()
         assert await (await db.execute("PRAGMA integrity_check")).fetchone() == ("ok",)
         assert not await (await db.execute("SELECT id FROM messages WHERE kind!='text'")).fetchall()
