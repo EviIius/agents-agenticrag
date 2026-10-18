@@ -1709,3 +1709,28 @@ sampled swap growth is zero MiB from 3,909 MiB pre-existing swap, model allocati
 speed gain, real retrieval, dedicated injection/refusal coverage or native cancel
 testing. H4: `docs/AGENT-LOOP-N1-REPORT.md`. Preserve the stopped four-call ledger;
 further inference or citation-contract repairs require reviewed follow-up scope.
+
+**User continuation — 18 October 2026 (offline citation coverage):** After the
+N1 failure/report and proposed citation-validation repair, Jake said “continue”.
+Proceed with `docs/AGENT-CITATION-COVERAGE-PLAN.md`: an isolated, non-mutating
+list/table coverage detector, offline tests and separate replays of retained
+answers; prepare one generic unexecuted reminder candidate and concrete bounded
+retest scope. No further model calls in this checkpoint. Preserve the stopped
+four-call ledger, all original answers/grades/prompts, production qualification
+guard, source inputs and thresholds. No automatic citation stamping, retry,
+new dependency, main merge or deployment. A detector warning is not answer gain
+or proof of semantic support. Native retest and N2/N3 still require review.
+
+**Offline citation coverage closeout — 18 October 2026:** Forty-seven new offline
+tests pass. The separate detector/replay finds all four uncited H02 bullet items
+and no obvious gap in H01's six list/table units. It changes only a proposed
+notice on a copy; original content, grades, notices, all 196 N1 frozen files and
+the stopped four-call ledger remain intact. It does not check semantic support,
+all sentences/prose or full Markdown, and is not wired into the application or
+old N1 worker. New generic v2 prompt hashes are prepared but unexecuted; zero new
+native calls, packages, application changes, main merge or deployment. H4:
+`docs/AGENT-CITATION-COVERAGE-REPORT.md`. Concrete proposed C1 scope is in
+`docs/AGENT-CITATION-COVERAGE-PLAN.md`: a separate ≤36-call 32K trial, original six
+tasks/two series, first required failure stops, 12/12 full manual passes required.
+Review that scope before native execution; do not reset or resume the failed N1
+ledger, quietly lower targets or claim detection alone improved answers.

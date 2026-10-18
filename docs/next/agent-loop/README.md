@@ -6,6 +6,9 @@
 - `../../AGENT-LOOP-N1-PLAN.md`: frozen bounded trial and scope resolution.
 - `../../AGENT-LOOP-N1-REPORT.md`: current result, stopped at four native calls
   after H02's per-bullet citation failure; not qualified.
+- `../../AGENT-CITATION-COVERAGE-REPORT.md`: offline detector catches the four
+  missing bullet citations; 47 tests pass; new generic prompt remains unexecuted.
+- `../../AGENT-CITATION-COVERAGE-PLAN.md`: prepared C1 retest scope, pending review.
 
 N0 is implemented; N1 has run and stopped under its first-failure rule. Hermes
 and PydanticAI evidence remains preserved. N2/N3 and further N1 inference need
