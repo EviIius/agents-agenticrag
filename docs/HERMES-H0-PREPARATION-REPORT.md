@@ -1,5 +1,11 @@
 # Hermes H0 preparation — execution prerequisite pending
 
+**Later status:** Jake confirmed the phone checklist. The isolated core install
+and first real-process structural check are now complete; the exact tool
+allowlist gate failed before inference, stopping the native ledger at 0/42.
+See `HERMES-H0-REPORT.md`. This preparation report and its earlier pending status
+are retained as the original pre-execution record.
+
 17 October 2026. This is a preparation report, not a completed Hermes feasibility
 result. Jake approved the pinned isolated trial and then answered **“I haven’t
 checked yet”** to its phone prerequisite. No acceptance, installation, native

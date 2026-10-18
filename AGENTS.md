@@ -1679,3 +1679,26 @@ repair/memory-handoff phone stop. No instrumented timing or VoiceOver pass is
 claimed. The previously approved isolated Hermes v0.22.2 core/64K/42-call H0
 trial may now resume on its existing branch with all original gates and limits.
 This does not authorize production Hermes integration or photo-edit deployment.
+
+**Hermes H0 structural closeout — 17 October 2026:** After Jake's explicit
+phone acceptance, the approved 67-package core environment was installed in
+isolation. The pinned v0.22.2 source imports and the real AIAgent constructor
+returns, but the first fake-inference structural smoke fails the exact tool
+allowlist: default progressive disclosure exposes tool_call/tool_describe/
+tool_search/web_search rather than the four approved direct adapters. The worker
+stops before run_conversation, is reaped, and the native ledger is stopped at
+0/42. No 64K profile, native request, sampling payload, stream/cancel qualification,
+quality comparison or H1 product wiring is executed or claimed.
+
+Preserve all frozen source, raw failures and the distinction between denied
+startup probes and actual unauthorized execution. The raw no-denied-attempts
+assertion is stricter than the approved no-unauthorized-execution target; it
+does not erase the independent effective-tool failure. Read-only source inspection
+finds documented tools.tool_search.enabled="off" as the direct-schema remedy.
+It is prepared, not run, in `docs/HERMES-H0-RETRY-PLAN.md`. Stop for H0 review
+before a corrected frozen trial; do not silently reset the stopped ledger or
+weaken tool/sampling/support targets. Eighteen host controls pass. Accepted Aether
+548 source / 114 installed server / 425 static hashes and installed environment/
+transcription hashes remain intact; local/HTTPS health pass. No main application
+change, new weights, optional extras, reference edits or Research restart occurs.
+H4: `docs/HERMES-H0-REPORT.md`; evidence: `artifacts/hermes/h0/`.
