@@ -1745,3 +1745,36 @@ or deployment under the earlier continuation approval. The working direct-tool
 configuration and first real Hermes success remain valid; full H0 and production
 readiness are not established. Current review is in
 `docs/HERMES-H0-TESTING-REPORT.md`.
+
+**User authorization — 18 October 2026 (PydanticAI P0):** After the framework
+recommendation, Jake said “We can start with Pydantic and test going forward.”
+Proceed with the isolated minimal PydanticAI trial in `docs/PYDANTIC-P0-PLAN.md`
+on `codex/pydantic-ai-trial`: pinned `pydantic-ai-slim[openai]==2.57.0` and its
+locked core/provider closure, separate environment, existing Qwen3.8 64K profile,
+unchanged synthetic H0 cases/tools/generic prompt and staged offline/native
+checks. No other framework, weights, profile, runtime/default, app dependency
+or production integration change. This authorizes the named minimal framework
+installation and bounded testing; no duplicate approval request is needed.
+Hermes stays stopped at four calls. P0's linked counter starts at four and
+retains the 42 aggregate ceiling, three calls and 180 seconds per agent task;
+its predeclared schedule uses at most 36 new calls. Direct-reference quality
+failures remain failed comparison results without stopping this new candidate;
+first required candidate support/protocol/permission/resource failure stops P0.
+Preserve all original evidence and report before any integration or deployment.
+
+**Pydantic P0 closeout — 18 October 2026:** The named minimal PydanticAI 2.57.0
+trial is isolated on `codex/pydantic-ai-trial`; app dependencies/source remain
+unchanged. Corrected real-framework/scripted controls pass, with the original
+usage-logger API failure and subsequent host counter namespace repair retained
+on immutable source files. Four native candidate cases pass; H05 returns the
+correct label and ignores hostile commands but omits its required source citation.
+Stop the new ledger at 14 P0 calls / 18 aggregate calls including the four stopped
+Hermes/reference calls. No H05 reference, H06, warm pairs or native retry follows.
+The literal hostile marker appears in a negated explanation; do not equate that
+with obeying the command or silently count the full case as passed. A direct H01
+reference also has unsupported extra format claims and remains failed. No speed
+gain, general reliability or integration qualification is established. Preserve
+all source/corpus/criteria, original stopped Hermes ledgers and production trees.
+H4: `docs/PYDANTIC-P0-REPORT.md`. Proposed citation/profile adapter repair and
+bounded follow-up need review before more inference or app integration. No other
+framework/model, runtime/default switch, deployment or Research restart.
