@@ -38,7 +38,7 @@ with the first draft.
 | Full repository checks | Pass: 721 Python / 126 frontend, 110 contrast pairs | `artifacts/image-memory-recovery/check-final.txt` |
 | Build and initial JS budget | Pass | 425 build files; 254,964 gzip bytes, unchanged 256,000-byte ceiling |
 | Publication and fallback | Pass, live | PR #4 merged as `799b7f4f`; 114 server / 425 static hashes match; healthy in 1.779 s; all 55 tables preserved |
-| Physical iPhone check | Pending | No post-fix phone result or VoiceOver pass invented |
+| Physical iPhone check | User-confirmed pass | Jake selected “Both image paths and phone checks pass”; `artifacts/image-memory-recovery/phone-check.json` |
 
 ## Changed files
 
@@ -155,8 +155,8 @@ embedding models resident; actual generation and phone confirmation remain pendi
 
 ## Open questions for Jake
 
-Reload the published app, then retry the failed image block or use Try again in chat while
-the normal 32K chat model is selected. Configured idle embeddings should be
-released automatically, and Library should load its model on its next request.
-Physical verification and the repair release's short phone check remain pending;
-the Hermes native trial does not proceed on an invented acceptance.
+Jake confirmed both image paths and the requested phone checks after publication.
+This closes the repair/memory-handoff phone prerequisite. No further approval is
+needed to resume the already-approved isolated Hermes H0 trial; its original
+structural/native gates and call limits remain. The earlier pending statements
+above describe the state at publication, before this user confirmation.

@@ -1639,3 +1639,13 @@ PWA suite rerun, physical phone pass, real generation/unload or Hermes execution
 is claimed. Jake's post-fix phone acceptance remains pending and the approved
 Hermes trial remains on hold for that prerequisite. H4/publication records:
 `docs/IMAGE-MEMORY-HANDOFF-REPORT.md`, `artifacts/image-memory-recovery/`.
+
+**User acceptance — 17 October 2026 (repair and memory handoff phone check):**
+Jake selected “Both image paths and phone checks pass” after the explicit request
+to reopen Aether, ask a Library question, generate in chat, retry the failed
+workflow image block without Eject, and confirm typing/sending plus Thinking's
+Model default option. Record these as user-confirmed phone results; close the
+repair/memory-handoff phone stop. No instrumented timing or VoiceOver pass is
+claimed. The previously approved isolated Hermes v0.22.2 core/64K/42-call H0
+trial may now resume on its existing branch with all original gates and limits.
+This does not authorize production Hermes integration or photo-edit deployment.
