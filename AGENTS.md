@@ -1702,3 +1702,46 @@ weaken tool/sampling/support targets. Eighteen host controls pass. Accepted Aeth
 transcription hashes remain intact; local/HTTPS health pass. No main application
 change, new weights, optional extras, reference edits or Research restart occurs.
 H4: `docs/HERMES-H0-REPORT.md`; evidence: `artifacts/hermes/h0/`.
+
+**User authorization — 17 October 2026 (Hermes configuration repair and testing):**
+After the local-model compatibility analysis, Jake said “Fix it then. and the
+lets start testing hermes.” Proceed with the documented direct-tool/offline
+control repair and, if its frozen gates pass, the original approved Qwen3.8
+64K H0 qualification without another intermediate approval request. Preserve
+the first failure, its source and stopped 0/42 ledger; a linked continuation
+record retains the shared 42-call total, three calls and 180 seconds per task.
+First required failure stops the corrected trial. No new weights, other model
+trial, optional dependency, production integration/default change, release,
+photo editing or Research restart is authorized by this continuation.
+
+**Hermes H0 testing checkpoint — 17 October 2026:** The corrected direct-tool
+configuration passes two actual Hermes/scripted calculator loops. The stalled
+response resets when its owned worker is terminated and reaped; preserve the
+raw EOF-only monitor false negative and labeled deterministic transport review.
+Twenty-six host controls pass. The separate approved Qwen3.8 65,536 profile shares
+existing weights, and its first real Hermes task passes facts/citations, tool
+and resource checks: three model requests, 45.11 seconds, at most 20.36 GiB
+sampled Ollama-reported model allocation and no measured swap growth. The direct
+full-corpus reference uses one call and gets required facts right but adds an
+unsupported consumer compatibility/converter conclusion. Preserve that failure;
+it is not a Hermes answer. Native continuation stops at 4/42 total, with original
+0/42 ledger and executed sources unchanged. An asynchronous scope question asks
+whether to retain the failed baseline and continue the remaining Hermes tasks;
+do not infer approval or silently reset the stopped ledger. Five reference
+answers and eleven Hermes tasks remain unexecuted. No H0/H1 qualification,
+production integration, automatic ejection, extra model, release, photo editing
+or Research restart follows. All 548 accepted source / 114 installed server /
+425 static hashes and local/normally verified HTTPS health pass. H4:
+`docs/HERMES-H0-TESTING-REPORT.md`; evidence under `artifacts/hermes/h0-retry*/`
+and `artifacts/hermes/h0-native-2/`.
+
+**User decision — 17 October 2026 (Hermes results review):** Jake selected
+“Stop and review the current results” rather than continuing after the failed
+direct-reference support check. Stop native work at four calls, preserving the
+38 unspent calls and all original ledgers/source/answers. Review integration,
+extra-claim support, tool-selection overhead and the limitations of synthetic
+fixture retrieval. Do not run a new comparison, model, prompt trial, integration
+or deployment under the earlier continuation approval. The working direct-tool
+configuration and first real Hermes success remain valid; full H0 and production
+readiness are not established. Current review is in
+`docs/HERMES-H0-TESTING-REPORT.md`.

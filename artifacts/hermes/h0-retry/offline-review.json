@@ -1,0 +1,19 @@
+{
+  "raw_summary_sha256": "a710f5a39cfda92d7f67ec74bbfaa9a85771f628dd9a7cf36d6101ab41c7a66d",
+  "raw_passed": false,
+  "raw_results_unchanged": true,
+  "controller_stderr_observation": {
+    "source": "Codex exec_command session 89915 output, transcribed after completion; no separate automatic stderr capture existed",
+    "stage": "structural-2-cancel",
+    "function": "ScriptedBackend.Handler.do_POST; socket.recv(MSG_PEEK)",
+    "exception": "ConnectionResetError: [Errno 54] Connection reset by peer"
+  },
+  "interpretation": "Peer TCP reset proves the owned stalled-response connection was closed. The boolean only accepted recv returning EOF; the exception bypassed its flag update. Both are closure under the unchanged original criterion. This is an instrumentation false negative, not a failed cancellation or a relaxation to allow ongoing work.",
+  "criterion": "Cancel closes the response connection and reaps the owned worker within three seconds; resource lock becomes available.",
+  "corrected_required_criteria_pass": true,
+  "further_scripted_retry_performed": false,
+  "native_calls": 0,
+  "unique_sessions": true,
+  "native_continuation_authorization": "Jake explicitly authorized configuration repair and starting Hermes tests; continue original bounds only after offline review.",
+  "reviewer": "Codex physical process/network observation and retained result review; not attributed to Jake"
+}
