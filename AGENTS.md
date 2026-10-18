@@ -1661,3 +1661,21 @@ full checks/browser evidence and a draft PR; stop for review before release.
 No native inference, prompt/sampling/model/runtime/dependency/schema change,
 Research/agent restart, new workflow blocks, main merge or deployment. This
 checkpoint does not qualify factual answers or waive earlier reliability failures.
+
+
+**Production follow-ups closeout — 18 October 2026:** Candidate 0cdd0d11 preserves
+manual titles at first text send, including concurrent rename during assembly,
+and removes unavailable Search wording from Workflows home. Retained baseline
+reproduces four failures; five new API cases pass, with full make check at 726
+Python / 126 frontend / 110 contrast pairs and one complete browser invocation
+at 721 passed / three existing skips / zero failures. No existing assertion,
+threshold or timeout is weakened. Initial JS is 254,973 gzip bytes, below the
+unchanged 256,000-byte limit. All 551 tested candidate, 548 main, 114 installed
+server and 425 static hashes are preserved; old failed experiment ledgers remain
+stopped. Fresh synthetic test outputs are privately archived before historical
+originals are restored. No native model calls, new packages, prompt/sampling/
+default/schema changes, agent/Research restart, main merge or deployment.
+H4: `docs/PRODUCTION-FOLLOWUPS-REPORT.md`; draft PR #5. Stop for checkpoint/release
+review. The separate `docs/PHOTO-EDITING-NEXT-CHECKPOINT.md` is design only: its
+proposed six-worker-invocation PE0 trial remains unexecuted and needs its reviewed
+native scope before execution. No physical-phone or VoiceOver pass is invented.

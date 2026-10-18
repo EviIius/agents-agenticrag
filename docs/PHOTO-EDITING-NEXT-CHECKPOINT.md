@@ -46,7 +46,9 @@ A proposed native trial is **at most six worker invocations**, no text-model cal
 
 1. Generate one fixed synthetic adult portrait for a private synthetic fixture.
 2. Edit only its background using the frozen portrait bytes.
-3. Edit only its clothing color, again from the original portrait.
+3. Edit only its clothing color from a frozen non-square, orientation-bearing
+   derivative of the same synthetic portrait. Prepare/normalize that fixture
+   offline with the existing codec; record original and working dimensions/hashes.
 4. Repeat the earlier synthetic mug recolor from the retained original input.
 5. Cancel one declared edit after actual first-denoising progress.
 6. Run the exact declared recovery edit once, preserving the cancelled attempt.
@@ -89,7 +91,11 @@ keep generating until a favorable one appears.
    version supports one reference image; keep existing generation batch behavior.
 2. Persist a private normalized working copy before admitting the job and pin it
    through queued/running/retry states. Preserve the user's original bytes and
-   record the normalization transform. Deleting an attachment must not invalidate
+   record the normalization transform. Bound decoded dimensions for PNG/JPEG as
+   well as HEIC; the HEIC converter alone is not proof that every raster format
+   has been checked. Strip location/EXIF metadata from working copies and exports;
+   originals stay private. Do not log original filenames or paths. Deleting an
+   attachment must not invalidate
    admitted work or expose another conversation's input.
 3. Keep input references and output lineage separate. Add schema only if needed,
    using the next available numbered migration and old-row preservation tests.
@@ -100,6 +106,9 @@ keep generating until a favorable one appears.
 5. Use the current composer, image cards, viewer and SSE. Show which reference is
    being edited, original comparison, real progress, cancel and save/share. Keep
    image turns out of text-model context and ordinary text/vision requests intact.
+   Initial outputs stay within the qualified 1024-square shape. Preview and
+   explain any framing/normalization before acceptance; do not promise unchanged
+   composition for portrait/landscape inputs without the non-square trial results.
 6. Require synthetic fake-runtime regressions, resource/control evidence,
    generation/edit request contracts, restored-input backups and an actual phone
    check. No release or new native trial is implied by offline tests.

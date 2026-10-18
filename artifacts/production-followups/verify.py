@@ -37,6 +37,18 @@ record={
  'dependencies':{name:sha(ROOT/name) for name in ('server/pyproject.toml','server/uv.lock','web/package.json','web/package-lock.json')},
  'old_prompts_unchanged':True,
 }
+record['stopped_trial_ledgers']={}
+for name,relative,expected in [
+ ('Hermes','hermes-h0-20261017/native-2','bb176c6c514927a5650eede06cc2e316e182fd932dd21b869f05d2bb10eb84d7'),
+ ('PydanticAI','pydantic-p0-20261018/native','26461efe59dda99db6ca6e8bdbc8d3479ae7b8ff88824be66732371e712b72d6'),
+ ('N1','native-agent-n1-20261018','f83e304fe5e5e9055d1ea5c7c5be492ccf76f9f598a4455a31b42e49f8fd8d77'),
+ ('C1','native-agent-c1-20261018','2246b3b2fb673483898d982a90b3f29ecf51f129fac20322cb0fd3e2d0aeb96c'),
+]:
+ path=BASE/'qa'/relative/'ledger.json'
+ assert sha(path)==expected
+ record['stopped_trial_ledgers'][name]={'sha256':expected,'preserved':True}
+record['native_trial_branch']=subprocess.check_output(['git','rev-parse','codex/native-agent-loop'],cwd=ROOT,text=True).strip()
+assert record['native_trial_branch'].startswith('376205a3')
 for name,digest in record['dependencies'].items():
  assert digest==accepted[name]
 assert record['guarded_native_connection_attempts']==0

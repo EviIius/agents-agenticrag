@@ -15,7 +15,7 @@ def sha(p):
 
 before=json.loads((QA/'historical-before.json').read_text())['files']
 tracked=set(subprocess.check_output(['git','ls-files','artifacts'],cwd=ROOT,text=True).splitlines())
-changed=[]; new=[]; archived={}
+changed=[]; new=[]; archived={}; missing=[]
 for p in sorted((ROOT/'artifacts').rglob('*')):
  if not p.is_file() or 'production-followups' in p.parts or '__pycache__' in p.parts:
   continue
@@ -38,6 +38,12 @@ for p in sorted((ROOT/'artifacts').rglob('*')):
   new.append(name)
  else:
   raise AssertionError('Unexpected modified nontracked historical file')
+for name,digest in before.items():
+ if name in tracked and not (ROOT/name).is_file():
+  original=subprocess.check_output(['git','show','HEAD:'+name],cwd=ROOT)
+  assert hashlib.sha256(original).hexdigest()==digest
+  missing.append(name)
+  changed.append(name)
 # Keep current workflow copy screenshots easy to review on the candidate itself.
 for width in (390,1440):
  for theme in ('light','dark'):
@@ -55,7 +61,7 @@ for name,digest in before.items():
  if name in tracked:
   assert sha(ROOT/name)==digest,name
 record={'changed_historical_outputs':len(changed),'new_historical_path_outputs':len(new),
- 'preserved_tracked_historical_files':sum(n in tracked for n in before),
+ 'preserved_tracked_historical_files':sum(n in tracked for n in before), 'restored_deleted_historical_files':missing,
  'private_archive':'production-followups-20261018/historical-generated', 'archived_files':archived,
  'ignored_bytecode_excluded':sum(n not in tracked for n in before)}
 (OUT/'historical-preservation.json').write_text(json.dumps(record,indent=2)+'\n')
