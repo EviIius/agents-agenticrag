@@ -3,10 +3,11 @@
 ## Summary
 
 Jake accepted the completed checkpoint and asked to continue to release.
-The two repairs preserve manual chat titles at the first text send and remove
-the unavailable Search promise from Workflows home. The tested build reproduces
-exactly. A full private fallback and both copied-data startup rehearsals pass.
-Publication results will be recorded after merge and installed checks.
+PR #5 is merged as `b41ec3550bb83ab92c0710d39295dae0f27d92dd` and the two
+repairs are live: manual titles survive the first text send and Workflows home
+no longer advertises its disabled Search block. The service became healthy in
+2.148 seconds. Exact installed hashes, private fallback, copied-data rehearsals
+and installed HTTPS UI checks pass. Physical iPhone acceptance is pending.
 
 ## Done-when checklist
 
@@ -18,8 +19,10 @@ Publication results will be recorded after merge and installed checks.
 | Full regression gates | Pass, exact-source reuse | 726 Python / 126 frontend / 110 contrast pairs; 721 browser passes, three existing skips, zero failures |
 | Private full fallback | Pass | App/data/plist snapshot and consistent SQLite backup |
 | Copied-data startup and row preservation | Pass | Candidate and previous schema-13 startup; all 55 table projections unchanged; child sockets disabled |
-| Merge and publication | Pending | Must match frozen source before publication |
-| Installed source, service and live UI | Pending | Exact hashes, unchanged service/route/controls, HTTPS synthetic UI observer |
+| Merge and publication | Pass | PR #5 merged; all 551 frozen hashes match merged main; healthy in 2.148 s |
+| Installed source and data | Pass | 114 server / 425 static hashes; schema 13, integrity/foreign-key checks; all 55 pre-existing table projections preserved before bootstrap |
+| Service, route and controls | Pass | Exact plist, one worker, 127.0.0.1:8787, unchanged Tailscale route, environments and transcription/image-worker controls |
+| Installed HTTPS UI | Pass, synthetic API fixtures | Desktop Chromium and iPhone-profile WebKit; composer, Tools, attachments and corrected Workflows home; no page errors, overflow or native requests |
 | Physical phone | Pending | No new phone acceptance or VoiceOver pass claimed |
 
 Evidence: `artifacts/production-followups/release-20261018/`. The implementation,
@@ -49,6 +52,12 @@ assets for open clients. Same-schema rollback keeps accepted current data.
 
 ## Runtime observations
 
+The previous service PID was 65114; the new PID is 15411. Restart to healthy
+was 2.148 seconds, including publication while stopped. Local and normally
+certificate-verified Tailscale HTTPS health, workflow definitions/templates and
+image-status checks pass. The installed HTML and service-worker entry hashes
+match the tested build; production `/design` remains disabled (404).
+
 No native inference, model load/unload, new dependency, model/runtime update,
 prompt/sampling/default change, schema migration or agent/Research restart.
 Copied-data lifecycle runs have sockets disabled. The installed UI observer
@@ -65,6 +74,15 @@ recordings, photos, documents or filenames.
   still match. Existing Vite config-loader warning retained in raw output.
 - Candidate and previous copied-data startup pass with no network access;
   all 55 pre-existing table projections preserved at unchanged schema 13.
+- Installed verification: 114 server and 425 current-build static hashes;
+  unchanged plist, route, protected environments and worker controls; SQLite
+  integrity and foreign-key checks pass. Old hashed assets remain for open clients.
+- Actual installed HTTPS UI: Chromium 1440 and WebKit/iPhone 13 profile 390 pass
+  the prepared observer with 39/38 intercepted synthetic API requests, zero
+  page errors and zero native requests. Service workers are blocked for API
+  interception; no additional complete PWA suite or physical-phone pass is claimed.
+- Final privacy and source/document whitespace checks pass. All stopped native
+  experiment ledgers and their retained branch remain unchanged.
 
 ## Screenshots
 

@@ -1691,3 +1691,22 @@ Keep service, port/bind, route, dependencies, schema and worker controls unchang
 No native calls, agent/Research restart or photo-editing trial is implied. Stop
 with release evidence and request the physical phone check; the separately
 documented native photo-editing scope still needs explicit approval.
+
+**Production follow-ups publication — 18 October 2026:** PR #5 is merged as
+`b41ec355`; all 551 frozen candidate source/test/config hashes match main and
+425 rebuilt hashes reproduce the completed QA build (254,973 initial gzip
+bytes). The two fixes are live: 114 installed server hashes and all 425 current
+static hashes verify, schema 13 and all 55 pre-existing table projections are
+preserved before bootstrap, and service health returns in 2.148 seconds. Exact
+plist, bind/port, one worker, Tailscale route, existing dependencies/interpreters
+and transcription/image controls remain unchanged. Private full fallback and
+candidate/previous copied-data lifecycle rehearsals pass with sockets disabled;
+same-schema rollback retains accepted current data. Pushed source fallback tag:
+`checkpoint/pre-production-followups-2026-10-18`. Actual HTTPS Chromium and
+iPhone-profile WebKit observer checks pass with synthetic intercepted API data,
+zero page errors/overflow and no native requests. Reuse the completed 726 Python /
+126 frontend / 721 browser passes (three existing skips) through exact source
+parity; no extra full suite or physical-phone pass is claimed. H4 is
+`docs/PRODUCTION-FOLLOWUPS-RELEASE-REPORT.md`; phone confirmation is requested and
+pending. Photo-reference editing remains a separate unexecuted proposal; failed
+native agent/Research experiments stay closed. No VoiceOver pass is claimed.

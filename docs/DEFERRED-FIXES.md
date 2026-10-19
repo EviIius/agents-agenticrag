@@ -4,19 +4,19 @@
 
 This section supersedes the historical pending/proposal entries below.
 
-- Live main is `e7ffea2b`: Aether rename, QA repairs, attachments, workflow/chat
-  images and idle embedding handoff are released. Jake confirmed both image
-  paths, typing/sending, Model default and Workflows on the phone.
+- Live source is PR #5's merge `b41ec355`: the manual-title and workflow wording
+  repairs are released alongside Aether, attachments, workflow/chat images and
+  idle embedding handoff. Jake confirmed the earlier image paths and phone
+  checks; the new title/Workflows phone check is pending.
 - The isolated native agent C1 candidate failed and stopped after one call; N1,
   Hermes and PydanticAI trials remain preserved. No agent implementation is
   integrated. No further prompt/framework campaign or Research restart is active.
   Evidence: `codex/native-agent-loop` at `376205a3`,
   `docs/AGENT-C1-RETEST-REPORT.md` on that branch.
-- Current narrow production follow-up is on `codex/production-followups`:
-  preserve manual titles at first text send (including a concurrent rename),
-  and remove the unavailable Search promise from Workflows home. QA/release
-  status is recorded in `PRODUCTION-FOLLOWUPS-REPORT.md`; no release is implied
-  by the earlier proposal or branch evidence.
+- The narrow follow-up passes 726 Python / 126 frontend / 721 browser tests,
+  with three existing skips. Installed hashes, copied-data fallback and actual
+  HTTPS synthetic UI checks pass. See `PRODUCTION-FOLLOWUPS-REPORT.md` and
+  `PRODUCTION-FOLLOWUPS-RELEASE-REPORT.md`; no native agent code is included.
 - Remaining product work: photo-reference editing and the disabled workflow
   blocks. Their reviewed implementation/native-validation scopes are still
   separate. Existing Search/Library remain available; factual reliability is
