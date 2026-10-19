@@ -1649,3 +1649,45 @@ repair/memory-handoff phone stop. No instrumented timing or VoiceOver pass is
 claimed. The previously approved isolated Hermes v0.22.2 core/64K/42-call H0
 trial may now resume on its existing branch with all original gates and limits.
 This does not authorize production Hermes integration or photo-edit deployment.
+
+**User continuation — 18 October 2026 (production follow-ups):** After the
+failed bounded native C1 report, Jake asked to continue. End that candidate and
+address the two confirmed pending QA roadmap defects under
+`docs/PRODUCTION-FOLLOWUPS-PLAN.md`: manual title ownership at first text send,
+including concurrent rename, and misleading Workflows search wording. Start
+`codex/production-followups` from accepted main e7ffea2b, preserving the native
+branch/evidence at 376205a3 and all old failed gates. Use synthetic reproduction,
+full checks/browser evidence and a draft PR; stop for review before release.
+No native inference, prompt/sampling/model/runtime/dependency/schema change,
+Research/agent restart, new workflow blocks, main merge or deployment. This
+checkpoint does not qualify factual answers or waive earlier reliability failures.
+
+
+**Production follow-ups closeout — 18 October 2026:** Candidate 0cdd0d11 preserves
+manual titles at first text send, including concurrent rename during assembly,
+and removes unavailable Search wording from Workflows home. Retained baseline
+reproduces four failures; five new API cases pass, with full make check at 726
+Python / 126 frontend / 110 contrast pairs and one complete browser invocation
+at 721 passed / three existing skips / zero failures. No existing assertion,
+threshold or timeout is weakened. Initial JS is 254,973 gzip bytes, below the
+unchanged 256,000-byte limit. All 551 tested candidate, 548 main, 114 installed
+server and 425 static hashes are preserved; old failed experiment ledgers remain
+stopped. Fresh synthetic test outputs are privately archived before historical
+originals are restored. No native model calls, new packages, prompt/sampling/
+default/schema changes, agent/Research restart, main merge or deployment.
+H4: `docs/PRODUCTION-FOLLOWUPS-REPORT.md`; draft PR #5. Stop for checkpoint/release
+review. The separate `docs/PHOTO-EDITING-NEXT-CHECKPOINT.md` is design only: its
+proposed six-worker-invocation PE0 trial remains unexecuted and needs its reviewed
+native scope before execution. No physical-phone or VoiceOver pass is invented.
+
+**User acceptance and release authorization — 18 October 2026 (production
+follow-ups):** After the completed QA report and explicit next step to release
+the two fixes, Jake said “Continue.” Close the checkpoint review and merge PR #5,
+then publish only its tested title-ownership and Workflows wording repairs.
+Reuse the completed full suites through exact frozen-source parity; reproduce
+the build, preserve a full private app/data/plist fallback, rehearse candidate
+and previous startup on copied data, and verify installed hashes and live UI.
+Keep service, port/bind, route, dependencies, schema and worker controls unchanged.
+No native calls, agent/Research restart or photo-editing trial is implied. Stop
+with release evidence and request the physical phone check; the separately
+documented native photo-editing scope still needs explicit approval.
