@@ -7,7 +7,9 @@ from typing import Literal
 
 from fastapi import APIRouter, Form, Request, UploadFile
 from fastapi.responses import FileResponse
+from starlette.exceptions import HTTPException
 from starlette.types import ASGIApp, Receive, Scope, Send
+from starlette.types import Message as ASGIMessage
 
 from ..db import attachments as records
 from ..db.connections import now, uid
@@ -66,27 +68,54 @@ class UploadSpaceGuard:
         self.app, self.data_dir = app, data_dir.expanduser()
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        edit_upload = (
+            scope["type"] == "http"
+            and scope["method"] == "POST"
+            and scope["path"].startswith("/api/chats/")
+            and scope["path"].endswith("/image-references")
+        )
         if (
             scope["type"] == "http"
             and scope["method"] == "POST"
-            and scope["path"] in ("/api/attachments", "/api/library/documents")
+            and (
+                scope["path"] in ("/api/attachments", "/api/library/documents")
+                or (
+                    scope["path"].startswith("/api/chats/")
+                    and scope["path"].endswith("/image-references")
+                )
+            )
         ):
             headers = dict(scope["headers"])
             try:
                 length = int(headers.get(b"content-length", b"0"))
             except ValueError:
                 length = 0
+            if edit_upload and length > 20 * 1024**2 + 65536:
+                await error_response("file_too_large", "Choose a photo up to 20 MB.", 413)(
+                    scope, receive, send
+                )
+                return
             self.data_dir.mkdir(parents=True, exist_ok=True)
             if length and shutil.disk_usage(self.data_dir).free < length + 5 * 1024**3:
                 await error_response(
                     "disk_full",
                     "There isn't enough free space on the Mac for this file."
-                    if scope["path"] == "/api/library/documents"
+                    if scope["path"] != "/api/attachments"
                     else "There isn't enough free space on the Mac for this recording.",
                     507,
                 )(scope, receive, send)
                 return
-        await self.app(scope, receive, send)
+        consumed = 0
+
+        async def bounded_receive() -> ASGIMessage:
+            nonlocal consumed
+            message = await receive()
+            consumed += len(message.get("body", b""))
+            if consumed > 20 * 1024**2 + 65536:
+                raise HTTPException(413, "Choose a photo up to 20 MB.")
+            return message
+
+        await self.app(scope, bounded_receive if edit_upload else receive, send)
 
 
 @router.post("", status_code=201)

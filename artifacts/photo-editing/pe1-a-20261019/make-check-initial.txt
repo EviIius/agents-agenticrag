@@ -1,0 +1,101 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+All checks passed!
+. scripts/tool-env.sh; uv run --directory server ruff format --check app tests
+172 files already formatted
+. scripts/tool-env.sh; uv run --directory server mypy app tests
+Success: no issues found in 170 source files
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_coverage.py
+...................................................................F.... [  9%]
+........................................................................ [ 19%]
+........................................................................ [ 29%]
+........................................................................ [ 38%]
+........................................................................ [ 48%]
+........................................................................ [ 58%]
+........................................................................ [ 67%]
+........................................................................ [ 77%]
+........................................................................ [ 87%]
+.................................................F...................... [ 96%]
+........................                                                 [100%]
+=================================== FAILURES ===================================
+____________ test_phase5a_rows_and_meta_nullable_survive_migration _____________
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-191/test_phase5a_rows_and_meta_nul0')
+
+    async def test_phase5a_rows_and_meta_nullable_survive_migration(tmp_path: Path) -> None:
+        target = tmp_path / "phase5a.db"
+        shutil.copyfile(Path(__file__).parent / "fixtures/db/phase3.db", target)
+        async with aiosqlite.connect(target) as db:
+            await db.executescript(
+                (MIGRATIONS / "005_presets.sql").read_text() + "PRAGMA user_version=5;"
+            )
+            await db.execute(
+                "INSERT INTO presets VALUES ('fake','Invented preset',NULL,'{}',0,"
+                "'2026-10-05','2026-10-05')"
+            )
+            await db.commit()
+        columns, before = snapshot(target)
+        async with aiosqlite.connect(target) as db:
+            await migrate(db)
+            version = await (await db.execute("PRAGMA user_version")).fetchone()
+>           assert version and version[0] == 13
+E           assert ((14,) and 14 == 13)
+
+tests/test_documents.py:308: AssertionError
+_______ test_workflow_graph_migration_preserves_every_preexisting_column _______
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-191/test_workflow_graph_migration_0')
+
+    async def test_workflow_graph_migration_preserves_every_preexisting_column(tmp_path: Path) -> None:
+        target = tmp_path / "fake-workflow-migration.db"
+        shutil.copyfile(Path(__file__).parent / "fixtures/db/phase3.db", target)
+        with sqlite3.connect(target) as db:
+            for migration in sorted(MIGRATIONS.glob("*.sql")):
+                number = int(migration.name.split("_", 1)[0])
+                if 4 < number <= 10:
+                    db.executescript(migration.read_text() + f"\nPRAGMA user_version={number};")
+            db.execute(
+                "INSERT INTO workflow_runs(id,request_key,input_json,state,stage,s"
+                "ource_json,edited_prompt,created_at,updated_at) "
+                "VALUES('fake-run','fake-key','{}','paused','Fake "
+                "stage','{}','Fake prompt','2026-10-12','2026-10-12')"
+            )
+            db.execute(
+                "INSERT INTO workflow_steps(run_id,position,kind,label,state,attem"
+                "pt,output_json) VALUES('fake-run',0,'prompt','Fake "
+                "prompt','complete',1,'{\"text\":\"Fake result\"}')"
+            )
+            db.execute(
+                "INSERT INTO workflow_attempts(run_id,position,attempt,input_json,"
+                "output_json,state,started_at,finished_at) "
+                "VALUES('fake-run',0,1,'{}','{}','complete','2026-10-12','2026-10-"
+                "12')"
+            )
+            db.execute("INSERT INTO workflow_events(run_id,data_json) VALUES('fake-run','{}')")
+            db.commit()
+        columns, before = snapshot(target)
+        async with aiosqlite.connect(target) as db:
+            await db.execute("PRAGMA foreign_keys=ON")
+            await migrate(db)
+            assert (await (await db.execute("PRAGMA foreign_key_check")).fetchall()) == []
+            integrity = await (await db.execute("PRAGMA integrity_check")).fetchone()
+            version = await (await db.execute("PRAGMA user_version")).fetchone()
+            assert integrity and integrity[0] == "ok"
+>           assert version and version[0] == 14
+E           assert ((14,) and 14 == 13)
+
+tests/test_workflow_graph_storage.py:48: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_documents.py::test_phase5a_rows_and_meta_nullable_survive_migration
+FAILED tests/test_workflow_graph_storage.py::test_workflow_graph_migration_preserves_every_preexisting_column
+2 failed, 742 passed in 406.63s (0:06:46)
+providers line coverage: 385/429 = 89.7%
+runs line coverage: 391/437 = 89.5%
+search line coverage: 1564/1741 = 89.8%
+transcribe line coverage: 690/740 = 93.2%
+documents line coverage: 196/203 = 96.6%
+library line coverage: 762/823 = 92.6%
+images line coverage: 1415/1699 = 83.3%
+workflows line coverage: 2713/3021 = 89.8%
+backup.py line coverage: 126/132 = 95.5%
+capacity.py line coverage: 56/58 = 96.6%
+make: *** [check] Error 1

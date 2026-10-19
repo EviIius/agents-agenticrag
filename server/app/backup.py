@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from .images.jobs import Images
 from datetime import datetime, time, timedelta
 from pathlib import Path
+from uuid import uuid4
 
 import aiosqlite
 
@@ -66,6 +67,8 @@ class Backups:
             current = self.clock()
             target = self.folder / current.strftime("auto-%Y%m%d-%H%M.db")
             part = target.with_suffix(".part")
+            photo_bundle = False
+            complete = False
             try:
                 size = sum(
                     p.stat().st_size
@@ -75,7 +78,22 @@ class Backups:
                 image_size = 0
                 if self.images:
                     storage = await self.images.storage()
-                    image_size = storage.image_bytes + storage.metadata_bytes
+                    image_size = (
+                        storage.image_bytes
+                        + storage.metadata_bytes
+                        + storage.reference_bytes
+                        + storage.reference_metadata_bytes
+                        + storage.export_bytes
+                        + storage.measurement_bytes
+                    )
+                    photo_bundle = bool(
+                        storage.references
+                        or await self.store.one("SELECT 1 FROM image_job_references LIMIT 1")
+                    )
+                    if photo_bundle:
+                        # Never replace a prior valid pair while archiving new photo inputs.
+                        target = target.with_stem(target.stem + "-" + uuid4().hex[:8])
+                        part = target.with_suffix(".part")
                 if self.free(self.data) < 2 * size + image_size:
                     self.warning = (
                         "Backup skipped: not enough free disk space. Free space and try again."
@@ -107,10 +125,14 @@ class Backups:
                 if self.images:
                     await asyncio.to_thread(prune, self.folder)
                 self.warning = None
+                complete = True
             except (OSError, aiosqlite.Error, ValueError, KeyError):
                 self.warning = "Couldn't make a backup. Your chats are unchanged. Try again."
             finally:
                 part.unlink(missing_ok=True)
+                if photo_bundle and not complete:
+                    target.unlink(missing_ok=True)
+                    (target.parent / "images" / (target.stem + ".json")).unlink(missing_ok=True)
             return self.status()
 
     async def start(self) -> None:

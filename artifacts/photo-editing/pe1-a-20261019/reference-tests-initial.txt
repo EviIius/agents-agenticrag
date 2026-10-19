@@ -1,0 +1,53 @@
+......F....                                                              [100%]
+=================================== FAILURES ===================================
+_________ test_backup_pending_inputs_restore_and_missing_blob_rollback _________
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10f232270>, <httpx.AsyncClient object at 0x10f44dd90>, <fastapi.applications.FastAPI object at 0x10f233cb0>)
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-185/test_backup_pending_inputs_res0')
+
+    async def test_backup_pending_inputs_restore_and_missing_blob_rollback(
+        chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI], tmp_path: Path
+    ) -> None:
+        app, client, _ = chat_app
+        cid, ref = await setup(app, client)
+        images = app.state.images
+        async with images.capacity.lease():
+            queued = (await edit(client, cid, ref)).json()["assistant"]["images"][0]
+            backups = Backups(
+                images.store,
+                images.data,
+                clock=lambda: datetime(2026, 10, 19, tzinfo=UTC),
+                images=images,
+            )
+            status = await backups.make()
+            assert status.warning is None
+            database = backups.files()[-1]
+>           manifest = json.loads((database.parent / "images" / (database.stem + ".json")).read_text())
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+server/tests/test_photo_references.py:249: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../.local/share/workbench/tools/python-library-probe/cpython-3.14.7-macos-aarch64-none/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-185/test_backup_pending_inputs_res0/backups/images/auto-20261019-0951.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-185/test_backup_pending_inputs_res0/backups/images/auto-20261019-0951.json'
+
+../../../../.local/share/workbench/tools/python-library-probe/cpython-3.14.7-macos-aarch64-none/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+=========================== short test summary info ============================
+FAILED server/tests/test_photo_references.py::test_backup_pending_inputs_restore_and_missing_blob_rollback
+1 failed, 10 passed in 0.72s

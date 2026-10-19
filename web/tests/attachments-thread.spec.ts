@@ -271,6 +271,17 @@ test("an accepted earlier send preserves a newer paste and undo remains availabl
   page,
   request,
 }) => {
+  // The shared fake database can contain paused workflows from earlier tests.
+  // Their unrelated toast cannot expire under this test's frozen clock.
+  await page.route("**/api/workflows/runs", (route) =>
+    route.fulfill({ json: { items: [], paused_count: 0, next_cursor: null } }),
+  );
+  await page.route("**/api/workflows/stream", (route) =>
+    route.fulfill({
+      contentType: "text/event-stream",
+      body: 'event: run.snapshot\ndata: {"items":[],"paused_count":0}\n\n',
+    }),
+  );
   await page.clock.install();
   const chat = await setup(page, request);
   let release!: () => void;

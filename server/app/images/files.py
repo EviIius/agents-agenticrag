@@ -102,3 +102,29 @@ def validate(folder: Path, expected: dict[str, Any]) -> tuple[str, int, int]:
             os.fsync(handle.fileno())
     sync_directory(folder)
     return digest, size, meta_size
+
+
+def sanitize_export(folder: Path) -> tuple[str, int]:
+    """Retain native PNG; remove ancillary chunks without recompressing pixels.
+
+    Caller first validates the native 8-bit RGB/RGBA PNG with validate().
+    Copying IHDR/IDAT/IEND exactly preserves its decoded pixels.
+    """
+    raw = (folder / "image.png").read_bytes()
+    clean = bytearray(raw[:8])
+    offset = 8
+    while offset < len(raw):
+        length = struct.unpack(">I", raw[offset : offset + 4])[0]
+        end = offset + length + 12
+        if raw[offset + 4 : offset + 8] in {b"IHDR", b"IDAT", b"IEND"}:
+            clean.extend(raw[offset:end])
+        offset = end
+    part = folder / ".export.partial.png"
+    with part.open("xb") as file:
+        os.chmod(part, 0o600)
+        file.write(clean)
+        file.flush()
+        os.fsync(file.fileno())
+    os.replace(part, folder / "export.png")
+    sync_directory(folder)
+    return hashlib.sha256(clean).hexdigest(), len(clean)

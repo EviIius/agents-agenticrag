@@ -1,0 +1,376 @@
+....................F.F...................FF............................ [ 73%]
+..........................                                               [100%]
+=================================== FAILURES ===================================
+________________ test_process_cancellation_and_parent_pipe_exit ________________
+
+fut = <coroutine object Event.wait at 0x10cf1a0a0>, timeout = 3
+
+    async def wait_for(fut, timeout):
+        """Wait for the single Future or coroutine to complete, with timeout.
+    
+        Coroutine will be wrapped in Task.
+    
+        Returns result of the Future or coroutine.  When a timeout occurs,
+        it cancels the task and raises TimeoutError.  To avoid the task
+        cancellation, wrap it in shield().
+    
+        If the wait is cancelled, the task is also cancelled.
+    
+        If the task suppresses the cancellation and returns a value instead,
+        that value is returned.
+    
+        This function is a coroutine.
+        """
+        # The special case for timeout <= 0 is for the following case:
+        #
+        # async def test_waitfor():
+        #     func_started = False
+        #
+        #     async def func():
+        #         nonlocal func_started
+        #         func_started = True
+        #
+        #     try:
+        #         await asyncio.wait_for(func(), 0)
+        #     except asyncio.TimeoutError:
+        #         assert not func_started
+        #     else:
+        #         assert False
+        #
+        # asyncio.run(test_waitfor())
+    
+    
+        if timeout is not None and timeout <= 0:
+            fut = ensure_future(fut)
+    
+            if fut.done():
+                return fut.result()
+    
+            await _cancel_and_wait(fut)
+            try:
+                return fut.result()
+            except exceptions.CancelledError as exc:
+                raise TimeoutError from exc
+    
+        async with timeouts.timeout(timeout):
+>           return await fut
+                   ^^^^^^^^^
+
+../../../../.local/share/workbench/tools/python-library-probe/cpython-3.14.7-macos-aarch64-none/lib/python3.14/asyncio/tasks.py:488: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <asyncio.locks.Event object at 0x10cbbd3d0 [unset]>
+
+    async def wait(self):
+        """Block until the internal flag is true.
+    
+        If the internal flag is true on entry, return True
+        immediately.  Otherwise, block until another task calls
+        set() to set the flag to true, then return True.
+        """
+        if self._value:
+            return True
+    
+        fut = self._get_loop().create_future()
+        self._waiters.append(fut)
+        try:
+>           await fut
+E           asyncio.exceptions.CancelledError
+
+../../../../.local/share/workbench/tools/python-library-probe/cpython-3.14.7-macos-aarch64-none/lib/python3.14/asyncio/locks.py:213: CancelledError
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-184/test_process_cancellation_and_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10cd22580>
+
+    async def test_process_cancellation_and_parent_pipe_exit(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        worker = tmp_path / "worker.py"
+        worker.write_text(
+            "import os,sys,time,threading\n"
+            "from pathlib import Path\n"
+            "Path(sys.argv[3]).joinpath('pid').write_text(str(os.getpid()))\n"
+            "def lost_parent():\n"
+            " sys.stdin.buffer.read()\n"
+            " os._exit(71)\n"
+            "threading.Thread(target=lost_parent,daemon=True).start()\n"
+            'print(\'{"type":"initializing"}\',flush=True)\n'
+            "time.sleep(100)\n"
+        )
+    
+        capacity = Capacity(tmp_path / "native.lock")
+        engine = Engine(tmp_path, capacity)
+        monkeypatch.setattr(engine, "paths", lambda: (Path(sys.executable), worker, tmp_path))
+    
+        async def admitted() -> None:
+            pass
+    
+        async def swap() -> float:
+            return 0.0
+    
+        monkeypatch.setattr(engine, "admit", admitted)
+        monkeypatch.setattr(engine, "swap", swap)
+        started = asyncio.Event()
+    
+        async def progress(_: dict[str, Any]) -> None:
+            started.set()
+    
+        async def run() -> None:
+            async with capacity.lease(background=True):
+                await engine.run(tmp_path / "request", tmp_path, progress)
+    
+        task = asyncio.create_task(run())
+>       await asyncio.wait_for(started.wait(), 3)
+
+server/tests/test_images.py:428: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../.local/share/workbench/tools/python-library-probe/cpython-3.14.7-macos-aarch64-none/lib/python3.14/asyncio/tasks.py:487: in wait_for
+    async with timeouts.timeout(timeout):
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <Timeout [expired]>
+exc_type = <class 'asyncio.exceptions.CancelledError'>
+exc_val = CancelledError(), exc_tb = <traceback object at 0x10d15a900>
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> bool | None:
+        assert self._state in (_State.ENTERED, _State.EXPIRING)
+    
+        if self._timeout_handler is not None:
+            self._timeout_handler.cancel()
+            self._timeout_handler = None
+    
+        if self._state is _State.EXPIRING:
+            self._state = _State.EXPIRED
+    
+            if self._task.uncancel() <= self._cancelling and exc_type is not None:
+                # Since there are no new cancel requests, we're
+                # handling this.
+                if issubclass(exc_type, exceptions.CancelledError):
+>                   raise TimeoutError from exc_val
+E                   TimeoutError
+
+../../../../.local/share/workbench/tools/python-library-probe/cpython-3.14.7-macos-aarch64-none/lib/python3.14/asyncio/timeouts.py:115: TimeoutError
+_________________ test_engine_success_error_and_resource_stop __________________
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-184/test_engine_success_error_and_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10cc74bb0>
+
+    async def test_engine_success_error_and_resource_stop(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        engine = Engine(tmp_path)
+        worker = tmp_path / "worker.py"
+        monkeypatch.setattr(engine, "paths", lambda: (Path(sys.executable), worker, tmp_path))
+    
+        async def admitted() -> None:
+            pass
+    
+        async def stable() -> float:
+            return 0
+    
+        async def progress(_: dict[str, Any]) -> None:
+            pass
+    
+        monkeypatch.setattr(engine, "admit", admitted)
+        monkeypatch.setattr(engine, "swap", stable)
+        worker.write_text('print(\'{"type":"finished"}\',flush=True)\n')
+>       assert await engine.run(tmp_path / "request", tmp_path, progress) == 0
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+server/tests/test_images.py:501: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+server/app/images/engine.py:309: in run
+    spec = json.loads(manifest.read_text())
+                      ^^^^^^^^^^^^^^^^^^^^
+../../../../.local/share/workbench/tools/python-library-probe/cpython-3.14.7-macos-aarch64-none/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-184/test_engine_success_error_and_0/request')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-184/test_engine_success_error_and_0/request'
+
+../../../../.local/share/workbench/tools/python-library-probe/cpython-3.14.7-macos-aarch64-none/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+______ test_image_handoff_releases_embedding_and_keeps_daily_model[caps0] ______
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-184/test_image_handoff_releases_em0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10d5a4fa0>
+engine = <app.images.engine.Engine object at 0x10dcda050>, caps = ['embedding']
+
+    @respx.mock
+    @pytest.mark.parametrize("caps", [["embedding"], ["tools", "thinking", "embedding"]])
+    async def test_image_handoff_releases_embedding_and_keeps_daily_model(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        engine: Engine,
+        caps: list[str],
+    ) -> None:
+        worker = tmp_path / "fake-worker.py"
+        worker.write_text("import json\nprint(json.dumps({'type':'finished'}),flush=True)\n")
+        capacity = engine.capacity
+        assert capacity
+        monkeypatch.setattr(engine, "paths", lambda: (Path(sys.executable), worker, tmp_path))
+    
+        async def stable_swap() -> float:
+            return 0
+    
+        monkeypatch.setattr(engine, "swap", stable_swap)
+        loaded = [daily(), embedding()]
+        metadata(loaded)
+        respx.post("http://127.0.0.1:11434/api/show").respond(200, json={"capabilities": caps})
+        unloads: list[str] = []
+    
+        def release(request: Any) -> Any:
+            body = json.loads(request.content)
+            unloads.append(body["model"])
+            assert body == {
+                "model": "synthetic-files",
+                "messages": [],
+                "keep_alive": 0,
+                "stream": False,
+            }
+            assert capacity.busy
+            loaded[:] = [daily()]
+            return httpx.Response(200, json={"done": True, "done_reason": "unload"})
+    
+        respx.post("http://127.0.0.1:11434/api/chat").mock(side_effect=release)
+        events: list[dict[str, Any]] = []
+    
+        async def progress(event: dict[str, Any]) -> None:
+            events.append(event)
+    
+        async with capacity.lease(background=True), asyncio.timeout(5):
+>           assert await engine.run(tmp_path / "request.json", tmp_path, progress) == 0
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+server/tests/test_image_embedding_release.py:132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+server/app/images/engine.py:309: in run
+    spec = json.loads(manifest.read_text())
+                      ^^^^^^^^^^^^^^^^^^^^
+../../../../.local/share/workbench/tools/python-library-probe/cpython-3.14.7-macos-aarch64-none/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-184/test_image_handoff_releases_em0/request.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-184/test_image_handoff_releases_em0/request.json'
+
+../../../../.local/share/workbench/tools/python-library-probe/cpython-3.14.7-macos-aarch64-none/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+______ test_image_handoff_releases_embedding_and_keeps_daily_model[caps1] ______
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-184/test_image_handoff_releases_em1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10d5a6cf0>
+engine = <app.images.engine.Engine object at 0x10db10850>
+caps = ['tools', 'thinking', 'embedding']
+
+    @respx.mock
+    @pytest.mark.parametrize("caps", [["embedding"], ["tools", "thinking", "embedding"]])
+    async def test_image_handoff_releases_embedding_and_keeps_daily_model(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        engine: Engine,
+        caps: list[str],
+    ) -> None:
+        worker = tmp_path / "fake-worker.py"
+        worker.write_text("import json\nprint(json.dumps({'type':'finished'}),flush=True)\n")
+        capacity = engine.capacity
+        assert capacity
+        monkeypatch.setattr(engine, "paths", lambda: (Path(sys.executable), worker, tmp_path))
+    
+        async def stable_swap() -> float:
+            return 0
+    
+        monkeypatch.setattr(engine, "swap", stable_swap)
+        loaded = [daily(), embedding()]
+        metadata(loaded)
+        respx.post("http://127.0.0.1:11434/api/show").respond(200, json={"capabilities": caps})
+        unloads: list[str] = []
+    
+        def release(request: Any) -> Any:
+            body = json.loads(request.content)
+            unloads.append(body["model"])
+            assert body == {
+                "model": "synthetic-files",
+                "messages": [],
+                "keep_alive": 0,
+                "stream": False,
+            }
+            assert capacity.busy
+            loaded[:] = [daily()]
+            return httpx.Response(200, json={"done": True, "done_reason": "unload"})
+    
+        respx.post("http://127.0.0.1:11434/api/chat").mock(side_effect=release)
+        events: list[dict[str, Any]] = []
+    
+        async def progress(event: dict[str, Any]) -> None:
+            events.append(event)
+    
+        async with capacity.lease(background=True), asyncio.timeout(5):
+>           assert await engine.run(tmp_path / "request.json", tmp_path, progress) == 0
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+server/tests/test_image_embedding_release.py:132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+server/app/images/engine.py:309: in run
+    spec = json.loads(manifest.read_text())
+                      ^^^^^^^^^^^^^^^^^^^^
+../../../../.local/share/workbench/tools/python-library-probe/cpython-3.14.7-macos-aarch64-none/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-184/test_image_handoff_releases_em1/request.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-184/test_image_handoff_releases_em1/request.json'
+
+../../../../.local/share/workbench/tools/python-library-probe/cpython-3.14.7-macos-aarch64-none/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+=========================== short test summary info ============================
+FAILED server/tests/test_images.py::test_process_cancellation_and_parent_pipe_exit
+FAILED server/tests/test_images.py::test_engine_success_error_and_resource_stop
+FAILED server/tests/test_image_embedding_release.py::test_image_handoff_releases_embedding_and_keeps_daily_model[caps0]
+FAILED server/tests/test_image_embedding_release.py::test_image_handoff_releases_embedding_and_keeps_daily_model[caps1]
+4 failed, 94 passed in 7.44s

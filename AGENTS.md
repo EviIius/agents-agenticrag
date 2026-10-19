@@ -1787,3 +1787,37 @@ experiments unchanged during preparation. H4:
 `docs/PHOTO-EDITING-PE1-PREPARATION-REPORT.md`; implementation scope:
 `docs/PHOTO-EDITING-PE1-PLAN.md`. Native validation of a later product adapter and
 merge/publication remain separate concrete review steps.
+
+**User authorization — 19 October 2026 (PE1-A):** Jake said “Continue” after
+the PE1 preparation report and stated next backend checkpoint. Implement section A
+of `docs/PHOTO-EDITING-PE1-PLAN.md` on the isolated branch: owned references,
+explicit edit-worker contracts, additive storage/API, retry/recovery, cleanup,
+sanitized exports and backup/restore. Use synthetic CPU files, fake runtimes and
+offline regressions; no new native model call is authorized. Preserve the eleven
+frozen PE0 executed files and six native outcomes. Keep main/live, dependencies,
+runtime, prompts, sampling and service settings intact. Stop with H4 after PE1-A
+before composer checkpoint B; product-native validation and release remain gated.
+
+**PE1-A implementation closeout — 19 October 2026:** Durable chat-owned photo
+references, additive schema 14, explicit edit-worker dispatch, atomic retry pins,
+sanitized exports, inactive-input clearing, storage observations and reference-aware
+version-2 backups/restores are implemented on `codex/photo-reference-prep`.
+Full make check passes: 745 Python / 126 frontend / 110 contrast pairs; images
+coverage is 83.6% against the unchanged 80% floor. Nineteen focused reference
+cases and fourteen additional CPU/fake-worker controls pass. The full browser
+invocation retains 720 passes, one frozen-clock fixture failure and three existing
+skips; isolating its unrelated workflow notifications preserves every original
+assertion/timeout and passes a fresh Chromium/WebKit comparison, 2/2. Do not
+relabel the original full invocation as entirely green. All 1,631 overwritten
+historical artifacts are restored byte-for-byte after the fresh run is privately
+archived; selected synthetic screenshots and the original failure trace remain.
+All 563 frozen candidate files, 551 main files, 114 installed server files, 425
+static files, eleven PE0 sources, 73 native evidence files and stopped-trial ledgers
+verify. PE0 remains exactly six native calls; no new inference, dependency/model/
+runtime/prompt/sampling/default, main merge or app deployment occurred. Product
+HEIC/GPU qualification, empty-residency usability and release/rollback rehearsals
+remain later gates; no physical-phone or exact-likeness claim. H4:
+`docs/PHOTO-EDITING-PE1-A-REPORT.md`; QA: `docs/PHOTO-EDITING-PE1-A-QA.md`.
+Stop for A review before PE1-B composer/cards/viewer integration. Jake has asked
+to open the preserved PE0 comparison page; opening it does not invent his quality
+acceptance or add a native-test allowance.

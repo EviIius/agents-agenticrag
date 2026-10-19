@@ -36,7 +36,8 @@ async def accept(
     # Compare the explicit body, not a moving implicit current leaf.
     canonical = json.dumps(
         {
-            **body.model_dump(),
+            **body.model_dump(exclude={"reference_id"}),
+            **({"reference_id": body.reference_id} if body.reference_id else {}),
             "retry_id": retry_id,
             "parent_specified": "parent_id" in body.model_fields_set,
         },
@@ -77,7 +78,12 @@ async def accept(
             )
             for i, seed in enumerate(body.seeds)
         ]
-        prepared = await images.prepare(specs)
+        reference = (
+            await images.references.get(body.reference_id, identifier)
+            if body.reference_id
+            else None
+        )
+        prepared = await images.prepare(specs, reference)
         statements: list[tuple[str, tuple[object, ...]]] = []
         if not retry_id:
             statements.append(
@@ -103,6 +109,7 @@ async def accept(
                             "count": body.count,
                             "seeds": body.seeds,
                             "source_job_id": body.source_job_id,
+                            **({"reference_id": body.reference_id} if body.reference_id else {}),
                         }
                     ),
                     now(),
@@ -171,7 +178,8 @@ async def retry(
         params = await request.app.state.store.one(
             "SELECT params_json FROM messages WHERE id=?", (message_id,)
         )
-        source = json.loads(params["params_json"])["source_job_id"] if params else None
+        saved = json.loads(params["params_json"]) if params else {}
+        source = saved.get("source_job_id")
         return await accept(
             identifier,
             ChatImageCreate(
@@ -181,6 +189,7 @@ async def retry(
                 seeds=body.seeds,
                 parent_id=user.parent_id,
                 source_job_id=source,
+                reference_id=saved.get("reference_id"),
             ),
             request,
             retry_id=user.id,

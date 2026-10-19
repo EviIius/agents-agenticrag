@@ -1,0 +1,60 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+All checks passed!
+. scripts/tool-env.sh; uv run --directory server ruff format --check app tests
+172 files already formatted
+. scripts/tool-env.sh; uv run --directory server mypy app tests
+Success: no issues found in 170 source files
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_coverage.py
+........................................................................ [  9%]
+........................................................................ [ 19%]
+........................................................................ [ 29%]
+........................................................................ [ 38%]
+........................................................................ [ 48%]
+........................................................................ [ 58%]
+........................................................................ [ 67%]
+........................................................................ [ 77%]
+........................................................................ [ 87%]
+........................................................................ [ 96%]
+........................                                                 [100%]
+744 passed in 432.03s (0:07:12)
+providers line coverage: 385/429 = 89.7%
+runs line coverage: 391/437 = 89.5%
+search line coverage: 1564/1741 = 89.8%
+transcribe line coverage: 690/740 = 93.2%
+documents line coverage: 196/203 = 96.6%
+library line coverage: 762/823 = 92.6%
+images line coverage: 1415/1699 = 83.3%
+workflows line coverage: 2713/3021 = 89.8%
+backup.py line coverage: 126/132 = 95.5%
+capacity.py line coverage: 56/58 = 96.6%
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_contrast.py
+light: body/background 16.17:1; secondary 6.55:1; tertiary 4.96:1
+dark: body/background 14.34:1; secondary 6.56:1; tertiary 4.88:1
+Contrast: 110 token pairs passed.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/generate_api_types.py --check
+✨ openapi-typescript 7.13.0
+🚀 /var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/tmpt5z_8k25/openapi.json → /var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/tmpt5z_8k25/api-types.ts [94.5ms]
+API contract: up to date.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_api_additive.py
+API additive guard: Phase 3 contract preserved.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_motion.py
+Motion guard: all first-party motion rules pass.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/privacy_audit.py
+{
+  "scanned": 2122,
+  "failures": [],
+  "limits": "Changed files and Phase 4/5/6/7 evidence; images require human review; optional local private-marker file."
+}
+. scripts/tool-env.sh; npm run check --prefix web
+npm notice run workbench-web@1.0.0-alpha.0 check
+npm notice run tsc --noEmit && eslint . && prettier --check src index.html vite.config.ts playwright.config.ts tests && vitest run src
+src/design/ChatImagesPreview.tsx(32,9): error TS2322: Type '{ id: string; prompt: string; seed: number; state: "running" | "failed" | "queued" | "preparing" | "cancelling" | "cancelled" | "complete" | "interrupted"; stage: string; completed_steps: number; ... 5 more ...; error: string | null; }[]' is not assignable to type '{ id: string; parent_id?: string | null | undefined; prompt: string; seed: number; state: "running" | "failed" | "queued" | "preparing" | "cancelling" | "cancelled" | "complete" | "interrupted"; ... 13 more ...; export_bytes: number; }[]'.
+  Type '{ id: string; prompt: string; seed: number; state: "running" | "failed" | "queued" | "preparing" | "cancelling" | "cancelled" | "complete" | "interrupted"; stage: string; completed_steps: number; ... 5 more ...; error: string | null; }' is missing the following properties from type '{ id: string; parent_id?: string | null | undefined; prompt: string; seed: number; state: "running" | "failed" | "queued" | "preparing" | "cancelling" | "cancelled" | "complete" | "interrupted"; ... 13 more ...; export_bytes: number; }': mode, export_bytes
+src/design/ImagesPreview.tsx(24,9): error TS2739: Type '{ id: string; prompt: string; seed: number; state: "running" | "failed" | "queued" | "preparing" | "cancelling" | "cancelled" | "complete" | "interrupted"; stage: string; completed_steps: number; ... 6 more ...; sha256: string | null; }' is missing the following properties from type '{ id: string; parent_id?: string | null | undefined; prompt: string; seed: number; state: "running" | "failed" | "queued" | "preparing" | "cancelling" | "cancelled" | "complete" | "interrupted"; ... 13 more ...; export_bytes: number; }': mode, export_bytes
+src/design/ImagesPreview.tsx(78,9): error TS2741: Property 'editing_available' is missing in type '{ available: boolean; reason: string; model: string; width: number; height: number; steps: number; quantization: number; cache_limit_bytes: number; }' but required in type '{ available: boolean; reason?: string | null | undefined; model: string; width: number; height: number; steps: number; quantization: number; cache_limit_bytes: number; editing_available: boolean; }'.
+src/design/ImagesPreview.tsx(88,9): error TS2739: Type '{ outputs: number; versions: number; image_bytes: number; metadata_bytes: number; manifest_bytes: number; database_bytes: number; backup_bytes: number; free_bytes: number; }' is missing the following properties from type '{ outputs: number; versions: number; image_bytes: number; metadata_bytes: number; manifest_bytes: number; database_bytes: number; backup_bytes: number; free_bytes: number; references: number; reference_bytes: number; reference_metadata_bytes: number; export_bytes: number; measurement_bytes: number; }': references, reference_bytes, reference_metadata_bytes, export_bytes, measurement_bytes
+src/lib/image-state.test.ts(10,61): error TS2322: Type '{ id: string; parent_id?: string | null | undefined; prompt: string; seed: number; state: "queued" | "preparing" | "running" | "cancelling" | "cancelled" | "complete" | "failed" | "interrupted"; ... 13 more ...; export_bytes?: number | undefined; }' is not assignable to type '{ id: string; parent_id?: string | null | undefined; prompt: string; seed: number; state: "running" | "failed" | "queued" | "preparing" | "cancelling" | "cancelled" | "complete" | "interrupted"; ... 13 more ...; export_bytes: number; }'.
+  Types of property 'mode' are incompatible.
+    Type '"generate" | "edit" | undefined' is not assignable to type '"generate" | "edit"'.
+      Type 'undefined' is not assignable to type '"generate" | "edit"'.
+make: *** [check] Error 2
