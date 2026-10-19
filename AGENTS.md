@@ -1720,3 +1720,18 @@ close the production follow-ups phone/release stop. Evidence:
 phone timing, specific workflow image/citation result or VoiceOver pass is
 claimed. This acceptance does not authorize native photo-editing invocations,
 PE1 integration, or reopening failed agent/Research experiments.
+
+**User continuation — 19 October 2026 (PE0 offline preparation):** After the
+phone closeout and stated next step of offline photo-reference preparation,
+Jake said “continue.” Prepare the isolated worker, owned-reference contracts,
+bounded six-invocation controller and synthetic tests on
+`codex/photo-reference-prep` from accepted main c0d65ee0. Reuse the installed
+MFLUX/FLUX environment without adding packages, loading weights or making native
+calls. Preserve production application, schema, service, data, prompts and
+worker selectors. Run the new offline controls and relevant existing image/
+residency regressions; retain frozen source, source-parity evidence and H4.
+No web/app change triggers a new full browser invocation; reuse existing full
+suite evidence only through exact unchanged-source parity and label it as reuse.
+Stop with a reviewable draft PR and concrete trial scope. Native execution of
+the six cases still requires explicit approval; no PE1 integration, deployment,
+new dependency/model, agent/Research restart or main merge is implied.

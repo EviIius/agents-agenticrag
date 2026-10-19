@@ -1,0 +1,21 @@
+{
+  "checkpoint": "PE0",
+  "status": "prepared-only; native execution requires separate user approval",
+  "maximum_worker_invocations": 6,
+  "model": "black-forest-labs/FLUX.2-klein-4B",
+  "revision": "e7b7dc27f91deacad38e78976d1f2b499d76a294",
+  "mflux": "0.22.0",
+  "settings": {"width": 1024, "height": 1024, "steps": 4, "guidance": 1.0, "quantization": 8, "seed": 42},
+  "limits": {"generation_decode_seconds": 60, "worker_peak_bytes": 25769803776, "cache_bytes": 1073741824, "swap_growth_mib": 512, "health_seconds": 2},
+  "required_chat": {"digest": "09386c7af8487c073bfb845833462d30d0d48ad69428c301b909dc159c028b0a", "context_length": 32768, "maximum_resident_bytes": 21827095100},
+  "stop": "First required failure ends the trial. No automatic retry, prompt repair, favorable seed selection or extra call. Human quality acceptance before integration.",
+  "reference_binding": "Freeze original/working hashes before each dependent invocation; generated portrait hash cannot be known before its declared generation. All later references use that one retained portrait.",
+  "cases": [
+    {"id": "portrait", "mode": "generate", "prompt": "A realistic studio photograph of one fictional adult woman with short brown hair, wearing a plain blue crew-neck shirt, looking directly at the camera, head and shoulders centered, neutral light grey background, even soft lighting, no text.", "reference": null, "expected": "One clear adult face, blue shirt, neutral background; retain even if quality fails, with no replacement generation."},
+    {"id": "background", "mode": "edit", "prompt": "Change only the background to a softly lit green garden. Preserve the same person's face, hair, blue shirt, pose, framing and lighting.", "reference": "portrait/output/image.png", "expected": "Visible garden background; inspect face, shirt, pose and unintended changes side by side."},
+    {"id": "clothing", "mode": "edit", "prompt": "Change only the blue shirt to red. Preserve the same person's face, hair, pose, light grey background and lighting.", "reference": "portrait: crop(128,0,896,1024), rotate 90 degrees counterclockwise, JPEG quality 95, EXIF orientation 6; then normalize", "expected": "Normalized portrait 768x1024 upright; inspect red shirt, likeness and square-output framing."},
+    {"id": "mug", "mode": "edit", "prompt": "Change the red mug to green. Preserve the blue notebook, wooden table, morning light, camera view, and everything else in the scene.", "reference": "artifacts/image-trial/i0/images/cold/photograph-42.png", "original_sha256": "a92e224a55b36971f95e7e6bdbd160d02adb176d5d1f12c96687faaaa7e914d5", "expected": "Visible green mug; preserve notebook, table, viewpoint and light."},
+    {"id": "cancel", "mode": "edit", "same_request_as": "background", "cancel_at": "denoising completed_steps=1", "expected": "Owned worker reaped before lease release; no completed output."},
+    {"id": "recovery", "mode": "edit", "same_request_as": "background", "expected": "One planned identical recovery invocation after cancellation; valid edit and retained prior outputs."}
+  ]
+}
