@@ -1735,3 +1735,19 @@ suite evidence only through exact unchanged-source parity and label it as reuse.
 Stop with a reviewable draft PR and concrete trial scope. Native execution of
 the six cases still requires explicit approval; no PE1 integration, deployment,
 new dependency/model, agent/Research restart or main merge is implied.
+
+**User authorization — 19 October 2026 (PE0 native trial):** After the prepared
+84-check report, draft PR #6 and the concrete six-invocation approval request,
+Jake said “Continue.” Execute only the frozen PE0 portrait/background/clothing/
+mug/cancel/recovery trial on the existing installed model and interpreter.
+Preserve all declared settings, source hashes and resource gates. Bind generated
+portrait and derivative input hashes before dependent calls; retain every output
+and failure. Use the production native lock, exact qualified daily chat digest
+at 32K, final residency/swap/health checks and reaping before release. Stop at
+the first required failure or rejected visual review; no retry, replacement seed,
+extra chat probe, download, auto-unload, prompt repair, source change or PE1.
+The no-residency preflight is a prerequisite wait before the first invocation;
+Jake must load the required profile because the frozen scope forbids refreshing
+residency through another call. Finish setup independently while waiting.
+Keep the live app, main and production data unchanged; stop with H4 evidence
+for quality/resource review before any integration or deployment.
