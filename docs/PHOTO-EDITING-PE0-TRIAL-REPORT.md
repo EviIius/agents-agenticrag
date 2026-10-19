@@ -1,5 +1,11 @@
 # PE0 native photo-reference trial — 19 October 2026
 
+**Review continuation:** After this report, Jake said “Continue.” Advance to
+PE1 preparation with the documented generative-edit limitations; no individual
+sample checks are attributed to Jake. See `PHOTO-EDITING-PE1-PLAN.md` and its
+preparation report. The original technical results and measurement gaps below
+remain unchanged; references to pending review describe the trial closeout.
+
 ## Summary
 
 The frozen six-invocation sequence completed: one synthetic portrait, three

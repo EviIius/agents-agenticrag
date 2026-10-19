@@ -1772,3 +1772,18 @@ files and stopped experiment ledgers remain preserved. Main/live stay unchanged;
 no PE1 integration, merge/deployment, extra invocation or agent/Research restart.
 H4: `docs/PHOTO-EDITING-PE0-TRIAL-REPORT.md`; actual synthetic comparisons in
 `artifacts/photo-editing/native-20261019/review.html`. Stop for quality review.
+
+**User continuation — 19 October 2026 (PE0 review and PE1 preparation):** Jake
+said “Continue” after the six-call result and request to review generative-edit
+quality before integration. Advance with the documented portrait lighting,
+texture and framing limitations; do not invent individual physical/sample
+reviews by Jake or assert exact likeness/pixel preservation. Prepare the concrete
+PE1 reference ownership, upload, worker, composer, cleanup and backup plan from
+actual production code. Prepare/test the missing storage-observation helper
+offline, without changing any of the eleven frozen PE0 executed files or running
+a seventh native call. PE0's native budget remains exhausted. Keep main/live,
+production schema/API/UI, dependencies, runtime and stopped agent/Research
+experiments unchanged during preparation. H4:
+`docs/PHOTO-EDITING-PE1-PREPARATION-REPORT.md`; implementation scope:
+`docs/PHOTO-EDITING-PE1-PLAN.md`. Native validation of a later product adapter and
+merge/publication remain separate concrete review steps.
