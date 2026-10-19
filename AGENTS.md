@@ -1710,3 +1710,13 @@ parity; no extra full suite or physical-phone pass is claimed. H4 is
 `docs/PRODUCTION-FOLLOWUPS-RELEASE-REPORT.md`; phone confirmation is requested and
 pending. Photo-reference editing remains a separate unexecuted proposal; failed
 native agent/Research experiments stay closed. No VoiceOver pass is claimed.
+
+**User acceptance — 19 October 2026 (production follow-ups phone check):**
+Jake confirmed the manually chosen title stays after the requested first-send/
+reload check, Workflows opens with both Canvas and Outline views, and running
+the workflow works. Record these as user-reported physical iPhone results and
+close the production follow-ups phone/release stop. Evidence:
+`artifacts/production-followups/phone-check-20261019.json`. No instrumented
+phone timing, specific workflow image/citation result or VoiceOver pass is
+claimed. This acceptance does not authorize native photo-editing invocations,
+PE1 integration, or reopening failed agent/Research experiments.

@@ -1,13 +1,14 @@
 # Deferred fixes — resolved polish, 8 October 2026
 
-## Current status — 18 October 2026
+## Current status — 19 October 2026
 
 This section supersedes the historical pending/proposal entries below.
 
 - Live source is PR #5's merge `b41ec355`: the manual-title and workflow wording
   repairs are released alongside Aether, attachments, workflow/chat images and
   idle embedding handoff. Jake confirmed the earlier image paths and phone
-  checks; the new title/Workflows phone check is pending.
+  checks. On 19 October he confirmed the title stays, Workflows opens in Canvas
+  and Outline, and a workflow run works; the new phone check is closed.
 - The isolated native agent C1 candidate failed and stopped after one call; N1,
   Hermes and PydanticAI trials remain preserved. No agent implementation is
   integrated. No further prompt/framework campaign or Research restart is active.

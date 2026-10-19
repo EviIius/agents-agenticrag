@@ -7,7 +7,8 @@ PR #5 is merged as `b41ec3550bb83ab92c0710d39295dae0f27d92dd` and the two
 repairs are live: manual titles survive the first text send and Workflows home
 no longer advertises its disabled Search block. The service became healthy in
 2.148 seconds. Exact installed hashes, private fallback, copied-data rehearsals
-and installed HTTPS UI checks pass. Physical iPhone acceptance is pending.
+and installed HTTPS UI checks pass. Jake confirmed the physical iPhone title,
+Workflows Canvas/Outline and workflow-run checks on 19 October.
 
 ## Done-when checklist
 
@@ -23,7 +24,7 @@ and installed HTTPS UI checks pass. Physical iPhone acceptance is pending.
 | Installed source and data | Pass | 114 server / 425 static hashes; schema 13, integrity/foreign-key checks; all 55 pre-existing table projections preserved before bootstrap |
 | Service, route and controls | Pass | Exact plist, one worker, 127.0.0.1:8787, unchanged Tailscale route, environments and transcription/image-worker controls |
 | Installed HTTPS UI | Pass, synthetic API fixtures | Desktop Chromium and iPhone-profile WebKit; composer, Tools, attachments and corrected Workflows home; no page errors, overflow or native requests |
-| Physical phone | Pending | No new phone acceptance or VoiceOver pass claimed |
+| Physical phone | User-confirmed pass, 19 October | Title stays; Workflows Canvas/Outline opens; workflow runs. `artifacts/production-followups/phone-check-20261019.json` |
 
 Evidence: `artifacts/production-followups/release-20261018/`. The implementation,
 original failures and completed suites remain in `PRODUCTION-FOLLOWUPS-REPORT.md`
@@ -103,10 +104,23 @@ Source fallback tag: `checkpoint/pre-production-followups-2026-10-18`.
 
 ## Open questions for Jake
 
-After publication, reopen Aether and confirm Workflows opens and a title chosen
-before the first message remains after sending and reloading. Preserve the
-historical VoiceOver limitation without adding it to the requested work list.
+The requested physical phone check is closed by Jake's 19 October confirmation.
+Preserve the historical VoiceOver limitation without adding it to the requested
+work list.
 
 Photo-reference editing is the next separate proposal in
 `PHOTO-EDITING-NEXT-CHECKPOINT.md`. Its native trial has not run and requires
 approval of its concrete bounded scope. Failed agent experiments stay closed.
+
+## Physical phone closeout — 19 October 2026
+
+Jake reported that the chosen title stays in the requested first-send/reload
+check. He also confirmed Workflows opens in both Canvas and Outline views and
+that running the workflow works. These are user-reported physical iPhone
+results, distinct from Codex's synthetic browser observations above.
+
+Close the production follow-ups release review. No new application change,
+deployment, automated suite invocation or native trial accompanies this record.
+No phone timing, specific workflow image/citation result or VoiceOver pass is
+inferred. The frozen publication evidence remains unchanged; the confirmation
+is retained separately in `artifacts/production-followups/phone-check-20261019.json`.
