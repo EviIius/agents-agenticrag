@@ -1751,3 +1751,24 @@ Jake must load the required profile because the frozen scope forbids refreshing
 residency through another call. Finish setup independently while waiting.
 Keep the live app, main and production data unchanged; stop with H4 evidence
 for quality/resource review before any integration or deployment.
+
+**PE0 native closeout — 19 October 2026:** Jake confirmed the daily profile was
+“Loaded at 32K”; read-only runtime metadata verified the qualified digest before
+each invocation. The frozen portrait/background/clothing/mug/cancel/recovery
+sequence completed exactly six worker calls with no retries or text-model calls.
+Applicable protocol/resource/control checks pass: real denoising, verified pixel
+references, original hashes unchanged, qualified 32K chat resident, zero observed
+swap growth, health within two seconds, and all six workers reaped before capacity
+release. Completed edits take 16.87–20.41 seconds generation/decode with about
+17.378 GiB reported MLX peak. Cancellation after step one leaves no output;
+scheduled recovery succeeds. Codex's visual review finds the requested edits
+visible but portrait lighting/texture and non-square framing drift; **Jake's
+quality acceptance is pending**, and exact preservation/likeness is not qualified.
+Five PNGs use 7,510,459 bytes; six private case directories retain 20,304,489
+logical bytes including duplicated inputs. Temporary disk high-water was not
+sampled; do not call retained sizes a measured storage peak. All eleven executed
+source hashes, 551 production source files, 114 installed server files, 425 static
+files and stopped experiment ledgers remain preserved. Main/live stay unchanged;
+no PE1 integration, merge/deployment, extra invocation or agent/Research restart.
+H4: `docs/PHOTO-EDITING-PE0-TRIAL-REPORT.md`; actual synthetic comparisons in
+`artifacts/photo-editing/native-20261019/review.html`. Stop for quality review.
