@@ -11,6 +11,10 @@ This candidate is isolated; no agent code, native inference or deployment is par
 of the checkpoint. Full check, build and one complete browser invocation pass.
 Main and the live app remain unchanged; this is ready for review, not deployed.
 
+Release follow-up: Jake subsequently asked to continue. Publication and fallback
+results are recorded separately in `PRODUCTION-FOLLOWUPS-RELEASE-REPORT.md`;
+the statements above describe the checkpoint before that release.
+
 ## Done-when checklist
 
 | Item | Status | Evidence |

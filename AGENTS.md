@@ -1679,3 +1679,15 @@ H4: `docs/PRODUCTION-FOLLOWUPS-REPORT.md`; draft PR #5. Stop for checkpoint/rele
 review. The separate `docs/PHOTO-EDITING-NEXT-CHECKPOINT.md` is design only: its
 proposed six-worker-invocation PE0 trial remains unexecuted and needs its reviewed
 native scope before execution. No physical-phone or VoiceOver pass is invented.
+
+**User acceptance and release authorization — 18 October 2026 (production
+follow-ups):** After the completed QA report and explicit next step to release
+the two fixes, Jake said “Continue.” Close the checkpoint review and merge PR #5,
+then publish only its tested title-ownership and Workflows wording repairs.
+Reuse the completed full suites through exact frozen-source parity; reproduce
+the build, preserve a full private app/data/plist fallback, rehearse candidate
+and previous startup on copied data, and verify installed hashes and live UI.
+Keep service, port/bind, route, dependencies, schema and worker controls unchanged.
+No native calls, agent/Research restart or photo-editing trial is implied. Stop
+with release evidence and request the physical phone check; the separately
+documented native photo-editing scope still needs explicit approval.
