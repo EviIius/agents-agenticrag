@@ -1863,3 +1863,43 @@ local/verified HTTPS health pass. H4: `docs/PHOTO-EDITING-PE1-B-REPORT.md`; QA:
 empty-residency usability, final native controls, release/rollback rehearsals and
 physical phone acceptance remain C gates. No new native call, dependency/model/
 runtime/prompt/sampling/default change, main merge or deployment is authorized.
+
+**User continuation — 20 October 2026 (PE1-C preparation):** Jake said
+“continue” after B's result and the next HEIC/native qualification and release
+checks. Prepare C on the isolated branch: actual CPU-only synthetic HEIC
+normalization, built-app/fake-runtime browser checks, copied synthetic schema-14
+startup/rollback rehearsals and a concrete bounded native-test plan/controller.
+No new GPU/model invocation, automatic chat unloading, main merge or publication
+is implied by preparation. Preserve B, PE0 and the separate private photo result.
+Complete the offline work before requesting the separately reviewed native scope
+required by the PE1 plan's C gate.
+
+**PE1-C preparation closeout — 20 October 2026:** Real CPU HEIC preparation,
+including a 2560→2048 synthetic reference, and JPEG orientation/metadata removal
+pass. Ten compiled-candidate functional cases, two cold-module/highlighter/active
+SSE observers and two previous-UI/current-backend observers pass with fake
+inference. Retain the earlier hard-navigation WebKit SSE console observation;
+its cause and physical PWA acceptance are not proven. Preserve all harness
+failures and corrective runs separately. Fifteen controller safety tests and
+the four-case fake rehearsal pass, including first-failure stopping. B's 572
+source hashes and full/corrective regression results remain unchanged; no new
+broad suite or native pass is claimed.
+
+The previous schema-13 server starts on schema 14 but drops photo references on
+retry and dispatches ordinary generation. Full old-server rollback with current
+edit data is unsafe and prohibited by the PE1 release procedure. A previous-UI /
+schema-aware-backend compatibility fallback preserves edit retry/output in both
+browsers; it is not a full backend rollback. A concrete installer/fallback
+rehearsal remains necessary before publication. Main/live, B/PE0 evidence, stopped
+trial ledgers and original user-photo records remain preserved; local/verified
+HTTPS health pass and Ollama stays 0.35.0.
+
+`docs/PHOTO-EDITING-PE1-C-PLAN.md` proposes at most four ordered synthetic native
+edit invocations (empty HEIC, qualified 32K JPEG, cancellation, HEIC recovery) and
+one explicit empty-message preload of the already installed exact 32K profile,
+with frozen source, first-failure stopping and unchanged limits. This allowance
+is **not yet approved**. The default controller uses fake inference; no approval
+receipt is supplied. Empty-residency admission exists only in its prospective
+trial subclass, not the product. H4: `docs/PHOTO-EDITING-PE1-C-PREP-REPORT.md`.
+Stop for the plan's separately reviewed native scope; no new native invocation,
+automatic chat unloading, product guard promotion, main merge or publication.
