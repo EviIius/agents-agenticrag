@@ -1,4 +1,6 @@
 import type { ImageComposerCommand } from "@/lib/composer-drafts";
+import type { PhotoEditor } from "@/hooks/usePhotoEdit";
+import type { PhotoCommand } from "@/components/chat/PhotoEditingHost";
 import type { ImageIteration } from "@/components/chat/ImageActions";
 import { FoldersGroup } from "./FoldersGroup";
 import { WorkspaceContext } from "./WorkspaceNavigation";
@@ -69,6 +71,9 @@ const WorkflowNotifier = lazy(
   () => import("@/components/workflows/WorkflowNotifier"),
 );
 const DropOverlay = lazy(() => import("@/components/chat/DropOverlay"));
+const PhotoEditingHost = lazy(
+  () => import("@/components/chat/PhotoEditingHost"),
+);
 export function LiveAppShell() {
   const ui = useUI(),
     navigate = useNavigate();
@@ -412,6 +417,17 @@ export function LiveAppShell() {
     chat?: string;
     command: ImageComposerCommand;
   }>();
+  const [photoLoaded, setPhotoLoaded] = useState(false);
+  const [photo, setPhoto] = useState<PhotoEditor>();
+  const [photoCommand, setPhotoCommand] = useState<PhotoCommand>();
+  const choosePhoto = (source: PhotoCommand["source"]) => {
+    setPhotoLoaded(true);
+    setPhotoCommand({
+      key: crypto.randomUUID(),
+      owner: chatId ?? "new",
+      source,
+    });
+  };
   const iterationChat = useRef(chatId);
   iterationChat.current = chatId;
   const chatImages = useChatImages({
@@ -424,6 +440,10 @@ export function LiveAppShell() {
     enabled: !workspace,
   });
   const iterateImage: ImageIteration = (job, action, position) => {
+    if (action === "edit") {
+      choosePhoto(job);
+      return;
+    }
     if (action === "more") {
       void chatImages.send(job.prompt, 1, undefined, job.id);
       return;
@@ -546,12 +566,27 @@ export function LiveAppShell() {
   };
   const composer = (
     <>
+      {photoLoaded && (
+        <Suspense fallback={null}>
+          <PhotoEditingHost
+            owner={chatId ?? "new"}
+            model={current}
+            command={photoCommand}
+            onChange={setPhoto}
+            onApplied={(key) =>
+              setPhotoCommand((old) => (old?.key === key ? undefined : old))
+            }
+          />
+        </Suspense>
+      )}
       <Composer
         key={chatId ?? "new"}
         draftKey={chatId ?? "new"}
         images
         imageStatus={imageStatus.data}
         imageBusy={chatImages.busy}
+        photoEdit={photo?.key === (chatId ?? "new") ? photo : undefined}
+        onPhotoFile={choosePhoto}
         initialImageMode={
           Boolean(routeState?.imageMode) ||
           new URLSearchParams(routeSearch).has("image")

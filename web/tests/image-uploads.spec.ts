@@ -68,7 +68,7 @@ test("image chooser accepts PNG, JPEG, WebP, GIF, HEIC and renamed HEIC", async 
         response.url().endsWith("/api/attachments") &&
         response.request().method() === "POST",
     );
-    await page.locator("input[type=file]").setInputFiles(item);
+    await page.locator("input.composer-file-input").setInputFiles(item);
     const response = await uploading;
     expect(response.status()).toBe(201);
     const attachment = await response.json();
@@ -102,7 +102,7 @@ test("attaching an image leaves creation mode and exposes its chat chip", async 
     page.getByRole("textbox", { name: "Image prompt" }),
   ).toBeVisible();
   await page
-    .locator("input[type=file]")
+    .locator('input[type="file"]:not([aria-label="Choose photo to edit"])')
     .setInputFiles("../server/tests/fixtures/images/fake-synthetic.png");
   await expect(
     page.locator("[data-slot=attachment-chip]:not([inert] *)"),
@@ -166,7 +166,7 @@ test("unreadable image gives useful upload feedback", async ({ page }) => {
     if (r.method() === "POST" && r.url().endsWith("/api/attachments"))
       requests++;
   });
-  await page.locator("input[type=file]").setInputFiles({
+  await page.locator("input.composer-file-input").setInputFiles({
     name: "fake-broken.png",
     mimeType: "image/png",
     buffer: Buffer.from("invalid image"),
@@ -265,12 +265,12 @@ test("synthetic upload chip and failure stay accessible in both themes and width
       );
       await page.reload();
       await page
-        .locator("input[type=file]")
+        .locator("input.composer-file-input")
         .setInputFiles("../server/tests/fixtures/images/fake-synthetic.heic");
       await expect(
         page.locator("[data-slot=attachment-chip]:not([inert] *)"),
       ).toHaveCount(1);
-      await page.locator("input[type=file]").setInputFiles({
+      await page.locator("input.composer-file-input").setInputFiles({
         name: "fake-broken.png",
         mimeType: "image/png",
         buffer: Buffer.from("invalid image"),

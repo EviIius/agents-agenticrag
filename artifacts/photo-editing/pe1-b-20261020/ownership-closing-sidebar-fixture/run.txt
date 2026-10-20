@@ -1,0 +1,88 @@
+npm notice run workbench-web@1.0.0-alpha.0 npx
+npm notice run 'playwright' test tests/photo-editing.spec.ts -g cancelled uploads|new typing
+[WebServer] INFO:     Started server process [63887]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:18080 (Press CTRL+C to quit)
+[WebServer] INFO:     Started server process [63890]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:18787 (Press CTRL+C to quit)
+[WebServer] npm notice run workbench-web@1.0.0-alpha.0 dev
+[WebServer] npm notice run vite --host 127.0.0.1 --port 5173 --strictPort
+[WebServer] (node:63921) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "./test-runtime" without a file extension (vite.config.ts:4:28). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+Running 4 tests using 1 worker
+
+(node:63922) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] INFO httpx: HTTP Request: GET http://127.0.0.1:18080/api/tags "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: GET http://127.0.0.1:18080/api/ps "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/show "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/show "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/show "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/show "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/show "HTTP/1.1 200 OK"
+  ✓  1 [chromium] › tests/photo-editing.spec.ts:116:1 › new typing survives an in-flight photo send and the new chat adoption (2.0s)
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/chat "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: GET http://127.0.0.1:18080/api/tags "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: GET http://127.0.0.1:18080/api/ps "HTTP/1.1 200 OK"
+  ✓  2 [chromium] › tests/photo-editing.spec.ts:165:1 › cancelled uploads cannot return into another chat; completed drafts restore to their owner (2.0s)
+(node:63932) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 [webkit] › tests/photo-editing.spec.ts:116:1 › new typing survives an in-flight photo send and the new chat adoption (2.0s)
+[WebServer] INFO httpx: HTTP Request: POST http://127.0.0.1:18080/api/chat "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: GET http://127.0.0.1:18080/api/tags "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: GET http://127.0.0.1:18080/api/ps "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: GET http://127.0.0.1:18080/api/tags "HTTP/1.1 200 OK"
+[WebServer] INFO httpx: HTTP Request: GET http://127.0.0.1:18080/api/ps "HTTP/1.1 200 OK"
+  ✘  4 [webkit] › tests/photo-editing.spec.ts:165:1 › cancelled uploads cannot return into another chat; completed drafts restore to their owner (45.0s)
+
+
+  1) [webkit] › tests/photo-editing.spec.ts:165:1 › cancelled uploads cannot return into another chat; completed drafts restore to their owner 
+
+    Test timeout of 45000ms exceeded.
+
+    Error: locator.click: Test timeout of 45000ms exceeded.
+    Call log:
+      - waiting for locator('a[href="/c/d9665e6f4cf2474ca3832cd5d3d08d6c"]:visible').first()
+        - locator resolved to <a data-discover="true" href="/c/d9665e6f4cf2474ca3832cd5d3d08d6c" class="min-w-0 flex-1 truncate px-3 py-2 text-sm" aria-label="Synthetic history for photo draft navigation">…</a>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not stable
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not stable
+        - retrying click action
+          - waiting 100ms
+        - waiting for element to be visible, enabled and stable
+      - element was detached from the DOM, retrying
+
+
+      203 |       .getByRole("button", { name: "Open sidebar", exact: true })
+      204 |       .click();
+    > 205 |   await firstLink.click();
+          |                   ^
+      206 |   await expect(
+      207 |     page.getByRole("textbox", { name: "Photo edit instruction" }),
+      208 |   ).toHaveValue("Retained photo instruction");
+        at /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/web/tests/photo-editing.spec.ts:205:19
+
+    Error Context: test-results/photo-editing-cancelled-up-a64d2-afts-restore-to-their-owner-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/photo-editing-cancelled-up-a64d2-afts-restore-to-their-owner-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/photo-editing-cancelled-up-a64d2-afts-restore-to-their-owner-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [webkit] › tests/photo-editing.spec.ts:165:1 › cancelled uploads cannot return into another chat; completed drafts restore to their owner 
+  3 passed (53.4s)

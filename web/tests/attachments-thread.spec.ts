@@ -356,7 +356,7 @@ test("optimistic and confirmed attachments retain previews, real request fields 
     (r) =>
       r.url().endsWith("/api/attachments") && r.request().method() === "POST",
   );
-  await page.locator('input[type="file"]').setInputFiles({
+  await page.locator("input.composer-file-input").setInputFiles({
     name: "Harbor-send-fake.png",
     mimeType: "image/png",
     buffer: png,

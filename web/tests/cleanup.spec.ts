@@ -20,7 +20,7 @@ for (const width of [390, 1440]) {
     });
     await request.put("/api/transcription/glossary", { data: { text: "" } });
     await page.goto("/");
-    await page.locator('input[type="file"]').setInputFiles({
+    await page.locator("input.composer-file-input").setInputFiles({
       name: "Invented cleanup recording.wav",
       mimeType: "audio/wav",
       buffer: Buffer.from("#fake:cleanup"),
@@ -215,7 +215,7 @@ test("6A cancelling clean-up preserves all original transcript fields", async ({
     },
   });
   await page.goto("/");
-  await page.locator('input[type="file"]').setInputFiles({
+  await page.locator("input.composer-file-input").setInputFiles({
     name: "Invented cancellation.wav",
     mimeType: "audio/wav",
     buffer: Buffer.from("#fake:cleanup-slow"),

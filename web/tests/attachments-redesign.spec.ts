@@ -10,7 +10,7 @@ test("native attachment input covers the touch button and desktop dialog/shortcu
   page,
 }) => {
   await page.goto("/design?attachments");
-  const input = page.locator('.composer input[type="file"]');
+  const input = page.locator("input.composer-file-input");
   await expect(input).toHaveAttribute(
     "accept",
     "image/*,.heic,.heif,.pdf,.docx,.txt,.csv,.wav,.m4a",
@@ -338,7 +338,7 @@ test("photo preview appears before upload completes, Send waits, and the local U
   });
   try {
     await page
-      .locator(".composer input[type=file]")
+      .locator("input.composer-file-input")
       .setInputFiles("../server/tests/fixtures/images/fake-synthetic.png");
     await expect(page.locator(".attachment-photo img")).toBeVisible();
     await expect(page.locator(".attachment-photo img")).toHaveAttribute(
@@ -412,7 +412,7 @@ test("network errors stay on their file, allow ordinary sending, and retry the o
     if (attempts === 1) await route.abort("failed");
     else await route.continue();
   });
-  await page.locator(".composer input[type=file]").setInputFiles({
+  await page.locator("input.composer-file-input").setInputFiles({
     name: "Network-fake.txt",
     mimeType: "text/plain",
     buffer: Buffer.from("Synthetic retry content"),
@@ -444,7 +444,7 @@ test("the eight-file limit counts ready and pending files together without attac
     if (r.method() === "POST" && r.url().endsWith("/api/attachments"))
       requests++;
   });
-  await page.locator(".composer input[type=file]").setInputFiles(
+  await page.locator("input.composer-file-input").setInputFiles(
     Array.from({ length: 9 }, (_, i) => ({
       name: `Notes-${i + 1}-fake.txt`,
       mimeType: "text/plain",
@@ -452,7 +452,7 @@ test("the eight-file limit counts ready and pending files together without attac
     })),
   );
   await expect(page.locator(".attachment-count")).toHaveText("8 of 8");
-  await expect(page.locator(".composer input[type=file]")).toBeDisabled();
+  await expect(page.locator("input.composer-file-input")).toBeDisabled();
   await expect(page.locator(".attachment-status")).toContainText(
     "8 files is the limit for one message",
   );
@@ -486,7 +486,7 @@ test("cancelling an individual photo aborts its transport and releases the thumb
   });
   try {
     await page
-      .locator(".composer input[type=file]")
+      .locator("input.composer-file-input")
       .setInputFiles("../server/tests/fixtures/images/fake-synthetic.png");
     const img = page.locator(".attachment-photo img");
     await expect(img).toHaveAttribute("src", /^blob:/);
@@ -529,7 +529,7 @@ test("portrait attachments zoom to actual pixels using their longest dimension",
     ctx.fillRect(0, 0, 800, 1600);
     return canvas.toDataURL("image/png").split(",")[1];
   });
-  await page.locator(".composer input[type=file]").setInputFiles({
+  await page.locator("input.composer-file-input").setInputFiles({
     name: "Portrait-fake.png",
     mimeType: "image/png",
     buffer: Buffer.from(data, "base64"),

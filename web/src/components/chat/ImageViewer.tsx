@@ -16,6 +16,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { IconButton } from "@/components/app/IconButton";
+import { Button } from "@/components/ui/button";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { ImageJob } from "@/lib/image-events";
 import { ImageActions, type ImageIteration } from "./ImageActions";
@@ -47,6 +48,7 @@ export function ImageViewer({
     [ready, setReady] = useState(false),
     [expanded, setExpanded] = useState(false),
     [failed, setFailed] = useState(false);
+  const [reference, setReference] = useState(false);
   const [fit, setFit] = useState({ size: 0, x: 0, y: 0 }),
     [flip, setFlip] = useState({ x: 0, y: 0, scale: 1 });
   const [zoom, setZoom] = useState(1),
@@ -68,7 +70,14 @@ export function ImageViewer({
   }, []);
   const reduced = useReducedMotion();
   const job = available.find((job) => job.id === id) ?? initial;
-  const imageUrl = "url" in job ? job.url : `/api/images/jobs/${id}/output/png`;
+  const showingReference =
+    reference && !("url" in job) && !!job.reference?.available;
+  const imageUrl =
+    "url" in job
+      ? job.url
+      : showingReference
+        ? `/api/images/jobs/${id}/reference`
+        : `/api/images/jobs/${id}/output/png`;
   useEffect(() => setFailed(false), [imageUrl]);
   const index = available.findIndex((job) => job.id === id);
   const position =
@@ -151,6 +160,7 @@ export function ImageViewer({
     const next =
       available[(index + delta + available.length) % available.length]!;
     setId(next.id);
+    setReference(false);
     setFailed(false);
     setExpanded(false);
     setZoom(1);
@@ -370,16 +380,24 @@ export function ImageViewer({
                 ) : preview ? (
                   <div
                     role="img"
-                    aria-label={job.prompt}
+                    aria-label={
+                      showingReference
+                        ? "Normalized photo reference"
+                        : job.prompt
+                    }
                     className="size-full bg-brand-soft"
                   />
                 ) : (
                   <img
                     ref={img}
-                    key={id}
+                    key={imageUrl}
                     draggable={false}
                     src={imageUrl}
-                    alt={job.prompt}
+                    alt={
+                      showingReference
+                        ? "Normalized photo reference"
+                        : job.prompt
+                    }
                     onError={() => setFailed(true)}
                     className="image-viewer-output"
                     data-direction={direction}
@@ -408,7 +426,31 @@ export function ImageViewer({
             )}
           </div>
           <footer className="image-viewer-footer">
-            {!("url" in job) && (
+            {!("url" in job) && job.mode === "edit" && (
+              <div className="max-w-full text-sm text-fg-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  aria-pressed={showingReference}
+                  disabled={!job.reference?.available}
+                  onClick={() => {
+                    setReference(!reference);
+                    setZoom(1);
+                    setOffset({ x: 0, y: 0 });
+                  }}
+                >
+                  {showingReference ? "Show edited image" : "Show reference"}
+                </Button>
+                <p className="mt-1 text-xs">
+                  {!job.reference?.available
+                    ? "Photo input unavailable; output kept."
+                    : showingReference
+                      ? "Normalized preview. The private original is retained; output framing can differ."
+                      : "Photo edit · square output"}
+                </p>
+              </div>
+            )}
+            {!("url" in job) && !showingReference && (
               <ImageActions
                 key={id}
                 job={job}

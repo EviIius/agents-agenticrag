@@ -16,7 +16,16 @@ class FakeImageEngine:
         self.release = asyncio.Event()
 
     def status(self) -> ImageStatus:
-        return ImageStatus(available=True)
+        return ImageStatus(available=True, editing_available=True)
+
+    async def run_edit(
+        self,
+        manifest: Path,
+        scratch: Path,
+        progress: Callable[[dict[str, Any]], Awaitable[None]],
+    ) -> int:
+        assert json.loads(manifest.read_text())["mode"] == "edit"
+        return await self.run(manifest, scratch, progress)
 
     async def run(
         self,

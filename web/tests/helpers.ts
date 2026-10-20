@@ -74,7 +74,7 @@ export async function enterImageMode(page: Page) {
 }
 export async function openAttachmentPicker(page: Page) {
   const chooser = page.waitForEvent("filechooser");
-  const input = page.locator('.composer input[type="file"]');
+  const input = page.locator("input.composer-file-input");
   if (await input.isVisible()) await input.click();
   else
     await page

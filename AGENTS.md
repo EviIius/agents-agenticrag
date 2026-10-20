@@ -1821,3 +1821,45 @@ remain later gates; no physical-phone or exact-likeness claim. H4:
 Stop for A review before PE1-B composer/cards/viewer integration. Jake has asked
 to open the preserved PE0 comparison page; opening it does not invent his quality
 acceptance or add a native-test allowance.
+
+**User authorization — 20 October 2026 (private photo check and PE1-B):** Jake
+provided a photo and said “Test it on this image, then continue” after discussing
+a Mario-style hat or mustache. Run one separately recorded private local-FLUX
+hat edit, with no automatic retry and unchanged product resource/residency guards.
+Keep the photo, its filename, hashes and resulting images outside Git/public QA
+evidence. Preserve the original file and all six frozen PE0 outcomes; this is a
+new one-call user-photo allowance, not a seventh PE0 case or full PE1-C release
+qualification. No new model/dependency/runtime or extra chat/helper calls.
+Continue to PE1-B composer/cards/viewer integration on the existing isolated
+branch, with synthetic UI fixtures and full regression evidence, and stop at B.
+Product qualification, main merge, app deployment and physical-phone acceptance
+remain later concrete gates. Report the private edit's actual limitations without
+inventing exact likeness, preservation or Jake's quality acceptance.
+
+**PE1-B closeout — 20 October 2026:** The isolated existing-composer photo flow,
+owned drafts, explicit Edit image, reference comparison, retry gating and input
+cleanup are implemented. New-chat reservation and in-flight replacement-upload
+ownership bugs are repaired with regression evidence. Full make check passes:
+745 Python / 132 frontend / 110 contrast pairs, images coverage 83.5% at the
+unchanged 80% floor. Initial JS is 255,912 / 256,000 gzip bytes. All eighteen new
+photo-edit browser cases pass. Preserve the full invocation at 737 passed / two
+older creation-mode selector failures / three existing skips; the corrected
+complete image-upload file passes 12/12 in a fresh run, and final frontend checks
+pass again. Every product file and all other case sources match the full run;
+do not relabel it wholly green. Earlier interrupted/fixture failures and traces
+remain separate. Dev-server module-import warnings are retained for built-app
+verification at C, without an invented clean-console claim.
+
+The separately authorized private local hat edit completed in 19.01 seconds,
+preserving the original, but changed eyes/expression/framing. Keep its photo,
+name, hashes, images and detailed records outside Git/public evidence; no exact
+likeness, mustache result or user quality acceptance is claimed. PE0 remains six
+invocations, plus exactly one separate private user edit. All 572 final candidate,
+551 main, 114 installed server, 425 static, eleven PE0 source and 73 native
+evidence files verify; 1,640 overwritten historical artifacts are restored after
+archiving fresh synthetic evidence. Stopped trials and Ollama 0.35.0 are unchanged;
+local/verified HTTPS health pass. H4: `docs/PHOTO-EDITING-PE1-B-REPORT.md`; QA:
+`docs/PHOTO-EDITING-PE1-B-QA.md`. Stop at B on the draft PR. Actual HEIC editing,
+empty-residency usability, final native controls, release/rollback rehearsals and
+physical phone acceptance remain C gates. No new native call, dependency/model/
+runtime/prompt/sampling/default change, main merge or deployment is authorized.
