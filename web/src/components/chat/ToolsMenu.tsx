@@ -7,7 +7,6 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
@@ -73,103 +72,111 @@ export function ToolsMenu({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         side="top"
+        sideOffset={8}
         align="start"
         className="composer-tools-menu"
         aria-label="Tools"
       >
-        <DropdownMenuLabel>Tools</DropdownMenuLabel>
-        {onWebChange && (
-          <DropdownMenuCheckboxItem
-            checked={web && !webBlocked}
-            disabled={webBlocked}
-            onSelect={(e) => e.preventDefault()}
-            onCheckedChange={onWebChange}
-            className="composer-tool-row"
-            aria-label="Search the web"
-            aria-description={
-              webBlocked ? "Search is off in chats with a recording" : undefined
-            }
-          >
-            <Globe />
-            <span>
-              <b>Search the web</b>
-              <small>
-                {webBlocked
+        <DropdownMenuLabel className="composer-tools-heading">
+          Tools
+        </DropdownMenuLabel>
+        <div className="composer-tools-actions">
+          {onWebChange && (
+            <DropdownMenuCheckboxItem
+              checked={web && !webBlocked}
+              disabled={webBlocked}
+              onSelect={(e) => e.preventDefault()}
+              onCheckedChange={onWebChange}
+              className="composer-tool-row"
+              aria-label="Search the web"
+              aria-description={
+                webBlocked
                   ? "Search is off in chats with a recording"
-                  : "Look things up while answering"}
-              </small>
-            </span>
-            <i
-              className="composer-switch"
-              data-on={web && !webBlocked}
-              aria-hidden
-            />
-          </DropdownMenuCheckboxItem>
-        )}
-        {library && (
-          <DropdownMenuCheckboxItem
-            checked={library.enabled}
-            disabled={!library.enabled && !!library.reason}
-            onSelect={(e) => e.preventDefault()}
-            onCheckedChange={library.onToggle}
-            className="composer-tool-row"
-            aria-label="Library"
-            aria-description={library.reason}
-          >
-            <BookOpen />
-            <span>
-              <b>Library</b>
-              <small>{library.reason ?? "Answer from your saved files"}</small>
-            </span>
-            <i
-              className="composer-switch"
-              data-on={library.enabled}
-              aria-hidden
-            />
-          </DropdownMenuCheckboxItem>
-        )}
-        {images && (
-          <DropdownMenuItem
-            disabled={!imageAvailable}
-            className="composer-tool-row"
-            onSelect={onImage}
-            aria-label="Create image"
-            aria-description={!imageAvailable ? imageReason : undefined}
-          >
-            <ImageIcon />
-            <span>
-              <b>Create image</b>
-              <small>
-                {!imageAvailable
-                  ? (imageReason ?? "Connecting to the image service…")
-                  : "Describe it and get pictures in the chat"}
-              </small>
-            </span>
-          </DropdownMenuItem>
-        )}
-        {images && onPhoto && (
-          <DropdownMenuItem
-            disabled={!photoAvailable}
-            className="composer-tool-row"
-            onSelect={onPhoto}
-            aria-label="Edit photo"
-            aria-description={
-              !photoAvailable
-                ? "Photo editing is unavailable on this server"
-                : undefined
-            }
-          >
-            <ImageIcon />
-            <span>
-              <b>Edit photo</b>
-              <small>Choose one photo and describe a change</small>
-            </span>
-          </DropdownMenuItem>
-        )}
+                  : undefined
+              }
+            >
+              <Globe />
+              <span>
+                <b>Search the web</b>
+                <small>
+                  {webBlocked
+                    ? "Search is off in chats with a recording"
+                    : "Look things up while answering"}
+                </small>
+              </span>
+              <i
+                className="composer-switch"
+                data-on={web && !webBlocked}
+                aria-hidden
+              />
+            </DropdownMenuCheckboxItem>
+          )}
+          {library && (
+            <DropdownMenuCheckboxItem
+              checked={library.enabled}
+              disabled={!library.enabled && !!library.reason}
+              onSelect={(e) => e.preventDefault()}
+              onCheckedChange={library.onToggle}
+              className="composer-tool-row"
+              aria-label="Library"
+              aria-description={library.reason}
+            >
+              <BookOpen />
+              <span>
+                <b>Library</b>
+                <small>
+                  {library.reason ?? "Answer from your saved files"}
+                </small>
+              </span>
+              <i
+                className="composer-switch"
+                data-on={library.enabled}
+                aria-hidden
+              />
+            </DropdownMenuCheckboxItem>
+          )}
+          {images && (
+            <DropdownMenuItem
+              disabled={!imageAvailable}
+              className="composer-tool-row"
+              onSelect={onImage}
+              aria-label="Create image"
+              aria-description={!imageAvailable ? imageReason : undefined}
+            >
+              <ImageIcon />
+              <span>
+                <b>Create image</b>
+                <small>
+                  {!imageAvailable
+                    ? (imageReason ?? "Connecting to the image service…")
+                    : "Describe it and get pictures in the chat"}
+                </small>
+              </span>
+            </DropdownMenuItem>
+          )}
+          {images && onPhoto && (
+            <DropdownMenuItem
+              disabled={!photoAvailable}
+              className="composer-tool-row"
+              onSelect={onPhoto}
+              aria-label="Edit photo"
+              aria-description={
+                !photoAvailable
+                  ? "Photo editing is unavailable on this server"
+                  : undefined
+              }
+            >
+              <ImageIcon />
+              <span>
+                <b>Edit photo</b>
+                <small>Choose one photo and describe a change</small>
+              </span>
+            </DropdownMenuItem>
+          )}
+        </div>
         {(model?.reasoning || thinkValue) && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel className="flex items-center gap-2">
+          <div className="composer-thinking">
+            <DropdownMenuLabel className="composer-thinking-label flex items-center gap-2">
               <Brain className="size-4" />
               Thinking
             </DropdownMenuLabel>
@@ -212,12 +219,12 @@ export function ToolsMenu({
                   }
                 >
                   {level === "auto"
-                    ? "Model default"
+                    ? "Default"
                     : level[0].toUpperCase() + level.slice(1)}
                 </DropdownMenuRadioItem>
               ))}
             </DropdownMenuRadioGroup>
-          </>
+          </div>
         )}
       </DropdownMenuContent>
     </DropdownMenu>
