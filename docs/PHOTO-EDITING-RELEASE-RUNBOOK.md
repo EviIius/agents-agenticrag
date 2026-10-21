@@ -1,5 +1,11 @@
 # PE1 release preparation and compatibility fallback
 
+**Publication authorization, 21 October:** Jake said “Go ahead” after the
+completed integration preparation report. The sequence below is now authorized
+for the reviewed PR #6 payload with a fresh production bundle. Its earlier
+preparation-only wording is retained as checkpoint history; native test budgets
+remain exhausted. Record actual publication and phone results separately.
+
 21 October 2026. **Prepared on the isolated branch; publication is not approved.**
 Jake accepted the reported generative-edit quality and authorized the measured
 guard, worker installer and copied-data rehearsal. The exhausted native test

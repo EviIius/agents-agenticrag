@@ -1981,3 +1981,15 @@ No new native/model call, dependency/runtime/default change, main merge or
 publication occurred. H4: `docs/PHOTO-EDITING-PE1-INTEGRATION-REPORT.md`.
 Preparation is complete; stop for release review. A fresh quiesced production
 bundle and explicit merge/publication authorization precede a later phone check.
+
+**User authorization — 21 October 2026 (PE1 publication):** After the completed
+integration preparation report and draft PR #6 review boundary, Jake said
+“Go ahead.” Merge the reviewed photo-edit branch and publish its exact tested
+app/static/four-file worker payload using a fresh quiesced production bundle.
+Keep the existing interpreter, selectors, data, plist, service/bind/port and
+Tailscale route. Retain the schema-aware backend/worker/current-data compatibility
+fallback; never restore the old backend or pre-release DB over new edits/messages.
+No additional native/model test call, dependency or runtime/default change is
+authorized. Verify installed hashes, migration/old rows, local/HTTPS health and
+actual compiled UI with synthetic intercepted data, then request the physical
+iPhone check and report publication results.
