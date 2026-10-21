@@ -148,6 +148,11 @@ def main() -> None:
     parser.add_argument("--preview-pid", type=int)
     parser.add_argument("--image-home", type=Path, help="Enable the reviewed private image worker.")
     args = parser.parse_args()
+    if args.apply and (ROOT / "server/app/db/migrations/014_image_references.sql").is_file():
+        raise RuntimeError(
+            "Photo-reference releases require the reviewed PE1 bundle and schema-aware fallback; "
+            "generic deployment does not preserve their data/worker contract. Nothing was changed."
+        )
     plist, old = existing_service()
     previous_plist = plist.read_bytes()
     import httpx

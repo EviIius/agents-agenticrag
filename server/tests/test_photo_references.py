@@ -538,7 +538,6 @@ def test_exports_strip_metadata_without_changing_encoded_pixels(tmp_path: Path) 
 @pytest.mark.parametrize(
     "models",
     [
-        [],
         [{"digest": EDIT_DIGEST, "context_length": 65536, "size_vram": 100}],
         [{"digest": "other", "context_length": 32768, "size_vram": 100}],
     ],
@@ -554,3 +553,32 @@ async def test_edit_admission_refuses_unmeasured_residency(
     monkeypatch.setattr(engine, "loaded", loaded)
     with pytest.raises(Exception, match="tested 32K"):
         await engine.admit_edit()
+
+
+@pytest.mark.parametrize(
+    "models", [[], [{"digest": EDIT_DIGEST, "context_length": 32768, "size_vram": 100}]]
+)
+async def test_edit_admission_allows_only_native_qualified_arrangements(
+    models: list[dict[str, Any]], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    engine = Engine(None)
+
+    async def loaded() -> list[dict[str, Any]]:
+        return models
+
+    monkeypatch.setattr(engine, "loaded", loaded)
+    await engine.admit_edit()
+
+
+@pytest.mark.parametrize(
+    "models",
+    [
+        [{"digest": EDIT_DIGEST, "context_length": 32768, "size_vram": True}],
+        [{"digest": EDIT_DIGEST, "context_length": 32768, "size_vram": 21827095101}],
+        [{"digest": EDIT_DIGEST, "context_length": 32768, "size_vram": 100}] * 2,
+    ],
+)
+def test_edit_admission_keeps_strict_resident_memory_and_identity_bounds(
+    models: list[dict[str, Any]],
+) -> None:
+    assert not Engine.qualified_edit(models)

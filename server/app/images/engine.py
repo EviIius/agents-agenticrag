@@ -120,7 +120,8 @@ class Engine:
 
     @staticmethod
     def qualified_edit(models: list[dict[str, Any]]) -> bool:
-        return (
+        # Both arrangements passed the bounded PE1-C native qualification.
+        return models == [] or (
             len(models) == 1
             and models[0].get("digest") == EDIT_DIGEST
             and type(models[0].get("size_vram")) is int
@@ -150,8 +151,9 @@ class Engine:
         if not self.qualified_edit(await self.loaded()):
             raise AppError(
                 "image_capacity",
-                "Photo editing is qualified with the tested 32K chat "
-                "profile. Select that profile in Models before retrying.",
+                "Photo editing needs an empty model slot or the tested 32K chat profile. "
+                "Open Settings → Models to eject other chat or unknown models, "
+                "or retry after they expire.",
                 409,
             )
 

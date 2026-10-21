@@ -1948,3 +1948,14 @@ Jake also asked whether automatic local workflows are on the list. Confirm the
 existing WS-F schedule/batch backlog; `docs/LOCAL-AUTOMATION-NEXT-STEPS.md` proposes
 a recording-folder pilot after photo editing. The question grants no scheduler,
 watcher, extra agent/model call or external action implementation permission.
+
+**User acceptance and authorization — 21 October 2026 (PE1 integration preparation):**
+Jake answered “Accept; prepare integration” after reviewing the reported
+generative-edit tradeoffs and the 4/4 native trial. Accept that quality boundary
+without claiming exact likeness. Apply only the measured empty-slot-or-exact-32K
+edit guard, update its regression checks, extend the public worker installer and
+prepare/rehearse a consistent app/worker/data/plist bundle plus the previous-UI /
+schema-aware-backend compatibility fallback on copied synthetic data. Preserve
+frozen executed sources/evidence, private originals, runtime/defaults and the
+exhausted native ledgers. No new model call, dependency, merge or deployment is
+authorized. Keep draft PR #6 isolated and stop with H4/release preparation results.
