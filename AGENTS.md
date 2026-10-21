@@ -1903,3 +1903,48 @@ receipt is supplied. Empty-residency admission exists only in its prospective
 trial subclass, not the product. H4: `docs/PHOTO-EDITING-PE1-C-PREP-REPORT.md`.
 Stop for the plan's separately reviewed native scope; no new native invocation,
 automatic chat unloading, product guard promotion, main merge or publication.
+
+**User authorization — 20 October 2026 (PE1-C native qualification):** Jake
+answered “Approve the four-image trial and one preload” to the prepared C plan.
+Run its frozen maximum four ordered synthetic image-worker invocations and at
+most one exact empty-message preload of the installed qualified 32K profile.
+Stop at the first failure; no retry/replacement case, extra helper/text call,
+private-user photo, download, automatic unloading, default/runtime change, main
+merge or publication. Preserve the prospective trial subclass, all failures,
+PE0 six-call and separate private-photo ledgers. This is a new bounded C
+allowance; it does not reopen those previous trials. Report native quality,
+resources, input/export integrity, cancellation/recovery and storage before
+proposing integration/release.
+
+**PE1-C native qualification closeout — 20 October 2026:** The approved frozen
+matrix passes exactly four native image invocations plus one empty-message
+preload: empty-slot HEIC, exact qualified 32K resident JPEG, cancellation at real
+step 1 and resident HEIC recovery. Three complete 0–4 sequences and one cancelled
+0–1 sequence are retained. Originals/reference bindings and sanitized export
+pixels verify; all four children are reaped/absent while the shared lease is held.
+Completed outputs take 20.44–24.68 s generation/decode plus 2.38–3.79 s loading,
+with 17.38 GiB MLX peak. Observed swap stays at pre-existing 3,709 MiB; maximum
+of 102 health samples is 0.01675 s. No further native call/retry is allowed under
+this exhausted C allowance. PE0 remains six, and the separate private edit one.
+
+Actual native PNGs are 1.35–1.41 MB each plus separate 1.35–1.41 MB sanitized
+exports; inputs are retained separately. Whole-tree observed logical/unique-inode/
+allocated high-water values are 28.94/19.87/20.29 MB, with 384 samples and a
+0.266-second maximum gap; these are not a proven absolute APFS peak. Codex sees
+the requested green shirt in all three completed samples but also facial,
+lighting and framing drift. Jake's quality acceptance is pending. Evidence:
+`artifacts/photo-editing/pe1-c-native-20261020/`; H4:
+`docs/PHOTO-EDITING-PE1-C-NATIVE-REPORT.md`.
+
+All 577 executed files, 52 frozen C-prep files, 572 B source, 922 B evidence,
+429 candidate static, 551 main, 114 installed server, 425 installed static and
+prior PE0/agent ledgers verify preserved. Main/live, the installed worker,
+prompts/defaults, service/port/plist/Tailscale and Ollama 0.35.0 remain unchanged;
+local and verified HTTPS health pass. No product admission guard is promoted.
+Quality review, installer/schema-aware fallback preparation, merge/publication
+approval and subsequent physical phone acceptance remain open gates.
+
+Jake also asked whether automatic local workflows are on the list. Confirm the
+existing WS-F schedule/batch backlog; `docs/LOCAL-AUTOMATION-NEXT-STEPS.md` proposes
+a recording-folder pilot after photo editing. The question grants no scheduler,
+watcher, extra agent/model call or external action implementation permission.
