@@ -1993,3 +1993,24 @@ No additional native/model test call, dependency or runtime/default change is
 authorized. Verify installed hashes, migration/old rows, local/HTTPS health and
 actual compiled UI with synthetic intercepted data, then request the physical
 iPhone check and report publication results.
+
+**PE1 publication closeout — 21 October 2026:** PR #6 is merged as `87a1a925`;
+the reviewed photo-edit feature is live. All 574 frozen source files match merged
+main; 555 installed app/shared/lock files including 429 static and four worker
+files verify. A fresh 2,352-file private production bundle remains intact. Offline
+schema 13→14 migration preserves all 1,688 existing rows across 55 tables and 59
+retained non-DB files. Runtime/transcription/image selectors and original service,
+plist/bind/port/Tailscale remain unchanged. Observed downtime is 3.948 seconds;
+local and normally verified HTTPS health/capability/assets pass, Ollama is 0.35.0.
+
+Chromium/WebKit observers of the actual HTTPS build pass with all API traffic
+intercepted using synthetic fixtures: reference-bound edit submission, comparison,
+Save control, retained ordinary draft/typing and Workflows. The missing fake-model
+reasoning metadata failure and correction remain recorded. Native share/physical
+iPhone behavior is not claimed. The previously completed 759 Python / 132 frontend
+/ 739 browser gates apply to the exact unchanged payload; no broad repeat or new
+native/model call was made. Prior native allowances/evidence and stopped agent
+ledgers are unchanged. The old-UI/schema-aware-backend/current-data fallback
+remains available; old-backend/pre-release-DB rollback is unsafe. H4:
+`docs/PHOTO-EDITING-RELEASE-REPORT.md`. Physical phone acceptance is requested and
+pending; no scheduler/watcher or new agent scope is authorized by this release.

@@ -1,5 +1,18 @@
 # Deferred fixes — resolved polish, 8 October 2026
 
+## Current status — 21 October 2026, photo editing live
+
+- Jake approved publication; PR #6 is merged and the tested photo-edit feature
+  is live. Tools → Edit photo uses the existing composer/cards/viewer.
+- Fresh production bundle and installed hashes verify. Migration 13→14 preserved
+  1,688 rows across 55 old tables and all 59 retained non-DB files. Local/HTTPS
+  health and two installed-UI browser observers pass; no new model call was made.
+- The runtime, selectors, transcription engine, service/plist and Tailscale route
+  are unchanged. The fallback retains the schema-aware backend and current data;
+  full old-backend rollback remains prohibited. See `PHOTO-EDITING-RELEASE-REPORT.md`.
+- Physical iPhone editing/save/share/reference and typing acceptance is requested
+  and pending. Scheduling/folder triggers remain proposed later work.
+
 ## Current status — 21 October 2026, photo-edit integration preparation
 
 - Jake accepted the generative-edit quality tradeoffs. The exact native-tested

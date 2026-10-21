@@ -6,10 +6,9 @@ for the reviewed PR #6 payload with a fresh production bundle. Its earlier
 preparation-only wording is retained as checkpoint history; native test budgets
 remain exhausted. Record actual publication and phone results separately.
 
-21 October 2026. **Prepared on the isolated branch; publication is not approved.**
-Jake accepted the reported generative-edit quality and authorized the measured
-guard, worker installer and copied-data rehearsal. The exhausted native test
-allowance is not extended. Keep PR #6 in draft until release review.
+21 October 2026. **PR #6 is merged and the reviewed payload is published.**
+See `PHOTO-EDITING-RELEASE-REPORT.md` for actual production verification and the
+pending physical phone check. The exhausted native test allowance is not extended.
 
 ## Prepared and rehearsed
 
@@ -63,9 +62,10 @@ previous source/worker directories. Verify every manifest hash before a future
 publication. Original server/image interpreters, transcription configuration and
 weights remain in place and are never resolved or upgraded by preparation.
 
-## Future publication sequence to review
+## Publication sequence (executed 21 October)
 
-This is a concrete operation plan, **not authorization to execute it**.
+This records the approved release procedure. It is not standing authorization
+for later releases or additional native/model test calls.
 
 1. Confirm the existing plist/bind/port/label and normally verified Tailscale route
    still match. Ensure no accepted user task is lost: finish or cancel/reap active
@@ -111,9 +111,12 @@ schema 14 but retry an edit as plain generation. A backend startup failure canno
 be repaired by this UI fallback: stop the failed service, preserve current data
 and prepare a schema-aware fix/recovery. Full old-backend rollback is unqualified.
 
-## Gate before a release decision
+## Release decision and remaining boundary
 
-Review the integration H4 report, final check/browser results, bundle hashes,
-source/evidence preservation and the fallback's limited scope. Main merge and
-publication still need Jake's final approval. No additional native call, automatic
-model unloading, scheduler/watcher or agent implementation is part of preparation.
+The integration report, final check/browser results, bundle hashes and fallback
+scope were reviewed; Jake's final “Go ahead” authorized this main merge and
+publication. The fresh production bundle is private at
+`~/.local/share/workbench/releases/photo-editing-20261021/bundle` and its manifest
+verifies. Physical iPhone acceptance remains pending. No additional native call,
+automatic chat-model unloading, scheduler/watcher or agent implementation is
+authorized by this release.
