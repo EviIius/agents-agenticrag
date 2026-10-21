@@ -1959,3 +1959,25 @@ schema-aware-backend compatibility fallback on copied synthetic data. Preserve
 frozen executed sources/evidence, private originals, runtime/defaults and the
 exhausted native ledgers. No new model call, dependency, merge or deployment is
 authorized. Keep draft PR #6 isolated and stop with H4/release preparation results.
+
+**PE1 integration preparation closeout — 21 October 2026:** Jake accepted quality;
+the exact native-tested empty-slot-or-strict-32K guard and four-file installer
+are implemented. A 2,322-file private synthetic app/worker/data/plist bundle
+verifies; actual staged candidate/compatibility startup, CPU HEIC upload,
+reference-preserving queued recovery/retry, paired restore and schema 13→14
+preservation pass without inference. The compatibility fallback uses the previous
+UI with the schema-aware backend/new worker/current data. Full old-backend
+rollback on schema 14 remains unsafe. Generic deploy is blocked for this source
+before service mutation; the dedicated tool prepares/verifies only.
+
+Full checks pass: 759 Python, 132 frontend, 110 contrast pairs, 83.6% image
+coverage and 739 browser tests with three existing skips. Eight pre-existing
+ResizeObserver warnings are retained; no clean-console or physical-phone pass
+is claimed. Fresh changed artifacts are archived and all 1,662 overwritten
+tracked evidence files restored. Current/frozen source, prior trials/ledgers,
+main, installed server/static/worker/selectors/plist and private originals are
+preserved; local and normally verified HTTPS health pass, Ollama stays 0.35.0.
+No new native/model call, dependency/runtime/default change, main merge or
+publication occurred. H4: `docs/PHOTO-EDITING-PE1-INTEGRATION-REPORT.md`.
+Preparation is complete; stop for release review. A fresh quiesced production
+bundle and explicit merge/publication authorization precede a later phone check.
