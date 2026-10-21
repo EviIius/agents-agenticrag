@@ -2023,3 +2023,22 @@ selection semantics, keyboard/focus behavior and all model/provider payloads.
 This narrow live UI repair uses existing primitives/tokens and a static-only
 publication with private UI fallback; no server/data/worker/runtime change, model
 call, new dependency or service restart is part of the correction.
+
+**Mobile Tools closeout — 21 October 2026:** The compact Tools correction is
+merged in PR #7 (`91b2fdca`), with a bounded-height follow-up `954214cf`, and is
+live. Default retains the Model default accessible name/tooltip and runtime
+semantics. Header/thinking remain fixed while actions scroll; a long unavailable
+Library hint cannot grow the panel past 328 px or the safe viewport limit.
+Frontend checks pass 132 tests; focused browser coverage retains 20 initial
+passes, four corrected keyboard passes and eight capped phone/keyboard passes.
+The catalogue-centred anchor, observer import-path and long-hint height failures
+are recorded separately. No release threshold/assertion was weakened.
+
+All 429 final static files and local/verified HTTPS hashes/health pass. Actual
+installed Chromium/WebKit observers pass with synthetic intercepted API data,
+including long-hint reachability, selection, focus and typing. The 124 backend/
+shared files, worker/plist and service PID remain unchanged. Static-only backups
+and old hashed assets are retained; no database operation, restart, task
+interruption or native/model call occurred. Initial JS is 255,946 / 256,000 gzip
+bytes. H4: `docs/MOBILE-TOOLS-REPORT.md`. Physical iPhone/VoiceOver acceptance is
+not inferred; the prior photo-edit phone checklist remains pending.

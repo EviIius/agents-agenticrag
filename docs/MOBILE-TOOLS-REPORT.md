@@ -1,6 +1,7 @@
 # Mobile Tools layout correction
 
-21 October 2026. Branch `codex/mobile-tools-polish`.
+21 October 2026. PR #7 merged as `91b2fdca`, with height-cap follow-up `954214cf`.
+The correction is live in Aether.
 
 ## Summary
 
@@ -21,8 +22,8 @@ The existing model choice, levels and request payloads are unchanged.
 | Persistent switches, thinking selection, Escape/focus | Pass | Existing functional case + focused layout checks |
 | Photo upload/edit/comparison behavior retained | Pass, fake inference | Existing photo reference functional case in both browsers |
 | Frontend gates/build/token contrast/motion | Pass | 132 unit tests, lint/types/format, build, 110 contrast pairs |
-| Initial JS budget | Pass | 255,955 gzip bytes / unchanged 256,000-byte limit |
-| Static-only publication and actual installed UI | Pending publication | Final release receipt follows |
+| Initial JS budget | Pass | Final build: 255,946 gzip bytes / unchanged 256,000-byte limit |
+| Static-only publication and actual installed UI | Pass | `publication-capped.json`, `installed-menu.json`; same service PID |
 
 ## Changed files
 
@@ -51,7 +52,7 @@ establish physical iPhone keyboard or VoiceOver support. VoiceOver stays deferre
 ## Test output
 
 Frontend check passes 132 tests plus TypeScript/ESLint/Prettier. Build passes;
-initial static-import JS is 255,955 gzip bytes, within the existing 256,000 limit
+final initial static-import JS is 255,946 gzip bytes, within the existing 256,000 limit
 with little remaining headroom. Motion guard and all 110 contrast pairs pass.
 
 The focused browser invocation initially passes 20 cases and fails four keyboard
@@ -64,15 +65,35 @@ source/log and corrective results are retained. The combined 24 cases cover both
 engines/themes, existing menu behavior and photo-edit regression; this is not a
 new invocation of the entire 739-case suite.
 
+The actual installed observer then exposed a longer disabled Library setup hint:
+its second line made the panel exceed the intended compact size. A 328 px maximum
+now bounds the menu alongside the existing safe/visual viewport limits; extra
+text stays inside the action scroller. The capped build passes eight focused
+phone/keyboard checks and both installed HTTPS observers. The first observer also
+had an incorrect relative module path; it was corrected before running. Both
+setup/height failures are retained separately. No product assertion was weakened.
+
+The installed Chromium/WebKit checks use only intercepted synthetic API responses
+and verify the final capped menu, last-action reachability, Default label,
+selection, focus and typing. Menu height is 328 px in both observers, with no page
+errors or failed assets. These contexts block service workers to guarantee API
+interception, so they do not establish a fresh physical PWA pass.
+
 ## Screenshots
 
 `tools-phone-dark-webkit-synthetic.png` and the other viewport/theme captures
 under the evidence folder use invented fixtures. Codex inspected the phone-width
 dark menu. The user's supplied phone screenshots are not copied into the repo.
+`installed-tools-390-dark-webkit-synthetic.png` shows the deployed menu with the
+long Library hint; Codex inspected that capture as well.
 
 ## Open questions / release boundary
 
-Publish only the tested compiled static tree after its private UI backup. Preserve
-old hashed assets for open tabs, verify live hashes and the actual installed menu,
-and retain the existing backend/worker/data and service identity. Physical iPhone
-review remains a user check; no new phone pass is claimed by browser automation.
+The tested static update is published with private UI backups. All 429 incoming
+files verify; old hashed assets remain available to open tabs. Local and normally
+verified HTTPS index/service-worker hashes and health pass. The 124-file backend/
+shared source, worker and plist hashes are unchanged; the service PID stayed the
+same, with no restart, database operation, model call or task interruption.
+Physical iPhone review remains a user check; no new phone pass is claimed by
+browser automation. The photo-edit release's separate phone checklist is not
+closed by this visual correction.

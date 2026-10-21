@@ -1,5 +1,17 @@
 # Deferred fixes — resolved polish, 8 October 2026
 
+## Current status — 21 October 2026, mobile Tools correction
+
+- The reported oversized/clipped Tools panel is repaired and live: compact rows,
+  single-line Default, fixed heading/thinking area and scrolling actions within
+  a bounded panel. Long unavailable-Library hints are included in verification.
+- Frontend checks pass (132 tests), with focused Chromium/WebKit geometry,
+  interaction and photo-edit regression checks. Actual installed UI observers
+  pass with synthetic API data. See `MOBILE-TOOLS-REPORT.md`.
+- Publication changes only static files and keeps old hashed assets for open
+  clients. Backend, workers, data, plist and service PID are unchanged; no restart
+  or model call occurred. Physical phone review is still a user check.
+
 ## Current status — 21 October 2026, photo editing live
 
 - Jake approved publication; PR #6 is merged and the tested photo-edit feature
