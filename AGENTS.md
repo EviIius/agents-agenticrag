@@ -1720,3 +1720,276 @@ close the production follow-ups phone/release stop. Evidence:
 phone timing, specific workflow image/citation result or VoiceOver pass is
 claimed. This acceptance does not authorize native photo-editing invocations,
 PE1 integration, or reopening failed agent/Research experiments.
+
+**User continuation — 19 October 2026 (PE0 offline preparation):** After the
+phone closeout and stated next step of offline photo-reference preparation,
+Jake said “continue.” Prepare the isolated worker, owned-reference contracts,
+bounded six-invocation controller and synthetic tests on
+`codex/photo-reference-prep` from accepted main c0d65ee0. Reuse the installed
+MFLUX/FLUX environment without adding packages, loading weights or making native
+calls. Preserve production application, schema, service, data, prompts and
+worker selectors. Run the new offline controls and relevant existing image/
+residency regressions; retain frozen source, source-parity evidence and H4.
+No web/app change triggers a new full browser invocation; reuse existing full
+suite evidence only through exact unchanged-source parity and label it as reuse.
+Stop with a reviewable draft PR and concrete trial scope. Native execution of
+the six cases still requires explicit approval; no PE1 integration, deployment,
+new dependency/model, agent/Research restart or main merge is implied.
+
+**User authorization — 19 October 2026 (PE0 native trial):** After the prepared
+84-check report, draft PR #6 and the concrete six-invocation approval request,
+Jake said “Continue.” Execute only the frozen PE0 portrait/background/clothing/
+mug/cancel/recovery trial on the existing installed model and interpreter.
+Preserve all declared settings, source hashes and resource gates. Bind generated
+portrait and derivative input hashes before dependent calls; retain every output
+and failure. Use the production native lock, exact qualified daily chat digest
+at 32K, final residency/swap/health checks and reaping before release. Stop at
+the first required failure or rejected visual review; no retry, replacement seed,
+extra chat probe, download, auto-unload, prompt repair, source change or PE1.
+The no-residency preflight is a prerequisite wait before the first invocation;
+Jake must load the required profile because the frozen scope forbids refreshing
+residency through another call. Finish setup independently while waiting.
+Keep the live app, main and production data unchanged; stop with H4 evidence
+for quality/resource review before any integration or deployment.
+
+**PE0 native closeout — 19 October 2026:** Jake confirmed the daily profile was
+“Loaded at 32K”; read-only runtime metadata verified the qualified digest before
+each invocation. The frozen portrait/background/clothing/mug/cancel/recovery
+sequence completed exactly six worker calls with no retries or text-model calls.
+Applicable protocol/resource/control checks pass: real denoising, verified pixel
+references, original hashes unchanged, qualified 32K chat resident, zero observed
+swap growth, health within two seconds, and all six workers reaped before capacity
+release. Completed edits take 16.87–20.41 seconds generation/decode with about
+17.378 GiB reported MLX peak. Cancellation after step one leaves no output;
+scheduled recovery succeeds. Codex's visual review finds the requested edits
+visible but portrait lighting/texture and non-square framing drift; **Jake's
+quality acceptance is pending**, and exact preservation/likeness is not qualified.
+Five PNGs use 7,510,459 bytes; six private case directories retain 20,304,489
+logical bytes including duplicated inputs. Temporary disk high-water was not
+sampled; do not call retained sizes a measured storage peak. All eleven executed
+source hashes, 551 production source files, 114 installed server files, 425 static
+files and stopped experiment ledgers remain preserved. Main/live stay unchanged;
+no PE1 integration, merge/deployment, extra invocation or agent/Research restart.
+H4: `docs/PHOTO-EDITING-PE0-TRIAL-REPORT.md`; actual synthetic comparisons in
+`artifacts/photo-editing/native-20261019/review.html`. Stop for quality review.
+
+**User continuation — 19 October 2026 (PE0 review and PE1 preparation):** Jake
+said “Continue” after the six-call result and request to review generative-edit
+quality before integration. Advance with the documented portrait lighting,
+texture and framing limitations; do not invent individual physical/sample
+reviews by Jake or assert exact likeness/pixel preservation. Prepare the concrete
+PE1 reference ownership, upload, worker, composer, cleanup and backup plan from
+actual production code. Prepare/test the missing storage-observation helper
+offline, without changing any of the eleven frozen PE0 executed files or running
+a seventh native call. PE0's native budget remains exhausted. Keep main/live,
+production schema/API/UI, dependencies, runtime and stopped agent/Research
+experiments unchanged during preparation. H4:
+`docs/PHOTO-EDITING-PE1-PREPARATION-REPORT.md`; implementation scope:
+`docs/PHOTO-EDITING-PE1-PLAN.md`. Native validation of a later product adapter and
+merge/publication remain separate concrete review steps.
+
+**User authorization — 19 October 2026 (PE1-A):** Jake said “Continue” after
+the PE1 preparation report and stated next backend checkpoint. Implement section A
+of `docs/PHOTO-EDITING-PE1-PLAN.md` on the isolated branch: owned references,
+explicit edit-worker contracts, additive storage/API, retry/recovery, cleanup,
+sanitized exports and backup/restore. Use synthetic CPU files, fake runtimes and
+offline regressions; no new native model call is authorized. Preserve the eleven
+frozen PE0 executed files and six native outcomes. Keep main/live, dependencies,
+runtime, prompts, sampling and service settings intact. Stop with H4 after PE1-A
+before composer checkpoint B; product-native validation and release remain gated.
+
+**PE1-A implementation closeout — 19 October 2026:** Durable chat-owned photo
+references, additive schema 14, explicit edit-worker dispatch, atomic retry pins,
+sanitized exports, inactive-input clearing, storage observations and reference-aware
+version-2 backups/restores are implemented on `codex/photo-reference-prep`.
+Full make check passes: 745 Python / 126 frontend / 110 contrast pairs; images
+coverage is 83.6% against the unchanged 80% floor. Nineteen focused reference
+cases and fourteen additional CPU/fake-worker controls pass. The full browser
+invocation retains 720 passes, one frozen-clock fixture failure and three existing
+skips; isolating its unrelated workflow notifications preserves every original
+assertion/timeout and passes a fresh Chromium/WebKit comparison, 2/2. Do not
+relabel the original full invocation as entirely green. All 1,631 overwritten
+historical artifacts are restored byte-for-byte after the fresh run is privately
+archived; selected synthetic screenshots and the original failure trace remain.
+All 563 frozen candidate files, 551 main files, 114 installed server files, 425
+static files, eleven PE0 sources, 73 native evidence files and stopped-trial ledgers
+verify. PE0 remains exactly six native calls; no new inference, dependency/model/
+runtime/prompt/sampling/default, main merge or app deployment occurred. Product
+HEIC/GPU qualification, empty-residency usability and release/rollback rehearsals
+remain later gates; no physical-phone or exact-likeness claim. H4:
+`docs/PHOTO-EDITING-PE1-A-REPORT.md`; QA: `docs/PHOTO-EDITING-PE1-A-QA.md`.
+Stop for A review before PE1-B composer/cards/viewer integration. Jake has asked
+to open the preserved PE0 comparison page; opening it does not invent his quality
+acceptance or add a native-test allowance.
+
+**User authorization — 20 October 2026 (private photo check and PE1-B):** Jake
+provided a photo and said “Test it on this image, then continue” after discussing
+a Mario-style hat or mustache. Run one separately recorded private local-FLUX
+hat edit, with no automatic retry and unchanged product resource/residency guards.
+Keep the photo, its filename, hashes and resulting images outside Git/public QA
+evidence. Preserve the original file and all six frozen PE0 outcomes; this is a
+new one-call user-photo allowance, not a seventh PE0 case or full PE1-C release
+qualification. No new model/dependency/runtime or extra chat/helper calls.
+Continue to PE1-B composer/cards/viewer integration on the existing isolated
+branch, with synthetic UI fixtures and full regression evidence, and stop at B.
+Product qualification, main merge, app deployment and physical-phone acceptance
+remain later concrete gates. Report the private edit's actual limitations without
+inventing exact likeness, preservation or Jake's quality acceptance.
+
+**PE1-B closeout — 20 October 2026:** The isolated existing-composer photo flow,
+owned drafts, explicit Edit image, reference comparison, retry gating and input
+cleanup are implemented. New-chat reservation and in-flight replacement-upload
+ownership bugs are repaired with regression evidence. Full make check passes:
+745 Python / 132 frontend / 110 contrast pairs, images coverage 83.5% at the
+unchanged 80% floor. Initial JS is 255,912 / 256,000 gzip bytes. All eighteen new
+photo-edit browser cases pass. Preserve the full invocation at 737 passed / two
+older creation-mode selector failures / three existing skips; the corrected
+complete image-upload file passes 12/12 in a fresh run, and final frontend checks
+pass again. Every product file and all other case sources match the full run;
+do not relabel it wholly green. Earlier interrupted/fixture failures and traces
+remain separate. Dev-server module-import warnings are retained for built-app
+verification at C, without an invented clean-console claim.
+
+The separately authorized private local hat edit completed in 19.01 seconds,
+preserving the original, but changed eyes/expression/framing. Keep its photo,
+name, hashes, images and detailed records outside Git/public evidence; no exact
+likeness, mustache result or user quality acceptance is claimed. PE0 remains six
+invocations, plus exactly one separate private user edit. All 572 final candidate,
+551 main, 114 installed server, 425 static, eleven PE0 source and 73 native
+evidence files verify; 1,640 overwritten historical artifacts are restored after
+archiving fresh synthetic evidence. Stopped trials and Ollama 0.35.0 are unchanged;
+local/verified HTTPS health pass. H4: `docs/PHOTO-EDITING-PE1-B-REPORT.md`; QA:
+`docs/PHOTO-EDITING-PE1-B-QA.md`. Stop at B on the draft PR. Actual HEIC editing,
+empty-residency usability, final native controls, release/rollback rehearsals and
+physical phone acceptance remain C gates. No new native call, dependency/model/
+runtime/prompt/sampling/default change, main merge or deployment is authorized.
+
+**User continuation — 20 October 2026 (PE1-C preparation):** Jake said
+“continue” after B's result and the next HEIC/native qualification and release
+checks. Prepare C on the isolated branch: actual CPU-only synthetic HEIC
+normalization, built-app/fake-runtime browser checks, copied synthetic schema-14
+startup/rollback rehearsals and a concrete bounded native-test plan/controller.
+No new GPU/model invocation, automatic chat unloading, main merge or publication
+is implied by preparation. Preserve B, PE0 and the separate private photo result.
+Complete the offline work before requesting the separately reviewed native scope
+required by the PE1 plan's C gate.
+
+**PE1-C preparation closeout — 20 October 2026:** Real CPU HEIC preparation,
+including a 2560→2048 synthetic reference, and JPEG orientation/metadata removal
+pass. Ten compiled-candidate functional cases, two cold-module/highlighter/active
+SSE observers and two previous-UI/current-backend observers pass with fake
+inference. Retain the earlier hard-navigation WebKit SSE console observation;
+its cause and physical PWA acceptance are not proven. Preserve all harness
+failures and corrective runs separately. Fifteen controller safety tests and
+the four-case fake rehearsal pass, including first-failure stopping. B's 572
+source hashes and full/corrective regression results remain unchanged; no new
+broad suite or native pass is claimed.
+
+The previous schema-13 server starts on schema 14 but drops photo references on
+retry and dispatches ordinary generation. Full old-server rollback with current
+edit data is unsafe and prohibited by the PE1 release procedure. A previous-UI /
+schema-aware-backend compatibility fallback preserves edit retry/output in both
+browsers; it is not a full backend rollback. A concrete installer/fallback
+rehearsal remains necessary before publication. Main/live, B/PE0 evidence, stopped
+trial ledgers and original user-photo records remain preserved; local/verified
+HTTPS health pass and Ollama stays 0.35.0.
+
+`docs/PHOTO-EDITING-PE1-C-PLAN.md` proposes at most four ordered synthetic native
+edit invocations (empty HEIC, qualified 32K JPEG, cancellation, HEIC recovery) and
+one explicit empty-message preload of the already installed exact 32K profile,
+with frozen source, first-failure stopping and unchanged limits. This allowance
+is **not yet approved**. The default controller uses fake inference; no approval
+receipt is supplied. Empty-residency admission exists only in its prospective
+trial subclass, not the product. H4: `docs/PHOTO-EDITING-PE1-C-PREP-REPORT.md`.
+Stop for the plan's separately reviewed native scope; no new native invocation,
+automatic chat unloading, product guard promotion, main merge or publication.
+
+**User authorization — 20 October 2026 (PE1-C native qualification):** Jake
+answered “Approve the four-image trial and one preload” to the prepared C plan.
+Run its frozen maximum four ordered synthetic image-worker invocations and at
+most one exact empty-message preload of the installed qualified 32K profile.
+Stop at the first failure; no retry/replacement case, extra helper/text call,
+private-user photo, download, automatic unloading, default/runtime change, main
+merge or publication. Preserve the prospective trial subclass, all failures,
+PE0 six-call and separate private-photo ledgers. This is a new bounded C
+allowance; it does not reopen those previous trials. Report native quality,
+resources, input/export integrity, cancellation/recovery and storage before
+proposing integration/release.
+
+**PE1-C native qualification closeout — 20 October 2026:** The approved frozen
+matrix passes exactly four native image invocations plus one empty-message
+preload: empty-slot HEIC, exact qualified 32K resident JPEG, cancellation at real
+step 1 and resident HEIC recovery. Three complete 0–4 sequences and one cancelled
+0–1 sequence are retained. Originals/reference bindings and sanitized export
+pixels verify; all four children are reaped/absent while the shared lease is held.
+Completed outputs take 20.44–24.68 s generation/decode plus 2.38–3.79 s loading,
+with 17.38 GiB MLX peak. Observed swap stays at pre-existing 3,709 MiB; maximum
+of 102 health samples is 0.01675 s. No further native call/retry is allowed under
+this exhausted C allowance. PE0 remains six, and the separate private edit one.
+
+Actual native PNGs are 1.35–1.41 MB each plus separate 1.35–1.41 MB sanitized
+exports; inputs are retained separately. Whole-tree observed logical/unique-inode/
+allocated high-water values are 28.94/19.87/20.29 MB, with 384 samples and a
+0.266-second maximum gap; these are not a proven absolute APFS peak. Codex sees
+the requested green shirt in all three completed samples but also facial,
+lighting and framing drift. Jake's quality acceptance is pending. Evidence:
+`artifacts/photo-editing/pe1-c-native-20261020/`; H4:
+`docs/PHOTO-EDITING-PE1-C-NATIVE-REPORT.md`.
+
+All 577 executed files, 52 frozen C-prep files, 572 B source, 922 B evidence,
+429 candidate static, 551 main, 114 installed server, 425 installed static and
+prior PE0/agent ledgers verify preserved. Main/live, the installed worker,
+prompts/defaults, service/port/plist/Tailscale and Ollama 0.35.0 remain unchanged;
+local and verified HTTPS health pass. No product admission guard is promoted.
+Quality review, installer/schema-aware fallback preparation, merge/publication
+approval and subsequent physical phone acceptance remain open gates.
+
+Jake also asked whether automatic local workflows are on the list. Confirm the
+existing WS-F schedule/batch backlog; `docs/LOCAL-AUTOMATION-NEXT-STEPS.md` proposes
+a recording-folder pilot after photo editing. The question grants no scheduler,
+watcher, extra agent/model call or external action implementation permission.
+
+**User acceptance and authorization — 21 October 2026 (PE1 integration preparation):**
+Jake answered “Accept; prepare integration” after reviewing the reported
+generative-edit tradeoffs and the 4/4 native trial. Accept that quality boundary
+without claiming exact likeness. Apply only the measured empty-slot-or-exact-32K
+edit guard, update its regression checks, extend the public worker installer and
+prepare/rehearse a consistent app/worker/data/plist bundle plus the previous-UI /
+schema-aware-backend compatibility fallback on copied synthetic data. Preserve
+frozen executed sources/evidence, private originals, runtime/defaults and the
+exhausted native ledgers. No new model call, dependency, merge or deployment is
+authorized. Keep draft PR #6 isolated and stop with H4/release preparation results.
+
+**PE1 integration preparation closeout — 21 October 2026:** Jake accepted quality;
+the exact native-tested empty-slot-or-strict-32K guard and four-file installer
+are implemented. A 2,322-file private synthetic app/worker/data/plist bundle
+verifies; actual staged candidate/compatibility startup, CPU HEIC upload,
+reference-preserving queued recovery/retry, paired restore and schema 13→14
+preservation pass without inference. The compatibility fallback uses the previous
+UI with the schema-aware backend/new worker/current data. Full old-backend
+rollback on schema 14 remains unsafe. Generic deploy is blocked for this source
+before service mutation; the dedicated tool prepares/verifies only.
+
+Full checks pass: 759 Python, 132 frontend, 110 contrast pairs, 83.6% image
+coverage and 739 browser tests with three existing skips. Eight pre-existing
+ResizeObserver warnings are retained; no clean-console or physical-phone pass
+is claimed. Fresh changed artifacts are archived and all 1,662 overwritten
+tracked evidence files restored. Current/frozen source, prior trials/ledgers,
+main, installed server/static/worker/selectors/plist and private originals are
+preserved; local and normally verified HTTPS health pass, Ollama stays 0.35.0.
+No new native/model call, dependency/runtime/default change, main merge or
+publication occurred. H4: `docs/PHOTO-EDITING-PE1-INTEGRATION-REPORT.md`.
+Preparation is complete; stop for release review. A fresh quiesced production
+bundle and explicit merge/publication authorization precede a later phone check.
+
+**User authorization — 21 October 2026 (PE1 publication):** After the completed
+integration preparation report and draft PR #6 review boundary, Jake said
+“Go ahead.” Merge the reviewed photo-edit branch and publish its exact tested
+app/static/four-file worker payload using a fresh quiesced production bundle.
+Keep the existing interpreter, selectors, data, plist, service/bind/port and
+Tailscale route. Retain the schema-aware backend/worker/current-data compatibility
+fallback; never restore the old backend or pre-release DB over new edits/messages.
+No additional native/model test call, dependency or runtime/default change is
+authorized. Verify installed hashes, migration/old rows, local/HTTPS health and
+actual compiled UI with synthetic intercepted data, then request the physical
+iPhone check and report publication results.

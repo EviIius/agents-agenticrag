@@ -27,6 +27,8 @@ export function ToolsMenu({
   imageAvailable,
   imageReason,
   onImage,
+  onPhoto,
+  photoAvailable = false,
   model,
   thinkValue,
   onThinkChange,
@@ -42,6 +44,8 @@ export function ToolsMenu({
   imageAvailable: boolean;
   imageReason?: string;
   onImage: () => void;
+  onPhoto?: () => void;
+  photoAvailable?: boolean;
   model?: Model;
   thinkValue?: string;
   onThinkChange?: (value: string | null) => void;
@@ -140,6 +144,25 @@ export function ToolsMenu({
                   ? (imageReason ?? "Connecting to the image service…")
                   : "Describe it and get pictures in the chat"}
               </small>
+            </span>
+          </DropdownMenuItem>
+        )}
+        {images && onPhoto && (
+          <DropdownMenuItem
+            disabled={!photoAvailable}
+            className="composer-tool-row"
+            onSelect={onPhoto}
+            aria-label="Edit photo"
+            aria-description={
+              !photoAvailable
+                ? "Photo editing is unavailable on this server"
+                : undefined
+            }
+          >
+            <ImageIcon />
+            <span>
+              <b>Edit photo</b>
+              <small>Choose one photo and describe a change</small>
             </span>
           </DropdownMenuItem>
         )}

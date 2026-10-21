@@ -74,7 +74,9 @@ class ImageUploads:
                 await asyncio.shield(process.wait())
                 self.processes.discard(process)
 
-    async def convert(self, data: bytes, folder: Path) -> bytes:
+    async def convert(
+        self, data: bytes, folder: Path, *, properties: dict[str, int] | None = None
+    ) -> bytes:
         if len(data) > IMAGE_LIMIT:
             raise AppError("file_too_large", "Image limit is 20 MB.", 413)
         folder.mkdir(parents=True, exist_ok=True)
@@ -83,15 +85,17 @@ class ImageUploads:
                 source, target = Path(temporary) / "source.heic", Path(temporary) / "image.png"
                 source.touch(mode=0o600)
                 source.write_bytes(data)
-                properties = await self.command(
+                raw_properties = await self.command(
                     "-g", "pixelWidth", "-g", "pixelHeight", str(source)
                 )
-                values = re.findall(rb"pixel(?:Width|Height):\s*(\d+)", properties)
+                values = re.findall(rb"pixel(?:Width|Height):\s*(\d+)", raw_properties)
                 if len(values) != 2:
                     raise unreadable()
                 width, height = (int(value) for value in values)
                 if min(width, height) <= 0 or width * height > 100_000_000:
                     raise AppError("image_dimensions", "This image is too large to open.", 413)
+                if properties is not None:
+                    properties.update(width=width, height=height)
                 resize = ["-Z", "2048"] if max(width, height) > 2048 else []
                 await self.command(
                     "-s", "format", "png", *resize, str(source), "--out", str(target)

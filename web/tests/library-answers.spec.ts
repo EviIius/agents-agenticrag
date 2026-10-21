@@ -185,8 +185,8 @@ test("7B Library touch targets and reasoning toolbar fit at 320 pixels", async (
   for (const name of ["Tools", "Attach files"]) {
     const control =
       name === "Attach files" &&
-      (await page.locator(".composer input[type=file]").isVisible())
-        ? page.locator(".composer input[type=file]")
+      (await page.locator("input.composer-file-input").isVisible())
+        ? page.locator("input.composer-file-input")
         : page.getByRole("button", { name, exact: true });
     const box = await control.boundingBox();
     expect(box).not.toBeNull();

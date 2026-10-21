@@ -74,6 +74,7 @@ const AttachmentsPreview = lazy(() => import("./AttachmentsPreview"));
 const AttachmentThreadPreview = lazy(() => import("./AttachmentThreadPreview"));
 const ImagesPreview = lazy(() => import("./ImagesPreview"));
 const ChatImagesPreview = lazy(() => import("./ChatImagesPreview"));
+const PhotoEditingPreview = lazy(() => import("./PhotoEditingPreview"));
 const WorkflowsPreview = lazy(() => import("./WorkflowsPreview"));
 const WorkflowHomePreview = lazy(() => import("./WorkflowHomePreview"));
 const WorkflowStudioPreview = lazy(() => import("./WorkflowStudioPreview"));
@@ -81,6 +82,12 @@ const WorkingPreview = lazy(() => import("./WorkingPreview"));
 const Markdown = lazy(() => import("@/components/chat/Markdown"));
 const LibraryAnswersPreview = lazy(() => import("./LibraryAnswersPreview"));
 export function DesignPage() {
+  if (new URLSearchParams(location.search).has("photo-edit"))
+    return (
+      <Suspense fallback={<p>Loading photo editing…</p>}>
+        <PhotoEditingPreview />
+      </Suspense>
+    );
   if (new URLSearchParams(location.search).has("attachment-thread"))
     return (
       <Suspense fallback={<p>Loading sent attachments…</p>}>

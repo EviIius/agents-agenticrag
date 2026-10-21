@@ -314,6 +314,108 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/chats/{chat_id}/image-references": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload */
+        post: operations["upload_api_chats__chat_id__image_references_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/chats/{chat_id}/image-references/from-job": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** From Job */
+        post: operations["from_job_api_chats__chat_id__image_references_from_job_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/chats/{chat_id}/image-references/{identifier}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Info */
+        get: operations["info_api_chats__chat_id__image_references__identifier__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/chats/{chat_id}/image-references/{identifier}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Preview */
+        get: operations["preview_api_chats__chat_id__image_references__identifier__preview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/images/jobs/{identifier}/reference": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Job Reference */
+        get: operations["job_reference_api_images_jobs__identifier__reference_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/images/references/clear": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Clear */
+        post: operations["clear_api_images_references_clear_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/library": {
         parameters: {
             query?: never;
@@ -1802,6 +1904,11 @@ export interface components {
              */
             channels: "mix" | "split";
         };
+        /** Body_upload_api_chats__chat_id__image_references_post */
+        Body_upload_api_chats__chat_id__image_references_post: {
+            /** File */
+            file: string;
+        };
         /** Body_upload_api_library_documents_post */
         Body_upload_api_library_documents_post: {
             /** File */
@@ -1918,6 +2025,8 @@ export interface components {
             parent_id?: string | null;
             /** Source Job Id */
             source_job_id?: string | null;
+            /** Reference Id */
+            reference_id?: string | null;
         };
         /** ChatImageResponse */
         ChatImageResponse: {
@@ -2610,6 +2719,18 @@ export interface components {
             origin?: components["schemas"]["ImageOrigin"] | null;
             /** Elapsed Seconds */
             elapsed_seconds?: number | null;
+            /**
+             * Mode
+             * @default generate
+             * @enum {string}
+             */
+            mode: "generate" | "edit";
+            reference?: components["schemas"]["ImageReference"] | null;
+            /**
+             * Export Bytes
+             * @default 0
+             */
+            export_bytes: number;
         };
         /** ImageNode */
         ImageNode: {
@@ -2645,6 +2766,32 @@ export interface components {
              * @default false
              */
             deleted: boolean;
+        };
+        /** ImageReference */
+        ImageReference: {
+            /** Id */
+            id: string;
+            /** Chat Id */
+            chat_id: string;
+            /** Available */
+            available: boolean;
+            /** Original Bytes */
+            original_bytes: number;
+            /** Working Bytes */
+            working_bytes: number;
+            /** Width */
+            width: number;
+            /** Height */
+            height: number;
+            /** Original Format */
+            original_format: string;
+            /** Created At */
+            created_at: string;
+        };
+        /** ImageReferenceFromJob */
+        ImageReferenceFromJob: {
+            /** Source Job Id */
+            source_job_id: string;
         };
         /** ImageSnapshot */
         ImageSnapshot: {
@@ -2688,6 +2835,11 @@ export interface components {
              * @default 1073741824
              */
             cache_limit_bytes: number;
+            /**
+             * Editing Available
+             * @default false
+             */
+            editing_available: boolean;
         };
         /** ImageStorage */
         ImageStorage: {
@@ -2707,6 +2859,31 @@ export interface components {
             backup_bytes: number;
             /** Free Bytes */
             free_bytes: number;
+            /**
+             * References
+             * @default 0
+             */
+            references: number;
+            /**
+             * Reference Bytes
+             * @default 0
+             */
+            reference_bytes: number;
+            /**
+             * Reference Metadata Bytes
+             * @default 0
+             */
+            reference_metadata_bytes: number;
+            /**
+             * Export Bytes
+             * @default 0
+             */
+            export_bytes: number;
+            /**
+             * Measurement Bytes
+             * @default 0
+             */
+            measurement_bytes: number;
         };
         /** Issue */
         Issue: {
@@ -4745,6 +4922,204 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ImageChange"] | null;
+                };
+            };
+        };
+    };
+    upload_api_chats__chat_id__image_references_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                chat_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_api_chats__chat_id__image_references_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageReference"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    from_job_api_chats__chat_id__image_references_from_job_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                chat_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImageReferenceFromJob"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageReference"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    info_api_chats__chat_id__image_references__identifier__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                chat_id: string;
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageReference"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_api_chats__chat_id__image_references__identifier__preview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                chat_id: string;
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    job_reference_api_images_jobs__identifier__reference_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    clear_api_images_references_clear_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImageClear"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageStorage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -1,4 +1,5 @@
 import { attachmentIssues } from "@/lib/attachment-issues";
+import type { PhotoEditor, PhotoSubmission } from "@/hooks/usePhotoEdit";
 import { ToolsMenu } from "./ToolsMenu";
 import { ToolChips } from "./ToolChips";
 import { fileAccept } from "@/lib/file-kinds";
@@ -50,6 +51,7 @@ import { validImageSeed } from "@/lib/image-seeds";
 const AttachmentTray = lazy(() =>
   import("./AttachmentTray").then((m) => ({ default: m.AttachmentTray })),
 );
+const PhotoReferenceTray = lazy(() => import("./PhotoReferenceTray"));
 export function Composer({
   draftKey,
   images = false,
@@ -93,7 +95,11 @@ export function Composer({
   visionModels,
   onChooseModel,
   onDiscardPasted,
+  photoEdit,
+  onPhotoFile,
 }: {
+  photoEdit?: PhotoEditor;
+  onPhotoFile?: (file: File) => void;
   attachmentFixtures?: React.ComponentProps<typeof AttachmentTray>["fixtures"];
   attachmentLocal?: Record<string, AttachmentLocal>;
   onPreviewLoaded?: (id: string) => void;
@@ -114,6 +120,7 @@ export function Composer({
     count: number,
     seeds?: number[],
     sourceJob?: string,
+    photo?: PhotoSubmission,
   ) => Promise<boolean>;
   optimistic?: boolean;
   libraryControl?: React.ComponentProps<typeof LibraryControl>;
@@ -153,16 +160,29 @@ export function Composer({
     draftKey ? imageRefinements.get(draftKey) : undefined,
   );
   const [imageMode, setImageMode] = useState(initialImageMode);
+  const editing = !!photoEdit?.draft.active;
+  const pictureMode = imageMode || editing;
+  const photoInput = useRef<HTMLInputElement>(null);
+  useLayoutEffect(() => {
+    if (editing) setImageMode(false);
+  }, [editing]);
   const previousAttachmentVersion = useRef(attachmentVersion);
   useEffect(() => {
     const incoming = attachmentVersion !== previousAttachmentVersion.current;
     previousAttachmentVersion.current = attachmentVersion;
-    if (incoming) setImageMode(false);
-  }, [attachmentVersion]);
+    if (incoming) {
+      setImageMode(false);
+      photoEdit?.setActive(false);
+    }
+  }, [attachmentVersion]); // eslint-disable-line react-hooks/exhaustive-deps
   const [count, setCount] = useState(1);
   const [seeds, setSeeds] = useState(["", "", ""]);
   const imageAvailable = previewImages || Boolean(imageStatus?.available);
-  const visibleValue = imageMode ? imageValue : value;
+  const visibleValue = editing
+    ? photoEdit.draft.text
+    : imageMode
+      ? imageValue
+      : value;
   const validSeeds = seeds
     .slice(0, count)
     .every((seed) => !seed || validImageSeed(seed));
@@ -186,6 +206,10 @@ export function Composer({
   }, []);
   const updateDraft = (text: string) => {
     revision.current++;
+    if (editing) {
+      photoEdit.setText(text);
+      return;
+    }
     if (draftKey && !imageMode) editDraft(draftKey);
     if (!imageMode && text.startsWith("/image ") && imageAvailable) {
       setImageMode(true);
@@ -195,6 +219,7 @@ export function Composer({
     else setValue(text);
   };
   const toggleImage = () => {
+    photoEdit?.setActive(false);
     setImageMode((mode) => !mode);
     requestAnimationFrame(() => textarea.current?.focus());
   };
@@ -264,7 +289,7 @@ export function Composer({
       (u) => !u.failed && ["preparing", "reading"].includes(u.phase ?? ""),
     );
   useEffect(() => {
-    if (imageMode || coarse || fileCount >= 8) return;
+    if (pictureMode || coarse || fileCount >= 8) return;
     const listener = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "u") {
         event.preventDefault();
@@ -273,7 +298,7 @@ export function Composer({
     };
     window.addEventListener("keydown", listener);
     return () => window.removeEventListener("keydown", listener);
-  }, [imageMode, coarse, fileCount]);
+  }, [pictureMode, coarse, fileCount]);
   const recordingReady = files.some(
     (file) => file.kind === "audio" && file.transcript?.status === "ready",
   );
@@ -298,6 +323,7 @@ export function Composer({
   useLayoutEffect(() => {
     if (!imageCommand) return;
     revision.current++;
+    photoEdit?.setActive(false);
     setImageMode(imageCommand.mode === "image");
     if (imageCommand.refinement) {
       setRefinement(imageCommand.refinement);
@@ -314,6 +340,24 @@ export function Composer({
     });
   }, [imageCommand?.key]); // eslint-disable-line react-hooks/exhaustive-deps
   const send = async () => {
+    if (editing) {
+      const submission = photoEdit.submission();
+      if (
+        !running &&
+        !imageBusy &&
+        imageStatus?.editing_available &&
+        submission &&
+        photoEdit.draft.text.trim()
+      )
+        await onImageSend?.(
+          photoEdit.draft.text,
+          1,
+          undefined,
+          undefined,
+          submission,
+        );
+      return;
+    }
     if (imageMode) {
       if (
         running ||
@@ -374,19 +418,37 @@ export function Composer({
       <form
         data-slot="composer"
         className="composer"
-        data-image-mode={imageMode || undefined}
+        data-image-mode={pictureMode || undefined}
+        data-photo-mode={editing || undefined}
         aria-label="Message"
         onSubmit={(event) => {
           event.preventDefault();
           void send();
         }}
       >
+        {onPhotoFile && (
+          <input
+            type="file"
+            hidden
+            ref={photoInput}
+            aria-label="Choose photo to edit"
+            accept="image/png,image/jpeg,image/heic,image/heif,.png,.jpg,.jpeg,.heic,.heif"
+            onChange={(event) => {
+              const file = event.currentTarget.files?.[0];
+              event.currentTarget.value = "";
+              if (file) {
+                setImageMode(false);
+                onPhotoFile(file);
+              }
+            }}
+          />
+        )}
         {error && (
           <p role="alert" className="mb-3 text-sm text-danger">
             {error}
           </p>
         )}
-        {imageMode && (
+        {imageMode && !editing && (
           <input
             type="file"
             multiple
@@ -402,6 +464,19 @@ export function Composer({
               e.target.value = "";
             }}
           />
+        )}
+        {editing && (
+          <Suspense fallback={<p role="status">Preparing photo…</p>}>
+            <PhotoReferenceTray
+              editor={photoEdit}
+              choose={() => photoInput.current?.click()}
+            />
+          </Suspense>
+        )}
+        {editing && !imageStatus?.editing_available && (
+          <p role="status" className="mb-2 text-sm text-fg-2">
+            Photo editing is unavailable on this server. Your draft is kept.
+          </p>
         )}
         {imageMode && refinement && (
           <div
@@ -430,7 +505,7 @@ export function Composer({
             </IconButton>
           </div>
         )}
-        {!imageMode && (showTray || hasFiles) && (
+        {!pictureMode && (showTray || hasFiles) && (
           <Suspense
             fallback={
               <div className="attachment-tray-loading" role="status">
@@ -455,7 +530,7 @@ export function Composer({
             />
           </Suspense>
         )}
-        {!imageMode && pasted && (
+        {!pictureMode && pasted && (
           <p className="composer-paste-note" role="status">
             Long paste attached as a file.{" "}
             <button type="button" disabled={disabled} onClick={keepPastedText}>
@@ -468,20 +543,24 @@ export function Composer({
           ref={textarea}
           autoFocus={autoFocus}
           aria-label={
-            imageMode
-              ? "Image prompt"
-              : model
-                ? `Message ${model.display_name}`
-                : "Message"
+            editing
+              ? "Photo edit instruction"
+              : imageMode
+                ? "Image prompt"
+                : model
+                  ? `Message ${model.display_name}`
+                  : "Message"
           }
           placeholder={
-            imageMode
-              ? "Describe an image…"
-              : model
-                ? `Message ${model.display_name}…`
-                : disabled
-                  ? "Choose a model to begin…"
-                  : "Message…"
+            editing
+              ? "Describe what to change…"
+              : imageMode
+                ? "Describe an image…"
+                : model
+                  ? `Message ${model.display_name}…`
+                  : disabled
+                    ? "Choose a model to begin…"
+                    : "Message…"
           }
           value={visibleValue}
           onChange={(event) => updateDraft(event.target.value)}
@@ -489,6 +568,7 @@ export function Composer({
             const incoming = Array.from(event.clipboardData.files);
             if (incoming.length && onAttach) {
               event.preventDefault();
+              photoEdit?.setActive(false);
               setImageMode(false);
               onAttach(
                 incoming.map((file) => {
@@ -512,7 +592,7 @@ export function Composer({
             }
             const text = event.clipboardData.getData("text/plain");
             if (
-              imageMode ||
+              pictureMode ||
               text.length <= 4000 ||
               !onAttach ||
               !onDiscardPasted
@@ -539,11 +619,14 @@ export function Composer({
               });
           }}
           onKeyDown={(event) => {
-            if (!imageMode && event.key === "ArrowUp" && !value) {
+            if (!pictureMode && event.key === "ArrowUp" && !value) {
               event.preventDefault();
               window.dispatchEvent(new Event("workbench:edit-last"));
             }
-            if (event.key === "Escape" && imageMode && !imageValue) {
+            if (event.key === "Escape" && editing && !photoEdit.draft.text) {
+              event.preventDefault();
+              photoEdit.setActive(false);
+            } else if (event.key === "Escape" && imageMode && !imageValue) {
               event.preventDefault();
               toggleImage();
             }
@@ -566,7 +649,7 @@ export function Composer({
           rows={1}
         />
         <div className="composer-tool-row-main">
-          {!imageMode && (
+          {!pictureMode && (
             <>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -627,6 +710,10 @@ export function Composer({
                 images={images}
                 imageAvailable={imageAvailable}
                 imageReason={imageStatus?.reason ?? undefined}
+                photoAvailable={!!imageStatus?.editing_available}
+                onPhoto={
+                  onPhotoFile ? () => photoInput.current?.click() : undefined
+                }
                 onImage={() => {
                   setToolsOpen(false);
                   toggleImage();
@@ -644,6 +731,30 @@ export function Composer({
                 openTools={() => setToolsOpen(true)}
                 focusTools={() => toolsButton.current?.focus()}
               />
+            </>
+          )}
+          {editing && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 rounded-full"
+                onClick={() => photoInput.current?.click()}
+                aria-label="Replace photo"
+              >
+                <Plus />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="h-11 rounded-full gap-2 bg-brand-soft text-brand"
+                aria-label="Leave photo edit mode"
+                onClick={() => photoEdit.setActive(false)}
+              >
+                <ImageIcon className="size-4" />
+                Edit photo
+                <X className="size-3" />
+              </Button>
             </>
           )}
           {imageMode && (
@@ -738,7 +849,7 @@ export function Composer({
                 {imageStatus?.width ?? 1024}²
               </span>
             )}
-            {!imageMode && (
+            {!pictureMode && (
               <>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -793,7 +904,7 @@ export function Composer({
                   className="composer-send-wrap"
                   tabIndex={waiting ? 0 : undefined}
                 >
-                  {waiting && !imageMode && (
+                  {waiting && !pictureMode && (
                     <svg
                       className="composer-send-ring"
                       data-indeterminate={indeterminate || undefined}
@@ -819,19 +930,27 @@ export function Composer({
                     aria-label={
                       running
                         ? "Stop generating"
-                        : imageMode
-                          ? "Create image"
-                          : "Send message"
+                        : editing
+                          ? "Edit photo"
+                          : imageMode
+                            ? "Create image"
+                            : "Send message"
                     }
                     disabled={
                       !running &&
-                      (imageMode
+                      (editing
                         ? imageBusy ||
-                          !imageAvailable ||
-                          !imageValue.trim() ||
-                          !validSeeds ||
-                          !completeSeeds
-                        : disabled || waiting || warned || !value.trim())
+                          !imageStatus?.editing_available ||
+                          photoEdit.draft.input?.phase !== "ready" ||
+                          !photoEdit.draft.input.reference?.available ||
+                          !photoEdit.draft.text.trim()
+                        : imageMode
+                          ? imageBusy ||
+                            !imageAvailable ||
+                            !imageValue.trim() ||
+                            !validSeeds ||
+                            !completeSeeds
+                          : disabled || waiting || warned || !value.trim())
                     }
                     onClick={running ? onStop : undefined}
                     className={`size-11 rounded-full disabled:bg-surface-3 disabled:text-fg-2 disabled:opacity-100 ${running ? "bg-surface-3 text-fg" : "bg-brand text-on-brand"}`}
@@ -843,23 +962,25 @@ export function Composer({
                 </span>
               </TooltipTrigger>
               <TooltipContent>
-                {imageMode
-                  ? !validSeeds || !completeSeeds
-                    ? "Set one valid seed for each image, or leave all empty"
-                    : "Create image"
-                  : waiting
-                    ? `Waiting for ${waitingCount} ${waitingCount === 1 ? "file" : "files"}`
-                    : running
-                      ? "Stop generating"
-                      : imageMode
-                        ? "Create image"
-                        : "Send message"}
+                {editing
+                  ? "Edit photo"
+                  : imageMode
+                    ? !validSeeds || !completeSeeds
+                      ? "Set one valid seed for each image, or leave all empty"
+                      : "Create image"
+                    : waiting
+                      ? `Waiting for ${waitingCount} ${waitingCount === 1 ? "file" : "files"}`
+                      : running
+                        ? "Stop generating"
+                        : imageMode
+                          ? "Create image"
+                          : "Send message"}
               </TooltipContent>
             </Tooltip>
           </div>
         </div>
       </form>
-      {!imageMode &&
+      {!pictureMode &&
         (suggestions || recordingReady) &&
         (!recordingReady || !value) && (
           <div

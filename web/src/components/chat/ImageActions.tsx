@@ -29,7 +29,7 @@ import {
 import { toast } from "sonner";
 export type ImageIteration = (
   job: ImageJob,
-  action: "more" | "refine" | "ask",
+  action: "more" | "refine" | "ask" | "edit",
   position: number,
 ) => void;
 export function ImageActions({
@@ -55,6 +55,15 @@ export function ImageActions({
   return (
     <>
       <div className={viewer ? "image-viewer-actions" : "image-frame-actions"}>
+        {viewer && onIteration && (
+          <IconButton
+            label="Edit image"
+            onClick={() => onIteration(job, "edit", position)}
+          >
+            <Pencil />
+            <span>Edit image</span>
+          </IconButton>
+        )}
         <IconButton label="Save image" onClick={() => setSaving(true)}>
           <Download />
           {viewer && <span>Save</span>}
@@ -95,6 +104,13 @@ export function ImageActions({
               </IconButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
+              {onIteration && (
+                <DropdownMenuItem
+                  onSelect={() => onIteration(job, "edit", position)}
+                >
+                  Edit image
+                </DropdownMenuItem>
+              )}
               {vision && onIteration && (
                 <DropdownMenuItem
                   onSelect={() => onIteration(job, "ask", position)}

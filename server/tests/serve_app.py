@@ -41,8 +41,10 @@ async def lifespan(server: FastAPI) -> AsyncIterator[None]:
         )
         await settings.patch(server.state.store, {"auto_title": False})
         from tests.fake_image import FakeImageEngine
+        from tests.test_photo_references import FakeCodec
 
         server.state.images.engine = FakeImageEngine()
+        server.state.images.references.codec = FakeCodec()
         yield
     finally:
         await server.state.fake_lifecycle.__aexit__(None, None, None)
@@ -99,6 +101,7 @@ async def seed_long_chat(chat_id: str) -> dict[str, int]:
 async def restart_fake_lifecycle() -> dict[str, bool]:
     """Exercise a full app shutdown/startup against the same private fake database."""
     from tests.fake_image import FakeImageEngine
+    from tests.test_photo_references import FakeCodec
 
     async with app.state.fake_restart_lock:
         await app.state.fake_lifecycle.__aexit__(None, None, None)
@@ -106,4 +109,5 @@ async def restart_fake_lifecycle() -> dict[str, bool]:
         await context.__aenter__()
         app.state.fake_lifecycle = context
         app.state.images.engine = FakeImageEngine()
+        app.state.images.references.codec = FakeCodec()
     return {"restarted": True}

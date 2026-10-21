@@ -22,6 +22,13 @@ async def image_job(store: Store, identifier: str) -> ImageJob:
     if not row:
         raise AppError("not_found", "Image job not found.", 404)
     spec = json.loads(row["input_json"])
+    reference_row = await store.one(
+        "SELECT r.*,p.export_bytes FROM image_job_references p JOIN "
+        "image_references r ON r.id=p.reference_id WHERE p.job_id=?",
+        (identifier,),
+    )
+    from ..images.references import projection
+
     return ImageJob(
         **{
             key: row[key]
@@ -39,6 +46,9 @@ async def image_job(store: Store, identifier: str) -> ImageJob:
         },
         prompt=spec["prompt"],
         seed=spec["seed"],
+        mode=spec.get("mode", "generate"),
+        reference=projection(reference_row) if reference_row else None,
+        export_bytes=reference_row["export_bytes"] if reference_row else 0,
         image_bytes=row["bytes"] or 0,
         metadata_bytes=row["metadata_bytes"] or 0,
         elapsed_seconds=max(

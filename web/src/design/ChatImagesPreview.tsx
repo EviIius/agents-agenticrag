@@ -33,6 +33,8 @@ export default function ChatImagesPreview() {
     id: String(i + 1).repeat(32),
     prompt: "Synthetic cobalt harbor with warm paper lanterns.",
     seed: 42 + i,
+    mode: "generate",
+    export_bytes: 0,
     state:
       state.startsWith("step") || state === "decoding"
         ? "running"

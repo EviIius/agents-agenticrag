@@ -3,6 +3,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import type { NavigateFunction } from "react-router";
 import {
   api,
+  ApiError,
   type Chat,
   type Detail,
   type Message,
@@ -18,6 +19,7 @@ import {
 } from "@/lib/image-events";
 import { drafts } from "@/lib/composer-drafts";
 import { useFreshRows } from "@/stores/fresh";
+import type { PhotoSubmission } from "./usePhotoEdit";
 
 type Accepted = components["schemas"]["ChatImageResponse"];
 type Submission = {
@@ -61,17 +63,20 @@ export function useChatImages({
       : message,
   );
   const active = merged.some((message) => message.images?.some(imageActive));
+  const hasEdits = messages.some((message) =>
+    message.images?.some((job) => job.mode === "edit"),
+  );
   useEffect(() => {
     setError("");
   }, [chatId]);
   useEffect(() => {
-    if (!enabled || !active) return;
+    if (!enabled || (!active && !hasEdits)) return;
     // Seed accepted jobs before the first snapshot so session completions reveal.
     receiveImages(messages.flatMap((message) => message.images ?? []));
     return imageEvents();
     // Subscribe for the lifetime of active jobs, not each progress tick.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, active, chatId]);
+  }, [enabled, active, hasEdits, chatId]);
 
   function commit(id: string, response: Accepted, chat?: Chat) {
     const rows = [response.user, response.assistant].filter(
@@ -99,15 +104,25 @@ export function useChatImages({
     count: number,
     fixed?: number[],
     sourceJob?: string,
+    photo?: PhotoSubmission,
   ) {
     if (busy || blocked) return false;
     const origin = chatId ?? "new";
-    const signature = JSON.stringify([prompt, count, fixed, sourceJob]);
+    const signature = JSON.stringify([
+      prompt,
+      count,
+      fixed,
+      sourceJob,
+      photo?.reference.id,
+    ]);
     let saved = submissions.get(origin);
     if (!saved || saved.signature !== signature) {
       saved = {
         signature,
-        chat: saved?.chat,
+        chat:
+          photo && saved?.chat?.id !== photo.reference.chat_id
+            ? undefined
+            : saved?.chat,
         key: crypto.randomUUID(),
         seeds: fixed ?? imageSeeds(count),
       };
@@ -119,15 +134,17 @@ export function useChatImages({
       if (!saved.chat)
         saved.chat = chatId
           ? query.getQueryData<Detail>(["chat", chatId])?.chat
-          : await api<Chat>(
-              "/chats",
-              current
-                ? {
-                    connection_id: current.connection_id,
-                    model_id: current.model_id,
-                  }
-                : {},
-            );
+          : photo
+            ? (await api<Detail>(`/chats/${photo.reference.chat_id}`)).chat
+            : await api<Chat>(
+                "/chats",
+                current
+                  ? {
+                      connection_id: current.connection_id,
+                      model_id: current.model_id,
+                    }
+                  : {},
+              );
       const id = chatId ?? saved.chat!.id;
       const response = await api<Accepted>(`/chats/${id}/images`, {
         request_key: saved.key,
@@ -135,15 +152,18 @@ export function useChatImages({
         count,
         seeds: saved.seeds,
         ...(sourceJob ? { source_job_id: sourceJob } : {}),
+        ...(photo ? { reference_id: photo.reference.id } : {}),
       });
       commit(id, response, saved.chat);
       submissions.delete(origin);
+      photo?.accepted(id, !chatId && activeChat.current === chatId);
       if (!chatId && activeChat.current === chatId) {
         if (drafts.has("new")) drafts.set(id, drafts.get("new")!);
-        navigate(`/c/${id}`, { flushSync: true, state: { imageMode: true } });
+        navigate(`/c/${id}`, { flushSync: true, state: { imageMode: !photo } });
       }
       return true;
     } catch (failure) {
+      photo?.rejected(failure instanceof ApiError ? failure.code : undefined);
       if (activeChat.current === chatId)
         setError(
           failure instanceof Error

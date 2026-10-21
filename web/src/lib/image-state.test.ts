@@ -11,6 +11,8 @@ const job = (changes: Partial<ImageJob> = {}): ImageJob => ({
   id: "fake-status",
   prompt: "Synthetic circle",
   seed: 1,
+  mode: "generate",
+  export_bytes: 0,
   state: "running",
   stage: "Generating image",
   completed_steps: 2,

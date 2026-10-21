@@ -14,6 +14,7 @@ import {
 import { FileSaveDialog } from "@/components/app/FileSaveDialog";
 import { IconButton } from "@/components/app/IconButton";
 import { imageSeeds } from "@/lib/image-seeds";
+import { clearPhotoInputs } from "@/hooks/usePhotoEdit";
 
 type Job = components["schemas"]["ImageJob"];
 type Snapshot = components["schemas"]["ImageSnapshot"];
@@ -232,7 +233,7 @@ export function ImagesView({
   const [filter, setFilter] = useState("all");
   const [saving, setSaving] = useState<Job>();
   const [detail, setDetail] = useState<Job>();
-  const [removing, setRemoving] = useState<Job | "all">();
+  const [removing, setRemoving] = useState<Job | "all" | "inputs">();
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const request = useRef<
@@ -272,6 +273,15 @@ export function ImagesView({
   async function action(job: Job, kind: "cancel" | "retry") {
     if (preview) return;
     if (kind === "retry") {
+      if (job.mode === "edit") {
+        if (job.origin && !job.origin.deleted)
+          navigate(`/c/${job.origin.chat_id}#m-${job.origin.message_id}`);
+        else
+          setNotice(
+            "Attach the photo in a chat to edit again. No plain generation was started.",
+          );
+        return;
+      }
       await submit(job.prompt, job.seed, job.id);
       return;
     }
@@ -287,11 +297,17 @@ export function ImagesView({
     if (!removing || preview) return;
     setBusy(true);
     try {
-      if (removing === "all") await api("/images/clear", { confirm: true });
+      if (removing === "inputs") {
+        await api("/images/references/clear", { confirm: true });
+        clearPhotoInputs();
+      } else if (removing === "all")
+        await api("/images/clear", { confirm: true });
       else await api(`/images/jobs/${removing.id}/output`, undefined, "DELETE");
       setRemoving(undefined);
       setNotice(
-        "Saved image files removed. Job history and backups are retained.",
+        removing === "inputs"
+          ? "Inactive photo inputs cleared. Outputs and existing backups are kept."
+          : "Saved image files removed. Job history and backups are retained.",
       );
     } catch (error) {
       setNotice(
@@ -341,6 +357,12 @@ export function ImagesView({
               {bytes(storage.image_bytes)} · Details{" "}
               {bytes(storage.metadata_bytes)}
             </p>
+            <p className="mt-1 text-sm text-fg-2">
+              Photo inputs {bytes(storage.reference_bytes)} · Reference details{" "}
+              {bytes(storage.reference_metadata_bytes)} · Export copies{" "}
+              {bytes(storage.export_bytes)} · Storage records{" "}
+              {bytes(storage.measurement_bytes)}
+            </p>
             <p className="mt-1 text-xs text-fg-3">
               Image backups {bytes(storage.backup_bytes)} · Request history{" "}
               {bytes(storage.manifest_bytes)} · Shared app database{" "}
@@ -358,6 +380,17 @@ export function ImagesView({
             onClick={() => setRemoving("all")}
           >
             Remove all saved image files
+          </Button>
+          <Button
+            variant="outline"
+            className="h-11"
+            disabled={
+              !storage.references ||
+              jobs.some((job) => job.mode === "edit" && active.has(job.state))
+            }
+            onClick={() => setRemoving("inputs")}
+          >
+            Clear inactive photo inputs
           </Button>
         </section>
       )}
@@ -465,10 +498,16 @@ export function ImagesView({
                   <Button
                     className="h-11"
                     variant="outline"
-                    disabled={busy}
+                    disabled={
+                      busy ||
+                      (job.mode === "edit" &&
+                        (!job.reference?.available ||
+                          !job.origin ||
+                          job.origin.deleted))
+                    }
                     onClick={() => void action(job, "retry")}
                   >
-                    Retry
+                    {job.mode === "edit" ? "Open chat to retry" : "Retry"}
                   </Button>
                 )}
                 {!!job.image_bytes && (
@@ -562,14 +601,18 @@ export function ImagesView({
       >
         <DialogContent>
           <DialogTitle>
-            {removing === "all"
-              ? "Remove all saved image files?"
-              : "Remove these image files?"}
+            {removing === "inputs"
+              ? "Clear inactive photo inputs?"
+              : removing === "all"
+                ? "Remove all saved image files?"
+                : "Remove these image files?"}
           </DialogTitle>
           <DialogDescription>
-            {removing === "all"
-              ? `${storage?.outputs ?? 0} PNGs and their details (${bytes((storage?.image_bytes ?? 0) + (storage?.metadata_bytes ?? 0))}) will be removed.`
-              : "The PNG and downloadable details will be removed."}{" "}
+            {removing === "inputs"
+              ? "Original and normalized photo inputs will be removed. Completed outputs stay; comparison and retry need reattachment. Existing backups retain their copies until normal backup cleanup."
+              : removing === "all"
+                ? `${storage?.outputs ?? 0} PNGs and their details (${bytes((storage?.image_bytes ?? 0) + (storage?.metadata_bytes ?? 0))}) will be removed.`
+                : "The PNG and downloadable details will be removed."}{" "}
             Job history, model weights, chats and existing backups are kept.
             Active jobs continue.
           </DialogDescription>

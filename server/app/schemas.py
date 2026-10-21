@@ -13,6 +13,23 @@ class ImageCreate(BaseModel):
     parent_id: str | None = Field(None, pattern=r"^[a-f0-9]{32}$")
 
 
+class ImageReference(BaseModel):
+    id: str
+    chat_id: str
+    available: bool
+    original_bytes: int
+    working_bytes: int
+    width: int
+    height: int
+    original_format: str
+    created_at: str
+
+
+class ImageReferenceFromJob(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    source_job_id: str = Field(pattern=r"^[a-f0-9]{32}$")
+
+
 class ImageJob(BaseModel):
     id: str
     parent_id: str | None = None
@@ -39,6 +56,9 @@ class ImageJob(BaseModel):
     sha256: str | None = None
     origin: "ImageOrigin | None" = None
     elapsed_seconds: float | None = None
+    mode: Literal["generate", "edit"] = "generate"
+    reference: ImageReference | None = None
+    export_bytes: int = 0
 
 
 class ImageOrigin(BaseModel):
@@ -58,11 +78,14 @@ class ChatImageCreate(BaseModel):
     )
     parent_id: str | None = Field(None, pattern=r"^[a-f0-9]{32}$")
     source_job_id: str | None = Field(None, pattern=r"^[a-f0-9]{32}$")
+    reference_id: str | None = Field(None, pattern=r"^[a-f0-9]{32}$")
 
     @model_validator(mode="after")
     def valid_images(self) -> "ChatImageCreate":
         if len(self.seeds) != self.count or not self.prompt.strip():
             raise ValueError("Provide a prompt and one seed for each image.")
+        if self.reference_id and self.count != 1:
+            raise ValueError("An edit uses one reference and creates one image.")
         return self
 
 
@@ -88,6 +111,11 @@ class ImageStorage(BaseModel):
     database_bytes: int
     backup_bytes: int
     free_bytes: int
+    references: int = 0
+    reference_bytes: int = 0
+    reference_metadata_bytes: int = 0
+    export_bytes: int = 0
+    measurement_bytes: int = 0
 
 
 class ImageStatus(BaseModel):
@@ -99,6 +127,7 @@ class ImageStatus(BaseModel):
     steps: int = 4
     quantization: int = 8
     cache_limit_bytes: int = 1073741824
+    editing_available: bool = False
 
 
 class ImageSnapshot(BaseModel):

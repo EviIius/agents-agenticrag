@@ -27,6 +27,7 @@ QUALIFIED_DIGESTS = (
     QUALIFIED_DIGEST,
     "09386c7af8487c073bfb845833462d30d0d48ad69428c301b909dc159c028b0a",
 )
+EDIT_DIGEST = "09386c7af8487c073bfb845833462d30d0d48ad69428c301b909dc159c028b0a"
 
 
 class Engine:
@@ -53,7 +54,20 @@ class Engine:
     def status(self) -> ImageStatus:
         try:
             self.paths()
-            return ImageStatus(available=True)
+            return ImageStatus(
+                available=True,
+                editing_available=bool(
+                    self.home
+                    and all(
+                        (self.home / name).is_file()
+                        for name in (
+                            "edit_worker.py",
+                            "reference_contract.py",
+                            "reference_codec.py",
+                        )
+                    )
+                ),
+            )
         except (OSError, ValueError, KeyError, TypeError):
             return ImageStatus(
                 available=False,
@@ -100,6 +114,45 @@ class Engine:
                 "image_capacity",
                 "A loaded model combination is not qualified for images. "
                 "Open Settings → Models and eject other chat or unknown models, "
+                "or retry after they expire.",
+                409,
+            )
+
+    @staticmethod
+    def qualified_edit(models: list[dict[str, Any]]) -> bool:
+        # Both arrangements passed the bounded PE1-C native qualification.
+        return models == [] or (
+            len(models) == 1
+            and models[0].get("digest") == EDIT_DIGEST
+            and type(models[0].get("size_vram")) is int
+            and Engine.qualified(models)
+        )
+
+    async def healthy(self) -> None:
+        async with httpx.AsyncClient(timeout=2, trust_env=False) as client:
+            try:
+                response = await client.get("http://127.0.0.1:8787/api/health")
+                response.raise_for_status()
+                body = response.json()
+                if (
+                    not isinstance(body, dict)
+                    or body.get("ok") is not True
+                    or response.elapsed.total_seconds() > 2
+                ):
+                    raise ValueError("Health bound exceeded")
+            except (httpx.HTTPError, ValueError):
+                raise AppError(
+                    "image_resource",
+                    "Photo edit stopped because app responsiveness could not be verified.",
+                    409,
+                ) from None
+
+    async def admit_edit(self) -> None:
+        if not self.qualified_edit(await self.loaded()):
+            raise AppError(
+                "image_capacity",
+                "Photo editing needs an empty model slot or the tested 32K chat profile. "
+                "Open Settings → Models to eject other chat or unknown models, "
                 "or retry after they expire.",
                 409,
             )
@@ -276,35 +329,90 @@ class Engine:
     async def run(
         self, manifest: Path, scratch: Path, progress: Callable[[dict[str, Any]], Awaitable[None]]
     ) -> int:
+        return await self._run(manifest, scratch, progress, editing=False)
+
+    async def run_edit(
+        self, manifest: Path, scratch: Path, progress: Callable[[dict[str, Any]], Awaitable[None]]
+    ) -> int:
+        return await self._run(manifest, scratch, progress, editing=True)
+
+    async def _run(
+        self,
+        manifest: Path,
+        scratch: Path,
+        progress: Callable[[dict[str, Any]], Awaitable[None]],
+        *,
+        editing: bool,
+    ) -> int:
         python, worker, model = self.paths()
+        admission = self.admit_edit if editing else self.admit
+        if editing:
+            if json.loads(manifest.read_text()).get("mode") != "edit":
+                raise ValueError("Explicit edit request required")
+            worker = worker.with_name("edit_worker.py")
+            if not worker.is_file():
+                raise AppError("image_unavailable", "Photo edit worker unavailable.", 409)
+            # Never partially evict embeddings if the remaining chat is unqualified.
+            loaded = await self.loaded()
+            embeddings = await self.configured_embeddings() if self.store else set()
+            remaining = [row for row in loaded if row.get("name") not in embeddings]
+            if not self.qualified_edit(remaining):
+                await self.admit_edit()
         if self.store is not None:
             await self.prepare_memory(progress)
-        await self.admit()
+        await admission()
         baseline = await self.swap()
+        if editing:
+            await self.healthy()
         assert self.home is not None
-        child = await asyncio.create_subprocess_exec(
-            str(python),
-            str(worker),
-            str(manifest),
-            str(model),
-            str(scratch),
-            cwd=self.home,
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.DEVNULL,
-            start_new_session=True,
-            env={
-                "HOME": str(Path.home()),
-                "PATH": "/usr/bin:/bin",
-                "HF_HUB_OFFLINE": "1",
-                "TRANSFORMERS_OFFLINE": "1",
-                "TOKENIZERS_PARALLELISM": "false",
-            },
-            limit=32768,
-            # Child inherits the SAME lock description. A crashed server cannot
-            # admit another native call until the old worker has exited.
-            pass_fds=(self.capacity.fd,) if self.capacity and self.capacity.fd is not None else (),
+        spawning = asyncio.create_task(
+            asyncio.create_subprocess_exec(
+                str(python),
+                str(worker),
+                str(manifest),
+                str(model),
+                str(scratch),
+                cwd=self.home,
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.DEVNULL,
+                start_new_session=True,
+                env={
+                    "HOME": str(Path.home()),
+                    "PATH": "/usr/bin:/bin",
+                    "HF_HUB_OFFLINE": "1",
+                    "TRANSFORMERS_OFFLINE": "1",
+                    "TOKENIZERS_PARALLELISM": "false",
+                },
+                limit=32768,
+                # Child inherits the SAME lock description. A crashed server cannot
+                # admit another native call until the old worker has exited.
+                pass_fds=(self.capacity.fd,)
+                if self.capacity and self.capacity.fd is not None
+                else (),
+            )
         )
+        try:
+            child = await asyncio.shield(spawning)
+        except asyncio.CancelledError:
+            child = await spawning
+            stopping = asyncio.create_task(self.stop(child))
+            try:
+                await asyncio.shield(stopping)
+            except asyncio.CancelledError:
+                await stopping
+            if child.stdin:
+                child.stdin.close()
+            if editing:
+                await self.admit_edit()
+                await self.healthy()
+                if await self.swap() - baseline > 512:
+                    raise AppError(
+                        "image_resource", "Photo edit exceeded the swap-growth margin.", 409
+                    ) from None
+            raise
+
+        observed: list[dict[str, Any]] = []
 
         async def consume() -> None:
             assert child.stdout is not None
@@ -318,12 +426,16 @@ class Engine:
                     "failed",
                 }:
                     raise ValueError("Invalid worker event")
+                if editing:
+                    observed.append(event)
                 await progress(event)
 
         async def guard() -> None:
             while True:
                 await asyncio.sleep(1)
-                await self.admit()
+                await admission()
+                if editing:
+                    await self.healthy()
                 if await self.swap() - baseline > 512:
                     raise AppError(
                         "image_resource",
@@ -349,6 +461,13 @@ class Engine:
                         "Image worker exited before a valid output was completed. Retry this job.",
                         502,
                     )
+                if editing and (
+                    not observed
+                    or observed[-1]["type"] != "finished"
+                    or [e.get("completed_steps") for e in observed if e["type"] == "denoising"]
+                    != [0, 1, 2, 3, 4]
+                ):
+                    raise ValueError("Photo edit did not complete the real-step protocol")
                 if await self.swap() - baseline > 512:
                     raise AppError(
                         "image_resource",
@@ -369,6 +488,14 @@ class Engine:
             await asyncio.gather(consuming, guarding, waiting, return_exceptions=True)
             if child.stdin:
                 child.stdin.close()
+            if editing:
+                # Also run after cancellation/reaping while caller still holds Capacity.
+                await self.admit_edit()
+                await self.healthy()
+                if await self.swap() - baseline > 512:
+                    raise AppError(
+                        "image_resource", "Photo edit exceeded the swap-growth margin.", 409
+                    )
 
     @staticmethod
     async def stop(child: asyncio.subprocess.Process) -> None:

@@ -25,6 +25,8 @@ export default function ImagesPreview() {
     id: "a".repeat(32),
     prompt: "Synthetic blue geometric circle on a cream background.",
     seed: 42,
+    mode: "generate",
+    export_bytes: 0,
     state:
       state === "removed" || state === "empty" || state === "unavailable"
         ? "complete"
@@ -77,6 +79,7 @@ export default function ImagesPreview() {
         jobs={state === "empty" || state === "unavailable" ? [] : [job]}
         status={{
           available: state !== "unavailable",
+          editing_available: false,
           reason: "The local image worker is not installed.",
           model: "FLUX.2 klein 4B",
           width: 1024,
@@ -94,6 +97,11 @@ export default function ImagesPreview() {
           database_bytes: 8192,
           backup_bytes: 1115590,
           free_bytes: 150e9,
+          references: 0,
+          reference_bytes: 0,
+          reference_metadata_bytes: 0,
+          export_bytes: 0,
+          measurement_bytes: 0,
         }}
       />
       <section className="mt-6" aria-label="Image composer preview">

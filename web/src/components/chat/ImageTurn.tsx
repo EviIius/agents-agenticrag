@@ -95,7 +95,10 @@ export default function ImageTurn({
     "";
   return (
     <div data-slot="image-turn">
-      <p className="mb-3 text-xs text-fg-3">FLUX.2 klein 4B</p>
+      <p className="mb-3 text-xs text-fg-3">
+        FLUX.2 klein 4B ·{" "}
+        {jobs[0]?.mode === "edit" ? "Photo edit" : "Generated image"}
+      </p>
       <div
         ref={frames}
         onScroll={() => {
@@ -193,6 +196,9 @@ export default function ImageTurn({
           <Button
             variant="ghost"
             className="h-11 text-fg-2"
+            disabled={jobs.some(
+              (job) => job.mode === "edit" && !job.reference?.available,
+            )}
             onClick={() => onAction?.(message, "retry")}
           >
             <RotateCcw className="size-4" />
@@ -210,6 +216,11 @@ export default function ImageTurn({
         </Button>
         <ImageBranches message={message} all={all} onBranch={onBranch} />
       </div>
+      {jobs.some((job) => job.mode === "edit" && !job.reference?.available) && (
+        <p className="mt-2 text-xs text-fg-2">
+          Photo input unavailable. Attach it again to edit; your output is kept.
+        </p>
+      )}
     </div>
   );
 }
@@ -343,6 +354,11 @@ export function ImageFrame({
                   <Button
                     variant="outline"
                     className="h-11"
+                    disabled={
+                      !failed &&
+                      job.mode === "edit" &&
+                      !job.reference?.available
+                    }
                     onClick={() =>
                       failed
                         ? (setFailed(false),

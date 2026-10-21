@@ -1,0 +1,556 @@
+E501 Line too long (102 > 100)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/contracts.py:108:101
+    |
+106 |         raise ValueError("Reference binding changed")
+107 |     for key in ("sha256", "original_sha256"):
+108 |         if not isinstance(expected.get(key), str) or not re.fullmatch(r"[a-f0-9]{64}", expected[key]):
+    |                                                                                                     ^^
+109 |             raise ValueError("Invalid reference hash")
+110 |     original = owned(root, "inputs/original")
+    |
+
+E501 Line too long (101 > 100)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/contracts.py:151:101
+    |
+149 |     if type(request["seed"]) is not int or not 0 <= request["seed"] < 2**32:
+150 |         raise ValueError("Invalid seed")
+151 |     reference = validate_reference(root, request["reference"]) if request["mode"] == "edit" else None
+    |                                                                                                     ^
+152 |     return request, reference
+    |
+
+E501 Line too long (127 > 100)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/controller.py:128:101
+    |
+126 |     reservation = attempts / f"{index+1:02}-{case_id}.reserved.json"
+127 |     with reservation.open("x") as handle:
+128 |         json.dump({"case": case_id, "request_sha256": hashlib.sha256((job / "request.json").read_bytes()).hexdigest()}, handle)
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+129 |         handle.flush()
+130 |         os.fsync(handle.fileno())
+    |
+
+E501 Line too long (107 > 100)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/controller.py:141:101
+    |
+139 |     ))
+140 |     monitor = asyncio.create_task(health_guard(run, probe_health))
+141 |     result = {"case": case_id, "passed": False, "quality_acceptance": "not established by protocol checks"}
+    |                                                                                                     ^^^^^^^
+142 |     try:
+143 |         done, _ = await asyncio.wait({run, monitor}, return_when=asyncio.FIRST_COMPLETED)
+    |
+
+E501 Line too long (105 > 100)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/controller.py:150:101
+    |
+148 |         spec = json.loads(Path(__file__).with_name("trial.json").read_text())
+149 |         if (
+150 |             metadata.get("sha256") != hashlib.sha256((job / "output/image.png").read_bytes()).hexdigest()
+    |                                                                                                     ^^^^^
+151 |             or metadata.get("mode") != request["mode"]
+152 |             or metadata.get("reference") != request.get("reference")
+    |
+
+E402 Module level import not at top of file
+  --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/cpu_fixture.py:21:1
+   |
+19 | sys.addaudithook(audit)
+20 | sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+21 | from contracts import normalize
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+22 | from PIL import Image
+   |
+help: Move module level imports to top of file
+
+E402 Module level import not at top of file
+  --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/cpu_fixture.py:22:1
+   |
+20 | sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+21 | from contracts import normalize
+22 | from PIL import Image
+   | ^^^^^^^^^^^^^^^^^^^^^
+23 |
+24 | root = Path(sys.argv[1])
+   |
+help: Move module level imports to top of file
+
+E501 Line too long (103 > 100)
+  --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/fake_driver.py:53:101
+   |
+51 | class Model:
+52 |     def __init__(self, **kwargs):
+53 |         self.callbacks = types.SimpleNamespace(register=lambda value: setattr(self, "progress", value))
+   |                                                                                                     ^^^
+54 |         self.vae = self.transformer = self.text_encoder = Component()
+   |
+
+E501 Line too long (115 > 100)
+  --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/fake_driver.py:62:101
+   |
+60 |         from PIL import Image
+61 |         output = Path(sys.argv[3])
+62 |         (output.parent / "fake-call.json").write_text(json.dumps({"class": type(self).__name__, "kwargs": kwargs}))
+   |                                                                                                     ^^^^^^^^^^^^^^^
+63 |         self.progress.call_before_loop()
+64 |         if mode == "stall":
+   |
+
+E402 Module level import not at top of file
+  --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:16:1
+   |
+14 | ROOT = HERE.parents[1]
+15 | sys.path[:0] = [str(HERE), str(ROOT / "server")]
+16 | from controller import EditEngine, PlannedCancellation, health_guard, require_approval
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+17 |
+18 | from app.capacity import Capacity
+   |
+help: Move module level imports to top of file
+
+E402 Module level import not at top of file
+  --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:18:1
+   |
+16 | from controller import EditEngine, PlannedCancellation, health_guard, require_approval
+17 |
+18 | from app.capacity import Capacity
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+19 |
+20 | PYTHON = Path((Path.home() / ".local/share/workbench/image-worker/product/.python").read_text().strip())
+   |
+help: Move module level imports to top of file
+
+E501 Line too long (104 > 100)
+  --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:20:101
+   |
+18 | from app.capacity import Capacity
+19 |
+20 | PYTHON = Path((Path.home() / ".local/share/workbench/image-worker/product/.python").read_text().strip())
+   |                                                                                                     ^^^^
+21 | REVISION = "e7b7dc27f91deacad38e78976d1f2b499d76a294"
+   |
+
+E501 Line too long (127 > 100)
+  --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:25:101
+   |
+24 | def cpu(root, kind="png"):
+25 |     result = subprocess.run([str(PYTHON), str(HERE / "tests/cpu_fixture.py"), str(root), kind], capture_output=True, text=True)
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+26 |     return result, json.loads(result.stdout)
+   |
+
+E501 Line too long (130 > 100)
+  --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:45:101
+   |
+43 | def spawn(root, fake_mode="normal"):
+44 |     return subprocess.Popen(
+45 |         [str(PYTHON), str(HERE / "tests/fake_driver.py"), str(root / "request.json"), str(root / REVISION), str(root / "output")],
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+46 |         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+47 |         env={**os.environ, "PE0_FAKE_MODE": fake_mode, "HF_HUB_OFFLINE": "1", "TRANSFORMERS_OFFLINE": "1"},
+   |
+
+E501 Line too long (107 > 100)
+  --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:47:101
+   |
+45 |         [str(PYTHON), str(HERE / "tests/fake_driver.py"), str(root / "request.json"), str(root / REVISION), str(root / "output")],
+46 |         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+47 |         env={**os.environ, "PE0_FAKE_MODE": fake_mode, "HF_HUB_OFFLINE": "1", "TRANSFORMERS_OFFLINE": "1"},
+   |                                                                                                     ^^^^^^^
+48 |     )
+   |
+
+E501 Line too long (167 > 100)
+  --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:70:101
+   |
+68 | …
+69 | …
+70 | …ompt": request["prompt"], "width": 1024, "height": 1024, "num_inference_steps": 4, "guidance": 1.0}}
+   |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+71 | …enoising"] == [0, 1, 2, 3, 4]
+72 | …
+   |
+
+E501 Line too long (140 > 100)
+  --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:90:101
+   |
+90 | …, [("png", [1024, 768], 1), ("oriented", [768, 1024], 6), ("large", [2048, 1024], 1)])
+   |                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+91 | …ips_metadata(tmp_path, kind, dimensions, orientation):
+92 | …
+   |
+
+E501 Line too long (108 > 100)
+  --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:91:101
+   |
+90 | @pytest.mark.parametrize("kind,dimensions,orientation", [("png", [1024, 768], 1), ("oriented", [768, 1024], 6), ("large", [2048, 1024]…
+91 | def test_cpu_normalization_is_bounded_oriented_and_strips_metadata(tmp_path, kind, dimensions, orientation):
+   |                                                                                                     ^^^^^^^^
+92 |     result, descriptor = cpu(tmp_path, kind)
+93 |     assert result.returncode == 0
+   |
+
+E501 Line too long (115 > 100)
+  --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:96:101
+   |
+94 |     assert descriptor["dimensions"] == dimensions
+95 |     assert descriptor["exif_orientation"] == orientation
+96 |     assert descriptor["original_sha256"] == hashlib.sha256((tmp_path / "inputs/original").read_bytes()).hexdigest()
+   |                                                                                                     ^^^^^^^^^^^^^^^
+97 |     # Worker validation additionally decodes the normalized image and rejects any metadata.
+98 |     root = tmp_path
+   |
+
+E702 Multiple statements on one line (semicolon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:99:30
+    |
+ 97 |     # Worker validation additionally decodes the normalized image and rejects any metadata.
+ 98 |     root = tmp_path
+ 99 |     (root / "output").mkdir(); (root / REVISION).mkdir()
+    |                              ^
+100 |     (root / "request.json").write_text(json.dumps({"mode": "edit", "prompt": "Synthetic", "seed": 42, "reference": descriptor}))
+101 |     assert finish(spawn(root))[0] == 0
+    |
+
+E501 Line too long (128 > 100)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:100:101
+    |
+ 98 |     root = tmp_path
+ 99 |     (root / "output").mkdir(); (root / REVISION).mkdir()
+100 |     (root / "request.json").write_text(json.dumps({"mode": "edit", "prompt": "Synthetic", "seed": 42, "reference": descriptor}))
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+101 |     assert finish(spawn(root))[0] == 0
+    |
+
+E501 Line too long (307 > 100)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:104:101
+    |
+104 | …rompt", "extra-path", "missing-reference", "generate-reference", "duplicate", "output-existing", "request-symlink", "input-symlink", "directory-symlink", "original-changed", "working-changed", "receipt-changed"])
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+105 | …
+106 | …link", "output-existing"} else "generate")
+    |
+
+E501 Line too long (137 > 100)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:106:101
+    |
+104 | …ool", "seed-float", "seed-large", "empty-prompt", "extra-path", "missing-reference", "generate-reference", "duplicate", "output-exis…
+105 | …ation(tmp_path, mutation):
+106 | …not in {"generate-reference", "request-symlink", "output-existing"} else "generate")
+    |                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+107 | …ic"
+108 | …rue
+    |
+
+E701 Multiple statements on one line (colon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:107:26
+    |
+105 | def test_invalid_input_refuses_before_model_initialization(tmp_path, mutation):
+106 |     root, request = job(tmp_path, "edit" if mutation not in {"generate-reference", "request-symlink", "output-existing"} else "genera…
+107 |     if mutation == "mode": request["mode"] = "automatic"
+    |                          ^
+108 |     elif mutation == "seed-bool": request["seed"] = True
+109 |     elif mutation == "seed-float": request["seed"] = 42.0
+    |
+
+E701 Multiple statements on one line (colon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:108:33
+    |
+106 |     root, request = job(tmp_path, "edit" if mutation not in {"generate-reference", "request-symlink", "output-existing"} else "genera…
+107 |     if mutation == "mode": request["mode"] = "automatic"
+108 |     elif mutation == "seed-bool": request["seed"] = True
+    |                                 ^
+109 |     elif mutation == "seed-float": request["seed"] = 42.0
+110 |     elif mutation == "seed-large": request["seed"] = 2**32
+    |
+
+E701 Multiple statements on one line (colon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:109:34
+    |
+107 |     if mutation == "mode": request["mode"] = "automatic"
+108 |     elif mutation == "seed-bool": request["seed"] = True
+109 |     elif mutation == "seed-float": request["seed"] = 42.0
+    |                                  ^
+110 |     elif mutation == "seed-large": request["seed"] = 2**32
+111 |     elif mutation == "empty-prompt": request["prompt"] = " "
+    |
+
+E701 Multiple statements on one line (colon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:110:34
+    |
+108 |     elif mutation == "seed-bool": request["seed"] = True
+109 |     elif mutation == "seed-float": request["seed"] = 42.0
+110 |     elif mutation == "seed-large": request["seed"] = 2**32
+    |                                  ^
+111 |     elif mutation == "empty-prompt": request["prompt"] = " "
+112 |     elif mutation == "extra-path": request["image_paths"] = ["/not-owned/secret.png"]
+    |
+
+E701 Multiple statements on one line (colon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:111:36
+    |
+109 |     elif mutation == "seed-float": request["seed"] = 42.0
+110 |     elif mutation == "seed-large": request["seed"] = 2**32
+111 |     elif mutation == "empty-prompt": request["prompt"] = " "
+    |                                    ^
+112 |     elif mutation == "extra-path": request["image_paths"] = ["/not-owned/secret.png"]
+113 |     elif mutation == "missing-reference": request.pop("reference")
+    |
+
+E701 Multiple statements on one line (colon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:112:34
+    |
+110 |     elif mutation == "seed-large": request["seed"] = 2**32
+111 |     elif mutation == "empty-prompt": request["prompt"] = " "
+112 |     elif mutation == "extra-path": request["image_paths"] = ["/not-owned/secret.png"]
+    |                                  ^
+113 |     elif mutation == "missing-reference": request.pop("reference")
+114 |     elif mutation == "generate-reference": request["reference"] = {}
+    |
+
+E701 Multiple statements on one line (colon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:113:41
+    |
+111 |     elif mutation == "empty-prompt": request["prompt"] = " "
+112 |     elif mutation == "extra-path": request["image_paths"] = ["/not-owned/secret.png"]
+113 |     elif mutation == "missing-reference": request.pop("reference")
+    |                                         ^
+114 |     elif mutation == "generate-reference": request["reference"] = {}
+115 |     elif mutation == "output-existing": (root / "output/previous.png").write_bytes(b"preserved")
+    |
+
+E701 Multiple statements on one line (colon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:114:42
+    |
+112 |     elif mutation == "extra-path": request["image_paths"] = ["/not-owned/secret.png"]
+113 |     elif mutation == "missing-reference": request.pop("reference")
+114 |     elif mutation == "generate-reference": request["reference"] = {}
+    |                                          ^
+115 |     elif mutation == "output-existing": (root / "output/previous.png").write_bytes(b"preserved")
+116 |     elif mutation == "input-symlink":
+    |
+
+E701 Multiple statements on one line (colon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:115:39
+    |
+113 |     elif mutation == "missing-reference": request.pop("reference")
+114 |     elif mutation == "generate-reference": request["reference"] = {}
+115 |     elif mutation == "output-existing": (root / "output/previous.png").write_bytes(b"preserved")
+    |                                       ^
+116 |     elif mutation == "input-symlink":
+117 |         target = root / "inputs/reference.png"; target.rename(root / "external.png"); target.symlink_to(root / "external.png")
+    |
+
+E702 Multiple statements on one line (semicolon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:117:47
+    |
+115 |     elif mutation == "output-existing": (root / "output/previous.png").write_bytes(b"preserved")
+116 |     elif mutation == "input-symlink":
+117 |         target = root / "inputs/reference.png"; target.rename(root / "external.png"); target.symlink_to(root / "external.png")
+    |                                               ^
+118 |     elif mutation == "directory-symlink":
+119 |         (root / "inputs").rename(root / "other-inputs"); (root / "inputs").symlink_to(root / "other-inputs")
+    |
+
+E702 Multiple statements on one line (semicolon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:117:85
+    |
+115 |     elif mutation == "output-existing": (root / "output/previous.png").write_bytes(b"preserved")
+116 |     elif mutation == "input-symlink":
+117 |         target = root / "inputs/reference.png"; target.rename(root / "external.png"); target.symlink_to(root / "external.png")
+    |                                                                                     ^
+118 |     elif mutation == "directory-symlink":
+119 |         (root / "inputs").rename(root / "other-inputs"); (root / "inputs").symlink_to(root / "other-inputs")
+    |
+
+E501 Line too long (126 > 100)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:117:101
+    |
+115 |     elif mutation == "output-existing": (root / "output/previous.png").write_bytes(b"preserved")
+116 |     elif mutation == "input-symlink":
+117 |         target = root / "inputs/reference.png"; target.rename(root / "external.png"); target.symlink_to(root / "external.png")
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+118 |     elif mutation == "directory-symlink":
+119 |         (root / "inputs").rename(root / "other-inputs"); (root / "inputs").symlink_to(root / "other-inputs")
+    |
+
+E702 Multiple statements on one line (semicolon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:119:56
+    |
+117 |         target = root / "inputs/reference.png"; target.rename(root / "external.png"); target.symlink_to(root / "external.png")
+118 |     elif mutation == "directory-symlink":
+119 |         (root / "inputs").rename(root / "other-inputs"); (root / "inputs").symlink_to(root / "other-inputs")
+    |                                                        ^
+120 |     elif mutation == "original-changed": (root / "inputs/original").write_bytes(b"changed")
+121 |     elif mutation == "working-changed": (root / "inputs/reference.png").write_bytes(b"changed")
+    |
+
+E501 Line too long (108 > 100)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:119:101
+    |
+117 |         target = root / "inputs/reference.png"; target.rename(root / "external.png"); target.symlink_to(root / "external.png")
+118 |     elif mutation == "directory-symlink":
+119 |         (root / "inputs").rename(root / "other-inputs"); (root / "inputs").symlink_to(root / "other-inputs")
+    |                                                                                                     ^^^^^^^^
+120 |     elif mutation == "original-changed": (root / "inputs/original").write_bytes(b"changed")
+121 |     elif mutation == "working-changed": (root / "inputs/reference.png").write_bytes(b"changed")
+    |
+
+E701 Multiple statements on one line (colon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:120:40
+    |
+118 |     elif mutation == "directory-symlink":
+119 |         (root / "inputs").rename(root / "other-inputs"); (root / "inputs").symlink_to(root / "other-inputs")
+120 |     elif mutation == "original-changed": (root / "inputs/original").write_bytes(b"changed")
+    |                                        ^
+121 |     elif mutation == "working-changed": (root / "inputs/reference.png").write_bytes(b"changed")
+122 |     elif mutation == "receipt-changed": (root / "inputs/reference.json").write_text("{}")
+    |
+
+E701 Multiple statements on one line (colon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:121:39
+    |
+119 |         (root / "inputs").rename(root / "other-inputs"); (root / "inputs").symlink_to(root / "other-inputs")
+120 |     elif mutation == "original-changed": (root / "inputs/original").write_bytes(b"changed")
+121 |     elif mutation == "working-changed": (root / "inputs/reference.png").write_bytes(b"changed")
+    |                                       ^
+122 |     elif mutation == "receipt-changed": (root / "inputs/reference.json").write_text("{}")
+123 |     path = root / "request.json"
+    |
+
+E701 Multiple statements on one line (colon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:122:39
+    |
+120 |     elif mutation == "original-changed": (root / "inputs/original").write_bytes(b"changed")
+121 |     elif mutation == "working-changed": (root / "inputs/reference.png").write_bytes(b"changed")
+122 |     elif mutation == "receipt-changed": (root / "inputs/reference.json").write_text("{}")
+    |                                       ^
+123 |     path = root / "request.json"
+124 |     path.write_text(json.dumps(request))
+    |
+
+E701 Multiple statements on one line (colon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:125:31
+    |
+123 |     path = root / "request.json"
+124 |     path.write_text(json.dumps(request))
+125 |     if mutation == "duplicate": path.write_text('{"mode":"generate","mode":"edit"}')
+    |                               ^
+126 |     if mutation == "request-symlink": path.rename(root / "other.json"); path.symlink_to(root / "other.json")
+127 |     code, events, errors = finish(spawn(root))
+    |
+
+E701 Multiple statements on one line (colon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:126:37
+    |
+124 |     path.write_text(json.dumps(request))
+125 |     if mutation == "duplicate": path.write_text('{"mode":"generate","mode":"edit"}')
+126 |     if mutation == "request-symlink": path.rename(root / "other.json"); path.symlink_to(root / "other.json")
+    |                                     ^
+127 |     code, events, errors = finish(spawn(root))
+128 |     assert code != 0 and events == [{"type": "failed"}]
+    |
+
+E702 Multiple statements on one line (semicolon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:126:71
+    |
+124 |     path.write_text(json.dumps(request))
+125 |     if mutation == "duplicate": path.write_text('{"mode":"generate","mode":"edit"}')
+126 |     if mutation == "request-symlink": path.rename(root / "other.json"); path.symlink_to(root / "other.json")
+    |                                                                       ^
+127 |     code, events, errors = finish(spawn(root))
+128 |     assert code != 0 and events == [{"type": "failed"}]
+    |
+
+E501 Line too long (108 > 100)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:126:101
+    |
+124 |     path.write_text(json.dumps(request))
+125 |     if mutation == "duplicate": path.write_text('{"mode":"generate","mode":"edit"}')
+126 |     if mutation == "request-symlink": path.rename(root / "other.json"); path.symlink_to(root / "other.json")
+    |                                                                                                     ^^^^^^^^
+127 |     code, events, errors = finish(spawn(root))
+128 |     assert code != 0 and events == [{"type": "failed"}]
+    |
+
+E501 Line too long (107 > 100)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:133:101
+    |
+133 | @pytest.mark.parametrize("mode", ["bad-bits", "peak", "bad-output", "mutate-reference", "mutate-original"])
+    |                                                                                                     ^^^^^^^
+134 | def test_failed_native_contract_cannot_commit_completed_output(tmp_path, mode):
+135 |     root, _ = job(tmp_path, "edit")
+    |
+
+E702 Multiple statements on one line (semicolon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:153:27
+    |
+151 |     process.wait(timeout=3)
+152 |     assert process.returncode == 71
+153 |     process.stdout.close(); process.stderr.close()
+    |                           ^
+154 |     assert not (root / "output/metadata.json").exists()
+    |
+
+E501 Line too long (146 > 100)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:169:101
+    |
+168 | …
+169 | …d30d0d48ad69428c301b909dc159c028b0a", "context_length": 32768, "size_vram": 19508609678}]
+    |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+170 | …
+171 | …
+    |
+
+E701 Multiple statements on one line (colon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:209:12
+    |
+207 |     reaped = asyncio.Event()
+208 |     async def owned_task():
+209 |         try: await asyncio.sleep(60)
+    |            ^
+210 |         finally: reaped.set()
+211 |     task = asyncio.create_task(owned_task())
+    |
+
+E701 Multiple statements on one line (colon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:210:16
+    |
+208 |     async def owned_task():
+209 |         try: await asyncio.sleep(60)
+210 |         finally: reaped.set()
+    |                ^
+211 |     task = asyncio.create_task(owned_task())
+212 |     await asyncio.sleep(0)
+    |
+
+E701 Multiple statements on one line (colon)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:214:35
+    |
+212 |     await asyncio.sleep(0)
+213 |     async def failed_probe(): raise ValueError("health failed")
+214 |     with pytest.raises(ValueError): await health_guard(task, failed_probe)
+    |                                   ^
+215 |     assert task.done() and reaped.is_set()
+    |
+
+E501 Line too long (103 > 100)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:227:101
+    |
+225 |     plan = json.loads((HERE / "trial.json").read_text())
+226 |     mug = plan["cases"][3]
+227 |     assert hashlib.sha256((ROOT / mug["reference"]).read_bytes()).hexdigest() == mug["original_sha256"]
+    |                                                                                                     ^^^
+228 |     assert len(plan["cases"]) == plan["maximum_worker_invocations"] == 6
+229 |     assert plan["cases"][4]["same_request_as"] == plan["cases"][5]["same_request_as"] == "background"
+    |
+
+E501 Line too long (101 > 100)
+   --> /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/image_worker/editing/tests/test_preparation.py:229:101
+    |
+227 |     assert hashlib.sha256((ROOT / mug["reference"]).read_bytes()).hexdigest() == mug["original_sha256"]
+228 |     assert len(plan["cases"]) == plan["maximum_worker_invocations"] == 6
+229 |     assert plan["cases"][4]["same_request_as"] == plan["cases"][5]["same_request_as"] == "background"
+    |                                                                                                     ^
+
+Found 59 errors (7 fixed, 52 remaining).

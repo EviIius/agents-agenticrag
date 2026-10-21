@@ -5,7 +5,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { mkdir } from "node:fs/promises";
 const evidence = "../artifacts/phase-t";
 async function upload(page: Page, directive = "fake") {
-  await page.locator('input[type="file"]').setInputFiles({
+  await page.locator("input.composer-file-input").setInputFiles({
     name: "Synthetic recording.wav",
     mimeType: "audio/wav",
     buffer: Buffer.from(directive),
@@ -272,9 +272,10 @@ test("T-9 unavailable engine menu and settings", async ({ page }) => {
     await route.fulfill({ json });
   });
   await page.reload();
-  await expect(
-    page.locator('.composer input[type="file"]'),
-  ).not.toHaveAttribute("accept", /\.wav/);
+  await expect(page.locator("input.composer-file-input")).not.toHaveAttribute(
+    "accept",
+    /\.wav/,
+  );
   await page.route("**/api/transcription/status", (route) =>
     route.fulfill({ json: { configured: false, ready: false, checks: [] } }),
   );

@@ -1,5 +1,42 @@
 # Deferred fixes — resolved polish, 8 October 2026
 
+## Current status — 21 October 2026, photo-edit integration preparation
+
+- Jake accepted the generative-edit quality tradeoffs. The exact native-tested
+  empty-slot or strict qualified 32K guard is now applied on the isolated branch.
+- The four-file worker installer and private app/worker/data/plist preparation
+  tool are complete. Candidate startup, CPU HEIC preparation, reference-preserving
+  queued recovery/retry, paired restore and schema migration pass on synthetic
+  copies. The previous-UI/current-backend compatibility fallback preserves data;
+  full old-backend rollback on schema 14 remains unsafe.
+- Full QA passes: 759 Python, 132 frontend, 110 contrast pairs and 739 browser
+  tests, with three existing browser skips. Historical evidence/source and live
+  app identity verify preserved. See `PHOTO-EDITING-PE1-INTEGRATION-REPORT.md`.
+- Draft PR #6 remains isolated: no new native call, main merge or deployment.
+  Release review, a fresh production bundle and the later physical phone check
+  remain. Automation is still the WS-F/folder-pilot proposal below.
+
+## Current status — 20 October 2026, photo-edit qualification
+
+- Photo editing is implemented only on `codex/photo-reference-prep`, draft PR #6;
+  the accepted live app remains unchanged. PE1 A/B evidence is retained.
+- The separately approved C native matrix passes four expected outcomes with
+  exactly four image-worker invocations and one empty-message preload. Empty-slot
+  HEIC, resident 32K JPEG, cancellation and HEIC recovery pass. Inputs/exports,
+  reaping, health, memory and actual storage checks pass. See
+  `PHOTO-EDITING-PE1-C-NATIVE-REPORT.md` and its synthetic review page.
+- Codex sees the requested green shirt in all three outputs, with facial,
+  lighting and framing drift. Jake's quality acceptance remains pending. The
+  empty-slot product guard, edit-worker installer and concrete schema-aware
+  release/fallback rehearsal remain next; no merge/deployment is authorized.
+  Full old-server rollback on schema 14 is unsafe; the previous-UI/current-backend
+  compatibility fallback is verified within its reported scope.
+- Scheduling/batching already appear in Workflow Studio **WS-F**. Folder-triggered
+  local recording-to-meeting-pack automation is a recommended later pilot,
+  documented in `LOCAL-AUTOMATION-NEXT-STEPS.md`; no scheduler/watcher is enabled.
+  Existing workflows still start manually. Disabled blocks and agent tools remain
+  separate scopes; Research and the stopped agent/framework trials remain closed.
+
 ## Current status — 19 October 2026
 
 This section supersedes the historical pending/proposal entries below.

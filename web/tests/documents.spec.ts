@@ -53,7 +53,7 @@ test("5B document picker, extracted review, Word table, send capture and edit no
   const chooser = await openAttachmentPicker(page);
   const bootstrap = await (await request.get("/api/bootstrap")).json();
   const engine = await (await request.get("/api/transcription/status")).json();
-  await expect(page.locator("input[type=file]")).toHaveAttribute(
+  await expect(page.locator("input.composer-file-input")).toHaveAttribute(
     "accept",
     [
       ...new Set([
@@ -130,7 +130,7 @@ test("5B document context warning follows model switch and removal deletes text"
       r.url().endsWith("/api/attachments") && r.request().method() === "POST",
   );
   await page
-    .locator("input[type=file]")
+    .locator("input.composer-file-input")
     .setInputFiles(fixtures + "large-text.pdf");
   const item = await (await uploaded).json();
   await expect(page.locator(".attachment-status")).toContainText(
@@ -173,7 +173,9 @@ test("5B scanned, encrypted and damaged errors retain usable composer", async ({
     ["encrypted.pdf", "This PDF is password-protected."],
     ["damaged.pdf", "Couldn't read this file."],
   ]) {
-    await page.locator("input[type=file]").setInputFiles(fixtures + file);
+    await page
+      .locator("input.composer-file-input")
+      .setInputFiles(fixtures + file);
     await expect(page.getByText(text, { exact: false }).first()).toBeVisible();
     await page
       .getByRole("button", { name: `Remove ${file}`, exact: true })
@@ -185,7 +187,7 @@ test("5B scanned, encrypted and damaged errors retain usable composer", async ({
     page.getByRole("button", { name: "Send message" }),
   ).toBeEnabled();
   const chooser = await openAttachmentPicker(page);
-  await expect(page.locator("input[type=file]")).toHaveAttribute(
+  await expect(page.locator("input.composer-file-input")).toHaveAttribute(
     "accept",
     /\.swift/,
   );
@@ -291,7 +293,7 @@ test("5B 50 MB browser upload keeps server RSS growth below 20 MB", async ({
   const started = Date.now();
   const sampling = setInterval(() => samples.push(rss()), 50);
   try {
-    await page.locator("input[type=file]").setInputFiles(path);
+    await page.locator("input.composer-file-input").setInputFiles(path);
     await expect(
       page.getByRole("button", { name: "Review document invented-large.pdf" }),
     ).toBeVisible();

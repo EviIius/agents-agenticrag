@@ -17,6 +17,8 @@ from ..errors import AppError
 from ..schemas import ImageChange, ImageCreate, ImageJob, ImageSnapshot, ImageStorage
 from .engine import Engine
 from .files import atomic_json, sync_directory, validate
+from .references import Reference, References
+from .storage import StorageMeter
 
 Prepared = list[tuple[str, list[tuple[str, tuple[object, ...]]]]]
 
@@ -35,6 +37,7 @@ class Images:
         self.folder.mkdir(mode=0o700, exist_ok=True)
         self.folder.chmod(0o700)
         self.lock = asyncio.Lock()
+        self.references = References(store, data, home, self.lock)
         self.condition = asyncio.Condition()
         self.tasks: dict[str, asyncio.Task[None]] = {}
         self.cancelling: set[str] = set()
@@ -66,9 +69,32 @@ class Images:
             "JOIN image_jobs j ON j.id=a.job_id"
         )
         assert row is not None
+        references = await self.store.rows("SELECT id FROM image_references")
+        reference_bytes = reference_metadata = measurement_bytes = 0
+        for reference in references:
+            folder = self.references.path(reference["id"])
+            for name in ("original", "reference.png"):
+                file = folder / name
+                if file.is_file() and not file.is_symlink():
+                    reference_bytes += file.stat().st_size
+            if (folder / "reference.json").is_file():
+                reference_metadata += (folder / "reference.json").stat().st_size
+            if (folder / "storage.json").is_file():
+                measurement_bytes += (folder / "storage.json").stat().st_size
+        exports = await self.store.one(
+            "SELECT COALESCE(SUM(export_bytes),0) n FROM image_job_references"
+        )
         # Logical bytes. APFS shared extents/compression are not inferred.
         return ImageStorage(
             **row,
+            references=sum(
+                (self.references.path(r["id"]) / "original").is_file() for r in references
+            ),
+            reference_bytes=reference_bytes,
+            reference_metadata_bytes=reference_metadata,
+            export_bytes=exports["n"] if exports else 0,
+            measurement_bytes=measurement_bytes
+            + sum(p.stat().st_size for p in self.folder.glob("*/storage.json")),
             manifest_bytes=sum(p.stat().st_size for p in self.folder.glob("*/input.json")),
             database_bytes=sum(p.stat().st_size for p in self.data.glob("workbench.db*")),
             backup_bytes=sum(
@@ -109,6 +135,13 @@ class Images:
                 ]
             )
             self.condition.notify_all()
+
+    async def reference_changed(self, identifier: str) -> None:
+        async with self.lock:
+            for row in await self.store.rows(
+                "SELECT job_id FROM image_job_references WHERE reference_id=?", (identifier,)
+            ):
+                await self.emit(row["job_id"])
 
     async def update(
         self,
@@ -153,7 +186,9 @@ class Images:
             await self.emit(identifier)
             return await self.get(identifier)
 
-    async def prepare(self, specs: Sequence[ImageCreate]) -> Prepared:
+    async def prepare(
+        self, specs: Sequence[ImageCreate], reference: Reference | None = None
+    ) -> Prepared:
         """Caller owns self.lock; prepare all manifests without commits or scheduling."""
         if self.closing:
             raise AppError(
@@ -163,6 +198,8 @@ class Images:
             raise AppError(
                 "image_unavailable", "The local image worker or pinned model is unavailable.", 409
             )
+        if reference and (len(specs) != 1 or not self.engine.status().editing_available):
+            raise AppError("image_unavailable", "The photo-edit worker is not available.", 409)
         if len(self.tasks) + len(specs) > 20:
             raise AppError(
                 "image_queue_full", "The image queue is full. Wait for a job to finish.", 409
@@ -176,7 +213,9 @@ class Images:
                     raise AppError("invalid_request", "Write an image prompt first.", 422)
                 if spec.parent_id:
                     await self.get(spec.parent_id)
-                expected = {"prompt": spec.prompt, "seed": spec.seed}
+                expected: dict[str, Any] = {"prompt": spec.prompt, "seed": spec.seed}
+                if reference:
+                    expected.update(mode="edit", reference=reference.descriptor)
                 identifier, timestamp = uuid4().hex, now()
                 folder = self.path(identifier)
                 folder.mkdir(mode=0o700)
@@ -197,6 +236,14 @@ class Images:
                     ("INSERT INTO image_steps(job_id) VALUES(?)", (identifier,)),
                 ]
                 prepared.append((identifier, rows))
+                if reference:
+                    self.references.bind(reference, folder)
+                    rows.append(
+                        (
+                            "INSERT INTO image_job_references(job_id,reference_id) VALUES(?,?)",
+                            (identifier, reference.id),
+                        )
+                    )
                 atomic_json(folder / "input.json", expected)
             return prepared
         except BaseException:
@@ -215,10 +262,40 @@ class Images:
     async def run(self, identifier: str) -> None:
         folder = self.path(identifier)
         scratch = folder / "working"
+        editing = False
+        meter = None
+        sampling = None
         try:
+            row = await self.store.one(
+                "SELECT input_json FROM image_jobs WHERE id=?", (identifier,)
+            )
+            if not row:
+                raise ValueError("Missing accepted image request")
+            expected = json.loads(row["input_json"])
+            if json.loads((folder / "input.json").read_text()) != expected:
+                raise ValueError("Image manifest changed after acceptance")
+            editing = expected.get("mode") == "edit"
+            meter = StorageMeter(folder) if editing else None
+            if meter:
+                meter.sample()
             async with self.capacity.lease(background=True):
+                # Waiting makes no temporary writes. Preserve its initial observation,
+                # but do not exhaust the bounded sampler while another job owns capacity.
+                sampling = asyncio.create_task(References.sample(meter)) if meter else None
                 if self.closing or identifier in self.cancelling:
                     raise asyncio.CancelledError
+                if editing:
+                    pin = await self.store.one(
+                        "SELECT reference_id FROM image_job_references WHERE job_id=?",
+                        (identifier,),
+                    )
+                    if not pin:
+                        raise AppError(
+                            "reference_unavailable",
+                            "Photo input unavailable. Attach it again.",
+                            409,
+                        )
+                    await self.references.get(pin["reference_id"])
                 if shutil.disk_usage(self.data).free < 128 * 1024**2:
                     raise AppError(
                         "low_disk", "Free at least 128 MB before retrying this image.", 409
@@ -247,16 +324,39 @@ class Images:
                     elif kind == "failed":
                         raise ValueError("Worker failed")
 
-                exit_code = await self.engine.run(folder / "input.json", scratch, progress)
+                execute = self.engine.run_edit if editing else self.engine.run
+                exit_code = await execute(folder / "input.json", scratch, progress)
+                if sampling and sampling.done():
+                    await sampling
                 async with self.lock:
                     expected = json.loads((folder / "input.json").read_text())
                     digest, size, metadata_size = await asyncio.to_thread(
                         validate, scratch, expected
                     )
+                    export_rows: list[tuple[str, tuple[object, ...]]] = []
+                    if editing:
+                        from .files import sanitize_export
+
+                        exporting = asyncio.create_task(asyncio.to_thread(sanitize_export, scratch))
+                        try:
+                            export_hash, export_size = await asyncio.shield(exporting)
+                        except asyncio.CancelledError:
+                            await exporting
+                            raise
+                        export_rows.append(
+                            (
+                                "UPDATE image_job_references SET "
+                                "export_sha256=?,export_bytes=? WHERE job_id=?",
+                                (export_hash, export_size, identifier),
+                            )
+                        )
+                    if meter:
+                        meter.sample()
                     os.replace(scratch, folder / "output")
                     sync_directory(folder)
                     await self.store.batch(
                         [
+                            *export_rows,
                             (
                                 "INSERT INTO image_artifacts(job_id,sha256,bytes,metadata_bytes) "
                                 "VALUES(?,?,?,?)",
@@ -292,6 +392,13 @@ class Images:
         finally:
             # Only remove temporary outputs after Engine.run has reaped its child.
             shutil.rmtree(scratch, ignore_errors=True)
+            if sampling:
+                sampling.cancel()
+                await asyncio.gather(sampling, return_exceptions=True)
+            if meter:
+                meter.sample()
+                (folder / "storage.part").unlink(missing_ok=True)
+                atomic_json(folder / "storage.json", meter.report())
             self.cancelling.discard(identifier)
 
     async def cancel(self, identifier: str) -> ImageJob:
@@ -327,6 +434,11 @@ class Images:
                 await self.store.batch(
                     [
                         ("DELETE FROM image_artifacts WHERE job_id=?", (identifier,)),
+                        (
+                            "UPDATE image_job_references SET "
+                            "export_sha256=NULL,export_bytes=0 WHERE job_id=?",
+                            (identifier,),
+                        ),
                         ("UPDATE image_jobs SET updated_at=? WHERE id=?", (now(), identifier)),
                     ]
                 )
@@ -349,6 +461,22 @@ class Images:
             raise AppError("not_found", "This image output is unavailable or was removed.", 404)
         output = self.path(identifier) / "output"
         file = output / ("image.png" if format == "png" else "metadata.json")
+        if format == "png" and item.mode == "edit":
+            file = output / "export.png"
+            pin = await self.store.one(
+                "SELECT export_sha256 FROM image_job_references WHERE job_id=?", (identifier,)
+            )
+            from .reference_files import digest
+
+            if (
+                not pin
+                or not file.is_file()
+                or file.is_symlink()
+                or await asyncio.to_thread(digest, file) != pin["export_sha256"]
+            ):
+                raise AppError(
+                    "not_found", "Photo export missing or changed. Restore it from backup.", 404
+                )
         if not file.is_file() or file.is_symlink():
             raise AppError(
                 "not_found", "This image file is missing. Restore it from an image backup.", 404
@@ -356,6 +484,8 @@ class Images:
         return file
 
     async def recover(self) -> None:
+        async with self.lock:
+            await self.references.recover_locked()
         # A previous worker's parent pipe has closed; it exits without this new
         # server signaling any PID which might have been reused.
         rows = await self.store.rows(
@@ -443,6 +573,7 @@ class Images:
         for task in tasks:
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
+        await self.references.close()
         for row in await self.store.rows(
             "SELECT id FROM image_jobs WHERE state IN ('queued','preparing','running','cancelling')"
         ):

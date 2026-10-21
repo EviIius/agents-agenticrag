@@ -1,0 +1,64 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+All checks passed!
+. scripts/tool-env.sh; uv run --directory server ruff format --check app tests
+172 files already formatted
+. scripts/tool-env.sh; uv run --directory server mypy app tests
+Success: no issues found in 170 source files
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_coverage.py
+........................................................................ [  9%]
+........................................................................ [ 19%]
+........................................................................ [ 29%]
+........................................................................ [ 38%]
+........................................................................ [ 48%]
+........................................................................ [ 58%]
+........................................................................ [ 67%]
+........................................................................ [ 77%]
+........................................................................ [ 87%]
+........................................................................ [ 96%]
+........................                                                 [100%]
+744 passed in 419.74s (0:06:59)
+providers line coverage: 385/429 = 89.7%
+runs line coverage: 391/437 = 89.5%
+search line coverage: 1564/1741 = 89.8%
+transcribe line coverage: 690/740 = 93.2%
+documents line coverage: 196/203 = 96.6%
+library line coverage: 762/823 = 92.6%
+images line coverage: 1415/1699 = 83.3%
+workflows line coverage: 2713/3021 = 89.8%
+backup.py line coverage: 126/132 = 95.5%
+capacity.py line coverage: 56/58 = 96.6%
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_contrast.py
+light: body/background 16.17:1; secondary 6.55:1; tertiary 4.96:1
+dark: body/background 14.34:1; secondary 6.56:1; tertiary 4.88:1
+Contrast: 110 token pairs passed.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/generate_api_types.py --check
+✨ openapi-typescript 7.13.0
+🚀 /var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/tmp3ff47pfm/openapi.json → /var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/tmp3ff47pfm/api-types.ts [104.3ms]
+API contract: up to date.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_api_additive.py
+API additive guard: Phase 3 contract preserved.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_motion.py
+Motion guard: all first-party motion rules pass.
+. scripts/tool-env.sh; uv run --directory server python ../scripts/privacy_audit.py
+{
+  "scanned": 2258,
+  "failures": [],
+  "limits": "Changed files and Phase 4/5/6/7 evidence; images require human review; optional local private-marker file."
+}
+. scripts/tool-env.sh; npm run check --prefix web
+npm notice run workbench-web@1.0.0-alpha.0 check
+npm notice run tsc --noEmit && eslint . && prettier --check src index.html vite.config.ts playwright.config.ts tests && vitest run src
+Checking formatting...
+All matched files use Prettier code style!
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./test-runtime" without a file extension (vite.config.ts:4:28). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.3 /Users/evilius/.codex/worktrees/workflow-studio/agents-agenticrag/web
+
+
+ Test Files  14 passed (14)
+      Tests  126 passed (126)
+   Start at  10:32:21
+   Duration  324ms (transform 64%, import 24%, tests 10%, worker 2%)
+

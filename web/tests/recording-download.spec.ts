@@ -31,14 +31,14 @@ test.beforeEach(async ({ page, request }) => {
   });
   await page.goto("/");
   await (await openAttachmentPicker(page)).setFiles([]);
-  await expect(page.locator('input[type="file"]')).toHaveAttribute(
+  await expect(page.locator("input.composer-file-input")).toHaveAttribute(
     "accept",
     /\.wav/,
   );
   await expect(
     page.getByRole("menu", { name: "Add attachment", exact: true }),
   ).toHaveCount(0);
-  await page.locator('input[type="file"]').setInputFiles({
+  await page.locator("input.composer-file-input").setInputFiles({
     name: "Synthetic recording.wav",
     mimeType: "audio/wav",
     buffer: Buffer.from("fake"),

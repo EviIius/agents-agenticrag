@@ -1,0 +1,15 @@
+"""Build a static review page for the three retained synthetic edit pairs."""
+import html
+import json
+from pathlib import Path
+
+OUT=Path(__file__).resolve().parent
+r=json.loads((OUT/'results.json').read_text())
+parts=[]
+for row in r['case_results']:
+ name=row['case']
+ if row['state']!='complete': continue
+ seconds=row['native_initialization_seconds']+row['generation_decode_seconds']
+ parts.append(f'''<section><h2>{html.escape(name)}</h2><p>{seconds:.2f} s initialization + generation/decode. Shirt requested green; unrelated details may change.</p><div class="pair"><figure><img src="cases/{name}/reference.png" alt="Synthetic normalized reference"><figcaption>Normalized reference — retained raw original unchanged</figcaption></figure><figure><img src="cases/{name}/export.png" alt="Native local edit with green shirt"><figcaption>Local model edit — sanitized export</figcaption></figure></div></section>''')
+page='''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PE1-C synthetic photo editing review</title><style>body{font:16px/1.5 system-ui;background:#191918;color:#eceae7;margin:0 auto;padding:24px;max-width:1200px}h1,h2{line-height:1.2}.pair{display:grid;grid-template-columns:1fr 1fr;gap:20px}figure{margin:0}img{width:100%;aspect-ratio:1;object-fit:contain;background:#252523;border-radius:12px}figcaption{color:#bab7af;margin:8px 0 24px}section{border-top:1px solid #4c4b47;margin-top:24px;padding-top:8px}a{color:#9bacff}@media(max-width:650px){.pair{grid-template-columns:1fr}body{padding:16px}}</style><h1>PE1-C — local photo editing</h1><p><strong>Synthetic subject only.</strong> Four image-worker invocations and one empty-message preload. Three completed edits; one intentionally cancelled, then successful recovery. No private user photo was used.</p><p>The requested shirt color changes work. Facial rendering, skin texture, lighting and framing also change. These are generative edits, without exact likeness or pixel-preservation guarantees. Visual observations are by Codex; user quality acceptance is pending.</p>'''+''.join(parts)+'''<section><h2>Storage and controls</h2><p>Each completed native PNG is 1.35–1.41 MB, plus a separate 1.35–1.41 MB sanitized export. Input photos and normalized references are retained separately for comparison/retry. Cancellation leaves no accepted output.</p><p>MLX peak 17.38 GiB; observed host swap stayed at 3,709 MiB; maximum sampled app health request 16.75 ms. All four workers were reaped under the shared lease. This is bounded qualification, not unattended load testing or a production deployment.</p><p><a href="results.json">Measured results</a> · <a href="summary.json">Trial records</a></p></section></html>'''
+(OUT/'review.html').write_text(page)
