@@ -941,13 +941,35 @@ html[data-compact-viewport] .model-picker-close-footer {
   stroke-width: 1.5px;
 }
 .composer-tools-menu {
+  display: flex;
+  flex-direction: column;
   width: min(328px, calc(100vw - 24px));
   padding: 6px;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+.composer-tools-heading {
+  flex: none;
+  padding: 4px 10px 6px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+.composer-tools-actions {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-padding-block: 4px;
+  scrollbar-width: thin;
 }
 .composer-tool-row {
-  min-height: 58px;
+  min-height: 48px;
   gap: 10px;
-  padding: 9px 10px;
+  padding: 6px 10px;
+}
+.composer-tool-row > svg {
+  width: 18px;
+  height: 18px;
 }
 .composer-tool-row > span.pointer-events-none {
   display: none;
@@ -964,7 +986,7 @@ html[data-compact-viewport] .model-picker-close-footer {
 .composer-tool-row small {
   display: block;
   font-size: 11px;
-  line-height: 1.45;
+  line-height: 1.35;
   color: var(--text-3);
 }
 .composer-switch {
@@ -991,19 +1013,37 @@ html[data-compact-viewport] .model-picker-close-footer {
   background: var(--on-brand);
   transform: translateX(12px);
 }
+.composer-thinking {
+  flex: none;
+  margin-top: 4px;
+  padding: 8px 4px 2px;
+  border-top: 1px solid var(--line);
+}
+.composer-thinking-label {
+  padding: 0 4px 8px;
+  font-size: 12px;
+  color: var(--text-2);
+}
 .composer-thinking-levels {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
   gap: 3px;
   padding: 4px;
-  border: 1px solid var(--line);
+  background: var(--surface-2);
   border-radius: var(--radius-md);
-  margin: 0 6px 6px;
 }
 .composer-thinking-levels [role="menuitemradio"] {
-  flex: 1;
+  min-width: 0;
+  min-height: 36px;
   justify-content: center;
   padding: 7px 5px;
   font-size: 11px;
+  white-space: nowrap;
+}
+@media (max-width: 639px), (pointer: coarse) {
+  .composer-thinking-levels [role="menuitemradio"] {
+    min-height: 44px;
+  }
 }
 .composer-thinking-levels [role="menuitemradio"] > span {
   display: none;

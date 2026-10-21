@@ -328,6 +328,17 @@ export default function AttachmentsPreview() {
         onAttach={() => setState("uploading")}
         images
         previewImages
+        imageStatus={{
+          available: true,
+          editing_available: true,
+          model: "FLUX.2 klein 4B",
+          width: 1024,
+          height: 1024,
+          steps: 4,
+          quantization: 8,
+          cache_limit_bytes: 1073741824,
+        }}
+        onPhotoFile={() => setState("ready")}
         transcriptionReady
         attachmentExtensions={{
           text: [".txt", ".csv"],

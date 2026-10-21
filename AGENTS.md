@@ -2014,3 +2014,12 @@ ledgers are unchanged. The old-UI/schema-aware-backend/current-data fallback
 remains available; old-backend/pre-release-DB rollback is unsafe. H4:
 `docs/PHOTO-EDITING-RELEASE-REPORT.md`. Physical phone acceptance is requested and
 pending; no scheduler/watcher or new agent scope is authorized by this release.
+
+**User correction — 21 October 2026 (mobile Tools layout):** Jake supplied phone
+screenshots of the oversized/clipping Tools popover and requested a visual fix.
+Compact its rows, keep the model-default choice readable on one line, and retain
+access to every action in short viewports. Preserve reported thinking options,
+selection semantics, keyboard/focus behavior and all model/provider payloads.
+This narrow live UI repair uses existing primitives/tokens and a static-only
+publication with private UI fallback; no server/data/worker/runtime change, model
+call, new dependency or service restart is part of the correction.
