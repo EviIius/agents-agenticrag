@@ -2103,3 +2103,15 @@ Do not promote this quality result. The two-job allowance is exhausted. H4:
 mask-aware Qwen-Image-2.1 are in `docs/PHOTO-EDITING-PE2-NEXT-CANDIDATE.md`.
 No further native invocation, named model download or publication is authorized
 by this closeout. A later user instruction may approve a concrete next scope.
+
+**PE3 offline preparation — 22 October 2026:** Jake asked to continue after the
+PE2 result and named Qwen recommendation. Prepared the concrete pinned download /
+maximum two-image scope in `docs/PHOTO-EDITING-PE3-QWEN-TRIAL-PLAN.md`. Actual CPU
+processor/context/composite checks pass without model/MLX imports or weight reads.
+The installed CPU processor uses the already installed torch dependency; no new
+package was added. Official metadata, the research-only license, exact file
+hashes and installed engine source are retained. No model weights or native
+invocations occurred. The old native ledgers remain exhausted, main/live and
+product code remain unchanged. Stop for review of this concrete 33.13 GB download
+and candidate-only two-image/time-budget scope before execution. H4:
+`docs/PHOTO-EDITING-PE3-PREFLIGHT-REPORT.md`.

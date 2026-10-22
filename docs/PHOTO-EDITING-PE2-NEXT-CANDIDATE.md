@@ -49,6 +49,13 @@ memory/health guards, predeclare the candidate's step/time allowance and assess
 speed before considering production or coexistence. Original FLUX qualification
 and its thresholds remain intact.
 
+22 October update: CPU/static compatibility preparation is complete. The concrete
+download/two-invocation proposal is `PHOTO-EDITING-PE3-QWEN-TRIAL-PLAN.md`; findings
+and retained probe failures are in `PHOTO-EDITING-PE3-PREFLIGHT-REPORT.md`. No model
+weights or native trial are approved by those documents. The pinned license
+limits the candidate to noncommercial research/evaluation; a future product-use
+decision must account for that restriction.
+
 ## Other candidates
 
 | Candidate | Why consider it | Why it is not the first recommendation |
