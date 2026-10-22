@@ -32,6 +32,9 @@ class ImageReferenceFromJob(BaseModel):
 
 class PhotoStroke(BaseModel):
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+    operation: Literal["paint", "erase"] | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
     radius: float = Field(ge=0.005, le=0.25)
     points: list[
         tuple[Annotated[float, Field(ge=0, le=1)], Annotated[float, Field(ge=0, le=1)]]
@@ -45,6 +48,8 @@ class PhotoSelection(BaseModel):
 
     @model_validator(mode="after")
     def bounded(self) -> "PhotoSelection":
+        if all(stroke.operation == "erase" for stroke in self.strokes):
+            raise ValueError("Paint an area before protecting part of it.")
         if sum(len(stroke.points) for stroke in self.strokes) > 512:
             raise ValueError("Selection is too detailed. Use fewer brush strokes.")
         return self

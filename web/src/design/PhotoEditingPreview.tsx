@@ -42,8 +42,23 @@ export default function PhotoEditingPreview() {
       reference: ref,
       selection:
         selection ??
-        (state === "selection"
-          ? { version: 1, strokes: [{ radius: 0.08, points: [[0.5, 0.3]] }] }
+        (state.startsWith("selection") && state !== "selection-load-error"
+          ? {
+              version: 1,
+              strokes: [
+                { radius: 0.15, points: [[0.5, 0.3]] },
+                ...(state === "selection-protected" ||
+                state === "selection-empty"
+                  ? [
+                      {
+                        operation: "erase" as const,
+                        radius: state === "selection-empty" ? 0.15 : 0.06,
+                        points: [[0.5, 0.3] as [number, number]],
+                      },
+                    ]
+                  : []),
+              ],
+            }
           : undefined),
       phase:
         state === "preparing"

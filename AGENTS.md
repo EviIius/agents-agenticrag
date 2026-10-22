@@ -2144,3 +2144,12 @@ The new two-call allowance is exhausted; no retry, changed selection/prompt/seed
 other model, coexistence trial, integration or publication is authorized by this
 closeout. H4: `docs/PHOTO-EDITING-PE3-REPORT.md`. Review selection usability and
 coverage before proposing any further native scope.
+
+**User authorization — 22 October 2026 (PE4 selection repair):** Jake said
+“Go ahead and do so” after the recommendation to improve mask coverage before
+further model tests. Proceed with `docs/PHOTO-EDITING-PE4-PLAN.md`: precise paint/
+protect, zoom/pan and coverage views, additive ordered erasing with preserved
+legacy masks, CPU/API/browser evidence and a private CPU-only original-photo
+coverage review. Retain both checkpoints, prior frozen sources and failed trials.
+No earlier native allowance is reopened; no new model invocation/download,
+dependency, Qwen routing/integration, main merge or publication is included.

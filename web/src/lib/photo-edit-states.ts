@@ -1,6 +1,8 @@
 export const photoStates = [
   "ready",
   "selection",
+  "selection-protected",
+  "selection-empty",
   "selection-load-error",
   "preparing",
   "upload-error",

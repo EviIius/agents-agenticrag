@@ -19,22 +19,31 @@ from tests.test_chat_images import inputs, new
 from tests.test_photo_references import setup
 
 SELECTION = {"version": 1, "strokes": [{"radius": 0.08, "points": [[0.3, 0.2], [0.4, 0.3]]}]}
+PROTECTED = {
+    "version": 1,
+    "strokes": [
+        {"radius": 0.15, "points": [[0.5, 0.5]]},
+        {"operation": "erase", "radius": 0.05, "points": [[0.5, 0.5]]},
+    ],
+}
 
 
+@pytest.mark.parametrize("selection", [SELECTION, PROTECTED])
 async def test_selection_is_owned_atomic_replayable_and_retried_unchanged(
     chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+    selection: dict[str, Any],
 ) -> None:
     app, client, runtime = chat_app
     cid, ref = await setup(app, client)
-    body = inputs(1, reference_id=ref["id"], selection=SELECTION)
+    body = inputs(1, reference_id=ref["id"], selection=selection)
     response = await client.post(f"/api/chats/{cid}/images", json=body)
     assert response.status_code == 202, response.text
     accepted = response.json()
     image = accepted["assistant"]["images"][0]
-    assert image["selection"] == SELECTION
+    assert image["selection"] == selection
     assert [image["width"], image["height"]] == [1024, 1024]
     manifest = json.loads((app.state.images.path(image["id"]) / "input.json").read_text())
-    assert manifest["selection"] == SELECTION
+    assert manifest["selection"] == selection
     replay = await client.post(f"/api/chats/{cid}/images", json=body)
     assert replay.json()["assistant"]["id"] == accepted["assistant"]["id"]
     changed = {
@@ -51,7 +60,7 @@ async def test_selection_is_owned_atomic_replayable_and_retried_unchanged(
         json={"request_key": uuid4().hex, "seeds": [52]},
     )
     assert retried.status_code == 202
-    assert retried.json()["assistant"]["images"][0]["selection"] == SELECTION
+    assert retried.json()["assistant"]["images"][0]["selection"] == selection
     await asyncio.gather(*list(app.state.images.tasks.values()))
     assert not [c for c in runtime.state.captures if c.get("messages")]
     other = await new(client)
@@ -68,6 +77,18 @@ async def test_selection_is_owned_atomic_replayable_and_retried_unchanged(
     [
         {"reference_id": None},
         {"selection": {"version": 1, "strokes": []}},
+        {
+            "selection": {
+                "version": 1,
+                "strokes": [{"operation": "erase", "radius": 0.1, "points": [[0.5, 0.5]]}],
+            }
+        },
+        {
+            "selection": {
+                "version": 1,
+                "strokes": [{"operation": "blur", "radius": 0.1, "points": [[0.5, 0.5]]}],
+            }
+        },
         {"selection": {"version": 1, "strokes": [{"radius": 0.1, "points": [[2, 0.5]]}]}},
         {"selection": {"version": 1, "strokes": [{"radius": 0.1, "points": [[0.5, 0.5]] * 129}]}},
         {
@@ -91,14 +112,15 @@ async def test_invalid_selection_never_schedules(
     assert not app.state.images.tasks and not await app.state.store.rows("SELECT * FROM image_jobs")
 
 
+@pytest.mark.parametrize("selection", [SELECTION, PROTECTED])
 async def test_backup_round_trip_retains_mask_native_and_composite(
-    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI], tmp_path: Path
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI], tmp_path: Path, selection: dict[str, Any]
 ) -> None:
     app, client, _ = chat_app
     cid, ref = await setup(app, client)
     app.state.images.engine.release.set()
     response = await client.post(
-        f"/api/chats/{cid}/images", json=inputs(1, reference_id=ref["id"], selection=SELECTION)
+        f"/api/chats/{cid}/images", json=inputs(1, reference_id=ref["id"], selection=selection)
     )
     assert response.status_code == 202
     image = response.json()["assistant"]["images"][0]
@@ -117,7 +139,7 @@ async def test_backup_round_trip_retains_mask_native_and_composite(
         ).read_bytes()
     with sqlite3.connect(restored / "workbench.db") as db:
         manifest = json.loads(db.execute("SELECT input_json FROM image_jobs").fetchone()[0])
-    assert manifest["selection"] == SELECTION
+    assert manifest["selection"] == selection
     assert (await images.storage()).native_bytes > 0
     await images.remove(image["id"])
     assert (await images.storage()).native_bytes == 0

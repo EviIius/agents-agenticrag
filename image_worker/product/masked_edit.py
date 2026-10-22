@@ -14,7 +14,11 @@ def selection_valid(value):
         raise ValueError("Invalid brush strokes")
     total = 0
     for stroke in strokes:
-        if not isinstance(stroke, dict) or set(stroke) != {"radius", "points"}:
+        if (
+            not isinstance(stroke, dict)
+            or set(stroke) - {"operation"} != {"radius", "points"}
+            or ("operation" in stroke and stroke["operation"] not in ("paint", "erase"))
+        ):
             raise ValueError("Invalid stroke")
         radius, points = stroke["radius"], stroke["points"]
         if (
@@ -38,6 +42,8 @@ def selection_valid(value):
                 raise ValueError("Invalid selection coordinates")
     if total > 512:
         raise ValueError("Selection is too detailed")
+    if all(stroke.get("operation") == "erase" for stroke in strokes):
+        raise ValueError("Paint an area before protecting part of it")
     return value
 
 
@@ -51,12 +57,13 @@ def raster(size, selection):
     mask = Image.new("L", size, 0)
     drawing = ImageDraw.Draw(mask)
     for stroke in selection["strokes"]:
+        fill = 0 if stroke.get("operation") == "erase" else 255
         radius = max(1, round(stroke["radius"] * min(size)))
         points = [(round(x * (width - 1)), round(y * (height - 1))) for x, y in stroke["points"]]
         if len(points) > 1:
-            drawing.line(points, fill=255, width=2 * radius + 1, joint="curve")
+            drawing.line(points, fill=fill, width=2 * radius + 1, joint="curve")
         for x, y in points:
-            drawing.ellipse((x - radius, y - radius, x + radius, y + radius), fill=255)
+            drawing.ellipse((x - radius, y - radius, x + radius, y + radius), fill=fill)
     if mask.getbbox() is None:
         raise ValueError("Empty selection")
     return mask

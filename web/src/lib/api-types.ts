@@ -3381,6 +3381,8 @@ export interface components {
         };
         /** PhotoStroke */
         PhotoStroke: {
+            /** Operation */
+            operation?: ("paint" | "erase") | null;
             /** Radius */
             radius: number;
             /** Points */
