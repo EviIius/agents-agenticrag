@@ -24,7 +24,7 @@ from app.db.core import MIGRATIONS, migrate
 from app.images.backup import restore
 from app.images.engine import EDIT_DIGEST, Engine
 from app.images.files import atomic_json, sanitize_export, validate
-from app.images.reference_files import RECIPE, digest
+from app.images.reference_files import BROWSER_RECIPE, RECIPE, digest
 from app.schemas import ImageStatus
 from tests.test_chat import chat_app as chat_app
 from tests.test_chat_images import inputs, new
@@ -58,11 +58,18 @@ class FakeCodec:
             "normalization": RECIPE,
         }
         if (folder / "decoded.json").exists():
+            props = json.loads((folder / "decoded.json").read_text())
             meta.update(
                 original_format="HEIF",
                 exif_orientation=None,
-                original_dimensions=json.loads((folder / "decoded.json").read_text())["dimensions"],
+                original_dimensions=props["dimensions"],
             )
+            if props.get("source") == "browser":
+                meta["normalization"] = BROWSER_RECIPE
+                if original.startswith(b"\x89PNG\r\n\x1a\n"):
+                    meta["original_format"] = "PNG"
+                elif original.startswith(b"\xff\xd8\xff"):
+                    meta["original_format"] = "JPEG"
         atomic_json(folder / "reference.json", meta)
         return meta
 
@@ -411,7 +418,7 @@ async def test_upload_is_bounded_before_multipart_consumes_large_body(
     result = await client.post(
         f"/api/chats/{cid}/image-references",
         content=b"",
-        headers={"content-length": str(30 * 1024**2)},
+        headers={"content-length": str(41 * 1024**2)},
     )
     assert result.status_code == 413
 
@@ -429,7 +436,7 @@ async def test_chunked_edit_upload_stops_at_body_limit(
             b"--fake-boundary\r\nContent-Disposition: form-data; "
             b'name="file"; filename="synthetic.png"\r\nContent-Type: image/png\r\n\r\n'
         )
-        for _ in range(22):
+        for _ in range(42):
             yielded += 1
             yield b"x" * 1024**2
         yield b"\r\n--fake-boundary--\r\n"
@@ -440,8 +447,85 @@ async def test_chunked_edit_upload_stops_at_body_limit(
         headers={"content-type": "multipart/form-data; boundary=fake-boundary"},
     )
     assert result.status_code == 413, result.text
-    assert yielded < 22
+    assert yielded < 42
     assert not await app.state.store.rows("SELECT * FROM image_references")
+
+
+async def test_browser_conversion_retains_original_and_edit_binding(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    app, client, _ = chat_app
+    cid, _ = await setup(app, client)
+    raw = b"\x00\x00\x00\x18ftypheic\x00\x00\x00\x00heicmif1"
+
+    async def unavailable(*args: Any, **kwargs: Any) -> bytes:
+        raise AssertionError("Browser conversion must not run the failed HEIC decoder again")
+
+    monkeypatch.setattr(app.state.images.references.uploads, "convert", unavailable)
+    response = await client.post(
+        f"/api/chats/{cid}/image-references",
+        files={"file": ("photo", raw), "browser_preview": ("preview.png", png(), "image/png")},
+        data={"original_width": "4032", "original_height": "3024"},
+    )
+    assert response.status_code == 201, response.text
+    reference = response.json()
+    folder = app.state.images.references.path(reference["id"])
+    assert (folder / "original").read_bytes() == raw
+    receipt = json.loads((folder / "reference.json").read_text())
+    assert receipt["normalization"] == BROWSER_RECIPE
+    assert receipt["original_dimensions"] == [4032, 3024]
+    assert receipt["exif_orientation"] is None
+    assert not (folder / "decoded.png").exists()
+    app.state.images.engine.release.set()
+    accepted = await edit(client, cid, reference)
+    assert accepted.status_code == 202
+    await asyncio.gather(*list(app.state.images.tasks.values()))
+    job = accepted.json()["assistant"]["images"][0]
+    assert job["mode"] == "edit" and job["reference"]["id"] == reference["id"]
+    assert (app.state.images.path(job["id"]) / "inputs/original").read_bytes() == raw
+
+
+@pytest.mark.parametrize(
+    ("preview", "dimensions"),
+    [
+        (b"not a PNG", {"original_width": "100", "original_height": "200"}),
+        (png(), {}),
+        (png(), {"original_width": "100"}),
+        (png(), {"original_width": "0", "original_height": "200"}),
+        (png(), {"original_width": "100001", "original_height": "100001"}),
+    ],
+)
+async def test_browser_conversion_rejects_invalid_input_without_saving(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+    preview: bytes,
+    dimensions: dict[str, str],
+) -> None:
+    app, client, _ = chat_app
+    cid = await new(client)
+    result = await client.post(
+        f"/api/chats/{cid}/image-references",
+        files={"file": ("photo", png()), "browser_preview": ("preview.png", preview)},
+        data=dimensions,
+    )
+    assert result.status_code == 422
+    assert not await app.state.store.rows("SELECT * FROM image_references")
+    assert not list(app.state.images.references.folder.iterdir())
+
+
+async def test_original_file_limit_stays_20mb_with_browser_preview(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+) -> None:
+    _, client, _ = chat_app
+    cid = await new(client)
+    result = await client.post(
+        f"/api/chats/{cid}/image-references",
+        files={
+            "file": ("photo", b"x" * (20 * 1024**2 + 1)),
+            "browser_preview": ("preview.png", png()),
+        },
+        data={"original_width": "100", "original_height": "200"},
+    )
+    assert result.status_code == 413
 
 
 async def test_removing_ordinary_upload_does_not_unpin_admitted_edit(

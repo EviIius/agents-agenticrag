@@ -35,7 +35,10 @@ def main():
         raise ValueError("Invalid preparation directory")
     if (folder / "decoded.json").exists():
         raw = (folder / "original").read_bytes()
-        if len(raw) < 16 or raw[4:8] != b"ftyp":
+        props = json.loads((folder / "decoded.json").read_text())
+        browser = props.get("source") == "browser"
+        heif = len(raw) >= 16 and raw[4:8] == b"ftyp"
+        if not (heif or (browser and raw.startswith((b"\x89PNG\r\n\x1a\n", b"\xff\xd8\xff")))):
             raise ValueError("Decoded source is not HEIF")
     descriptor = normalize(folder)
     print(json.dumps(descriptor), flush=True)

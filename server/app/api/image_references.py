@@ -3,7 +3,7 @@
 import asyncio
 import hashlib
 
-from fastapi import APIRouter, Request, UploadFile
+from fastapi import APIRouter, Form, Request, UploadFile
 from fastapi.responses import Response
 
 from ..db import chats
@@ -16,20 +16,44 @@ router = APIRouter(prefix="/api")
 
 
 @router.post("/chats/{chat_id}/image-references", status_code=201)
-async def upload(chat_id: str, file: UploadFile, request: Request) -> ImageReference:
+async def upload(
+    chat_id: str,
+    file: UploadFile,
+    request: Request,
+    browser_preview: UploadFile | None = None,
+    original_width: int | None = Form(None),
+    original_height: int | None = Form(None),
+) -> ImageReference:
     await chats.chat(request.app.state.store, chat_id)
     try:
-        raw = bytearray()
-        while chunk := await file.read(1024 * 1024):
-            raw.extend(chunk)
-            if len(raw) > IMAGE_LIMIT:
-                raise AppError("file_too_large", "Choose a photo up to 20 MB.", 413)
+
+        async def read(upload: UploadFile) -> bytes:
+            raw = bytearray()
+            while chunk := await upload.read(1024 * 1024):
+                raw.extend(chunk)
+                if len(raw) > IMAGE_LIMIT:
+                    raise AppError("file_too_large", "Choose a photo up to 20 MB.", 413)
+            return bytes(raw)
+
+        dimensions = (
+            (original_width, original_height)
+            if original_width is not None and original_height is not None
+            else None
+        )
+        if bool(browser_preview) != bool(dimensions) or (
+            browser_preview is None and (original_width is not None or original_height is not None)
+        ):
+            raise AppError("image_unreadable", "Incomplete photo conversion. Try again.", 422)
+        raw = await read(file)
+        decoded = await read(browser_preview) if browser_preview else None
         images: Images = request.app.state.images
-        reference = await images.references.create(chat_id, bytes(raw))
+        reference = await images.references.create(chat_id, raw, decoded, dimensions)
         await images.reference_changed(reference.id)
         return reference
     finally:
         await file.close()
+        if browser_preview:
+            await browser_preview.close()
 
 
 @router.post("/chats/{chat_id}/image-references/from-job", status_code=201)

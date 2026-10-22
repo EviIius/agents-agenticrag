@@ -1908,6 +1908,12 @@ export interface components {
         Body_upload_api_chats__chat_id__image_references_post: {
             /** File */
             file: string;
+            /** Browser Preview */
+            browser_preview?: string | null;
+            /** Original Width */
+            original_width?: number | null;
+            /** Original Height */
+            original_height?: number | null;
         };
         /** Body_upload_api_library_documents_post */
         Body_upload_api_library_documents_post: {
