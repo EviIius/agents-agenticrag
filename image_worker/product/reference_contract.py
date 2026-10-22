@@ -9,6 +9,8 @@ from pathlib import Path
 LIMIT = 20 * 1024**2
 PIXELS = 100_000_000
 EDGE = 2048
+RECIPE = "exif-transpose; RGB; longest-edge<=2048; metadata-stripped"
+BROWSER_RECIPE = "browser-oriented; RGB; longest-edge<=2048; metadata-stripped"
 
 
 def digest(path):
@@ -62,11 +64,27 @@ def normalize(root):
     if working.exists() or receipt.exists() or not 0 < original.stat().st_size <= LIMIT:
         raise ValueError("Invalid or already prepared reference")
     original_hash = digest(original)
-    heif = (root / "decoded.json").exists()
-    decoded = owned(root, "decoded.png") if heif else original
+    with original.open("rb") as stream:
+        header = stream.read(12)
+    props = (
+        read_json(owned(root, "decoded.json"))
+        if (root / "decoded.json").exists()
+        else None
+    )
+    browser = props is not None and props.get("source") == "browser"
+    decoded = owned(root, "decoded.png") if props else original
     with Image.open(decoded) as image:
         if image.format not in ("PNG", "JPEG") or image.width * image.height > PIXELS:
             raise ValueError("Unsupported reference format or dimensions")
+        if browser and (image.format != "PNG" or max(image.size) > EDGE):
+            raise ValueError("Invalid browser conversion")
+        if props and (
+            not isinstance(props.get("dimensions"), list)
+            or len(props["dimensions"]) != 2
+            or any(type(n) is not int or n < 1 for n in props["dimensions"])
+            or props["dimensions"][0] * props["dimensions"][1] > PIXELS
+        ):
+            raise ValueError("Invalid decoded dimensions")
         dimensions = list(image.size)
         orientation = image.getexif().get(274, 1)
         if type(orientation) is not int or orientation not in range(1, 9):
@@ -84,15 +102,21 @@ def normalize(root):
         descriptor = {
             "original_sha256": original_hash,
             "original_bytes": original.stat().st_size,
-            "original_format": "HEIF" if heif else image.format,
-            "original_dimensions": read_json(owned(root, "decoded.json"))["dimensions"]
-            if heif
-            else dimensions,
-            "exif_orientation": None if heif else orientation,
+            "original_format": (
+                "PNG"
+                if header.startswith(b"\x89PNG\r\n\x1a\n")
+                else "JPEG"
+                if header.startswith(b"\xff\xd8\xff")
+                else "HEIF"
+            )
+            if browser
+            else ("HEIF" if props else image.format),
+            "original_dimensions": props["dimensions"] if props else dimensions,
+            "exif_orientation": None if props else orientation,
             "sha256": digest(working),
             "bytes": working.stat().st_size,
             "dimensions": list(clean.size),
-            "normalization": "exif-transpose; RGB; longest-edge<=2048; metadata-stripped",
+            "normalization": BROWSER_RECIPE if browser else RECIPE,
         }
     if digest(original) != original_hash or working.stat().st_size > LIMIT:
         raise ValueError("Reference changed or exceeded bound")
@@ -116,6 +140,8 @@ def validate_reference(root, expected):
     }
     if not isinstance(expected, dict) or set(expected) != fields:
         raise ValueError("Missing reference descriptor")
+    if expected["normalization"] not in (RECIPE, BROWSER_RECIPE):
+        raise ValueError("Invalid normalization recipe")
     receipt = read_json(owned(root, "reference.json"))
     if receipt != expected:
         raise ValueError("Reference binding changed")
@@ -153,7 +179,11 @@ def load_request(path, output):
     root = path.parent.resolve(strict=True)
     if path.name != "input.json" or owned(root, "input.json") != path.absolute():
         raise ValueError("Invalid manifest location")
-    if output.absolute() != owned(root, "working") or not output.is_dir() or any(output.iterdir()):
+    if (
+        output.absolute() != owned(root, "working")
+        or not output.is_dir()
+        or any(output.iterdir())
+    ):
         raise ValueError("Output must be a fresh owned directory")
     request = read_json(path)
     if not isinstance(request, dict) or set(request) != {
@@ -165,7 +195,10 @@ def load_request(path, output):
         raise ValueError("Explicit edit request required")
     if request["mode"] != "edit":
         raise ValueError("No generation fallback")
-    if not isinstance(request["prompt"], str) or not 0 < len(request["prompt"].strip()) <= 4000:
+    if (
+        not isinstance(request["prompt"], str)
+        or not 0 < len(request["prompt"].strip()) <= 4000
+    ):
         raise ValueError("Invalid prompt")
     if type(request["seed"]) is not int or not 0 <= request["seed"] < 2**32:
         raise ValueError("Invalid seed")

@@ -2042,3 +2042,13 @@ and old hashed assets are retained; no database operation, restart, task
 interruption or native/model call occurred. Initial JS is 255,946 / 256,000 gzip
 bytes. H4: `docs/MOBILE-TOOLS-REPORT.md`. Physical iPhone/VoiceOver acceptance is
 not inferred; the prior photo-edit phone checklist remains pending.
+
+**User correction — 21 October 2026 (camera-photo preparation):** After reporting
+an iPhone photo-preparation failure, Jake supplied a photo and asked to make it
+work. Repair the upload path using the existing browser and CPU codecs: preserve
+the original, use one bounded browser-derived PNG fallback on decoder failure,
+and validate/bind that derived reference explicitly. Keep the 20 MB individual
+file and 2048-pixel working-reference limits; the multipart envelope may hold
+the original plus its bounded preview. No new dependency, model/native call,
+schema, runtime/default change or unrelated roadmap work is implied. Verify the
+supplied photo privately and use synthetic evidence for the code/release report.

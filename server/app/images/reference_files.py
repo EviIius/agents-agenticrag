@@ -10,6 +10,7 @@ from .files import sync_directory
 
 FILES = ("original", "reference.png", "reference.json")
 RECIPE = "exif-transpose; RGB; longest-edge<=2048; metadata-stripped"
+BROWSER_RECIPE = "browser-oriented; RGB; longest-edge<=2048; metadata-stripped"
 
 
 def digest(path: Path) -> str:
@@ -39,7 +40,10 @@ def validate_reference(folder: Path, descriptor: dict[str, Any]) -> None:
         "dimensions",
         "normalization",
     }
-    if set(descriptor) != expected_keys or descriptor["normalization"] != RECIPE:
+    if set(descriptor) != expected_keys or descriptor["normalization"] not in {
+        RECIPE,
+        BROWSER_RECIPE,
+    }:
         raise ValueError("Invalid reference descriptor")
     dimensions = descriptor["dimensions"]
     original_dimensions = descriptor["original_dimensions"]
@@ -57,7 +61,13 @@ def validate_reference(folder: Path, descriptor: dict[str, Any]) -> None:
     orientation = descriptor["exif_orientation"]
     if not (
         (type(orientation) is int and 1 <= orientation <= 8)
-        or (orientation is None and descriptor["original_format"] == "HEIF")
+        or (
+            orientation is None
+            and (
+                descriptor["original_format"] == "HEIF"
+                or descriptor["normalization"] == BROWSER_RECIPE
+            )
+        )
     ):
         raise ValueError("Invalid reference orientation")
     for name in FILES:

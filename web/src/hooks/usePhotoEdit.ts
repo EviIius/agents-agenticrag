@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { api, ApiError, type Chat, type Model } from "@/lib/api";
 import type { components } from "@/lib/api-types";
 import type { ImageJob } from "@/lib/image-events";
+import { uploadPhoto } from "@/lib/photo-upload";
 
 export type PhotoReference = components["schemas"]["ImageReference"];
 export type PhotoDraft = {
@@ -155,21 +156,15 @@ export function usePhotoEdit(key: string, model?: Model) {
           throw new Error("Choose a PNG, JPEG or HEIC photo up to 20 MB.");
         const chat = await owner();
         if (controller.signal.aborted) return;
-        const form = new FormData();
-        if (source instanceof File) form.append("file", source, "photo");
-        const response = await fetch(
-          `/api/chats/${chat}/image-references${source instanceof File ? "" : "/from-job"}`,
-          {
-            method: "POST",
-            signal: controller.signal,
-            ...(source instanceof File
-              ? { body: form }
-              : {
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ source_job_id: source.id }),
-                }),
-          },
-        );
+        const response =
+          source instanceof File
+            ? await uploadPhoto(chat, source, controller.signal)
+            : await fetch(`/api/chats/${chat}/image-references/from-job`, {
+                method: "POST",
+                signal: controller.signal,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ source_job_id: source.id }),
+              });
         if (!response.ok) {
           const body = await response.json().catch(() => ({}));
           throw new ApiError(

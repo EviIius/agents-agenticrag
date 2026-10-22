@@ -59,6 +59,7 @@ TEXT = {
 DOCUMENT = {".pdf", ".docx"}
 
 AUDIO_LIMIT = 4 * 1024**3
+EDIT_BODY_LIMIT = 40 * 1024**2 + 65536  # Original + optional bounded browser PNG.
 
 
 class UploadSpaceGuard:
@@ -90,7 +91,7 @@ class UploadSpaceGuard:
                 length = int(headers.get(b"content-length", b"0"))
             except ValueError:
                 length = 0
-            if edit_upload and length > 20 * 1024**2 + 65536:
+            if edit_upload and length > EDIT_BODY_LIMIT:
                 await error_response("file_too_large", "Choose a photo up to 20 MB.", 413)(
                     scope, receive, send
                 )
@@ -111,7 +112,7 @@ class UploadSpaceGuard:
             nonlocal consumed
             message = await receive()
             consumed += len(message.get("body", b""))
-            if consumed > 20 * 1024**2 + 65536:
+            if consumed > EDIT_BODY_LIMIT:
                 raise HTTPException(413, "Choose a photo up to 20 MB.")
             return message
 

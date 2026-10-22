@@ -94,7 +94,13 @@ class References:
             raise AppError("not_found", "Photo reference not found in this chat.", 404)
         return projection(row)
 
-    async def create(self, chat_id: str, raw: bytes) -> ImageReference:
+    async def create(
+        self,
+        chat_id: str,
+        raw: bytes,
+        browser_preview: bytes | None = None,
+        dimensions: tuple[int, int] | None = None,
+    ) -> ImageReference:
         await chats.chat(self.store, chat_id)
         if not 0 < len(raw) <= IMAGE_LIMIT:
             raise AppError("file_too_large", "Choose a photo up to 20 MB.", 413)
@@ -103,7 +109,22 @@ class References:
             raise AppError(
                 "unsupported_type", "Photo editing accepts PNG, JPEG or HEIC photos.", 422
             )
-        if shutil.disk_usage(self.folder).free < 128 * 1024**2 + len(raw):
+        if browser_preview is not None and (
+            not 0 < len(browser_preview) <= IMAGE_LIMIT
+            or not browser_preview.startswith(b"\x89PNG\r\n\x1a\n")
+            or not dimensions
+            or any(type(n) is not int or n < 1 for n in dimensions)
+            or dimensions[0] * dimensions[1] > 100_000_000
+            or len(browser_preview) < 24
+            or any(
+                not 1 <= int.from_bytes(browser_preview[start : start + 4], "big") <= 2048
+                for start in (16, 20)
+            )
+        ):
+            raise AppError("image_unreadable", "Invalid photo conversion. Try again.", 422)
+        if shutil.disk_usage(self.folder).free < (
+            128 * 1024**2 + len(raw) + len(browser_preview or b"")
+        ):
             raise AppError("low_disk", "Free at least 128 MB before attaching an edit photo.", 409)
         async with self.slots:
             identifier = uuid4().hex
@@ -120,7 +141,15 @@ class References:
                     file.flush()
                     os.fsync(file.fileno())
                 meter.sample()
-                if heif:
+                if browser_preview is not None:
+                    (temporary / "decoded.png").write_bytes(browser_preview)
+                    (temporary / "decoded.png").chmod(0o600)
+                    atomic_json(
+                        temporary / "decoded.json",
+                        {"dimensions": dimensions, "source": "browser"},
+                    )
+                    meter.sample()
+                elif heif:
                     props: dict[str, int] = {}
                     decoded = await self.uploads.convert(raw, temporary, properties=props)
                     (temporary / "decoded.png").write_bytes(decoded)
