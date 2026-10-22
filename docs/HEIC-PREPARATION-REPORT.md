@@ -80,6 +80,25 @@ evidence directory. No real image appears in these screenshots.
 
 ## Release closeout
 
-Pending final gates and installed-build checks. A fresh private app/worker/data
-bundle and the schema-aware backend/current-data compatibility policy are used;
-an old backend or pre-release database must not replace newer photo references.
+PR #8 merged as `b50f8a80`; the repair is live. A fresh **2,106-file private
+bundle** verifies, **674 installed app files** and **four worker files** match,
+and database/input bytes, interpreters/selectors, plist/service identity and
+Tailscale route are preserved. Schema remains 14 and Ollama remains 0.35.0.
+Observed downtime was **3.49 seconds**. Local and verified HTTPS health, edit
+capability and index/service-worker hashes pass. The previous UI fallback keeps
+the current schema-aware backend/worker/data; old-backend/database restore
+remains prohibited.
+
+The **actual installed HTTPS composer** now accepts the privately supplied photo
+and reaches **Ready** in Chromium and WebKit. A controlled first decoder
+rejection forces the new conversion path; both original-byte comparisons pass
+and the prepared reference is **1536 × 2048**. Typing works and Edit photo is
+enabled. No instruction was submitted, no edit/model call was made, and no real
+photo screenshot/trace/filename is included in evidence.
+
+The initial live observer reached Ready but failed its request-count assertion,
+so it was not credited as a fallback pass. Its private failure is preserved. The
+controlled rerun blocks service workers only in the test browser to make request
+interception deterministic; both fallback assertions pass. This is browser
+automation on the Mac, not a physical iPhone/PWA acceptance claim. Reloading the
+Home Screen app is necessary to receive the new client code.

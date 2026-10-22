@@ -2052,3 +2052,21 @@ file and 2048-pixel working-reference limits; the multipart envelope may hold
 the original plus its bounded preview. No new dependency, model/native call,
 schema, runtime/default change or unrelated roadmap work is implied. Verify the
 supplied photo privately and use synthetic evidence for the code/release report.
+
+**Camera-photo preparation closeout — 21 October 2026:** PR #8 (`b50f8a80`)
+is merged and published. One decoder-failure fallback preserves the original
+and validates a browser-derived PNG with explicit provenance. Full checks pass
+766 Python / 132 frontend, 110 contrast pairs and 83.6% image coverage; focused
+browser checks pass 19 with one intentional Chromium HEIC skip, and real HEIC
+fallback passes in WebKit. Four actual CPU cases and 14 offline worker checks
+pass with no inference. Initial observer/instrumentation failures are retained.
+
+The privately supplied photo reaches Ready (1536×2048) through the installed
+HTTPS composer in Chromium and WebKit, including a controlled rejection that
+forces conversion; originals match byte-for-byte and no edit is submitted.
+No real photo, filename or screenshot is added to the repository. A fresh
+2,106-file private bundle, 674 app files and four worker files verify; data,
+selectors/runtime/service/plist/Tailscale are preserved. Local/verified HTTPS
+health pass, schema stays 14 and Ollama 0.35.0. The current-data/schema-aware
+compatibility policy remains. H4: `docs/HEIC-PREPARATION-REPORT.md`. Physical
+iPhone acceptance is not inferred; no native/model allowance is reopened.
