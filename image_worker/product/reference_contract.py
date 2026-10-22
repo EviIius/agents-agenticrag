@@ -66,11 +66,7 @@ def normalize(root):
     original_hash = digest(original)
     with original.open("rb") as stream:
         header = stream.read(12)
-    props = (
-        read_json(owned(root, "decoded.json"))
-        if (root / "decoded.json").exists()
-        else None
-    )
+    props = read_json(owned(root, "decoded.json")) if (root / "decoded.json").exists() else None
     browser = props is not None and props.get("source") == "browser"
     decoded = owned(root, "decoded.png") if props else original
     with Image.open(decoded) as image:
@@ -179,14 +175,10 @@ def load_request(path, output):
     root = path.parent.resolve(strict=True)
     if path.name != "input.json" or owned(root, "input.json") != path.absolute():
         raise ValueError("Invalid manifest location")
-    if (
-        output.absolute() != owned(root, "working")
-        or not output.is_dir()
-        or any(output.iterdir())
-    ):
+    if output.absolute() != owned(root, "working") or not output.is_dir() or any(output.iterdir()):
         raise ValueError("Output must be a fresh owned directory")
     request = read_json(path)
-    if not isinstance(request, dict) or set(request) != {
+    if not isinstance(request, dict) or set(request) - {"selection"} != {
         "mode",
         "prompt",
         "seed",
@@ -195,12 +187,13 @@ def load_request(path, output):
         raise ValueError("Explicit edit request required")
     if request["mode"] != "edit":
         raise ValueError("No generation fallback")
-    if (
-        not isinstance(request["prompt"], str)
-        or not 0 < len(request["prompt"].strip()) <= 4000
-    ):
+    if not isinstance(request["prompt"], str) or not 0 < len(request["prompt"].strip()) <= 4000:
         raise ValueError("Invalid prompt")
     if type(request["seed"]) is not int or not 0 <= request["seed"] < 2**32:
         raise ValueError("Invalid seed")
     reference = validate_reference(owned(root, "inputs"), request["reference"])
+    if "selection" in request:
+        from masked_edit import selection_valid
+
+        selection_valid(request["selection"])
     return request, reference

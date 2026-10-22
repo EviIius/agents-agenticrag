@@ -114,6 +114,7 @@ export function useChatImages({
       fixed,
       sourceJob,
       photo?.reference.id,
+      photo?.selection,
     ]);
     let saved = submissions.get(origin);
     if (!saved || saved.signature !== signature) {
@@ -153,6 +154,7 @@ export function useChatImages({
         seeds: saved.seeds,
         ...(sourceJob ? { source_job_id: sourceJob } : {}),
         ...(photo ? { reference_id: photo.reference.id } : {}),
+        ...(photo?.selection ? { selection: photo.selection } : {}),
       });
       commit(id, response, saved.chat);
       submissions.delete(origin);

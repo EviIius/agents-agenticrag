@@ -12,6 +12,8 @@ const job = (changes: Partial<ImageJob> = {}): ImageJob => ({
   prompt: "Synthetic circle",
   seed: 1,
   mode: "generate",
+  width: 1024,
+  height: 1024,
   export_bytes: 0,
   state: "running",
   stage: "Generating image",

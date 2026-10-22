@@ -30,6 +30,26 @@ class ImageReferenceFromJob(BaseModel):
     source_job_id: str = Field(pattern=r"^[a-f0-9]{32}$")
 
 
+class PhotoStroke(BaseModel):
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+    radius: float = Field(ge=0.005, le=0.25)
+    points: list[
+        tuple[Annotated[float, Field(ge=0, le=1)], Annotated[float, Field(ge=0, le=1)]]
+    ] = Field(min_length=1, max_length=128)
+
+
+class PhotoSelection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    version: Literal[1] = 1
+    strokes: list[PhotoStroke] = Field(min_length=1, max_length=32)
+
+    @model_validator(mode="after")
+    def bounded(self) -> "PhotoSelection":
+        if sum(len(stroke.points) for stroke in self.strokes) > 512:
+            raise ValueError("Selection is too detailed. Use fewer brush strokes.")
+        return self
+
+
 class ImageJob(BaseModel):
     id: str
     parent_id: str | None = None
@@ -59,6 +79,9 @@ class ImageJob(BaseModel):
     mode: Literal["generate", "edit"] = "generate"
     reference: ImageReference | None = None
     export_bytes: int = 0
+    selection: PhotoSelection | None = None
+    width: int = 1024
+    height: int = 1024
 
 
 class ImageOrigin(BaseModel):
@@ -79,6 +102,7 @@ class ChatImageCreate(BaseModel):
     parent_id: str | None = Field(None, pattern=r"^[a-f0-9]{32}$")
     source_job_id: str | None = Field(None, pattern=r"^[a-f0-9]{32}$")
     reference_id: str | None = Field(None, pattern=r"^[a-f0-9]{32}$")
+    selection: PhotoSelection | None = None
 
     @model_validator(mode="after")
     def valid_images(self) -> "ChatImageCreate":
@@ -86,6 +110,8 @@ class ChatImageCreate(BaseModel):
             raise ValueError("Provide a prompt and one seed for each image.")
         if self.reference_id and self.count != 1:
             raise ValueError("An edit uses one reference and creates one image.")
+        if self.selection and not self.reference_id:
+            raise ValueError("Choose a photo before selecting an edit area.")
         return self
 
 
@@ -116,6 +142,7 @@ class ImageStorage(BaseModel):
     reference_metadata_bytes: int = 0
     export_bytes: int = 0
     measurement_bytes: int = 0
+    native_bytes: int = 0
 
 
 class ImageStatus(BaseModel):

@@ -56,6 +56,14 @@ def png() -> bytes:
 def output(folder: Path, expected: dict[str, Any]) -> None:
     raw = png()
     (folder / "image.png").write_bytes(raw)
+    composition = {}
+    if expected.get("selection"):
+        (folder / "native.png").write_bytes(raw)
+        composition = {
+            "composition": {"outside_changed_pixels": 0},
+            "native_sha256": hashlib.sha256(raw).hexdigest(),
+            "native_bytes": len(raw),
+        }
     (folder / "metadata.json").write_text(
         json.dumps(
             {
@@ -71,6 +79,7 @@ def output(folder: Path, expected: dict[str, Any]) -> None:
                 "revision": REVISION,
                 "mflux": "0.22.0",
                 "sha256": hashlib.sha256(raw).hexdigest(),
+                **composition,
             }
         )
     )

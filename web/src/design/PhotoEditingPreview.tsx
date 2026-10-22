@@ -2,7 +2,11 @@ import { useState } from "react";
 import { Composer } from "@/components/chat/Composer";
 import ImageTurn from "@/components/chat/ImageTurn";
 import { Button } from "@/components/ui/button";
-import type { PhotoDraft, PhotoEditor } from "@/hooks/usePhotoEdit";
+import type {
+  PhotoDraft,
+  PhotoEditor,
+  PhotoSelection,
+} from "@/hooks/usePhotoEdit";
 import type { ImageJob } from "@/lib/image-events";
 import type { Message } from "@/lib/api";
 import { useUI } from "@/stores/ui";
@@ -16,6 +20,7 @@ export default function PhotoEditingPreview() {
     "Change the synthetic background to cobalt.",
   );
   const [active, setActive] = useState(true);
+  const [selection, setSelection] = useState<PhotoSelection>();
   const ui = useUI();
   const ref = {
     id: "c".repeat(32),
@@ -35,6 +40,11 @@ export default function PhotoEditingPreview() {
     input: {
       token: "fake",
       reference: ref,
+      selection:
+        selection ??
+        (state === "selection"
+          ? { version: 1, strokes: [{ radius: 0.08, points: [[0.5, 0.3]] }] }
+          : undefined),
       phase:
         state === "preparing"
           ? "preparing"
@@ -52,9 +62,13 @@ export default function PhotoEditingPreview() {
   const editor: PhotoEditor = {
     key: "design-photo",
     draft,
-    previewURL: "/icons/apple-touch-icon.png",
+    previewURL:
+      state === "selection-load-error"
+        ? "/synthetic-missing-photo.png"
+        : "/icons/apple-touch-icon.png",
     setText,
     setActive,
+    setSelection,
     attach: async () => {
       setActive(true);
       setState("ready");
@@ -71,6 +85,8 @@ export default function PhotoEditingPreview() {
   const job: ImageJob = {
     id: "a".repeat(32),
     mode: "edit",
+    width: 720,
+    height: 900,
     prompt: text,
     seed: 42,
     reference: ref,

@@ -34,6 +34,14 @@ def main():
     threading.Thread(target=parent_watch, daemon=True).start()
     request_path, model_path, output = map(Path, sys.argv[1:])
     request, reference = load_request(request_path, output)
+    selection = request.get("selection")
+    source = None
+    if selection:
+        from masked_edit import context, read_rgb
+
+        source = read_rgb(reference)
+        canvas, _, _, _ = context(source, selection)
+        canvas.save(output / ".selected-reference.png", format="PNG")
     if model_path.name != REVISION or not model_path.is_dir():
         raise ValueError("Pinned model snapshot missing")
     emit("initializing")
@@ -97,7 +105,9 @@ def main():
     )
     if reference is not None:
         validate_reference(request_path.parent / "inputs", request["reference"])
-        arguments["image_paths"] = [str(reference)]
+        arguments["image_paths"] = [
+            str(output / ".selected-reference.png" if selection else reference)
+        ]
     result = model.generate_image(**arguments)
     mx.synchronize()
     result.save(output / ".image.partial.png")
@@ -107,6 +117,20 @@ def main():
         image.load()
         if image.format != "PNG" or image.size != (1024, 1024):
             raise ValueError("Invalid output")
+    composition = {}
+    if selection:
+        from masked_edit import composite, read_rgb
+
+        os.replace(output / ".image.partial.png", output / "native.png")
+        image, proof = composite(source, read_rgb(output / "native.png", (1024, 1024)), selection)
+        image.save(output / ".image.partial.png", format="PNG")
+        (output / ".selected-reference.png").unlink()
+        composition = {
+            "selection": selection,
+            "composition": proof,
+            "native_sha256": digest(output / "native.png"),
+            "native_bytes": (output / "native.png").stat().st_size,
+        }
     if mx.get_peak_memory() > 24 * 1024**3 or mx.set_cache_limit(1073741824) != 1073741824:
         raise RuntimeError("Decode exceeded unchanged resource bounds")
     if reference is not None:
@@ -120,8 +144,8 @@ def main():
         "model": MODEL,
         "revision": REVISION,
         "mflux": "0.22.0",
-        "width": 1024,
-        "height": 1024,
+        "width": source.width if selection else 1024,
+        "height": source.height if selection else 1024,
         "steps": 4,
         "guidance": 1.0,
         "quantization": 8,
@@ -132,6 +156,7 @@ def main():
         "mlx_cache_bytes": mx.get_cache_memory(),
         "sha256": digest(output / ".image.partial.png"),
         "worker_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        **composition,
     }
     with (output / ".metadata.partial.json").open("x") as stream:
         json.dump(details, stream, indent=2)

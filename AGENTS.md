@@ -2070,3 +2070,36 @@ selectors/runtime/service/plist/Tailscale are preserved. Local/verified HTTPS
 health pass, schema stays 14 and Ollama 0.35.0. The current-data/schema-aware
 compatibility policy remains. H4: `docs/HEIC-PREPARATION-REPORT.md`. Physical
 iPhone acceptance is not inferred; no native/model allowance is reopened.
+
+**User authorization — 21 October 2026 (masked editing):** Jake requested masked
+editing with compositing, followed by a FLUX test using the supplied original
+and hat/gloves request, and consideration of stronger models if needed. Proceed
+on `codex/masked-photo-editing` under `docs/PHOTO-EDITING-PE2-PLAN.md`: bounded
+brush selections, preserved reference proportions, exact unselected-pixel
+compositing, no new packages/weights and a new maximum two-job native scope
+(synthetic, then private original) with unchanged host guards and first-failure
+stopping. This does not reopen earlier native budgets. Retain failures/private
+media and stop with quality/evidence before merge/publication or another model.
+
+**PE2 implementation/trial closeout — 22 October 2026:** The isolated brush,
+context-crop/composite and independent CPU verification path is implemented with
+durable selection replay/retry, raw/native/export backup and storage accounting.
+Full checks pass 773 Python / 132 frontend with 83.1% image coverage; 26 actual
+CPU/native-double checks and focused Chromium/WebKit brush/regression checks pass.
+Initial form-submit and backup-fixture failures and their corrections are retained.
+
+Exactly two new native jobs completed: synthetic 21.035 s, private 23.053 s,
+18,659,198,390-byte MLX peak, zero swap growth and zero changed protected pixels.
+The private trial preserves all 3,093,481 unselected pixels and its face region,
+but fails content quality: the first mask clips the cap and gloves are incomplete.
+Expanding the mask from the retained native pixels is a separate CPU diagnostic,
+not another native pass or a replacement of the failed quality result. All
+private images/task/selection/controller remain private; five executed worker
+hashes are frozen. Main/live source, worker, service and local/HTTPS health are
+preserved, with no new weight/dependency/default change or deployment.
+
+Do not promote this quality result. The two-job allowance is exhausted. H4:
+`docs/PHOTO-EDITING-PE2-REPORT.md`; named research-only alternatives including
+mask-aware Qwen-Image-2.1 are in `docs/PHOTO-EDITING-PE2-NEXT-CANDIDATE.md`.
+No further native invocation, named model download or publication is authorized
+by this closeout. A later user instruction may approve a concrete next scope.

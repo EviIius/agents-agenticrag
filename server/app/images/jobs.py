@@ -14,7 +14,14 @@ from ..capacity import Capacity
 from ..db.core import Store
 from ..db.image_jobs import image_job
 from ..errors import AppError
-from ..schemas import ImageChange, ImageCreate, ImageJob, ImageSnapshot, ImageStorage
+from ..schemas import (
+    ImageChange,
+    ImageCreate,
+    ImageJob,
+    ImageSnapshot,
+    ImageStorage,
+    PhotoSelection,
+)
 from .engine import Engine
 from .files import atomic_json, sync_directory, validate
 from .references import Reference, References
@@ -95,6 +102,7 @@ class Images:
             export_bytes=exports["n"] if exports else 0,
             measurement_bytes=measurement_bytes
             + sum(p.stat().st_size for p in self.folder.glob("*/storage.json")),
+            native_bytes=sum(p.stat().st_size for p in self.folder.glob("*/output/native.png")),
             manifest_bytes=sum(p.stat().st_size for p in self.folder.glob("*/input.json")),
             database_bytes=sum(p.stat().st_size for p in self.data.glob("workbench.db*")),
             backup_bytes=sum(
@@ -187,7 +195,10 @@ class Images:
             return await self.get(identifier)
 
     async def prepare(
-        self, specs: Sequence[ImageCreate], reference: Reference | None = None
+        self,
+        specs: Sequence[ImageCreate],
+        reference: Reference | None = None,
+        selection: PhotoSelection | None = None,
     ) -> Prepared:
         """Caller owns self.lock; prepare all manifests without commits or scheduling."""
         if self.closing:
@@ -216,6 +227,10 @@ class Images:
                 expected: dict[str, Any] = {"prompt": spec.prompt, "seed": spec.seed}
                 if reference:
                     expected.update(mode="edit", reference=reference.descriptor)
+                if selection:
+                    if not reference:
+                        raise ValueError("A selection requires a photo")
+                    expected["selection"] = selection.model_dump(mode="json")
                 identifier, timestamp = uuid4().hex, now()
                 folder = self.path(identifier)
                 folder.mkdir(mode=0o700)
@@ -328,6 +343,8 @@ class Images:
                 exit_code = await execute(folder / "input.json", scratch, progress)
                 if sampling and sampling.done():
                     await sampling
+                if expected.get("selection"):
+                    await self.references.codec.verify_composite(folder)
                 async with self.lock:
                     expected = json.loads((folder / "input.json").read_text())
                     digest, size, metadata_size = await asyncio.to_thread(

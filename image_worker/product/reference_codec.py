@@ -33,6 +33,13 @@ def main():
     folder = Path(sys.argv[1])
     if folder.is_symlink():
         raise ValueError("Invalid preparation directory")
+    if sys.argv[2:] == ["--verify-composite"]:
+        from masked_edit import verify_composite
+
+        print(json.dumps(verify_composite(folder)), flush=True)
+        return
+    if sys.argv[2:]:
+        raise ValueError("Unknown codec operation")
     if (folder / "decoded.json").exists():
         raw = (folder / "original").read_bytes()
         props = json.loads((folder / "decoded.json").read_text())

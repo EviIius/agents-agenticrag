@@ -1,0 +1,86 @@
+. scripts/tool-env.sh; uv run --directory server ruff check app tests
+All checks passed!
+. scripts/tool-env.sh; uv run --directory server ruff format --check app tests
+174 files already formatted
+. scripts/tool-env.sh; uv run --directory server mypy app tests
+Success: no issues found in 172 source files
+. scripts/tool-env.sh; uv run --directory server python ../scripts/check_coverage.py
+........................................................................ [  9%]
+........................................................................ [ 18%]
+........................................................................ [ 27%]
+........................................................................ [ 37%]
+........................................................................ [ 46%]
+............................F........................................... [ 55%]
+........................................................................ [ 65%]
+........................................................................ [ 74%]
+........................................................................ [ 83%]
+........................................................................ [ 93%]
+.....................................................                    [100%]
+=================================== FAILURES ===================================
+___________ test_backup_round_trip_retains_mask_native_and_composite ___________
+
+chat_app = (<fastapi.applications.FastAPI object at 0x10da11a90>, <httpx.AsyncClient object at 0x10d426750>, <fastapi.applications.FastAPI object at 0x10da11550>)
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-216/test_backup_round_trip_retains0')
+
+    async def test_backup_round_trip_retains_mask_native_and_composite(
+        chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI], tmp_path: Path
+    ) -> None:
+        app, client, _ = chat_app
+        cid, ref = await setup(app, client)
+        app.state.images.engine.release.set()
+        response = await client.post(
+            f"/api/chats/{cid}/images", json=inputs(1, reference_id=ref["id"], selection=SELECTION)
+        )
+        assert response.status_code == 202
+        image = response.json()["assistant"]["images"][0]
+        await asyncio.gather(*list(app.state.images.tasks.values()))
+        images = app.state.images
+        backups = Backups(
+            images.store, images.data, images=images, clock=lambda: datetime(2026, 10, 21, tzinfo=UTC)
+        )
+        assert (await backups.make()).warning is None
+        database = next(backups.folder.glob("auto-20261021-*.db"))
+        restored = tmp_path / "restored"
+>       assert restore(database, restored) == 1
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_masked_photo.py:113: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/images/backup.py:160: in restore
+    spec = json.loads(manifest.read_text())
+                      ^^^^^^^^^^^^^^^^^^^^
+../../../../.local/share/workbench/tools/python-library-probe/cpython-3.14.7-macos-aarch64-none/lib/python3.14/pathlib/__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-216/test_backup_round_trip_retains0/backups/images/auto-20261021-2345.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-216/test_backup_round_trip_retains0/backups/images/auto-20261021-2345.json'
+
+../../../../.local/share/workbench/tools/python-library-probe/cpython-3.14.7-macos-aarch64-none/lib/python3.14/pathlib/__init__.py:771: FileNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_masked_photo.py::test_backup_round_trip_retains_mask_native_and_composite
+1 failed, 772 passed in 374.72s (0:06:14)
+providers line coverage: 385/429 = 89.7%
+runs line coverage: 391/437 = 89.5%
+search line coverage: 1564/1741 = 89.8%
+transcribe line coverage: 690/740 = 93.2%
+documents line coverage: 196/203 = 96.6%
+library line coverage: 762/823 = 92.6%
+images line coverage: 1486/1783 = 83.3%
+workflows line coverage: 2713/3021 = 89.8%
+backup.py line coverage: 126/132 = 95.5%
+capacity.py line coverage: 56/58 = 96.6%
+make: *** [check] Error 1
