@@ -166,7 +166,7 @@ test("long-thinking guidance starts at a minute and Stop reply uses cancellation
   await expect(page.locator('[data-streaming="true"]')).toHaveCount(0);
 });
 
-test("thinking menu says Model default and exposes only reported options", async ({
+test("thinking menu keeps its compact default label and exposes only reported options", async ({
   page,
   request,
 }) => {
@@ -187,7 +187,8 @@ test("thinking menu says Model default and exposes only reported options", async
     name: "Model default",
     exact: true,
   });
-  await expect(option).toHaveText("Model default");
+  await expect(option).toHaveText("Default");
+  await expect(option).toHaveAttribute("title", "Model default");
   await expect(option).toHaveAttribute("aria-checked", "true");
   await expect(
     page.getByRole("menuitemradio", { name: "High", exact: true }),

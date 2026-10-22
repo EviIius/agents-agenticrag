@@ -2153,3 +2153,33 @@ legacy masks, CPU/API/browser evidence and a private CPU-only original-photo
 coverage review. Retain both checkpoints, prior frozen sources and failed trials.
 No earlier native allowance is reopened; no new model invocation/download,
 dependency, Qwen routing/integration, main merge or publication is included.
+
+**PE4 selection repair closeout — 22 October 2026:** Paint/Protect/Move, zoom/pan,
+Undo/Redo, uniform overlay and selected/protected views are implemented on the
+isolated branch. Optional ordered erasing preserves omitted-field serialization,
+legacy mask hashes, replay/retry and backup identity. The CPU compositor preserves
+erased and all other unselected pixels; empty effective masks refuse before model
+imports. A rejected stroke at the limit cannot extend an earlier stroke.
+
+Checks pass 777 Python / 132 frontend, 32 CPU/process and 11 focused API cases;
+image coverage is 83.1% and the entry bundle is 255,964/256,000 gzip bytes. Full
+browser results: 790 pass, four intentional skips, two failures from a stale
+visible-default-label assertion. The previously approved compact Tools label is
+verified by the corrected assertion plus accessible name/tooltip and unchanged
+selection checks; all 12 cases in that file pass in Chromium/WebKit. All seven
+new protection-editor cases pass in each browser. Initial failures and traces
+remain, and historical artifact bytes are restored with fresh captures archived.
+
+The supplied photo has only a private CPU coverage review: four small manually
+identified regions reach 100% selected coverage; the manual face outline has zero
+selected pixels and a synthetic composite changes zero protected pixels. This
+does not establish full-object coverage or new generated quality. Browser edge
+antialiasing remains approximate. Both weights, prior executed sources/inputs,
+exhausted native reservations, installed app/static/worker/plist and local/verified
+HTTPS health are preserved. Ollama remains 0.35.0. No physical phone or VoiceOver
+pass, new native call, download, merge or deployment is claimed.
+
+H4: `docs/PHOTO-EDITING-PE4-REPORT.md`. Stop for mask/comparison review. The proposed
+one-invocation-per-engine pair in `docs/PHOTO-EDITING-PE4-COMPARISON-PLAN.md` is
+prepared only; its concrete native scope needs separate approval. No earlier
+native budget is reopened and Qwen remains an isolated evaluation candidate.
