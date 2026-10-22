@@ -1,9 +1,11 @@
 # PE3 — Qwen explicit-mask feasibility trial
 
-22 October 2026. **Prepared, not approved for download or native execution.**
+22 October 2026. **Approved for the pinned download and bounded viability trial.**
 Branch: `codex/masked-photo-editing`; draft PR #9. The user's continuation advances
 offline preparation after PE2. It does not silently reopen PE2's exhausted two-job
-allowance. This is the concrete next scope for review.
+allowance. Jake subsequently asked to retain both engines and approved installation
+in response to the concrete download/two-image question. Retain FLUX as the live
+engine; Qwen remains an isolated evaluation candidate.
 
 ## Decision this trial answers
 
@@ -37,7 +39,9 @@ and CPU diagnostic. Do not silently replace them with a more favorable test.
   decision; do not treat this candidate as an Apache-2.0 replacement.
 
 The checked official metadata and license text are retained under
-`artifacts/photo-editing/pe3-prep-20261022/`. No weights have been downloaded.
+`artifacts/photo-editing/pe3-prep-20261022/`. No weights had been downloaded at
+preparation. The subsequently approved download/trial outcome is recorded in
+`PHOTO-EDITING-PE3-REPORT.md`; its two-invocation allowance is now exhausted.
 
 ## Offline findings and limits of that evidence
 
@@ -113,8 +117,10 @@ this is a feasibility comparison, not a controlled model-ranking experiment.
   process group before releasing the lease. No competing live image/chat job.
 - Keep **24 GiB MLX peak**, **1 GiB cache**, **512 MiB swap growth** and **2 seconds
   application health**. Check residency/swap/health independently while work runs;
-  stop/reap on a failed guard. Inspect the actual installed MLX hard-limit API
-  before applying the allocation limit, without altering the environment.
+  stop/reap on a failed guard. The installed MLX memory-limit setter is a guideline
+  for graph evaluation, not an absolute allocation ceiling. Apply it, and retain
+  measured peak checks at synchronization barriers plus independent host guards;
+  do not claim the setter alone enforces a hard ceiling.
 - Proposed candidate-only maxima: **120 seconds initialization**, **300 seconds
   generation plus decode**, **420 seconds overall**. These are new reviewed trial
   allowances, not changes to FLUX's qualified 60-second limit or production policy.
@@ -140,9 +146,11 @@ Jake. A favorable pair is feasibility evidence only: it does not qualify repeate
 quality, cancellation/recovery, chat coexistence or production integration.
 Keep main, live app, existing FLUX worker/defaults and PR #9 unmerged.
 
-## Approval requested
+## Approval record
 
-Approve the named **33.13 GB pinned model download** and this **maximum two-image
-trial**, in the existing image environment, with the exact candidate-only budgets
-above. AGENTS.md's PE2 closeout requires a separately reviewed scope before either
-action. Preparation does not create an approval receipt or grant execution.
+The named **33.13 GB pinned model download** and this **maximum two-image trial**,
+in the existing image environment with the candidate-only budgets above, were
+presented for approval. Jake subsequently said to retain both engines for
+viability and approved installation. The private receipt records that approval
+and binds the frozen sources/inputs; it does not reopen any previous native
+allowance. No Qwen production integration or live-default change is included.

@@ -2115,3 +2115,32 @@ invocations occurred. The old native ledgers remain exhausted, main/live and
 product code remain unchanged. Stop for review of this concrete 33.13 GB download
 and candidate-only two-image/time-budget scope before execution. H4:
 `docs/PHOTO-EDITING-PE3-PREFLIGHT-REPORT.md`.
+
+**User authorization — 22 October 2026 (PE3 installation and viability):** Jake
+asked to keep both engines for viability and approved installation after the
+concrete pinned download/two-image question. Download Qwen-Image-2.1 under
+`docs/PHOTO-EDITING-PE3-QWEN-TRIAL-PLAN.md` and execute at most its two ordered
+native trials with first-failure stopping and the declared candidate-only time
+bounds. Preserve the installed FLUX weights/worker and live defaults. Both models
+may remain on disk; simultaneous residency and production Qwen integration are
+not qualified by this approval. No package/runtime change, other model, extra
+helper/native invocation, main merge or publication is authorized.
+
+**PE3 viability closeout — 22 October 2026:** Both checkpoints are retained on
+disk: FLUX 15,980,140,843 bytes and pinned Qwen-Image-2.1 33,131,615,131 bytes.
+All 26 Qwen files verify and no package was installed. Exactly two native jobs
+complete with real 0–40 progress, 24.2 GB measured MLX peak, zero swap growth,
+unchanged protected pixels and reaping while holding the shared lease. Synthetic
+passes quality; the private cap/two-glove result fails placement/completeness.
+The face and all 3,068,788 unselected private pixels remain exact. The mask leaves
+too much hair/hand context protected, so do not call this a general model ranking.
+
+Seven CPU/process tests and trial lint/format/privacy checks pass. All executed
+source/input/engine fingerprints, installed app/static/FLUX worker/plist and
+local/verified HTTPS health are preserved. Ollama remains 0.35.0. Product suites
+were not repeated and no new phone pass is claimed. Main/live remain unchanged;
+Qwen is an isolated research/evaluation candidate, not a live model choice.
+The new two-call allowance is exhausted; no retry, changed selection/prompt/seed,
+other model, coexistence trial, integration or publication is authorized by this
+closeout. H4: `docs/PHOTO-EDITING-PE3-REPORT.md`. Review selection usability and
+coverage before proposing any further native scope.
