@@ -2070,3 +2070,253 @@ selectors/runtime/service/plist/Tailscale are preserved. Local/verified HTTPS
 health pass, schema stays 14 and Ollama 0.35.0. The current-data/schema-aware
 compatibility policy remains. H4: `docs/HEIC-PREPARATION-REPORT.md`. Physical
 iPhone acceptance is not inferred; no native/model allowance is reopened.
+
+**User authorization — 21 October 2026 (masked editing):** Jake requested masked
+editing with compositing, followed by a FLUX test using the supplied original
+and hat/gloves request, and consideration of stronger models if needed. Proceed
+on `codex/masked-photo-editing` under `docs/PHOTO-EDITING-PE2-PLAN.md`: bounded
+brush selections, preserved reference proportions, exact unselected-pixel
+compositing, no new packages/weights and a new maximum two-job native scope
+(synthetic, then private original) with unchanged host guards and first-failure
+stopping. This does not reopen earlier native budgets. Retain failures/private
+media and stop with quality/evidence before merge/publication or another model.
+
+**PE2 implementation/trial closeout — 22 October 2026:** The isolated brush,
+context-crop/composite and independent CPU verification path is implemented with
+durable selection replay/retry, raw/native/export backup and storage accounting.
+Full checks pass 773 Python / 132 frontend with 83.1% image coverage; 26 actual
+CPU/native-double checks and focused Chromium/WebKit brush/regression checks pass.
+Initial form-submit and backup-fixture failures and their corrections are retained.
+
+Exactly two new native jobs completed: synthetic 21.035 s, private 23.053 s,
+18,659,198,390-byte MLX peak, zero swap growth and zero changed protected pixels.
+The private trial preserves all 3,093,481 unselected pixels and its face region,
+but fails content quality: the first mask clips the cap and gloves are incomplete.
+Expanding the mask from the retained native pixels is a separate CPU diagnostic,
+not another native pass or a replacement of the failed quality result. All
+private images/task/selection/controller remain private; five executed worker
+hashes are frozen. Main/live source, worker, service and local/HTTPS health are
+preserved, with no new weight/dependency/default change or deployment.
+
+Do not promote this quality result. The two-job allowance is exhausted. H4:
+`docs/PHOTO-EDITING-PE2-REPORT.md`; named research-only alternatives including
+mask-aware Qwen-Image-2.1 are in `docs/PHOTO-EDITING-PE2-NEXT-CANDIDATE.md`.
+No further native invocation, named model download or publication is authorized
+by this closeout. A later user instruction may approve a concrete next scope.
+
+**PE3 offline preparation — 22 October 2026:** Jake asked to continue after the
+PE2 result and named Qwen recommendation. Prepared the concrete pinned download /
+maximum two-image scope in `docs/PHOTO-EDITING-PE3-QWEN-TRIAL-PLAN.md`. Actual CPU
+processor/context/composite checks pass without model/MLX imports or weight reads.
+The installed CPU processor uses the already installed torch dependency; no new
+package was added. Official metadata, the research-only license, exact file
+hashes and installed engine source are retained. No model weights or native
+invocations occurred. The old native ledgers remain exhausted, main/live and
+product code remain unchanged. Stop for review of this concrete 33.13 GB download
+and candidate-only two-image/time-budget scope before execution. H4:
+`docs/PHOTO-EDITING-PE3-PREFLIGHT-REPORT.md`.
+
+**User authorization — 22 October 2026 (PE3 installation and viability):** Jake
+asked to keep both engines for viability and approved installation after the
+concrete pinned download/two-image question. Download Qwen-Image-2.1 under
+`docs/PHOTO-EDITING-PE3-QWEN-TRIAL-PLAN.md` and execute at most its two ordered
+native trials with first-failure stopping and the declared candidate-only time
+bounds. Preserve the installed FLUX weights/worker and live defaults. Both models
+may remain on disk; simultaneous residency and production Qwen integration are
+not qualified by this approval. No package/runtime change, other model, extra
+helper/native invocation, main merge or publication is authorized.
+
+**PE3 viability closeout — 22 October 2026:** Both checkpoints are retained on
+disk: FLUX 15,980,140,843 bytes and pinned Qwen-Image-2.1 33,131,615,131 bytes.
+All 26 Qwen files verify and no package was installed. Exactly two native jobs
+complete with real 0–40 progress, 24.2 GB measured MLX peak, zero swap growth,
+unchanged protected pixels and reaping while holding the shared lease. Synthetic
+passes quality; the private cap/two-glove result fails placement/completeness.
+The face and all 3,068,788 unselected private pixels remain exact. The mask leaves
+too much hair/hand context protected, so do not call this a general model ranking.
+
+Seven CPU/process tests and trial lint/format/privacy checks pass. All executed
+source/input/engine fingerprints, installed app/static/FLUX worker/plist and
+local/verified HTTPS health are preserved. Ollama remains 0.35.0. Product suites
+were not repeated and no new phone pass is claimed. Main/live remain unchanged;
+Qwen is an isolated research/evaluation candidate, not a live model choice.
+The new two-call allowance is exhausted; no retry, changed selection/prompt/seed,
+other model, coexistence trial, integration or publication is authorized by this
+closeout. H4: `docs/PHOTO-EDITING-PE3-REPORT.md`. Review selection usability and
+coverage before proposing any further native scope.
+
+**User authorization — 22 October 2026 (PE4 selection repair):** Jake said
+“Go ahead and do so” after the recommendation to improve mask coverage before
+further model tests. Proceed with `docs/PHOTO-EDITING-PE4-PLAN.md`: precise paint/
+protect, zoom/pan and coverage views, additive ordered erasing with preserved
+legacy masks, CPU/API/browser evidence and a private CPU-only original-photo
+coverage review. Retain both checkpoints, prior frozen sources and failed trials.
+No earlier native allowance is reopened; no new model invocation/download,
+dependency, Qwen routing/integration, main merge or publication is included.
+
+**PE4 selection repair closeout — 22 October 2026:** Paint/Protect/Move, zoom/pan,
+Undo/Redo, uniform overlay and selected/protected views are implemented on the
+isolated branch. Optional ordered erasing preserves omitted-field serialization,
+legacy mask hashes, replay/retry and backup identity. The CPU compositor preserves
+erased and all other unselected pixels; empty effective masks refuse before model
+imports. A rejected stroke at the limit cannot extend an earlier stroke.
+
+Checks pass 777 Python / 132 frontend, 32 CPU/process and 11 focused API cases;
+image coverage is 83.1% and the entry bundle is 255,964/256,000 gzip bytes. Full
+browser results: 790 pass, four intentional skips, two failures from a stale
+visible-default-label assertion. The previously approved compact Tools label is
+verified by the corrected assertion plus accessible name/tooltip and unchanged
+selection checks; all 12 cases in that file pass in Chromium/WebKit. All seven
+new protection-editor cases pass in each browser. Initial failures and traces
+remain, and historical artifact bytes are restored with fresh captures archived.
+
+The supplied photo has only a private CPU coverage review: four small manually
+identified regions reach 100% selected coverage; the manual face outline has zero
+selected pixels and a synthetic composite changes zero protected pixels. This
+does not establish full-object coverage or new generated quality. Browser edge
+antialiasing remains approximate. Both weights, prior executed sources/inputs,
+exhausted native reservations, installed app/static/worker/plist and local/verified
+HTTPS health are preserved. Ollama remains 0.35.0. No physical phone or VoiceOver
+pass, new native call, download, merge or deployment is claimed.
+
+H4: `docs/PHOTO-EDITING-PE4-REPORT.md`. Stop for mask/comparison review. The proposed
+one-invocation-per-engine pair in `docs/PHOTO-EDITING-PE4-COMPARISON-PLAN.md` is
+prepared only; its concrete native scope needs separate approval. No earlier
+native budget is reopened and Qwen remains an isolated evaluation candidate.
+
+**User authorization — 23 October 2026 (corrected-mask comparison):** Jake
+explicitly approved the corrected-mask comparison question. Execute
+`docs/PHOTO-EDITING-PE4-COMPARISON-PLAN.md`: exactly one FLUX edit then one Qwen
+edit, at most two new invocations, using identical original/reference/task/
+corrected selection/seed/context and each engine's declared existing recipe.
+Retain a FLUX visual-quality failure as the comparison baseline; it does not
+cancel Qwen. Any technical/resource/preservation/binding failure stops the pair.
+Use a fresh private root, frozen source/inputs, durable two-slot ledger and the
+existing shared lease, parent-death/reaping and host guards. No retry, download,
+package/runtime change, main merge or publication; prior budgets stay closed.
+Stop with private quality comparison and SPEC H4 evidence.
+
+**User request — 23 October 2026 (future roadmap):** Jake supplied the themes/
+motion/local-AI ideas document and Theme Lab archive and asked to add them to
+future plans while continuing the approved comparison. Review and document
+them as proposals; do not apply the theme patch, relax animation rules, change
+fonts/settings, start automation or external messaging, or install anything.
+Theme decisions J18–J20 and each later concrete implementation scope remain
+unapproved. Preserve the supplied untracked theme and agent-loop documents.
+
+**Corrected-mask pair closeout — 23 October 2026:** Exactly two new native jobs
+complete, one per engine, on identical frozen request/reference/selection/seed/
+context. FLUX takes 23.446 seconds / 18,659,198,390-byte MLX peak; Qwen takes
+182.007 seconds / 24,218,226,354-byte peak. Both have zero swap growth, truthful
+actual steps, owned reaping and unchanged protected pixels. Independent direct
+RGB checks retain all 3,025,097 unselected and 42,761 manual face pixels exactly;
+exports match the composites. Each retained native/composite/export PNG triplet
+is about 9.9 MB. Full job/storage observations are retained separately.
+
+Both private accessory results fail quality. FLUX's raw cap is more coherent,
+but the final protected boundary clips it; both raw outputs miss the rear glove.
+Qwen's cap placement and glove shape do not demonstrate an advantage for its
+7.76-times latency on this task. Do not call this a general model ranking or
+promote Qwen. The new two-call allowance is exhausted: no retry, changed mask/
+seed/prompt, download, integration, merge or publication follows this closeout.
+
+Thirteen CPU/process checks, independent pixel audit and lint/format/privacy
+checks pass. Initial incomplete fixture/preparation-field failures are retained;
+they occurred before any native reservation. Both models, executed new/prior
+sources/inputs, installed app/static/worker/plist and local/verified HTTPS health
+verify preserved. Ollama remains 0.35.0; no new physical phone/VoiceOver pass.
+Product suites are historical PE4 evidence, not repeated for isolated trial/docs.
+
+H4: `docs/PHOTO-EDITING-PE4-COMPARISON-REPORT.md`. Stop for quality/direction review.
+Future themes/motion/local-AI ideas are recorded in
+`docs/FUTURE-PLANS-2026-10-23.md`; source patch remains unapplied and its rule
+exceptions/installations/automation/external actions remain unapproved.
+
+**User quality feedback — 23 October 2026 (corrected-mask pair):** Jake says
+Qwen looks slightly better. Record his overall visual preference separately
+from Codex's initial assessment above; the earlier categorical statement that
+Qwen showed no quality payoff does not represent his review. The report now
+distinguishes slight visual preference from complete-task success: both still
+miss the rear glove, and measured times remain 23.446 versus 182.007 seconds.
+No specific reason or complete quality acceptance is attributed to Jake. This
+feedback does not reopen the exhausted native budget or authorize integration,
+merge or deployment.
+
+**User authorization — 23 October 2026 (focused quality trial):** Jake requested
+more trials between the installed FLUX and Qwen engines and accepts longer
+generation when quality improves. Execute the new bounded quality comparison in
+`docs/PHOTO-EDITING-PE5-LOCAL-TRIAL-PLAN.md`: at most six new native invocations,
+one per engine for each of three disjoint accessory regions of the supplied
+original. Freeze all requests, masks, recipes and source before execution. Keep
+existing resource/time/preservation guards and stop the entire trial on a
+technical failure; retain visual failures for comparison. Prior ledgers remain
+closed. No new packages/downloads/helpers, integration, merge or deployment.
+Stop with retained outputs, measured quality/cost evidence and H4 review.
+
+**PE5 focused quality trial closeout — 23 October 2026:** All six declared
+native jobs complete technically, with no retry or extra generation. The three
+disjoint masks reproduce PE4's selection exactly. Each engine's three jobs use
+the same original independently, and CPU combination copies only its declared
+regional outputs. Qwen wins the delivered cap and has a slight front-glove
+appearance advantage; FLUX handles the rear fingers better. Qwen's rear edit
+adds displaced white shapes and leaves fingers bare. FLUX's cap is clipped at
+the protected face boundary and has an inside-mask background seam. Neither
+combined result satisfies the complete quality request. These are Codex's manual
+observations; no new quality acceptance is attributed to Jake.
+
+Measured job sums: FLUX 70.066 seconds, Qwen 581.836 seconds, excluding setup,
+manual review and CPU combination. Peak MLX is 18.66 / 24.22 GB, zero swap
+growth. All 3,025,097 unselected and 42,761 outlined-face pixels remain exact
+in each combined result; regional exports equal composites. Retained six PNG
+triplets plus two combined PNGs total 63,982,875 bytes, excluding trial inputs
+and sidecars. All outputs/failures remain private, with sanitized evidence in
+`artifacts/photo-editing/pe5-local-20261023/`.
+
+Eighteen CPU/process tests and preparation/preservation audits pass. New and
+prior freezes, 962 engine/server sources, 44 model files, installed app/static/
+worker/plist and local/verified HTTPS health verify unchanged. Ollama remains
+0.35.0. No new phone/VoiceOver pass, general model ranking, consistency or
+coexistence qualification is claimed. Private A/B review is open on loopback
+port 8772. H4: `docs/PHOTO-EDITING-PE5-LOCAL-REPORT.md`. All six new slots are
+exhausted; stop for quality/direction review before further native calls,
+integration, merge or deployment. Both installed checkpoints remain retained.
+
+**User authorization — 23 October 2026 (one correction and acceptance check):**
+Jake said “ok, do that then” to the recommendation to fix accessory overlap,
+run one bounded acceptance check, and shelve precision editing if it remains
+unsatisfactory. Execute `docs/PHOTO-EDITING-PE6-ACCEPTANCE-PLAN.md`: editable-area
+review with unchanged mask/compositor semantics; one fresh installed-FLUX head
+generation maximum, with explicit forehead/hair overlap and the remaining
+facial features protected. Predeclare the retained PE5 FLUX glove outputs for
+whole-photo CPU review; never present them as newly generated. Preserve all
+previous ledgers, inputs and results. Freeze the corrected selection before the
+single invocation, retain all outcomes, and keep existing resource/time guards.
+No Qwen call, retry, download/dependency/runtime/default change, routing,
+integration, main merge or publication. Stop after H4/quality review; failure
+shelves precision editing rather than starting another model experiment.
+
+**PE6 closeout — 23 October 2026 (precision editing shelved):** The selection
+dialog adds editable-area review and Adjust selection with read-only mask
+inspection. Existing ordered mask semantics and exact compositor remain.
+Exactly one fresh FLUX head edit completes in 21.678 seconds, with unchanged
+recipe, 18.66 GB MLX peak, zero swap growth, owned reaping and zero changed
+unselected/protected-feature pixels. The brim stays attached after intended
+hair/forehead overlap is selected. All 29,561 revised visible-feature pixels
+stay exact; 7,808 pixels of the older face outline were deliberately allowed
+to be covered and changed. Do not claim the entire old face outline is unchanged.
+
+The full photo combines that head with the predeclared retained PE5 FLUX gloves;
+the gloves are not new generations. Background blending and glove coverage still
+fail full quality. Per Jake's accepted stopping rule, precision-editing release
+and further native trials are shelved. Retain source, every outcome and both
+weights; no retry, Qwen call, download, merge or deployment follows this closeout.
+No new quality acceptance is attributed to Jake.
+
+132 frontend units, 26 Chromium/WebKit browser checks, two new CPU/process
+checks, build/bundle, motion and 110 contrast pairs pass. The first CPU candidate
+is refused for feature overlap before any native call; revised source/selection
+is frozen before the one invocation. Native/export/pixel and source/model/
+installed/health preservation pass. Full product release suites are not rerun;
+no new physical phone/VoiceOver pass. H4: `docs/PHOTO-EDITING-PE6-REPORT.md`.
+Return to themes/narrow-automation roadmap review with its existing gates;
+this does not start an unapproved theme, schedule or agent implementation.

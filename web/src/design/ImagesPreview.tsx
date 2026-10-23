@@ -26,6 +26,8 @@ export default function ImagesPreview() {
     prompt: "Synthetic blue geometric circle on a cream background.",
     seed: 42,
     mode: "generate",
+    width: 1024,
+    height: 1024,
     export_bytes: 0,
     state:
       state === "removed" || state === "empty" || state === "unavailable"
@@ -102,6 +104,7 @@ export default function ImagesPreview() {
           reference_metadata_bytes: 0,
           export_bytes: 0,
           measurement_bytes: 0,
+          native_bytes: 0,
         }}
       />
       <section className="mt-6" aria-label="Image composer preview">

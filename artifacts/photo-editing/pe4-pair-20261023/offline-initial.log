@@ -1,0 +1,110 @@
+...........FF                                                            [100%]
+=================================== FAILURES ===================================
+____ test_visual_failure_allows_second_engine_only_with_bound_review[True] _____
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-225/test_visual_failure_allows_sec0')
+bound_review = True
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("bound_review", [True, False])
+    async def test_visual_failure_allows_second_engine_only_with_bound_review(
+        tmp_path, bound_review
+    ):
+        home, codec = await setup(tmp_path)
+        for name in ("flux_worker.py", "qwen_worker.py"):
+            shutil.copyfile(HERE / "fake_control_worker.py", home / name)
+        assert digest(tmp_path / "flux/input.json") == digest(tmp_path / "qwen/input.json")
+        freeze(tmp_path)
+        capacity = Capacity(tmp_path / "native.lock")
+        try:
+>           first = await run_case(tmp_path, "flux", capacity, OfflineEngine(), codec)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+image_worker/masked_pair/test_pair.py:207: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+image_worker/masked_pair/control.py:234: in run_case
+    proof = await codec.verify_composite(job)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.images.codec.ReferenceCodec object at 0x108bd68a0>
+folder = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-225/test_visual_failure_allows_sec0/flux')
+
+    async def verify_composite(self, folder: Path) -> dict[str, Any]:
+        try:
+            return await self.execute(folder, "--verify-composite")
+        except AppError:
+>           raise AppError(
+                "image_composite_invalid",
+                "Photo edit failed the preservation check. No output was accepted.",
+                422,
+            ) from None
+E           app.errors.AppError: Photo edit failed the preservation check. No output was accepted.
+
+server/app/images/codec.py:25: AppError
+----------------------------- Captured stdout call -----------------------------
+{"case": "flux", "type": "initializing", "observed_seconds": 0.061}
+{"case": "flux", "type": "initialized", "observed_seconds": 0.061}
+{"case": "flux", "type": "denoising", "completed_steps": 0, "observed_seconds": 0.061}
+{"case": "flux", "type": "denoising", "completed_steps": 1, "observed_seconds": 0.061}
+{"case": "flux", "type": "denoising", "completed_steps": 2, "observed_seconds": 0.061}
+{"case": "flux", "type": "denoising", "completed_steps": 3, "observed_seconds": 0.061}
+{"case": "flux", "type": "denoising", "completed_steps": 4, "observed_seconds": 0.061}
+{"case": "flux", "type": "decoding", "observed_seconds": 0.061}
+{"case": "flux", "type": "finished", "observed_seconds": 0.061}
+____ test_visual_failure_allows_second_engine_only_with_bound_review[False] ____
+
+tmp_path = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-225/test_visual_failure_allows_sec1')
+bound_review = False
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("bound_review", [True, False])
+    async def test_visual_failure_allows_second_engine_only_with_bound_review(
+        tmp_path, bound_review
+    ):
+        home, codec = await setup(tmp_path)
+        for name in ("flux_worker.py", "qwen_worker.py"):
+            shutil.copyfile(HERE / "fake_control_worker.py", home / name)
+        assert digest(tmp_path / "flux/input.json") == digest(tmp_path / "qwen/input.json")
+        freeze(tmp_path)
+        capacity = Capacity(tmp_path / "native.lock")
+        try:
+>           first = await run_case(tmp_path, "flux", capacity, OfflineEngine(), codec)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+image_worker/masked_pair/test_pair.py:207: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+image_worker/masked_pair/control.py:234: in run_case
+    proof = await codec.verify_composite(job)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <app.images.codec.ReferenceCodec object at 0x108bdb930>
+folder = PosixPath('/private/var/folders/09/_1877fzd4sg4nl38cqk8n9gw0000gn/T/pytest-of-evilius/pytest-225/test_visual_failure_allows_sec1/flux')
+
+    async def verify_composite(self, folder: Path) -> dict[str, Any]:
+        try:
+            return await self.execute(folder, "--verify-composite")
+        except AppError:
+>           raise AppError(
+                "image_composite_invalid",
+                "Photo edit failed the preservation check. No output was accepted.",
+                422,
+            ) from None
+E           app.errors.AppError: Photo edit failed the preservation check. No output was accepted.
+
+server/app/images/codec.py:25: AppError
+----------------------------- Captured stdout call -----------------------------
+{"case": "flux", "type": "initializing", "observed_seconds": 0.061}
+{"case": "flux", "type": "initialized", "observed_seconds": 0.061}
+{"case": "flux", "type": "denoising", "completed_steps": 0, "observed_seconds": 0.061}
+{"case": "flux", "type": "denoising", "completed_steps": 1, "observed_seconds": 0.061}
+{"case": "flux", "type": "denoising", "completed_steps": 2, "observed_seconds": 0.061}
+{"case": "flux", "type": "denoising", "completed_steps": 3, "observed_seconds": 0.061}
+{"case": "flux", "type": "denoising", "completed_steps": 4, "observed_seconds": 0.061}
+{"case": "flux", "type": "decoding", "observed_seconds": 0.061}
+{"case": "flux", "type": "finished", "observed_seconds": 0.061}
+=========================== short test summary info ============================
+FAILED image_worker/masked_pair/test_pair.py::test_visual_failure_allows_second_engine_only_with_bound_review[True]
+FAILED image_worker/masked_pair/test_pair.py::test_visual_failure_allows_second_engine_only_with_bound_review[False]
+2 failed, 11 passed in 3.73s

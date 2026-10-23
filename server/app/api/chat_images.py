@@ -36,8 +36,9 @@ async def accept(
     # Compare the explicit body, not a moving implicit current leaf.
     canonical = json.dumps(
         {
-            **body.model_dump(exclude={"reference_id"}),
+            **body.model_dump(exclude={"reference_id", "selection"}),
             **({"reference_id": body.reference_id} if body.reference_id else {}),
+            **({"selection": body.selection.model_dump(mode="json")} if body.selection else {}),
             "retry_id": retry_id,
             "parent_specified": "parent_id" in body.model_fields_set,
         },
@@ -83,7 +84,7 @@ async def accept(
             if body.reference_id
             else None
         )
-        prepared = await images.prepare(specs, reference)
+        prepared = await images.prepare(specs, reference, body.selection)
         statements: list[tuple[str, tuple[object, ...]]] = []
         if not retry_id:
             statements.append(
@@ -110,6 +111,11 @@ async def accept(
                             "seeds": body.seeds,
                             "source_job_id": body.source_job_id,
                             **({"reference_id": body.reference_id} if body.reference_id else {}),
+                            **(
+                                {"selection": body.selection.model_dump(mode="json")}
+                                if body.selection
+                                else {}
+                            ),
                         }
                     ),
                     now(),
@@ -190,6 +196,7 @@ async def retry(
                 parent_id=user.parent_id,
                 source_job_id=source,
                 reference_id=saved.get("reference_id"),
+                selection=saved.get("selection"),
             ),
             request,
             retry_id=user.id,

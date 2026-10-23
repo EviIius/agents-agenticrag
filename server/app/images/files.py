@@ -40,6 +40,55 @@ def validate(folder: Path, expected: dict[str, Any]) -> tuple[str, int, int]:
     if not 50 <= size <= 32 * 1024**2 or not 2 <= meta_size <= 32768:
         raise ValueError("Invalid output sizes")
     raw = image.read_bytes()
+    dimensions = expected["reference"]["dimensions"] if expected.get("selection") else [1024, 1024]
+    if (
+        not isinstance(dimensions, list)
+        or len(dimensions) != 2
+        or any(type(n) is not int or not 1 <= n <= 2048 for n in dimensions)
+    ):
+        raise ValueError("Invalid expected dimensions")
+    validate_png(raw, dimensions)
+    digest = hashlib.sha256(raw).hexdigest()
+    details = json.loads(metadata.read_text())
+    for key, value in {
+        **expected,
+        "requested_seed": expected["seed"],
+        "width": dimensions[0],
+        "height": dimensions[1],
+        "steps": 4,
+        "guidance": 1.0,
+        "quantization": 8,
+        "cache_limit_bytes": 1073741824,
+        "model": MODEL,
+        "revision": REVISION,
+        "mflux": "0.22.0",
+        "sha256": digest,
+    }.items():
+        if details.get(key) != value:
+            raise ValueError("Output metadata mismatch")
+    paths = [image, metadata]
+    if expected.get("selection"):
+        native = folder / "native.png"
+        if native.is_symlink() or not 50 <= native.stat().st_size <= 32 * 1024**2:
+            raise ValueError("Invalid native image")
+        native_raw = native.read_bytes()
+        validate_png(native_raw, [1024, 1024])
+        if (
+            details.get("native_sha256") != hashlib.sha256(native_raw).hexdigest()
+            or details.get("native_bytes") != len(native_raw)
+            or details.get("composition", {}).get("outside_changed_pixels") != 0
+        ):
+            raise ValueError("Invalid composite provenance")
+        paths.append(native)
+    for path in paths:
+        path.chmod(0o600)
+        with path.open("rb") as handle:
+            os.fsync(handle.fileno())
+    sync_directory(folder)
+    return digest, size, meta_size
+
+
+def validate_png(raw: bytes, dimensions: list[int]) -> None:
     if raw[:8] != b"\x89PNG\r\n\x1a\n":
         raise ValueError("Invalid PNG signature")
     offset, chunks, compressed = 8, [], bytearray()
@@ -54,12 +103,12 @@ def validate(folder: Path, expected: dict[str, Any]) -> tuple[str, int, int]:
             raise ValueError("PNG CRC mismatch")
         chunks.append(kind)
         if kind == b"IHDR":
-            if length != 13 or struct.unpack(">II", data[:8]) != (1024, 1024):
+            if length != 13 or list(struct.unpack(">II", data[:8])) != dimensions:
                 raise ValueError("Invalid image dimensions")
             # Qualified worker produces non-interlaced 8-bit RGB/RGBA.
             if data[8] != 8 or data[9] not in (2, 6) or data[10:] != b"\x00\x00\x00":
                 raise ValueError("Unsupported PNG encoding")
-            stride = 1 + 1024 * (3 if data[9] == 2 else 4)
+            stride = 1 + dimensions[0] * (3 if data[9] == 2 else 4)
         if kind == b"IDAT":
             compressed.extend(data)
         offset = end
@@ -73,35 +122,11 @@ def validate(folder: Path, expected: dict[str, Any]) -> tuple[str, int, int]:
     ):
         raise ValueError("Missing PNG chunks")
     decoder = zlib.decompressobj()
-    decoded = decoder.decompress(compressed, 5 * 1024**2)
-    if not decoder.eof or decoder.unused_data or len(decoded) != stride * 1024:
+    decoded = decoder.decompress(compressed, stride * dimensions[1] + 1)
+    if not decoder.eof or decoder.unused_data or len(decoded) != stride * dimensions[1]:
         raise ValueError("Invalid pixel payload")
     if any(decoded[i] > 4 for i in range(0, len(decoded), stride)):
         raise ValueError("Invalid PNG filter")
-    digest = hashlib.sha256(raw).hexdigest()
-    details = json.loads(metadata.read_text())
-    for key, value in {
-        **expected,
-        "requested_seed": expected["seed"],
-        "width": 1024,
-        "height": 1024,
-        "steps": 4,
-        "guidance": 1.0,
-        "quantization": 8,
-        "cache_limit_bytes": 1073741824,
-        "model": MODEL,
-        "revision": REVISION,
-        "mflux": "0.22.0",
-        "sha256": digest,
-    }.items():
-        if details.get(key) != value:
-            raise ValueError("Output metadata mismatch")
-    for path in (image, metadata):
-        path.chmod(0o600)
-        with path.open("rb") as handle:
-            os.fsync(handle.fileno())
-    sync_directory(folder)
-    return digest, size, meta_size
 
 
 def sanitize_export(folder: Path) -> tuple[str, int]:

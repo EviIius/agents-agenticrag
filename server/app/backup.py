@@ -80,6 +80,7 @@ class Backups:
                     storage = await self.images.storage()
                     image_size = (
                         storage.image_bytes
+                        + storage.native_bytes
                         + storage.metadata_bytes
                         + storage.reference_bytes
                         + storage.reference_metadata_bytes

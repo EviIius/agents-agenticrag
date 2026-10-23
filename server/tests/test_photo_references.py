@@ -41,6 +41,10 @@ class EditFake(FakeEngine):
 
 
 class FakeCodec:
+    async def verify_composite(self, folder: Path) -> dict[str, Any]:
+        assert json.loads((folder / "input.json").read_text())["selection"]
+        return {"outside_changed_pixels": 0}
+
     async def normalize(self, folder: Path) -> dict[str, Any]:
         original = (folder / "original").read_bytes()
         working = png()

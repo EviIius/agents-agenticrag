@@ -6,6 +6,7 @@ import type { ImageJob } from "@/lib/image-events";
 import { uploadPhoto } from "@/lib/photo-upload";
 
 export type PhotoReference = components["schemas"]["ImageReference"];
+export type PhotoSelection = components["schemas"]["PhotoSelection"];
 export type PhotoDraft = {
   active: boolean;
   text: string;
@@ -18,10 +19,12 @@ export type PhotoDraft = {
     job?: ImageJob;
     reference?: PhotoReference;
     error?: string;
+    selection?: PhotoSelection;
   };
 };
 export type PhotoSubmission = {
   reference: PhotoReference;
+  selection?: PhotoSelection;
   accepted: (chat: string, adopt: boolean) => void;
   rejected: (code?: string) => void;
 };
@@ -74,6 +77,7 @@ export function photoSubmission(key: string): PhotoSubmission | undefined {
   if (!reference?.available || draft.input?.phase !== "ready") return;
   return {
     reference,
+    ...(draft.input.selection ? { selection: draft.input.selection } : {}),
     accepted(chat, adopt) {
       const current = read(key);
       if (current.version === draft.version) {
@@ -202,6 +206,11 @@ export function usePhotoEdit(key: string, model?: Model) {
       setText: (text: string) => write(key, { text }),
       setActive: (active: boolean) => write(key, { active }),
       remove,
+      setSelection: (selection: PhotoSelection | undefined, token: string) => {
+        const input = read(key).input;
+        if (input?.token === token && input.phase === "ready")
+          write(key, { input: { ...input, selection } });
+      },
       retry: () => {
         const input = read(key).input;
         if (input?.file || input?.job) void attach(input.file ?? input.job!);

@@ -16,6 +16,19 @@ class ReferenceCodec:
         self.processes: set[asyncio.subprocess.Process] = set()
 
     async def normalize(self, folder: Path) -> dict[str, Any]:
+        return await self.execute(folder)
+
+    async def verify_composite(self, folder: Path) -> dict[str, Any]:
+        try:
+            return await self.execute(folder, "--verify-composite")
+        except AppError:
+            raise AppError(
+                "image_composite_invalid",
+                "Photo edit failed the preservation check. No output was accepted.",
+                422,
+            ) from None
+
+    async def execute(self, folder: Path, *options: str) -> dict[str, Any]:
         child = None
         async with self.slots:
             try:
@@ -30,6 +43,7 @@ class ReferenceCodec:
                         str(python),
                         str(codec),
                         str(folder),
+                        *options,
                         stdin=asyncio.subprocess.PIPE,
                         stdout=asyncio.subprocess.PIPE,
                         stderr=asyncio.subprocess.DEVNULL,

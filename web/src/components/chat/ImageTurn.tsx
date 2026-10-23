@@ -285,6 +285,11 @@ export function ImageFrame({
     >
       <div
         className="image-frame"
+        style={
+          job.selection
+            ? { aspectRatio: `${job.width} / ${job.height}` }
+            : undefined
+        }
         role={saved && !failed ? "button" : undefined}
         tabIndex={saved && !failed ? 0 : undefined}
         aria-label={saved && !failed ? `Open image ${position}` : undefined}

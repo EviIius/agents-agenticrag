@@ -1,0 +1,241 @@
+{
+  "passed": true,
+  "scope": "CPU/static preflight; not native model qualification",
+  "versions": {
+    "mflux": "0.22.0",
+    "mlx": "0.32.3",
+    "mlx-metal": "0.32.3",
+    "transformers": "5.19.0",
+    "torch": "2.14.1",
+    "Pillow": "12.3.0",
+    "numpy": "2.5.4",
+    "huggingface-hub": "1.33.0",
+    "tokenizers": "0.23.3",
+    "safetensors": "0.8.0"
+  },
+  "api_parameters": [
+    "auto_mask",
+    "enhance_prompt",
+    "guidance",
+    "height",
+    "image_paths",
+    "mask_image",
+    "negative_prompt",
+    "num_inference_steps",
+    "output_resolution",
+    "prompt",
+    "scheduler",
+    "seed",
+    "self",
+    "step_cache_threshold",
+    "strength",
+    "use_kv_cache",
+    "use_step_cache",
+    "verify",
+    "verify_retries",
+    "width"
+  ],
+  "component_definitions": {
+    "vae": {
+      "name": "'vae'",
+      "hf_subdir": "'vae'",
+      "precision": "mx.float32",
+      "skip_quantization": "True",
+      "weight_transform": "QwenImage21WeightDefinition.vae_weight"
+    },
+    "transformer": {
+      "name": "'transformer'",
+      "hf_subdir": "'transformer'",
+      "precision": "ModelConfig.precision"
+    },
+    "text_encoder": {
+      "name": "'text_encoder'",
+      "hf_subdir": "'text_encoder'",
+      "precision": "ModelConfig.precision",
+      "key_transform": "QwenImage21WeightDefinition.text_key",
+      "weight_transform": "QwenImage21WeightDefinition.text_weight"
+    }
+  },
+  "helpers_disabled_by_proposed_call": {
+    "auto_mask": null,
+    "enhance_prompt": false,
+    "verify": false,
+    "verify_retries": 0
+  },
+  "processor_cases": [
+    {
+      "source_size": [
+        768,
+        1024
+      ],
+      "native_size": [
+        1024,
+        1024
+      ],
+      "pixel_values_shape": [
+        4096,
+        1536
+      ],
+      "image_grid_thw": [
+        [
+          1,
+          64,
+          64
+        ]
+      ],
+      "explicit_mask_sha256": "25e292a8fd3056d2c5780d89cd2378151d40f34cc17436cc91240189b9e6075f",
+      "protected_pixels": 744543,
+      "outside_changed_pixels": 0
+    },
+    {
+      "source_size": [
+        1024,
+        768
+      ],
+      "native_size": [
+        1024,
+        1024
+      ],
+      "pixel_values_shape": [
+        4096,
+        1536
+      ],
+      "image_grid_thw": [
+        [
+          1,
+          64,
+          64
+        ]
+      ],
+      "explicit_mask_sha256": "25e292a8fd3056d2c5780d89cd2378151d40f34cc17436cc91240189b9e6075f",
+      "protected_pixels": 744543,
+      "outside_changed_pixels": 0
+    },
+    {
+      "source_size": [
+        1536,
+        2048
+      ],
+      "native_size": [
+        1024,
+        1024
+      ],
+      "pixel_values_shape": [
+        4096,
+        1536
+      ],
+      "image_grid_thw": [
+        [
+          1,
+          64,
+          64
+        ]
+      ],
+      "explicit_mask_sha256": "e2cecf56117f1d711331a3553f37110c913142035c7400d36aa4d40815114c61",
+      "protected_pixels": 2978895,
+      "outside_changed_pixels": 0
+    }
+  ],
+  "forbidden_model_modules_imported": [],
+  "model_calls": 0,
+  "weights_read": false,
+  "network_access": false,
+  "source_sha256": {
+    "models/common/resolution/path_resolution.py": "206673b5dca84c042827b3a3997ac7e8ce49bb5a669cb44c387f58b9a445779c",
+    "models/common/tokenizer/tokenizer_loader.py": "091bbf36a3d901ab5851ab82f3630056753ff204b34c647ec5e21ffcf8873158",
+    "models/common/weights/loading/weight_applier.py": "88d56572c99cd6f5da905f5e1f0ba25b147dd5a16a5afaf8cb6e4ebe38b9a0be",
+    "models/common/weights/loading/weight_loader.py": "d40c118bf91a1c5aac624579776dfe2519441231099d76e4c2ab80169e113199",
+    "models/qwen21/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "models/qwen21/cli/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "models/qwen21/cli/qwen21_controlnet_generate.py": "e90881bab92dcbf16f1c5d91b713f73bcc394efbc81073873fa13e6e87455f67",
+    "models/qwen21/cli/qwen21_edit_generate.py": "136feae5b2fbd9b566ad68cf3fb0c3c9c9171f936f47e3ce3e12198ceaf80e4f",
+    "models/qwen21/cli/qwen21_generate.py": "6db9717e30f41767a0c2b48c0c0f07acc0bb3bd4201c94996532afb3ff4c38ce",
+    "models/qwen21/latent_creator/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "models/qwen21/latent_creator/qwen21_latent_creator.py": "3abb0b0ff98e16423d0bb4562ed4afb34038bec588849db981f0600321dc4e3a",
+    "models/qwen21/latent_creator/qwen_image21_latent_creator.py": "a0a1a359a7317ff9de88d38be312c4507177a488ac03e0c123493c55bef33959",
+    "models/qwen21/model/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "models/qwen21/model/qwen21_scheduler.py": "7572748606ca7cff9b482c56c45669e3bd7258f2232da0817d4e34aa517b1d0e",
+    "models/qwen21/model/qwen21_text_encoder/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "models/qwen21/model/qwen21_text_encoder/grounding.py": "6e58c64dc51ef1147ef1e78386eb0c384a56a637cc0741e211844fa307877df7",
+    "models/qwen21/model/qwen21_text_encoder/language_model.py": "9c8c6ad5f4c4fc940efa43a94c72893fc66a37cb42b69bd7ce12d341ecf83f05",
+    "models/qwen21/model/qwen21_text_encoder/processor.py": "420cdbb0f6738cb14e9eb121d8eb56cdb2b241f92d047cadad0bd0970f42f1ce",
+    "models/qwen21/model/qwen21_text_encoder/prompt_encoder.py": "b912df25ec8b3770208d68725c85cd2b185d9fa954f640209724588722b3c01d",
+    "models/qwen21/model/qwen21_text_encoder/qwen21_prompt_encoder.py": "3099c73b16ebdba1241ad5839fc407408a0b67fa966c904a4be151bc2fde61e0",
+    "models/qwen21/model/qwen21_text_encoder/qwen21_text_encoder.py": "268fec8bac3dc34672e1c515977fb79e379e6a741472311aa2706446d6301ea3",
+    "models/qwen21/model/qwen21_text_encoder/text_encoder.py": "4affa33197395841c5d8542b253921bc9381d74546df4bafb82ed2bd6751793f",
+    "models/qwen21/model/qwen21_transformer/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "models/qwen21/model/qwen21_transformer/qwen21_attention.py": "2747ceb413f93b94b180b6aec73f87e4c540628d6511bfaa90bc72f58ea238c5",
+    "models/qwen21/model/qwen21_transformer/qwen21_feed_forward.py": "5a6cec5cb982d4f5f81a22f5da3ff13328f76a7c1a1c5ab88bb9255614daf1c7",
+    "models/qwen21/model/qwen21_transformer/qwen21_fused_kernels.py": "47b5a877443094394e4fe29d91fe75f96d2cfd2ffca26528dbb1cff292efb611",
+    "models/qwen21/model/qwen21_transformer/qwen21_layout.py": "37bd0839fa8a215d2d25aec4e8f65f0e05c279ad1f1eab15e1af041368c0be44",
+    "models/qwen21/model/qwen21_transformer/qwen21_norm_out.py": "f403e5f7f63e297869190fdfe1155a6aabb2a13df480fca0ebf3af733adc911d",
+    "models/qwen21/model/qwen21_transformer/qwen21_rope.py": "395f5c7281a77abb91fd1d40145a139b6b31d3af4112d7e6857efc2224fed1e6",
+    "models/qwen21/model/qwen21_transformer/qwen21_text_projection.py": "aca4d4c74c5450fa0238b4650984f478e5f59a5ecf25ddffe60a0a31514ca1aa",
+    "models/qwen21/model/qwen21_transformer/qwen21_time_text_embed.py": "c051d7f82f285a9dd4be2c361e50afa51b1de13774d46b3a42037b3637ced348",
+    "models/qwen21/model/qwen21_transformer/qwen21_transformer.py": "028ad48bd525769149caa841ac3a21cf1e1cc8f9f18a9b9ae109ce273c523c2b",
+    "models/qwen21/model/qwen21_transformer/qwen21_transformer_block.py": "60ed91c00e12066417636ea54f5e225198586af0e5e88ccc76dfe209d285b3de",
+    "models/qwen21/model/qwen21_transformer/qwen21_zero_center_rms_norm.py": "fee973a86accdd31b8a941f9ad6278243d2f82e5c5f82a7fc1cda48283626c74",
+    "models/qwen21/model/qwen21_transformer/qwen_image21_transformer.py": "84ce0324d9972ebbbd3ef88a7c93ae59344eb5a5104bbac75fe775249b78cbdd",
+    "models/qwen21/model/qwen21_vae/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "models/qwen21/model/qwen21_vae/blocks.py": "d80128c422dc1176f96fca22edeb441e2d273d23caf8aad75e02853fb7c3e028",
+    "models/qwen21/model/qwen21_vae/qwen21_attention_block.py": "5355294ff049f2abfb762ce20e6b5cff898d11152f4695dcfcaf1b0ed83c139b",
+    "models/qwen21/model/qwen21_vae/qwen21_avg_down.py": "c9ab6daefd82ff9dad6c03af285f515f12eea10655a626d2baa063a0eb5da339",
+    "models/qwen21/model/qwen21_vae/qwen21_decoder.py": "17c9fff4f33bb4a549886e94470d06434e7c4db8d821c7be0c50b637f41964b0",
+    "models/qwen21/model/qwen21_vae/qwen21_dup_up.py": "e734a8d68ce6122dc4a4ee1de70073eec5a833bbc3553989d30c63f97f19abcc",
+    "models/qwen21/model/qwen21_vae/qwen21_encoder.py": "4c56c4bfa9b5c5732539689efabc8b46b2b7a3d964eff24d76416512cb74f7f8",
+    "models/qwen21/model/qwen21_vae/qwen21_mid_block.py": "f00046b770d494072d577aa9ad0d7e857325efd44704b0ceefdf9adb77c52b93",
+    "models/qwen21/model/qwen21_vae/qwen21_res_block.py": "5fd6fe64a264bd7231f1614db60ba684c537f4cb3b216e524dcc3501b5f8923c",
+    "models/qwen21/model/qwen21_vae/qwen21_resample.py": "fc051a699ee457f49a9c7b87697da47f618f224b96fc9607e83c3fe4acf0ba9e",
+    "models/qwen21/model/qwen21_vae/qwen21_rms_norm.py": "21bbbef58daa892f2cebeed32963f25092e3e4a024d8fd418bf725af742ded08",
+    "models/qwen21/model/qwen21_vae/qwen21_vae.py": "529493125a630a2d6c87017e8be2ef97c2d3b6de07eb5529b8e51f78db5993e2",
+    "models/qwen21/model/qwen21_vae/qwen21_vae_config.py": "e8c44eecc44e06d044f28c85a3095ce676b70cc3d802d278e05ed5768fed35b8",
+    "models/qwen21/model/qwen21_vae/vae.py": "2698a8f794500c53c5138c23787114e3750ece6271030bbd56f9f095a705ba7e",
+    "models/qwen21/qwen21_initializer.py": "293c01ce77e407136524c42f23d6518ad88ed4df22110520c5806b2e53bb334d",
+    "models/qwen21/qwen_image21_initializer.py": "ccd6fc1128ecd26d8ea40d9e6685952deccc70b4d710186ff460f6e0018e5f8c",
+    "models/qwen21/reference/__init__.py": "363b4096007b6bb9e71db1f7341e55cfaafd47ae2a56e1a9af678bd13b494846",
+    "models/qwen21/reference/latent_creator/qwen_image21_latent_creator.py": "d01e06d8e1a1a359b9ea229f54390783011b60ea453def9ab491193dc3addd37",
+    "models/qwen21/reference/model/qwen_image21_text_encoder/grounding.py": "545e5021eafc80d1574329192c7f93054775e3fbe852888fb1f08a43ed2367fd",
+    "models/qwen21/reference/model/qwen_image21_text_encoder/processor.py": "971ede0f40c351d280c7376c7335a7a6bc2b9a5098c101551b3c66cefd3459ce",
+    "models/qwen21/reference/model/qwen_image21_text_encoder/prompt_encoder.py": "7f1ed4c3ad2dd26da374f560242a7fd29169e769cb9f54973898a932d61ab09e",
+    "models/qwen21/reference/model/qwen_image21_text_encoder/text_encoder.py": "fd9d4b5f716258c8fa6a4501db9fabeea6f21412ad43e23539a7519b581b8366",
+    "models/qwen21/reference/model/qwen_image21_transformer/layout.py": "04a8203c980309d2b127a8adbe5be963d8329745ff719b9e20426900984332ee",
+    "models/qwen21/reference/model/qwen_image21_transformer/transformer.py": "4ffa2b6202709a18365179e47003abf015a87bd335795168510d3a1cd51f9029",
+    "models/qwen21/reference/model/qwen_image21_vae/blocks.py": "67efe7799de63021e9a8f82537c52a161ee79d88d1c2b2fe9a5768bf4b9b131e",
+    "models/qwen21/reference/model/qwen_image21_vae/vae.py": "ca5bdb4677cfea58b545f99eda0f2bc538a70177fcb25deacabdcf5c9a61fa00",
+    "models/qwen21/reference/qwen_image21_initializer.py": "0b01d63f4a3b073cd5ed5ccbf2f422759341cd2bb7c4a6b807629871c74b8995",
+    "models/qwen21/reference/weights/qwen_image21_weight_definition.py": "0fa0a0168190c8dbdac5657427cf819757845ebba3b4a12586a5cddeff85ab48",
+    "models/qwen21/variants/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "models/qwen21/variants/controlnet/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "models/qwen21/variants/controlnet/qwen_image21_controlnet_transformer.py": "46dd52d59dc02e140cd5a5f167a217c9bab4bf0ea951386ab80ea40b435bff85",
+    "models/qwen21/variants/controlnet/qwen_image_21_controlnet.py": "7a27ab0f4355c81cc0fe342d08937539770135291e4c6d932618becd84e28b99",
+    "models/qwen21/variants/edit/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "models/qwen21/variants/edit/qwen_image_21_edit.py": "709b7248af1cd6ee6492186fda92fae9b962755fe39739e6ae8b3b564c5d10bd",
+    "models/qwen21/variants/txt2img/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "models/qwen21/variants/txt2img/qwen_image_21.py": "963ad86f68a8467acd148bcae2f565e9a0e2e4cb87fad1c329ee0cd893f04b74",
+    "models/qwen21/weights/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "models/qwen21/weights/qwen21_lora_mapping.py": "9b40d361362adf1748d5ad7a923f77da39fac82d2cf33435451b88f03c165c48",
+    "models/qwen21/weights/qwen21_weight_definition.py": "a519f49be18a5a4e38006e51ba8aecd59b4f5982c510e0c2162dd9adc7749f4b",
+    "models/qwen21/weights/qwen21_weight_mapping.py": "c6193ebb718a797109f9556be79b0c340b8cb7425f40a745917726939658910f",
+    "models/qwen21/weights/qwen_image21_controlnet_weight_definition.py": "0ddf9c8029d35c3f4296770087e55df1704f5a62019f400cf1e0226bff9af385",
+    "models/qwen21/weights/qwen_image21_weight_definition.py": "5a5dee2b3bb29b081acbf67b81ebaa07aaca5eacce8a29dd9201d6bd2ab0c08e"
+  },
+  "metadata_sha256": {
+    "LICENSE": "8dc973f024ff95966bea25866efa443fd16776dcb1001e681e3d467ea572b28d",
+    "README.md": "d4aee8d372df2a890b6283e7d1885e3f68b57190c7d3f4b9466a61beffc16016",
+    "model_index.json": "cf1ecd104ea090855d60d8cec0895c1e9d6ee41b2f87e231b678beecd1cf7809",
+    "processor/preprocessor_config.json": "93585062a80db5e8ca038efc7726a3e6411d9db948472d81d63c6303993be8c5",
+    "processor/tokenizer_config.json": "81ec7bb9530159b326c0bef1d0b6c33d392090524014ea3f0123a3c1eb9c2af5",
+    "scheduler/scheduler_config.json": "5895f3a167c14a967fe9ac70c64924ae5acc79799e0679fd12907e594a713cd1",
+    "text_encoder/config.json": "6001331949f7f86ab6d791a80b12246d4f8da5159fa08c3e62368a39f36d63a9",
+    "transformer/config.json": "56ae3281c4e6c2d1aa3658252d187488071815fd79bef15808bb0205fc1a2241",
+    "vae/config.json": "9785d527b278cb8b210e9f48a8028d92a4190968ce7e24c8fc85d9d1b82f6ba2"
+  },
+  "preflight_sha256": "51266f4544d576c559202491022398dbb5e78e618c0dfc3f7cdfa15621971e12",
+  "unverified": [
+    "checkpoint weight compatibility",
+    "native quantization/peak memory",
+    "generation latency",
+    "accessory quality",
+    "chat coexistence"
+  ]
+}

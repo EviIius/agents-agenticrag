@@ -350,7 +350,11 @@ export function ImagesView({
           <div>
             <p className="font-medium">
               {storage.outputs} saved images ·{" "}
-              {bytes(storage.image_bytes + storage.metadata_bytes)}
+              {bytes(
+                storage.image_bytes +
+                  storage.metadata_bytes +
+                  storage.native_bytes,
+              )}
             </p>
             <p className="mt-1 text-sm text-fg-2">
               {storage.versions} additional versions · Images{" "}
@@ -362,6 +366,8 @@ export function ImagesView({
               {bytes(storage.reference_metadata_bytes)} · Export copies{" "}
               {bytes(storage.export_bytes)} · Storage records{" "}
               {bytes(storage.measurement_bytes)}
+              {" · Raw FLUX results "}
+              {bytes(storage.native_bytes)}
             </p>
             <p className="mt-1 text-xs text-fg-3">
               Image backups {bytes(storage.backup_bytes)} · Request history{" "}
@@ -611,7 +617,7 @@ export function ImagesView({
             {removing === "inputs"
               ? "Original and normalized photo inputs will be removed. Completed outputs stay; comparison and retry need reattachment. Existing backups retain their copies until normal backup cleanup."
               : removing === "all"
-                ? `${storage?.outputs ?? 0} PNGs and their details (${bytes((storage?.image_bytes ?? 0) + (storage?.metadata_bytes ?? 0))}) will be removed.`
+                ? `${storage?.outputs ?? 0} PNGs, raw FLUX results and their details (${bytes((storage?.image_bytes ?? 0) + (storage?.metadata_bytes ?? 0) + (storage?.native_bytes ?? 0))}) will be removed.`
                 : "The PNG and downloadable details will be removed."}{" "}
             Job history, model weights, chats and existing backups are kept.
             Active jobs continue.

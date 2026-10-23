@@ -91,7 +91,11 @@ def companion(database: Path, data: Path) -> None:
         if sha != row["sha256"]:
             raise ValueError("Image backup digest mismatch")
         files = {}
-        for name in ("image.png", "metadata.json"):
+        for name in (
+            "image.png",
+            "metadata.json",
+            *(("native.png",) if expected.get("selection") else ()),
+        ):
             source = folder / name
             files[name] = put_blob(source, blobs)
         if row["id"] in by_job:
@@ -223,6 +227,8 @@ def restore(database: Path, destination: Path) -> int:
             names = {"image.png", "metadata.json"} | (
                 {"export.png"} if identifier in expected_pins else set()
             )
+            if expected.get("selection"):
+                names.add("native.png")
             if set(entry["files"]) != names:
                 raise ValueError("Unexpected image backup files")
             for name in names:

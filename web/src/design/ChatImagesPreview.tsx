@@ -34,6 +34,8 @@ export default function ChatImagesPreview() {
     prompt: "Synthetic cobalt harbor with warm paper lanterns.",
     seed: 42 + i,
     mode: "generate",
+    width: 1024,
+    height: 1024,
     export_bytes: 0,
     state:
       state.startsWith("step") || state === "decoding"

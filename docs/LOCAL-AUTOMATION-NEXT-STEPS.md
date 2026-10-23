@@ -4,6 +4,10 @@
 workflows on the list where Local AI can start doing things for me automatically?”
 This is planning only; no automatic task or extra model call is started.
 
+23 October addition: `FUTURE-PLANS-2026-10-23.md` records Jake's supplied themes,
+capture, Night shift, notification, messaging and computer-use ideas. These are
+proposals; the narrow workflow pilot and review boundaries below remain.
+
 ## Already on the list
 
 - `next/workflow-studio/WORKFLOW-STUDIO-SPEC.md` §12, **WS-F**, explicitly lists
@@ -56,7 +60,11 @@ need to precede useful scheduled local workflows.
 
 ## Current priority boundary
 
-Finish photo-edit quality review and installer/fallback/release checks first.
-Then propose the narrow automation pilot and its permissions/acceptance tests.
+23 October update: PE6 ends the bounded photo-edit correction/trial; precision
+editing is shelved after the full quality result still falls short. Its release
+is no longer a prerequisite for proposing the narrow automation pilot. Preserve
+the isolated branch/results; do not merge an unqualified photo feature first.
+Review the themes checkpoint and narrow automation pilot next, with their
+concrete permissions/acceptance tests before implementation.
 Jake's roadmap question is not authorization to install a watcher, create an app
 or Codex schedule, restart agent trials, or let a model send messages/delete files.

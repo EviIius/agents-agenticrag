@@ -2,7 +2,11 @@ import { useState } from "react";
 import { Composer } from "@/components/chat/Composer";
 import ImageTurn from "@/components/chat/ImageTurn";
 import { Button } from "@/components/ui/button";
-import type { PhotoDraft, PhotoEditor } from "@/hooks/usePhotoEdit";
+import type {
+  PhotoDraft,
+  PhotoEditor,
+  PhotoSelection,
+} from "@/hooks/usePhotoEdit";
 import type { ImageJob } from "@/lib/image-events";
 import type { Message } from "@/lib/api";
 import { useUI } from "@/stores/ui";
@@ -16,6 +20,7 @@ export default function PhotoEditingPreview() {
     "Change the synthetic background to cobalt.",
   );
   const [active, setActive] = useState(true);
+  const [selection, setSelection] = useState<PhotoSelection>();
   const ui = useUI();
   const ref = {
     id: "c".repeat(32),
@@ -35,6 +40,26 @@ export default function PhotoEditingPreview() {
     input: {
       token: "fake",
       reference: ref,
+      selection:
+        selection ??
+        (state.startsWith("selection") && state !== "selection-load-error"
+          ? {
+              version: 1,
+              strokes: [
+                { radius: 0.15, points: [[0.5, 0.3]] },
+                ...(state === "selection-protected" ||
+                state === "selection-empty"
+                  ? [
+                      {
+                        operation: "erase" as const,
+                        radius: state === "selection-empty" ? 0.15 : 0.06,
+                        points: [[0.5, 0.3] as [number, number]],
+                      },
+                    ]
+                  : []),
+              ],
+            }
+          : undefined),
       phase:
         state === "preparing"
           ? "preparing"
@@ -52,9 +77,13 @@ export default function PhotoEditingPreview() {
   const editor: PhotoEditor = {
     key: "design-photo",
     draft,
-    previewURL: "/icons/apple-touch-icon.png",
+    previewURL:
+      state === "selection-load-error"
+        ? "/synthetic-missing-photo.png"
+        : "/icons/apple-touch-icon.png",
     setText,
     setActive,
+    setSelection,
     attach: async () => {
       setActive(true);
       setState("ready");
@@ -71,6 +100,8 @@ export default function PhotoEditingPreview() {
   const job: ImageJob = {
     id: "a".repeat(32),
     mode: "edit",
+    width: 720,
+    height: 900,
     prompt: text,
     seed: 42,
     reference: ref,
@@ -139,6 +170,12 @@ export default function PhotoEditingPreview() {
         className="mx-auto max-w-[var(--thread-w)]"
         aria-label="Photo editing preview"
       >
+        {state === "selection-review" && (
+          <p className="mb-3 text-sm text-fg-2">
+            Open Change selection, then Review selection to check overlap and
+            protected details before applying.
+          </p>
+        )}
         {[
           "running",
           "cancelled",

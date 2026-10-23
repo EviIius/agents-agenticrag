@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { ImagePlus, X, RotateCcw } from "lucide-react";
 import type { PhotoEditor } from "@/hooks/usePhotoEdit";
 import { IconButton } from "@/components/app/IconButton";
 import { Button } from "@/components/ui/button";
 import { ImageViewer } from "./ImageViewer";
 import { AtelierMark } from "./AtelierMark";
+const PhotoMaskEditor = lazy(() => import("./PhotoMaskEditor"));
 
 export default function PhotoReferenceTray({
   editor,
@@ -14,6 +15,7 @@ export default function PhotoReferenceTray({
   choose: () => void;
 }) {
   const [frame, setFrame] = useState<HTMLElement>();
+  const [selecting, setSelecting] = useState<string>();
   const input = editor.draft.input,
     ref = input?.reference;
   const url =
@@ -102,10 +104,48 @@ export default function PhotoReferenceTray({
           Attach photo
         </Button>
       )}
+      {input?.phase === "ready" && ref && url && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setSelecting(input.token)}
+          >
+            {input.selection ? "Change selection" : "Select edit area"}
+          </Button>
+          {input.selection && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => editor.setSelection(undefined, input.token)}
+            >
+              Clear selection
+            </Button>
+          )}
+        </div>
+      )}
       <p className="mt-2 text-xs text-fg-2">
-        One square image. Framing and other details can change. Your original
-        stays private.
+        {input?.selection
+          ? "Only selected areas change. Photo proportions and unselected pixels are preserved."
+          : "Select an area to protect the rest. Without a selection, the whole photo can change."}{" "}
+        Your original stays private.
       </p>
+      {selecting && selecting === input?.token && ref && url && (
+        <Suspense fallback={<p role="status">Opening selection…</p>}>
+          <PhotoMaskEditor
+            key={selecting}
+            url={url}
+            width={ref.width}
+            height={ref.height}
+            selection={input.selection}
+            onApply={(selection) => {
+              editor.setSelection(selection, selecting);
+              setSelecting(undefined);
+            }}
+            onClose={() => setSelecting(undefined)}
+          />
+        </Suspense>
+      )}
       {frame && url && (
         <ImageViewer
           job={photo}

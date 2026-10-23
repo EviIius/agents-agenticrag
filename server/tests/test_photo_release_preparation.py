@@ -130,7 +130,13 @@ def bundle_inputs(
     (candidate / "server/app/db/migrations").mkdir(parents=True)
     (candidate / "server/app/db/migrations/014_image_references.sql").write_text("-- fake marker")
     (candidate / "image_worker/product").mkdir(parents=True)
-    for name in ("worker.py", "edit_worker.py", "reference_contract.py", "reference_codec.py"):
+    for name in (
+        "worker.py",
+        "edit_worker.py",
+        "reference_contract.py",
+        "reference_codec.py",
+        "masked_edit.py",
+    ):
         (candidate / "image_worker/product" / name).write_bytes(
             (ROOT / "image_worker/product" / name).read_bytes()
         )

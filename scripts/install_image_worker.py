@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 BASE = Path.home() / ".local/share/workbench"
 REVISION = "e7b7dc27f91deacad38e78976d1f2b499d76a294"
-FILES = ("worker.py", "edit_worker.py", "reference_contract.py", "reference_codec.py")
+FILES = ("worker.py", "edit_worker.py", "reference_contract.py", "reference_codec.py", "masked_edit.py")
 
 
 def replace(path: Path, raw: bytes) -> None:
@@ -128,7 +128,7 @@ def main() -> None:
         )
     else:
         print(
-            "Plan: quiesce the app, install four reviewed worker/CPU files, "
+            "Plan: quiesce the app, install the reviewed worker/CPU files, "
             "preserve selectors. No downloads."
         )
 

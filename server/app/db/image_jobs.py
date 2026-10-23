@@ -49,6 +49,9 @@ async def image_job(store: Store, identifier: str) -> ImageJob:
         mode=spec.get("mode", "generate"),
         reference=projection(reference_row) if reference_row else None,
         export_bytes=reference_row["export_bytes"] if reference_row else 0,
+        selection=spec.get("selection"),
+        width=spec["reference"]["dimensions"][0] if spec.get("selection") else 1024,
+        height=spec["reference"]["dimensions"][1] if spec.get("selection") else 1024,
         image_bytes=row["bytes"] or 0,
         metadata_bytes=row["metadata_bytes"] or 0,
         elapsed_seconds=max(

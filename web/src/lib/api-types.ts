@@ -2033,6 +2033,7 @@ export interface components {
             source_job_id?: string | null;
             /** Reference Id */
             reference_id?: string | null;
+            selection?: components["schemas"]["PhotoSelection"] | null;
         };
         /** ChatImageResponse */
         ChatImageResponse: {
@@ -2737,6 +2738,17 @@ export interface components {
              * @default 0
              */
             export_bytes: number;
+            selection?: components["schemas"]["PhotoSelection"] | null;
+            /**
+             * Width
+             * @default 1024
+             */
+            width: number;
+            /**
+             * Height
+             * @default 1024
+             */
+            height: number;
         };
         /** ImageNode */
         ImageNode: {
@@ -2890,6 +2902,11 @@ export interface components {
              * @default 0
              */
             measurement_bytes: number;
+            /**
+             * Native Bytes
+             * @default 0
+             */
+            native_bytes: number;
         };
         /** Issue */
         Issue: {
@@ -3350,6 +3367,29 @@ export interface components {
              * @default false
              */
             selection_applied: boolean;
+        };
+        /** PhotoSelection */
+        PhotoSelection: {
+            /**
+             * Version
+             * @default 1
+             * @constant
+             */
+            version: 1;
+            /** Strokes */
+            strokes: components["schemas"]["PhotoStroke"][];
+        };
+        /** PhotoStroke */
+        PhotoStroke: {
+            /** Operation */
+            operation?: ("paint" | "erase") | null;
+            /** Radius */
+            radius: number;
+            /** Points */
+            points: [
+                number,
+                number
+            ][];
         };
         /** PickConfig */
         PickConfig: {
