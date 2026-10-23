@@ -2,7 +2,9 @@ import { test, expect, type Page } from "@playwright/test";
 import { readFile, mkdir } from "node:fs/promises";
 import { openTools } from "./helpers";
 
-const directory = "../artifacts/photo-editing/pe2-20261021/browser";
+const directory =
+  process.env.WORKBENCH_PHOTO_ARTIFACT_DIR ??
+  "../artifacts/photo-editing/pe2-20261021/browser";
 const file = {
   name: "Synthetic-mask-photo.png",
   mimeType: "image/png",
@@ -51,6 +53,7 @@ test("brush selection survives a rejected send and binds the accepted edit and r
   });
   await brush(page);
   await expect(dialog).toContainText("1 brush stroke");
+  await dialog.getByRole("button", { name: "Review selection" }).click();
   await dialog.getByRole("button", { name: "Use selection" }).click();
   await expect(dialog).toHaveCount(0);
   await expect(page.locator('[data-slot="photo-reference"]')).toContainText(
@@ -108,7 +111,7 @@ test("Undo, Clear, Cancel and keyboard selection keep the intended draft", async
     exact: true,
   });
   await expect(
-    dialog.getByRole("button", { name: "Use selection" }),
+    dialog.getByRole("button", { name: "Review selection" }),
   ).toBeDisabled();
   await brush(page);
   await dialog.getByRole("button", { name: "Undo", exact: true }).click();
@@ -120,7 +123,7 @@ test("Undo, Clear, Cancel and keyboard selection keep the intended draft", async
   await expect(dialog).toContainText("1 brush stroke");
   await dialog.getByRole("button", { name: "Clear", exact: true }).click();
   await expect(
-    dialog.getByRole("button", { name: "Use selection" }),
+    dialog.getByRole("button", { name: "Review selection" }),
   ).toBeDisabled();
   await brush(page);
   await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
@@ -152,7 +155,7 @@ test("an unreadable preview cannot apply a blind selection", async ({
   );
   await brush(page);
   await expect(
-    dialog.getByRole("button", { name: "Use selection" }),
+    dialog.getByRole("button", { name: "Review selection" }),
   ).toBeDisabled();
   await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
   await expect(dialog).toHaveCount(0);
@@ -175,11 +178,11 @@ for (const theme of ["light", "dark"])
     });
     const canvas = dialog.getByRole("img", { name: /^Photo selection canvas/ });
     await expect(
-      dialog.getByRole("button", { name: "Use selection" }),
+      dialog.getByRole("button", { name: "Review selection" }),
     ).toBeEnabled();
     const bounds = (await canvas.boundingBox())!;
     expect(bounds.width / bounds.height).toBeCloseTo(720 / 900, 2);
-    for (const label of ["Undo", "Clear", "Cancel", "Use selection"]) {
+    for (const label of ["Undo", "Clear", "Cancel", "Review selection"]) {
       const button = dialog.getByRole("button", { name: label, exact: true });
       await button.scrollIntoViewIfNeeded();
       const box = (await button.boundingBox())!;

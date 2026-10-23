@@ -170,6 +170,12 @@ export default function PhotoEditingPreview() {
         className="mx-auto max-w-[var(--thread-w)]"
         aria-label="Photo editing preview"
       >
+        {state === "selection-review" && (
+          <p className="mb-3 text-sm text-fg-2">
+            Open Change selection, then Review selection to check overlap and
+            protected details before applying.
+          </p>
+        )}
         {[
           "running",
           "cancelled",

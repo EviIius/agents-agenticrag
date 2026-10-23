@@ -2280,3 +2280,43 @@ coexistence qualification is claimed. Private A/B review is open on loopback
 port 8772. H4: `docs/PHOTO-EDITING-PE5-LOCAL-REPORT.md`. All six new slots are
 exhausted; stop for quality/direction review before further native calls,
 integration, merge or deployment. Both installed checkpoints remain retained.
+
+**User authorization — 23 October 2026 (one correction and acceptance check):**
+Jake said “ok, do that then” to the recommendation to fix accessory overlap,
+run one bounded acceptance check, and shelve precision editing if it remains
+unsatisfactory. Execute `docs/PHOTO-EDITING-PE6-ACCEPTANCE-PLAN.md`: editable-area
+review with unchanged mask/compositor semantics; one fresh installed-FLUX head
+generation maximum, with explicit forehead/hair overlap and the remaining
+facial features protected. Predeclare the retained PE5 FLUX glove outputs for
+whole-photo CPU review; never present them as newly generated. Preserve all
+previous ledgers, inputs and results. Freeze the corrected selection before the
+single invocation, retain all outcomes, and keep existing resource/time guards.
+No Qwen call, retry, download/dependency/runtime/default change, routing,
+integration, main merge or publication. Stop after H4/quality review; failure
+shelves precision editing rather than starting another model experiment.
+
+**PE6 closeout — 23 October 2026 (precision editing shelved):** The selection
+dialog adds editable-area review and Adjust selection with read-only mask
+inspection. Existing ordered mask semantics and exact compositor remain.
+Exactly one fresh FLUX head edit completes in 21.678 seconds, with unchanged
+recipe, 18.66 GB MLX peak, zero swap growth, owned reaping and zero changed
+unselected/protected-feature pixels. The brim stays attached after intended
+hair/forehead overlap is selected. All 29,561 revised visible-feature pixels
+stay exact; 7,808 pixels of the older face outline were deliberately allowed
+to be covered and changed. Do not claim the entire old face outline is unchanged.
+
+The full photo combines that head with the predeclared retained PE5 FLUX gloves;
+the gloves are not new generations. Background blending and glove coverage still
+fail full quality. Per Jake's accepted stopping rule, precision-editing release
+and further native trials are shelved. Retain source, every outcome and both
+weights; no retry, Qwen call, download, merge or deployment follows this closeout.
+No new quality acceptance is attributed to Jake.
+
+132 frontend units, 26 Chromium/WebKit browser checks, two new CPU/process
+checks, build/bundle, motion and 110 contrast pairs pass. The first CPU candidate
+is refused for feature overlap before any native call; revised source/selection
+is frozen before the one invocation. Native/export/pixel and source/model/
+installed/health preservation pass. Full product release suites are not rerun;
+no new physical phone/VoiceOver pass. H4: `docs/PHOTO-EDITING-PE6-REPORT.md`.
+Return to themes/narrow-automation roadmap review with its existing gates;
+this does not start an unapproved theme, schedule or agent implementation.

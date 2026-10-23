@@ -6,8 +6,11 @@ This records proposals, not implementation, installations or external actions.
 
 ## Current order
 
-1. Finish the corrected-selection FLUX/Qwen comparison and review actual quality,
-   preservation, latency and storage. Keep release/installer review separate.
+1. **Photo-editing trials closed:** PE5 compares focused regions; PE6 fixes brim
+   overlap with one fresh acceptance generation. Full quality still falls short,
+   so precision-editing release/further trials are shelved as Jake requested.
+   Preserve the isolated branch/results and both installed checkpoints; ordinary
+   live image tools remain. See `PHOTO-EDITING-PE6-REPORT.md`.
 2. Review the themes checkpoint and the narrow local-workflow pilot below.
    Adding these ideas does not restart the stopped agent/Research trials or
    supersede the existing automation plan.
@@ -98,6 +101,6 @@ frameworks or vendor benchmarks do not supply a production qualification.
 - Existing priority/automation notes: `APP-DIRECTION-AND-WORKFLOWS.md` and
   `LOCAL-AUTOMATION-NEXT-STEPS.md`.
 
-No item above creates an unattended run, grants account/app permissions, installs
-a dependency, amends motion rules or authorizes model calls beyond the already
-approved two-image comparison.
+No roadmap item above creates an unattended run, grants account/app permissions,
+installs a dependency, amends motion rules or authorizes another model call. The
+separate PE4/PE5/PE6 native allowances are exhausted.

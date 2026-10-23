@@ -2,7 +2,9 @@ import { test, expect, type Page } from "@playwright/test";
 import { readFile, mkdir } from "node:fs/promises";
 import { openTools } from "./helpers";
 
-const directory = "../artifacts/photo-editing/pe4-20261022/browser";
+const directory =
+  process.env.WORKBENCH_PHOTO_ARTIFACT_DIR ??
+  "../artifacts/photo-editing/pe4-20261022/browser";
 const file = {
   name: "Synthetic-protection.png",
   mimeType: "image/png",
@@ -34,32 +36,33 @@ test("protect, undo, redo and clear preserve the exact accepted selection and re
   await canvas.focus();
   await page.keyboard.press("Space");
   await expect(
-    dialog.getByRole("button", { name: "Use selection" }),
+    dialog.getByRole("button", { name: "Review selection" }),
   ).toBeEnabled();
   await dialog.getByRole("button", { name: "Protect", exact: true }).click();
   await canvas.focus();
   await page.keyboard.press("Space");
   await expect(dialog.getByRole("status")).toContainText("No area selected");
   await expect(
-    dialog.getByRole("button", { name: "Use selection" }),
+    dialog.getByRole("button", { name: "Review selection" }),
   ).toBeDisabled();
   await dialog.getByRole("button", { name: "Undo", exact: true }).click();
   await expect(
-    dialog.getByRole("button", { name: "Use selection" }),
+    dialog.getByRole("button", { name: "Review selection" }),
   ).toBeEnabled();
   await dialog.getByRole("button", { name: "Redo", exact: true }).click();
   await expect(
-    dialog.getByRole("button", { name: "Use selection" }),
+    dialog.getByRole("button", { name: "Review selection" }),
   ).toBeDisabled();
   await dialog.getByRole("button", { name: "Paint", exact: true }).click();
   await canvas.focus();
   await page.keyboard.press("Space");
   await dialog.getByRole("button", { name: "Clear", exact: true }).click();
   await expect(
-    dialog.getByRole("button", { name: "Use selection" }),
+    dialog.getByRole("button", { name: "Review selection" }),
   ).toBeDisabled();
   await dialog.getByRole("button", { name: "Undo", exact: true }).click();
   await expect(dialog.getByRole("status")).toContainText("3 brush strokes");
+  await dialog.getByRole("button", { name: "Review selection" }).click();
   await dialog.getByRole("button", { name: "Use selection" }).click();
   const requests: Record<string, unknown>[] = [];
   await page.route("**/api/chats/*/images", async (route) => {
@@ -119,7 +122,7 @@ test("selected and protected views show an erased detail without changing the ma
   });
   const canvas = dialog.getByRole("img", { name: /^Photo selection canvas/ });
   await expect(
-    dialog.getByRole("button", { name: "Use selection" }),
+    dialog.getByRole("button", { name: "Review selection" }),
   ).toBeEnabled();
   async function pixels() {
     return canvas.evaluate((c: HTMLCanvasElement) => {
@@ -189,6 +192,7 @@ test("zoom and move retain submitted pointer coordinates", async ({ page }) => {
   const expected: number[] = await canvas.evaluate((c: HTMLCanvasElement) =>
     JSON.parse(c.dataset.deliveredPoint!),
   );
+  await dialog.getByRole("button", { name: "Review selection" }).click();
   await dialog.getByRole("button", { name: "Use selection" }).click();
   let sent: { selection: { strokes: { points: number[][] }[] } } | undefined;
   await page.route("**/api/chats/*/images", async (route) => {
@@ -214,8 +218,53 @@ test("an erased-empty design state cannot be applied", async ({ page }) => {
   });
   await expect(dialog.getByRole("status")).toContainText("No area selected");
   await expect(
-    dialog.getByRole("button", { name: "Use selection" }),
+    dialog.getByRole("button", { name: "Review selection" }),
   ).toBeDisabled();
+});
+
+test("overlap review is read-only and Adjust or Cancel keeps the intended mask", async ({
+  page,
+}) => {
+  await page.goto("/design?photo-edit&state=selection-review");
+  await page
+    .getByRole("button", { name: "Change selection", exact: true })
+    .click();
+  const dialog = page.getByRole("dialog", {
+    name: "Select edit area",
+    exact: true,
+  });
+  await expect(
+    dialog.getByRole("button", { name: "Use selection" }),
+  ).toHaveCount(0);
+  const before = await dialog.getByRole("status").innerText();
+  await dialog.getByRole("button", { name: "Review selection" }).click();
+  await expect(dialog).toContainText("A brim may cover hair or forehead");
+  await expect(
+    dialog.getByRole("button", { name: "Paint", exact: true }),
+  ).toBeDisabled();
+  await expect(
+    dialog.getByRole("button", { name: "Protect", exact: true }),
+  ).toBeDisabled();
+  const canvas = dialog.getByRole("img", { name: /^Photo selection canvas/ });
+  await canvas.click();
+  await canvas.focus();
+  await page.keyboard.press("Space");
+  await page.keyboard.press("Control+z");
+  await expect(dialog.getByRole("status")).toHaveText(before);
+  await dialog.getByRole("button", { name: "Adjust selection" }).click();
+  await expect(
+    dialog.getByRole("button", { name: "Paint", exact: true }),
+  ).toBeEnabled();
+  await expect(dialog.getByRole("status")).toHaveText(before);
+  await canvas.focus();
+  await page.keyboard.press("Space");
+  await expect(dialog.getByRole("status")).toContainText("2 brush strokes");
+  await dialog.getByRole("button", { name: "Review selection" }).click();
+  await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Change selection", exact: true })
+    .click();
+  await expect(dialog.getByRole("status")).toHaveText(before);
 });
 
 test("a refused stroke at the limit cannot extend an earlier brush stroke", async ({
@@ -235,6 +284,7 @@ test("a refused stroke at the limit cannot extend an earlier brush stroke", asyn
   await expect(dialog.getByRole("alert")).toContainText(
     "Selection limit reached",
   );
+  await dialog.getByRole("button", { name: "Review selection" }).click();
   await dialog.getByRole("button", { name: "Use selection" }).click();
   let sent: { selection: { strokes: { points: number[][] }[] } } | undefined;
   await page.route("**/api/chats/*/images", async (route) => {
@@ -276,7 +326,7 @@ for (const theme of ["light", "dark"])
       "Redo",
       "Clear",
       "Cancel",
-      "Use selection",
+      "Review selection",
     ]) {
       const button = dialog.getByRole("button", { name: label, exact: true });
       await button.scrollIntoViewIfNeeded();
@@ -289,5 +339,19 @@ for (const theme of ["light", "dark"])
     await mkdir(directory, { recursive: true });
     await page.screenshot({
       path: `${directory}/precision-fake-390-${theme}-${browserName}.png`,
+    });
+    await dialog.getByRole("button", { name: "Review selection" }).click();
+    await expect(dialog).toContainText("Only unselected pixels stay unchanged");
+    for (const label of ["Adjust selection", "Cancel", "Use selection"]) {
+      const button = dialog.getByRole("button", { name: label, exact: true });
+      await button.scrollIntoViewIfNeeded();
+      const box = (await button.boundingBox())!;
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(390);
+      expect(box.y).toBeGreaterThanOrEqual(0);
+      expect(box.y + box.height).toBeLessThanOrEqual(600);
+    }
+    await page.screenshot({
+      path: `${directory}/overlap-review-390-${theme}-${browserName}.png`,
     });
   });

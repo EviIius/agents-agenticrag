@@ -54,6 +54,7 @@ export default function PhotoMaskEditor({
   const [cursor, setCursor] = useState<Point>();
   const [coverage, setCoverage] = useState({ selected: 0, percent: 0 });
   const [ready, setReady] = useState(false);
+  const [reviewing, setReviewing] = useState(false);
   const [error, setError] = useState("");
   const scale = Math.min(frame.width / width, frame.height / height) * zoom;
   const displayWidth = width * scale,
@@ -169,7 +170,7 @@ export default function PhotoMaskEditor({
     ) as Point;
   }
   function begin(position: Point) {
-    if (tool === "move") return false;
+    if (reviewing || tool === "move") return false;
     if (tool === "erase" && !coverage.selected) {
       setError("Paint an area first, then protect details within it.");
       return false;
@@ -238,8 +239,9 @@ export default function PhotoMaskEditor({
       <DialogContent className="max-h-[calc(100svh-2rem)] gap-3 overflow-y-auto p-4 sm:max-w-2xl">
         <DialogTitle>Select edit area</DialogTitle>
         <DialogDescription>
-          Paint the existing area to replace and room for additions. Protect
-          removes paint; those pixels stay unchanged.
+          {reviewing
+            ? "Check where the addition can overlap the original. Only unselected pixels stay unchanged."
+            : "Paint the area to replace, including the existing details an addition will cover. Protect removes paint."}
         </DialogDescription>
         <div
           role="group"
@@ -252,6 +254,7 @@ export default function PhotoMaskEditor({
               type="button"
               variant={tool === value ? "default" : "outline"}
               aria-pressed={tool === value}
+              disabled={reviewing}
               onClick={() => {
                 active.current = undefined;
                 setTool(value);
@@ -338,7 +341,11 @@ export default function PhotoMaskEditor({
               height={height}
               tabIndex={0}
               role="img"
-              aria-label="Photo selection canvas. Paint or protect with a pointer, or use arrow keys and Space. Choose Move to pan."
+              aria-label={
+                reviewing
+                  ? "Photo selection canvas. Review only. Drag or use arrow keys to pan. Choose Adjust selection to paint."
+                  : "Photo selection canvas. Paint or protect with a pointer, or use arrow keys and Space. Choose Move to pan."
+              }
               className={`block shrink-0 touch-none outline-brand ${tool === "move" ? "cursor-grab" : "cursor-crosshair"}`}
               style={{ width: displayWidth, height: displayHeight }}
               onPointerDown={(event) => {
@@ -398,6 +405,7 @@ export default function PhotoMaskEditor({
                   event.key.toLowerCase() === "z"
                 ) {
                   event.preventDefault();
+                  if (reviewing) return;
                   if (event.shiftKey) redo();
                   else undo();
                   return;
@@ -446,6 +454,7 @@ export default function PhotoMaskEditor({
             max={0.15}
             step={0.005}
             value={[radius]}
+            disabled={reviewing}
             onValueChange={([n]) => setRadius(n)}
           />
         </div>
@@ -460,34 +469,52 @@ export default function PhotoMaskEditor({
             : "No area selected"}
         </p>
         <p className="text-xs text-fg-2">
-          Check coverage before applying: include the surface beneath each
-          addition, not just the empty space around it.
+          {reviewing
+            ? "A brim may cover hair or forehead. Those pixels need paint too. Protect the eyes and other details that must remain visible. Adjust the selection if the addition would be cut off."
+            : "Include room for the new object and the surface it will cover. Review the overlap before applying."}
         </p>
         <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            disabled={!past.length}
-            onClick={undo}
-          >
-            Undo
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={!future.length}
-            onClick={redo}
-          >
-            Redo
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={!strokes.length}
-            onClick={() => commit([])}
-          >
-            Clear
-          </Button>
+          {reviewing ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                active.current = undefined;
+                setReviewing(false);
+                setTool("paint");
+                setView("overlay");
+              }}
+            >
+              Adjust selection
+            </Button>
+          ) : (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!past.length}
+                onClick={undo}
+              >
+                Undo
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!future.length}
+                onClick={redo}
+              >
+                Redo
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!strokes.length}
+                onClick={() => commit([])}
+              >
+                Clear
+              </Button>
+            </>
+          )}
           <Button
             type="button"
             variant="ghost"
@@ -499,9 +526,19 @@ export default function PhotoMaskEditor({
           <Button
             type="button"
             disabled={!ready || !coverage.selected}
-            onClick={() => onApply({ version: 1, strokes })}
+            onClick={() => {
+              if (reviewing) onApply({ version: 1, strokes });
+              else {
+                active.current = undefined;
+                setCursor(undefined);
+                setError("");
+                setTool("move");
+                setView("selected");
+                setReviewing(true);
+              }
+            }}
           >
-            Use selection
+            {reviewing ? "Use selection" : "Review selection"}
           </Button>
         </div>
       </DialogContent>
