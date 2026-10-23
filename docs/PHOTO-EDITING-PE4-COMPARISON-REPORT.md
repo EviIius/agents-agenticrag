@@ -7,7 +7,8 @@
 Exactly one image per installed engine completed on identical frozen inputs.
 Both preserve the prepared photograph's protected pixels and pass resource/
 protocol checks. **Both fail the cap-and-two-glove quality requirement.**
-Qwen takes 7.76 times as long without a convincing benefit on this task.
+Jake slightly prefers Qwen's final appearance. That subjective visual gain comes
+with 7.76-times latency; neither result completes the full accessory request.
 No model is promoted, and no merge, deployment or further generation follows.
 
 ## Done-when checklist
@@ -101,9 +102,18 @@ so it cannot all be blamed on the compositor. The corrected coverage did not
 make this full request succeed. Do not replace these failures with a claim that
 a further mask, seed or larger checkpoint will necessarily solve it.
 
+### User review — 23 October 2026
+
+Jake reports that Qwen looks slightly better. This is his overall visual
+preference, without a stated reason or acceptance of the complete accessory
+request. Codex's earlier wording that Qwen had no demonstrated quality payoff
+was too categorical: visual preference and full-task completion are separate
+judgments. Preserve the original Codex assessments and native results above.
+
 One fixed task/seed per engine cannot establish a general ranking or consistency.
-For this task and these recipes, the observed Qwen cost has no demonstrated
-quality payoff. Its research-only checkpoint remains an evaluation candidate.
+For this pair, Qwen is Jake's slight visual preference and FLUX is the faster
+option (23.446 versus 182.007 seconds). Both still miss the rear glove. Qwen's
+research-only checkpoint remains an evaluation candidate.
 
 ### Storage per retained edit
 
@@ -158,8 +168,11 @@ and synthetic CPU evidence only.
 
 ## Open questions for Jake
 
-The comparison allowance is exhausted. Keep FLUX as the live engine and do not
-promote Qwen from this result. Hold precision-editing release until a concrete
+The comparison allowance is exhausted. Retain Qwen as the user's slightly
+preferred visual candidate alongside the faster FLUX option; this review does
+not qualify either for the complete precision-editing request. Keep FLUX as the
+live engine pending a separately reviewed integration decision. Hold
+precision-editing release until a concrete
 quality/usefulness scope is accepted. A useful alternative to review is explicit
 accessory layers with user positioning: that separates exact scene preservation
 from object placement. It is a new design proposal, not implemented or qualified.

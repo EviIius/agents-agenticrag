@@ -2231,3 +2231,13 @@ H4: `docs/PHOTO-EDITING-PE4-COMPARISON-REPORT.md`. Stop for quality/direction re
 Future themes/motion/local-AI ideas are recorded in
 `docs/FUTURE-PLANS-2026-10-23.md`; source patch remains unapplied and its rule
 exceptions/installations/automation/external actions remain unapproved.
+
+**User quality feedback — 23 October 2026 (corrected-mask pair):** Jake says
+Qwen looks slightly better. Record his overall visual preference separately
+from Codex's initial assessment above; the earlier categorical statement that
+Qwen showed no quality payoff does not represent his review. The report now
+distinguishes slight visual preference from complete-task success: both still
+miss the rear glove, and measured times remain 23.446 versus 182.007 seconds.
+No specific reason or complete quality acceptance is attributed to Jake. This
+feedback does not reopen the exhausted native budget or authorize integration,
+merge or deployment.
