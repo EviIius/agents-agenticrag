@@ -1,0 +1,69 @@
+{
+  "checkpoint": "PE4 corrected-mask pair",
+  "maximum_native_invocations": 2,
+  "order": [
+    "flux",
+    "qwen"
+  ],
+  "engines": {
+    "flux": {
+      "model": "black-forest-labs/FLUX.2-klein-4B",
+      "revision": "e7b7dc27f91deacad38e78976d1f2b499d76a294",
+      "worker": "flux_worker.py",
+      "steps": 4,
+      "parameters": {
+        "seed": 42,
+        "width": 1024,
+        "height": 1024,
+        "num_inference_steps": 4,
+        "guidance": 1.0,
+        "quantize": 8
+      },
+      "limits": {
+        "mlx_peak_bytes": 25769803776,
+        "mlx_cache_bytes": 1073741824,
+        "swap_growth_mib": 512,
+        "app_health_seconds": 2,
+        "initialization_seconds": 120,
+        "generation_decode_seconds": 60,
+        "worker_wall_seconds": 180,
+        "download_free_space_bytes": 53687091200
+      }
+    },
+    "qwen": {
+      "model": "Qwen/Qwen-Image-2.1",
+      "revision": "d26bb61231c349cf6b7896fa83353113880e1ba3",
+      "parameters": {
+        "seed": 42,
+        "width": 1024,
+        "height": 1024,
+        "output_resolution": 1024,
+        "num_inference_steps": 40,
+        "guidance": 1.0,
+        "negative_prompt": null,
+        "strength": 1.0,
+        "quantize": 4,
+        "auto_mask": null,
+        "enhance_prompt": false,
+        "verify": false,
+        "verify_retries": 0,
+        "use_kv_cache": true,
+        "use_step_cache": false,
+        "scheduler": "linear",
+        "lora_paths": null
+      },
+      "limits": {
+        "mlx_peak_bytes": 25769803776,
+        "mlx_cache_bytes": 1073741824,
+        "swap_growth_mib": 512,
+        "app_health_seconds": 2,
+        "initialization_seconds": 120,
+        "generation_decode_seconds": 300,
+        "worker_wall_seconds": 420,
+        "download_free_space_bytes": 53687091200
+      },
+      "worker": "qwen_worker.py",
+      "steps": 40
+    }
+  }
+}

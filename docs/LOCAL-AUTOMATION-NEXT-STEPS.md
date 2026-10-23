@@ -4,6 +4,10 @@
 workflows on the list where Local AI can start doing things for me automatically?”
 This is planning only; no automatic task or extra model call is started.
 
+23 October addition: `FUTURE-PLANS-2026-10-23.md` records Jake's supplied themes,
+capture, Night shift, notification, messaging and computer-use ideas. These are
+proposals; the narrow workflow pilot and review boundaries below remain.
+
 ## Already on the list
 
 - `next/workflow-studio/WORKFLOW-STUDIO-SPEC.md` §12, **WS-F**, explicitly lists

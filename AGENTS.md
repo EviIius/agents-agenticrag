@@ -2183,3 +2183,51 @@ H4: `docs/PHOTO-EDITING-PE4-REPORT.md`. Stop for mask/comparison review. The pro
 one-invocation-per-engine pair in `docs/PHOTO-EDITING-PE4-COMPARISON-PLAN.md` is
 prepared only; its concrete native scope needs separate approval. No earlier
 native budget is reopened and Qwen remains an isolated evaluation candidate.
+
+**User authorization — 23 October 2026 (corrected-mask comparison):** Jake
+explicitly approved the corrected-mask comparison question. Execute
+`docs/PHOTO-EDITING-PE4-COMPARISON-PLAN.md`: exactly one FLUX edit then one Qwen
+edit, at most two new invocations, using identical original/reference/task/
+corrected selection/seed/context and each engine's declared existing recipe.
+Retain a FLUX visual-quality failure as the comparison baseline; it does not
+cancel Qwen. Any technical/resource/preservation/binding failure stops the pair.
+Use a fresh private root, frozen source/inputs, durable two-slot ledger and the
+existing shared lease, parent-death/reaping and host guards. No retry, download,
+package/runtime change, main merge or publication; prior budgets stay closed.
+Stop with private quality comparison and SPEC H4 evidence.
+
+**User request — 23 October 2026 (future roadmap):** Jake supplied the themes/
+motion/local-AI ideas document and Theme Lab archive and asked to add them to
+future plans while continuing the approved comparison. Review and document
+them as proposals; do not apply the theme patch, relax animation rules, change
+fonts/settings, start automation or external messaging, or install anything.
+Theme decisions J18–J20 and each later concrete implementation scope remain
+unapproved. Preserve the supplied untracked theme and agent-loop documents.
+
+**Corrected-mask pair closeout — 23 October 2026:** Exactly two new native jobs
+complete, one per engine, on identical frozen request/reference/selection/seed/
+context. FLUX takes 23.446 seconds / 18,659,198,390-byte MLX peak; Qwen takes
+182.007 seconds / 24,218,226,354-byte peak. Both have zero swap growth, truthful
+actual steps, owned reaping and unchanged protected pixels. Independent direct
+RGB checks retain all 3,025,097 unselected and 42,761 manual face pixels exactly;
+exports match the composites. Each retained native/composite/export PNG triplet
+is about 9.9 MB. Full job/storage observations are retained separately.
+
+Both private accessory results fail quality. FLUX's raw cap is more coherent,
+but the final protected boundary clips it; both raw outputs miss the rear glove.
+Qwen's cap placement and glove shape do not demonstrate an advantage for its
+7.76-times latency on this task. Do not call this a general model ranking or
+promote Qwen. The new two-call allowance is exhausted: no retry, changed mask/
+seed/prompt, download, integration, merge or publication follows this closeout.
+
+Thirteen CPU/process checks, independent pixel audit and lint/format/privacy
+checks pass. Initial incomplete fixture/preparation-field failures are retained;
+they occurred before any native reservation. Both models, executed new/prior
+sources/inputs, installed app/static/worker/plist and local/verified HTTPS health
+verify preserved. Ollama remains 0.35.0; no new physical phone/VoiceOver pass.
+Product suites are historical PE4 evidence, not repeated for isolated trial/docs.
+
+H4: `docs/PHOTO-EDITING-PE4-COMPARISON-REPORT.md`. Stop for quality/direction review.
+Future themes/motion/local-AI ideas are recorded in
+`docs/FUTURE-PLANS-2026-10-23.md`; source patch remains unapplied and its rule
+exceptions/installations/automation/external actions remain unapproved.

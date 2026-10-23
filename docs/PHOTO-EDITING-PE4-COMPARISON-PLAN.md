@@ -1,6 +1,8 @@
 # Proposed corrected-selection pair
 
-22 October 2026. **Not executed or approved by PE4's implementation scope.**
+22 October 2026 proposal. **Separately approved on 23 October 2026** by Jake's
+explicit corrected-mask comparison reply; PE4's earlier implementation scope
+did not authorize native calls. Execution and results are recorded separately.
 First review the private CPU coverage page at `http://127.0.0.1:8770/review.html`.
 The mask now covers the existing hair and hand areas, with the manually outlined
 face and watch protected. Four small manually identified regions reach 100%
