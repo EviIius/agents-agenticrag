@@ -2241,3 +2241,42 @@ miss the rear glove, and measured times remain 23.446 versus 182.007 seconds.
 No specific reason or complete quality acceptance is attributed to Jake. This
 feedback does not reopen the exhausted native budget or authorize integration,
 merge or deployment.
+
+**User authorization — 23 October 2026 (focused quality trial):** Jake requested
+more trials between the installed FLUX and Qwen engines and accepts longer
+generation when quality improves. Execute the new bounded quality comparison in
+`docs/PHOTO-EDITING-PE5-LOCAL-TRIAL-PLAN.md`: at most six new native invocations,
+one per engine for each of three disjoint accessory regions of the supplied
+original. Freeze all requests, masks, recipes and source before execution. Keep
+existing resource/time/preservation guards and stop the entire trial on a
+technical failure; retain visual failures for comparison. Prior ledgers remain
+closed. No new packages/downloads/helpers, integration, merge or deployment.
+Stop with retained outputs, measured quality/cost evidence and H4 review.
+
+**PE5 focused quality trial closeout — 23 October 2026:** All six declared
+native jobs complete technically, with no retry or extra generation. The three
+disjoint masks reproduce PE4's selection exactly. Each engine's three jobs use
+the same original independently, and CPU combination copies only its declared
+regional outputs. Qwen wins the delivered cap and has a slight front-glove
+appearance advantage; FLUX handles the rear fingers better. Qwen's rear edit
+adds displaced white shapes and leaves fingers bare. FLUX's cap is clipped at
+the protected face boundary and has an inside-mask background seam. Neither
+combined result satisfies the complete quality request. These are Codex's manual
+observations; no new quality acceptance is attributed to Jake.
+
+Measured job sums: FLUX 70.066 seconds, Qwen 581.836 seconds, excluding setup,
+manual review and CPU combination. Peak MLX is 18.66 / 24.22 GB, zero swap
+growth. All 3,025,097 unselected and 42,761 outlined-face pixels remain exact
+in each combined result; regional exports equal composites. Retained six PNG
+triplets plus two combined PNGs total 63,982,875 bytes, excluding trial inputs
+and sidecars. All outputs/failures remain private, with sanitized evidence in
+`artifacts/photo-editing/pe5-local-20261023/`.
+
+Eighteen CPU/process tests and preparation/preservation audits pass. New and
+prior freezes, 962 engine/server sources, 44 model files, installed app/static/
+worker/plist and local/verified HTTPS health verify unchanged. Ollama remains
+0.35.0. No new phone/VoiceOver pass, general model ranking, consistency or
+coexistence qualification is claimed. Private A/B review is open on loopback
+port 8772. H4: `docs/PHOTO-EDITING-PE5-LOCAL-REPORT.md`. All six new slots are
+exhausted; stop for quality/direction review before further native calls,
+integration, merge or deployment. Both installed checkpoints remain retained.
