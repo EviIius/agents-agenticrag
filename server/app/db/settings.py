@@ -70,7 +70,16 @@ async def patch(store: Store, values: dict[str, Any]) -> None:
         "new_chat_model": ("last_used", "fixed"),
         "appearance.theme": ("system", "light", "dark"),
         # TH1: keep in step with PALETTE_IDS and GREETING_MODES in the web app.
-        "appearance.palette": ("cobalt", "lime", "paper", "ember", "orchid", "midnight", "mono"),
+        "appearance.palette": (
+            "cobalt",
+            "lime",
+            "paper",
+            "ember",
+            "orchid",
+            "midnight",
+            "mono",
+            "aero",
+        ),
         "appearance.greeting": ("languages", "surprise", "english"),
         "appearance.font": ("serif", "sans"),
         "appearance.size": ("S", "M", "L"),

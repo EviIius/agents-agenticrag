@@ -107,3 +107,15 @@ Only the explicitly approved isolated theme exceptions above amend motion/font
 rules in this checkpoint. No roadmap item creates an unattended run, grants
 account/app permissions, installs a dependency or authorizes another model call.
 The separate PE4/PE5/PE6 native allowances remain exhausted.
+
+## 24 October update — Aero integration candidate
+
+Jake approved adding Aero as the eighth palette after the isolated preview.
+Integration is on `codex/themes-aero-integration`, preserving the qualified
+seven-theme baseline. It adds saved Aero settings, the actual new-chat scene,
+glass materials and bounded theme motion, with rendered-contrast repairs.
+Full check/browser evidence and review status are in
+`THEMES-AERO-INTEGRATION-REPORT.md`. Claude UI review and real iPhone performance
+remain pending; this does not authorize main merge, deployment, native/model
+trials or recording-folder automation. J18–J20 approvals remain, and J21's
+glass/scene direction is accepted for the isolated candidate.

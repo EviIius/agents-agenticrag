@@ -1,8 +1,9 @@
 # Aero — integration after visual review
 
-24 October 2026. Proposal only. The current request covers the local preview.
-Keep the verified seven-theme PR #10 at `c7758120` until review determines how
-to integrate Aero; do not treat its old QA results as an eight-theme pass.
+24 October 2026. Jake approved integration after the local preview. Execute on
+`codex/themes-aero-integration`; retain the seven-theme `c7758120` baseline and
+all old reports. The old 856-pass result is not an eight-theme qualification.
+Merge/deployment remain separate; stop for the independent UI review.
 
 1. Confirm the glass/scene direction (J21) after the local day/night and fake
    conversation review. Preserve the existing theme-switch/greeting repairs.

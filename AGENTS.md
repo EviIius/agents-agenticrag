@@ -1,5 +1,28 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**Aero technical closeout — 24 October 2026:** The isolated integration on
+`codex/themes-aero-integration` passes full checks (778 Python, 151 frontend,
+969 token pairs) and one complete Chromium/WebKit run (892 passed, four existing
+skips, zero failures; 1.4 h). All 64 actual-material audits pass, with 1,553 sampled
+text runs and normal-text minimum 5.19:1. Initial JS 252,235/256,000 bytes; Aero
+streaming p95 is 3.4/3.0 ms and scroll median 16.7/17 ms. Inventories verify 611
+installed and 677 candidate files, supplied inputs and restored historical
+artifacts. Main and the installed app are unchanged; there were no new packages
+or native model calls. H4: `docs/THEMES-AERO-INTEGRATION-REPORT.md`. Stop for
+independent local UI review. Physical iPhone/Safari/icon behavior remains pending;
+VoiceOver is historically unresolved. Merge and paired deployment need separate
+approval. The qualified seven-theme commit/branch remains preserved.
+
+**User approval — 24 October 2026 (Aero integration):** Jake said "Approve
+integration" after the local Aero review, and plans an independent Claude UI
+evaluation afterward. Accept J21's glass/scene direction for the isolated app
+candidate. Proceed with `docs/THEMES-AERO-INTEGRATION-PLAN.md`: server preference
+validation, live EmptyState, public PWA assets, actual-material readability,
+Aero fake-runtime performance, full checks and one complete browser run. Retain
+failures and existing thresholds; no packages, model/native calls or new modes.
+Keep main, service identity and installed app unchanged. Stop with H4 evidence
+and a usable local candidate for UI review; merge and deployment remain separate.
+
 **User request — 24 October 2026 (Aero local preview):** Add the supplied Aero
 theme to the local theme lab for visual review. This is a separate preview branch
 from the verified seven-theme commit `c7758120`, preserving its reviewed fixes.

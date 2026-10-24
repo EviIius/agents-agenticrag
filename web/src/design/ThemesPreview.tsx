@@ -246,7 +246,7 @@ export default function ThemesPreview() {
     <div className="design-page theme-lab">
       <header className="mb-8">
         <p className="mb-3 text-xs tracking-wide text-fg-3">
-          AETHER / THEMES · AERO LOCAL PREVIEW
+          AETHER / THEMES · LOCAL INTEGRATION CANDIDATE
         </p>
         <h1 className="font-serif text-3xl leading-10">
           Eight palettes, one app.
@@ -257,8 +257,8 @@ export default function ThemesPreview() {
           own greeting, thinking mark, status words and send motion.
         </p>
         <p className="mt-2 max-w-2xl text-sm text-fg-2">
-          Aero is here for visual review. Saved settings and live chat
-          integration will follow after review.
+          All eight palettes are integrated in this local candidate, including
+          saved settings and new chats. Review before release.
         </p>
       </header>
 

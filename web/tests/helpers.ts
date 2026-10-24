@@ -28,6 +28,7 @@ export async function settle(page: Page) {
                 "greet-type",
                 "greet-glow",
                 "greet-bloom",
+                "greet-bubble",
                 "greet-flicker",
                 "greet-out",
                 "opacity-in",

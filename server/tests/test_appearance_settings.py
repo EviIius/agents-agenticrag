@@ -5,11 +5,16 @@ from typing import Any
 import pytest
 
 
-async def test_palette_and_greeting_round_trip_with_other_appearance(chat_app: Any) -> None:
+@pytest.mark.parametrize(
+    "palette", ["cobalt", "lime", "paper", "ember", "orchid", "midnight", "mono", "aero"]
+)
+async def test_palette_and_greeting_round_trip_with_other_appearance(
+    chat_app: Any, palette: str
+) -> None:
     _, client, _ = chat_app
     body = {
         "appearance.theme": "dark",
-        "appearance.palette": "lime",
+        "appearance.palette": palette,
         "appearance.greeting": "surprise",
         "appearance.font": "serif",
     }
