@@ -37,7 +37,8 @@ not authorize deployment or decide these exceptions before Jake's actual answer.
    unchanged one-second deadline. Restrict the clip-path keyframe to the new
    root snapshot; other elements, old snapshots and other keyframes must fail.
 6. Replace the unverified remove/re-add Home Screen instruction with qualified
-   wording until actual device behavior is checked.
+   wording until actual device behavior is checked. Paper also explains its Newsreader
+   override and preserves the disabled answer-font preference for other palettes.
 7. Include every palette's icons/manifests in the existing public-only PWA cache
    and build fingerprint. No API/private data is added to that cache.
 

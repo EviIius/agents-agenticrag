@@ -119,7 +119,17 @@ test("a theme change spreads from the tap point", async ({ page }) => {
   const supported = await page.evaluate(
     () => "startViewTransition" in document,
   );
-  test.skip(!supported, "View Transitions are not available in this engine");
+  if (!supported) {
+    await controls(page)
+      .getByRole("button", { name: "Ember", exact: true })
+      .click();
+    await expect(page.locator("html")).toHaveAttribute("data-palette", "ember");
+    await expect(page.locator("html")).not.toHaveAttribute(
+      "data-theme-reveal",
+      /.*/,
+    );
+    return;
+  }
   await page.evaluate(() => {
     const original = document.startViewTransition.bind(document);
     (window as unknown as { reveal: unknown[] }).reveal = [];

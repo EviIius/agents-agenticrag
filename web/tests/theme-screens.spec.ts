@@ -27,6 +27,7 @@ for (const width of [390, 1440]) {
           palette.id,
         );
         await expect(page.locator("html")).toHaveAttribute("data-theme", mode);
+        await settle(page);
         expect(
           await page.evaluate(
             () => document.documentElement.scrollWidth > innerWidth,

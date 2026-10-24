@@ -19,6 +19,7 @@ extra checking model, routing or agent framework is needed.
 | Recording → transcription → meeting-pack graph | `server/app/workflows/template_graphs.py:template_graph` | Bind a durable folder intake to a graph snapshot |
 | Durable transcript/source and hashes | `server/app/workflows/blocks.py:execute` | Reuse normal ingestion/pinning; never pass a source path straight into a model |
 | Request-key idempotency | `server/app/workflows/engine.py:GraphRunner.submit` | Persist one stable request key and attachment before submission; reuse both after a crash |
+| Graph snapshot created at submission | `GraphRunner.submit` | Add an optional expected definition revision/hash check; the current request does not prevent adopting an edit made between intake and submission |
 | Queued work and capacity ownership | Graph runner plus existing transcription/capacity managers | Bound trigger backlog; do not evict chat models or start competing heavy jobs |
 | Interrupted-step recovery and explicit retry | `GraphRunner.recover` / `resume` | Preserve these semantics; do not silently restart a paid-in-time native step |
 | Saved graph outputs and Markdown/JSON export | `blocks.py` OutputNode / `api/workflow_graphs.py:export` | Add an authorized local output writer; current Save results does **not** write to an arbitrary folder |
@@ -46,6 +47,15 @@ These are inspected code paths, not a new end-to-end automation test result.
   failed states. Bind the exact attachment ID, graph snapshot, model/settings and
   request key before graph submission. Reconcile a crash after submission by that
   key, rather than generating a fresh one.
+- Freeze the chosen definition revision/hash for each admitted item. If it was
+  edited before submission, require review instead of running the new graph.
+  Preserve the selected connection/model and the user's explicitly stored
+  controls. Hash relevant saved defaults; if they change while queued, pause for
+  review rather than silently replacing them or sending inferred sampling values.
+  Preserve the existing omission/default-merge rules. Context overflow stops the
+  item with a visible explanation; no hidden chunking or extra answer calls.
+  When the new optional definition guard is absent, preserve the existing
+  canonical request bytes so old request keys remain retryable after an upgrade.
 - One active item and at most two queued staged items. Stop accepting when the
   queue or staging-byte ceiling is reached, leaving originals untouched and the
   backlog visible. Set the concrete byte ceiling against available disk space
@@ -78,6 +88,7 @@ Required tests: incomplete/changing copy; duplicate events and renamed identical
 bytes; changed content; source/path replacement and symlinks; submission crash
 before/after acceptance; restart with completed/interrupted steps; pause/cancel;
 queue/disk limits; partial export/retry; backup/restore; private-content logging;
+definition/default edits while queued; context overflow without extra calls;
 unchanged ordinary chat payloads and SSE behavior.
 
 ### NS1 — bounded useful pilot, then opt-in enable
@@ -93,6 +104,13 @@ Propose at most two short synthetic recordings, one existing graph answer call
 per recording, clean-up off, stopping on technical/resource failure. Judge the
 result against a prewritten transcript/rubric: correct summary/decisions/actions,
 no invented owner/date, useful Markdown, exact source linkage and no duplicates.
+The concrete NS1 corpus should include one meeting with explicit owners/dates
+and one with missing owners/dates plus a tentative proposal. Require every
+predeclared decision/action, zero invented commitments/owners/dates, matching
+source/timestamps and byte-identical exported output. Compare automatic and
+manual provider payloads in NS0's fake captures, preserving unset parameters.
+Stop the native pilot on the first technical or critical factual failure; no
+prompt repair or extra inference is implied by the two-call allowance.
 No real unattended input is admitted until that review passes and the user
 enables the trigger. Repeated quality failures stop expansion of the pilot.
 
@@ -103,3 +121,14 @@ the actual input/output locations, graph and model, timing/catch-up choice and
 named native-call bound. This document selects no private paths and grants no
 access. Later schedules, file types, notifications or agent-chosen tools each
 need evidence from this narrow pilot before expansion.
+
+## Proposed NS0 authorization text, for review
+
+> Implement NS0 from this plan on an isolated branch: disabled configuration,
+> synthetic manual intake preview, durable admission/deduplication, additive
+> definition guard with legacy request-key compatibility, atomic local-output
+> preparation and restart/cancellation tests. CPU and existing fake runtimes only;
+> no package, real-folder access, background trigger, native/model invocation or
+> production publication. Stop with H4 evidence and the bounded NS1 proposal.
+
+This is suggested future wording, not an authorization recorded by this document.

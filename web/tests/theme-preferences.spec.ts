@@ -7,6 +7,7 @@ import type { AddressInfo } from "node:net";
 import { expect, test } from "@playwright/test";
 import { fakeAppURL } from "../test-runtime";
 import { PALETTES, paletteIcons } from "../src/lib/palettes";
+import { settle } from "./helpers";
 
 for (const width of [390, 1440]) {
   for (const theme of ["light", "dark"] as const) {
@@ -80,6 +81,7 @@ for (const width of [390, 1440]) {
           )
           .toBe("english");
         await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+        await settle(page);
         expect(
           await dialog.evaluate(
             (element) => element.scrollWidth > element.clientWidth,

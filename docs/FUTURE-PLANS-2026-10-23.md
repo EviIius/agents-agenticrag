@@ -50,7 +50,7 @@ record the concrete changes, retained failures and release gates. Original input
 files in the main workspace remain untouched.
 
 The full static/unit gate passes: 771 Python / 151 frontend tests, 855 contrast
-pairs and API/motion/privacy guards. Initial JS is 250,899/256,000 gzip bytes,
+pairs and API/motion/privacy guards. Initial JS is 250,980/256,000 gzip bytes,
 smaller than the installed build. The complete browser run and visual/device
 review status are recorded in `THEMES-INTEGRATION-REPORT.md`; do not substitute
 these numbers for a browser or physical phone pass.
