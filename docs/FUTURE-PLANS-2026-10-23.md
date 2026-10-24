@@ -51,9 +51,9 @@ files in the main workspace remain untouched.
 
 The full static/unit gate passes: 771 Python / 151 frontend tests, 855 contrast
 pairs and API/motion/privacy guards. Initial JS is 250,980/256,000 gzip bytes,
-smaller than the installed build. The complete browser run and visual/device
-review status are recorded in `THEMES-INTEGRATION-REPORT.md`; do not substitute
-these numbers for a browser or physical phone pass.
+smaller than the installed build. The complete Chromium/WebKit run passes 856 cases with four unchanged skips
+and zero failures. All 88 new theme cases pass. Sampled visual review is recorded
+in `THEMES-INTEGRATION-REPORT.md`; the real iPhone/icon check remains pending.
 
 Server and web must release together because the preferences validator changes.
 Use the app's actual phone/browser behavior to decide whether a saved Home Screen

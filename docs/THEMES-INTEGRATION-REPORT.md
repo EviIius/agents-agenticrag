@@ -1,6 +1,6 @@
 # TH1/TH2 report — palettes and theme motion
 
-23 October 2026 · `codex/themes-th1-th2`, based on main `4d33913c`.
+23–24 October 2026 · `codex/themes-th1-th2`, based on main `4d33913c`.
 
 ## Summary
 
@@ -8,23 +8,23 @@ Claude's seven-palette implementation is integrated on an isolated branch with
 Jake's explicit J18–J20 approval. Review found and repaired stale theme callbacks,
 interrupted greeting state, incomplete duration accounting, an overly broad test
 exemption, excess startup JavaScript and a phone-size keyboard-access issue.
-No dependency, model call, production prompt, main merge or deployment is included.
+No dependency, native model call, production prompt, main merge or deployment is included.
 The recording-folder workflow remains a separate concrete proposal.
 
 ## Done-when checklist
 
 | Item | Status | Evidence |
 |---|---|---|
-| Seven palettes, Settings, tokens, icons, greeting and per-palette motion | Implemented; browser/visual review in progress | Supplied code plus repairs in `THEMES-INTEGRATION-PLAN.md` |
+| Seven palettes, Settings, tokens, icons, greeting and per-palette motion | Pass in isolated build; visual review prepared | Supplied code plus repairs in `THEMES-INTEGRATION-PLAN.md` |
 | `make check` | Pass | 771 Python / 151 frontend tests; Ruff, mypy, format, coverage, API, motion, privacy; `make-check.log` |
 | Contrast | Pass | 855 token pairs; `make-check.log` |
 | Initial JS ≤256,000 bytes | Pass | 250,980 gzip bytes; `bundle.json` |
-| Complete browser suite, both engines | Pending | `make-e2e.log`; not qualified by focused runs alone |
-| Every palette/mode at 390/1440, serious/critical axe, Paper settings | Pending final run | `theme-screens.spec.ts`, `theme-preferences.spec.ts` and `screens/` |
-| Complete greeting, English-only, reduced motion and latest theme wins | Focused pass; final suite pending | Retained before/failure logs and new regression tests |
+| Complete browser suite, both engines | Pass | 856 passed / four unchanged skips / zero failures in one 1.3-hour invocation; `make-e2e.log`, `browser-result.json` |
+| Every palette/mode at 390/1440, serious/critical axe, Paper settings | Pass | `theme-screens.spec.ts`, `theme-preferences.spec.ts` and `screens/` |
+| Complete greeting, English-only, reduced motion and latest theme wins | Pass in complete suite | Retained before/failure logs and new regression tests |
 | Ordinary chat payload unchanged | Pass | Existing `test_default_request_matches_phase3_golden` in full Python run |
 | API/schema/dependencies | Pass | Additive/API-type guards; settings keys only, no migration/lockfile edit |
-| Original source and installed runtime/static preserved | Initial inventory recorded; final verification pending | `preservation-before.json` |
+| Original source and installed runtime/static preserved | Pass; 611 installed and 504 frozen source files match | `preservation-before.json`, `preservation-after.json` |
 | Real iPhone / saved Home Screen icon behavior | Pending | No new physical-device result claimed; VoiceOver historical limitation retained |
 | Merge and deployment | Not authorized here | Explicit isolated-branch approval |
 
@@ -70,7 +70,8 @@ Evidence root: `artifacts/themes/review-20261023/`.
 - Docs: AGENTS amendment, integration plan/report, supplied source documents,
   future-plans index and local-automation/recording-folder proposals.
 
-The final evidence inventory records exact executed file hashes. Historical
+The final evidence inventory records exact tracked web/server-app/tooling file
+hashes; it is not a claim to hash model weights or private data. Historical
 artifacts overwritten by browser capture are archived separately and restored;
 their earlier committed results are not replaced with this checkpoint's output.
 
@@ -105,24 +106,25 @@ after the edits. Eight readiness/color checks pass in both engines in
 
 ## Gates and frozen core
 
-Browser-dependent rows below remain pending until the final complete invocation
-finishes; focused successes are not substituted for that gate.
+The complete invocation passes in both engines: 856 passed, four unchanged
+engine-specific skips, zero failures. All 88 new theme cases pass. Focused runs
+and the earlier interrupted attempts are not substituted for this result.
 
 | Gate | Checkpoint evidence / status |
 |---|---|
 | G1 | Full check passes, all server coverage floors exceed 80%; final frontend hardening check also passes |
-| G2 | Final complete Chromium/WebKit invocation pending |
+| G2 | Pass: one complete Chromium/WebKit run, 856 passed / four existing skips / zero failures, exit 0 |
 | G3 | Ledger above; named user-approved exceptions only; no raised threshold, removed assertion or added skip |
-| G4 | 250,980-byte initial JS, 4,968 bytes below installed; frame/scroll/first-token tests in final browser run |
-| G5 | 855 contrast pairs pass; new all-palette/Settings axe and keyboard checks in final run; VoiceOver not claimed |
+| G4 | 250,980-byte initial JS, 4,968 bytes below installed; frame/scroll/first-token tests pass in the complete run; metrics below |
+| G5 | 855 contrast pairs pass; all-palette/Settings axe and keyboard checks pass in the complete run; VoiceOver not claimed |
 | G6 | API additive/type checks pass |
 | G7 | No migration; existing Phase 3 row-preservation fixture passes |
 | G8 | Existing frozen-prompt hash tests pass; no prompt edits |
 | G9 | No search/runs/providers source change; no new inference eval required or executed |
 | G10 | Ordinary-chat golden capture and unset-parameter assertions pass |
-| G11 | Marker-based audit passes; synthetic screenshots only; final lineage/preservation archive pending |
-| G12 | Deployment tests pass; no deployment performed; public-only PWA cache checked in final run |
-| G13 | System and Always motion tests plus greeting interruption checks in final run |
+| G11 | Marker-based audit passes; synthetic screenshots only; 60 fake-labelled theme captures with byte-preserving lineage; 1,718 historical files restored and fresh captures retained separately |
+| G12 | Deployment tests pass; no deployment performed; public-only PWA cache checks pass in the complete run |
+| G13 | System and Always motion tests plus greeting interruption checks pass in both engines |
 | G14 | `/design?themes`, existing design routes and production Settings components cover new states |
 | G15 | No migration, so migration rollback rehearsal is not applicable; joint-release fallback remains a later publication step |
 | G16 | New physical iPhone review not checked |
@@ -179,7 +181,8 @@ finishes; focused successes are not substituted for that gate.
   diagnostics and the executed diagnostic source are retained.
 - This matches [Playwright #42775](https://github.com/microsoft/playwright/issues/42775).
   Replace emulation with actual loss of an isolated loopback origin: no-store
-  responses, exact SHA-256 checks of every cached icon/manifest and an uncached
+  responses, exact SHA-256 checks of the 21 selected palette chrome icon/manifest URLs
+  and an uncached
   request that must fail. This adds no skip and passes in both engines. It does
   not claim physical iPhone offline verification.
 
@@ -190,21 +193,50 @@ finishes; focused successes are not substituted for that gate.
   guard and privacy marker scan pass (`make-check.log`).
 - Line coverage: providers 89.7%, runs 89.5%, search 89.8%, transcription 93.2%,
   documents 96.6%, Library 92.6%, images 83.6%, workflows 89.8%; all exceed 80%.
-- Complete browser invocation: pending. The unchanged suite contains four
+- Complete browser invocation: **856 passed / four unchanged skips / zero
+  failures, 1.3 hours, exit 0**. Chromium: 429 passed / one skip; WebKit: 427
+  passed / three skips. All 88 new theme cases pass. The unchanged suite contains four
   pre-existing engine-specific skips: real-time timeout gate once on Chromium,
   base screenshot set once on Chromium, native HEIC decoder once on WebKit,
   and WebKit's existing offline-navigation emulation limitation. No skip added.
 - Latest frontend type/lint/format/unit check and eight readiness/color checks
   pass. Retained partial/failed trials above are diagnostic, not qualification.
 
+### Measured browser budgets
+
+| Measure | Chromium | WebKit | Existing limit |
+|---|---:|---:|---:|
+| Streaming render p95 at 100 tok/s | 3.30 ms | 3.00 ms | ≤8 ms |
+| First-token display overhead | 82.36 ms | 65.49 ms | ≤150 ms |
+| 300-message scroll rAF interval p95 | 16.80 ms | 20.00 ms | Existing scroll test passes |
+
+Only the streaming row renders in both measurements. Render CPU duration and
+scroll rAF interval are different measures. Fresh JSONs are preserved under
+`regression-metrics/artifacts/phase-3/` and `phase-1/`; original tracked metrics
+are restored. Initial JavaScript is 250,980 gzip bytes, below the 256,000 ceiling.
+The complete greeting tests assert the name/glow finish within 4,500 ms in both
+engines; no physical timing result is claimed.
+
 ## Runtime observations and preservation
 
 All browser work uses the existing isolated fake runtime; no native image,
 chat, embedding or transcription experiment is run. Model/framework/Research
-trials remain stopped. The source theme inputs match the supplied originals.
-Initial local and normally verified Tailscale HTTPS health checks return 200.
+trials remain stopped. The four source theme inputs match the supplied originals in both workspaces.
+The final audit verifies all 611 installed public files and 504 frozen web/server
+app/tooling files unchanged. Remote main remains `4d33913c`; the original working
+checkout remains `codex/masked-photo-editing` at `8f38ef7b`. Both final local and
+normally verified Tailscale HTTPS health checks return 200.
 Framework Python's local CA lookup failed; system curl verified HTTPS without
-a verification bypass. Production service, 8787 bind and route are unchanged.
+a verification bypass. Production process 40583 still listens on `127.0.0.1:8787`; no restart, route
+change, model refresh, package installation or deployment was performed.
+
+Fresh captures of 1,718 overwritten historical artifacts and 40 untracked
+synthetic Settings captures are retained privately. All 1,718 historical files
+were restored and their previous hashes verified. Sixty new theme captures are
+fake-labelled without changing bytes. Twenty-five unnormalized logs are kept
+privately; public copies normalize only trailing whitespace, terminal blank lines and line endings, with
+both hashes in `log-provenance.json`. See `historical-artifact-preservation.json`,
+`screenshot-lineage.json` and `visual-review.json`.
 
 ## Screenshots and release limits
 

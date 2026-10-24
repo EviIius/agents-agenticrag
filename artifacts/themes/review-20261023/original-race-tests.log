@@ -1,0 +1,68 @@
+npm notice run workbench-web@1.0.0-alpha.0 npx
+npm notice run 'vitest' run --root web src/lib/appearance.test.ts
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "./test-runtime" without a file extension (web/vite.config.ts:4:28). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.3 /Users/evilius/.codex/worktrees/themes-th1-th2/agents-agenticrag/web
+
+ ❯ src/lib/appearance.test.ts (3 tests | 3 failed) 13ms
+   ❯ Overlapping appearance changes (3)
+     × a delayed snapshot cannot overwrite a newer palette 11ms
+     × an older transition cannot clear the newer circle 1ms
+     × reduced motion cancels a pending snapshot and applies the latest choice 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/appearance.test.ts > Overlapping appearance changes > a delayed snapshot cannot overwrite a newer palette
+AssertionError: expected 'lime' to be 'ember' // Object.is equality
+
+Expected: "ember"
+Received: "lime"
+
+ ❯ src/lib/appearance.test.ts:33:34
+     31|     pending[1].update();
+     32|     pending[0].update();
+     33|     expect(root.dataset.palette).toBe("ember");
+       |                                  ^
+     34|   });
+     35|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/lib/appearance.test.ts > Overlapping appearance changes > an older transition cannot clear the newer circle
+AssertionError: expected undefined to be 'circle' // Object.is equality
+
+- Expected:
+"circle"
+
++ Received:
+undefined
+
+ ❯ src/lib/appearance.test.ts:43:38
+     41|     await Promise.resolve();
+     42|     await Promise.resolve();
+     43|     expect(root.dataset.themeReveal).toBe("circle");
+       |                                      ^
+     44|     pending[1].finish();
+     45|     await Promise.resolve();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/lib/appearance.test.ts > Overlapping appearance changes > reduced motion cancels a pending snapshot and applies the latest choice
+AssertionError: expected "vi.fn()" to be called once, but got 0 times
+ ❯ src/lib/appearance.test.ts:55:39
+     53|     applyAppearance({ theme: "light", palette: "mono", systemDark: fal…
+     54|     pending[0].update();
+     55|     expect(pending[0].skipTransition).toHaveBeenCalledOnce();
+       |                                       ^
+     56|     expect(root.dataset.palette).toBe("mono");
+     57|     expect(root.dataset.themeReveal).toBeUndefined();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  20:17:41
+   Duration  79ms (tests 48%, transform 33%, import 14%, worker 5%)
