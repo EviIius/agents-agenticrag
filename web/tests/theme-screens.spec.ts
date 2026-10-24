@@ -108,8 +108,8 @@ for (const palette of ["lime", "ember"] as const) {
 }
 
 for (const [palette, wanted, bg] of [
-  ["lime", "light", "#f9f9f4"],
-  ["midnight", "dark", "#000000"],
+  ["lime", "light", "rgb(249, 249, 244)"],
+  ["midnight", "dark", "rgb(0, 0, 0)"],
 ]) {
   test(`${palette}: appearance is applied before the React entry executes`, async ({
     page,
@@ -121,7 +121,7 @@ for (const [palette, wanted, bg] of [
     await page.route("**/assets/index-*.js", (route) =>
       route.fulfill({
         contentType: "application/javascript",
-        body: "window.beforeReact = {palette: document.documentElement.dataset.palette, theme: document.documentElement.dataset.theme, bg: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()};",
+        body: "window.beforeReact = {palette: document.documentElement.dataset.palette, theme: document.documentElement.dataset.theme};",
       }),
     );
     await page.goto(fakeAppURL);
@@ -129,6 +129,10 @@ for (const [palette, wanted, bg] of [
       await page.evaluate(
         () => (window as unknown as { beforeReact: unknown }).beforeReact,
       ),
-    ).toEqual({ palette, theme: wanted, bg });
+    ).toEqual({ palette, theme: wanted });
+    // CSS can finish loading after the module starts (notably in WebKit).
+    // Assert actual resolved color without running React; minifiers may spell
+    // a custom-property black as either #000 or #000000.
+    await expect(page.locator("body")).toHaveCSS("background-color", bg);
   });
 }

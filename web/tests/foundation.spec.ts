@@ -80,6 +80,8 @@ for (const theme of ["light", "dark"] as const) {
   test(`settings keyboard and theme ${theme}`, async ({ page }) => {
     await setTheme(page, theme);
     await page.goto("/design/chat/fixture");
+    await expect(page.locator(".app-shell")).toBeVisible();
+    await settle(page);
     await page.keyboard.press("Control+,");
     await expect(
       page.getByRole("dialog", { name: "Settings", exact: true }),
