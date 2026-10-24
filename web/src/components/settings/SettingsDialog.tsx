@@ -163,6 +163,7 @@ export function SettingsDialog({
                         data-slot="segmented-choice"
                         className="min-h-11 capitalize"
                         aria-pressed={answerFont === ui.answerFont}
+                        disabled={ui.palette === "paper"}
                         onClick={() => ui.set({ answerFont })}
                       >
                         {answerFont === "serif"
@@ -171,6 +172,12 @@ export function SettingsDialog({
                       </Button>
                     ))}
                   </div>
+                  {ui.palette === "paper" && (
+                    <p className="mt-2 text-xs text-fg-3">
+                      Paper uses Newsreader throughout. Your answer font choice
+                      returns when you pick another palette.
+                    </p>
+                  )}
                 </fieldset>
                 <fieldset>
                   <legend className="mb-2 font-medium">Text size</legend>
