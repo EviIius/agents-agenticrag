@@ -4,6 +4,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { AnimatedGreeting } from "@/components/app/AnimatedGreeting";
+import { PaletteScene } from "@/components/app/PaletteScene";
 import { Sidebar } from "@/components/app/Sidebar";
 import { AtelierMark } from "@/components/chat/AtelierMark";
 import { Composer } from "@/components/chat/Composer";
@@ -245,15 +246,19 @@ export default function ThemesPreview() {
     <div className="design-page theme-lab">
       <header className="mb-8">
         <p className="mb-3 text-xs tracking-wide text-fg-3">
-          AETHER / THEMES · TH1 + TH2
+          AETHER / THEMES · AERO LOCAL PREVIEW
         </p>
         <h1 className="font-serif text-3xl leading-10">
-          Seven palettes, one app.
+          Eight palettes, one app.
         </h1>
         <p className="mt-3 max-w-2xl text-fg-2">
           Every surface below is a production component. Pick a palette and a
           mode: the page changes the way the app will, with the palette&apos;s
           own greeting, thinking mark, status words and send motion.
+        </p>
+        <p className="mt-2 max-w-2xl text-sm text-fg-2">
+          Aero is here for visual review. Saved settings and live chat
+          integration will follow after review.
         </p>
       </header>
 
@@ -352,6 +357,7 @@ export default function ThemesPreview() {
             </div>
             {view === "new" ? (
               <section className="empty-chat" aria-label="New chat">
+                <PaletteScene />
                 <AnimatedGreeting replay={replay} always />
                 <Composer model={fixtureModels[0]} suggestions />
                 <p className="mt-4 text-center text-xs text-fg-3">
@@ -532,5 +538,10 @@ const MOTION: Record<
     greeting: "Plain crossfade",
     mark: "Dot fades",
     send: "Quick 4 px, 120 ms",
+  },
+  aero: {
+    greeting: "Glossy letters float up like bubbles",
+    mark: "Dot rises as a bubble, with a glow",
+    send: "Pops from 94 % with a spring",
   },
 };

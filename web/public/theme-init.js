@@ -17,6 +17,7 @@
       "orchid",
       "midnight",
       "mono",
+      "aero",
     ].includes(palette)
   )
     palette = "cobalt";

@@ -61,6 +61,40 @@ test("Midnight is dark only and gives the theme choice back", async ({
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 });
 
+test("Aero brings glass, its scene and its icon, and only Aero does", async ({
+  page,
+}) => {
+  await open(page, "reduce");
+  await controls(page)
+    .getByRole("button", { name: "Light", exact: true })
+    .click();
+  await controls(page)
+    .getByRole("button", { name: "Aero", exact: true })
+    .click();
+  await expect(page.locator("html")).toHaveAttribute("data-palette", "aero");
+  const window = page.locator(".theme-lab-window");
+  await expect(window.locator(".aero-scene")).toBeVisible();
+  await expect(window.locator(".aero-bubble")).toHaveCount(9);
+  const blur = await window
+    .locator(".composer")
+    .evaluate((el) => getComputedStyle(el).getPropertyValue("backdrop-filter"));
+  expect(blur).toContain("blur");
+  await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute(
+    "href",
+    "/icons/aero/apple-touch-icon.png",
+  );
+  // Reduced motion leaves the scene still.
+  const running = await page.evaluate(
+    () =>
+      document.getAnimations().filter((a) => a.playState === "running").length,
+  );
+  expect(running).toBe(0);
+  await controls(page)
+    .getByRole("button", { name: "Lime", exact: true })
+    .click();
+  await expect(page.locator(".aero-scene")).toHaveCount(0);
+});
+
 test("reduced motion shows the English greeting at once", async ({ page }) => {
   await open(page, "reduce");
   const greeting = page.locator("h1.greeting");

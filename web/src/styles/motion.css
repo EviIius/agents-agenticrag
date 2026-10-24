@@ -720,6 +720,12 @@ article[data-fresh="true"] {
 [data-palette="mono"] .atelier-mark[data-loop="think"] .mark-dot {
   animation: mark-dot-fade 1.4s ease-in-out infinite;
 }
+[data-palette="aero"] .atelier-mark[data-loop="think"] .mark-dot {
+  animation: mark-dot-bubble 1.6s var(--ease-out) infinite;
+}
+[data-palette="aero"] .atelier-mark .mark-glow {
+  animation: mark-glow-pulse 1.6s ease-in-out infinite;
+}
 .atelier-mark[data-loop="think"] .mark-base {
   opacity: 0;
 }
@@ -924,6 +930,20 @@ article[data-fresh="true"] {
     transform: scale(0.7);
   }
 }
+@keyframes mark-dot-bubble {
+  0% {
+    opacity: 0;
+    transform: translateY(1px) scale(0.5);
+  }
+  25% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-7px) scale(1.25);
+  }
+}
 @keyframes mark-dot-fade {
   0%,
   100% {
@@ -962,6 +982,10 @@ article[data-fresh="true"] {
 }
 .greeting[data-animate][data-style="bloom"] .greet-char {
   animation: greet-bloom 320ms var(--ease-pop) both;
+  animation-delay: var(--d, 0ms);
+}
+.greeting[data-animate][data-style="bubble"] .greet-char {
+  animation: greet-bubble 320ms var(--ease-out) both;
   animation-delay: var(--d, 0ms);
 }
 .greeting[data-animate][data-style="decode"] .greet-char {
@@ -1047,6 +1071,20 @@ article[data-fresh="true"] {
     transform: scale(1);
   }
 }
+@keyframes greet-bubble {
+  from {
+    opacity: 0;
+    transform: translateY(0.6em) scale(0.55);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(-0.08em) scale(1.08);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
 @keyframes greet-flicker {
   0% {
     opacity: 0;
@@ -1065,6 +1103,67 @@ article[data-fresh="true"] {
   to {
     opacity: 0;
     transform: translateY(-0.24em);
+  }
+}
+
+/* TH2 · Aero's scene (styles/aero.css): bubbles rise, clouds drift, rays turn slowly,
+   the aurora breathes at night. Infinite and decorative; reduced motion stops all of it. */
+.aero-bubble {
+  animation: aero-rise var(--rise-dur, 16s) linear var(--rise-delay, 0s)
+    infinite;
+}
+.aero-cloud-a {
+  animation: aero-drift 70s ease-in-out infinite alternate;
+}
+.aero-cloud-b {
+  animation: aero-drift 90s ease-in-out -30s infinite alternate-reverse;
+}
+.aero-rays {
+  animation: aero-spin 160s linear infinite;
+}
+.aero-aurora {
+  animation: aero-aurora 26s ease-in-out infinite alternate;
+}
+@keyframes aero-rise {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  12% {
+    opacity: 0.95;
+  }
+  50% {
+    transform: translate(var(--sway, 12px), -380px);
+  }
+  85% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--sway, 12px) * -0.5), -780px);
+  }
+}
+@keyframes aero-drift {
+  from {
+    transform: translateX(-40px);
+  }
+  to {
+    transform: translateX(70px);
+  }
+}
+@keyframes aero-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes aero-aurora {
+  from {
+    opacity: 0.7;
+    transform: translateX(-4%) scaleY(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(4%) scaleY(1.08);
   }
 }
 

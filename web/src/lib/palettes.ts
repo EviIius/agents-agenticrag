@@ -11,10 +11,11 @@ export const PALETTE_IDS = [
   "orchid",
   "midnight",
   "mono",
+  "aero",
 ] as const;
 export type PaletteId = (typeof PALETTE_IDS)[number];
 export type GreetingStyle =
-  "rise" | "roll" | "type" | "glow" | "bloom" | "decode" | "fade";
+  "rise" | "roll" | "type" | "glow" | "bloom" | "decode" | "fade" | "bubble";
 export type Palette = {
   id: PaletteId;
   name: string;
@@ -26,6 +27,8 @@ export type Palette = {
   reveal: "circle" | "fade";
   /** Playful status words while a model works. Cobalt keeps the original 36. */
   words: readonly string[] | null;
+  /** Aero only: glass materials and a full scene behind the new chat (styles/aero.css). */
+  glass?: boolean;
 };
 
 export const PALETTES: readonly Palette[] = [
@@ -188,6 +191,34 @@ export const PALETTES: readonly Palette[] = [
       "Writing",
       "Reviewing",
       "Settling",
+    ],
+  },
+  {
+    id: "aero",
+    name: "Aero",
+    description:
+      "Glass, sky and water: the bright 2000s future, with glossy controls and a skyline.",
+    modes: ["light", "dark"],
+    greeting: "bubble",
+    reveal: "circle",
+    glass: true,
+    words: [
+      "Syncing",
+      "Hydrating",
+      "Photosynthesizing",
+      "Buffering",
+      "Defragmenting",
+      "Polishing the glass",
+      "Catching rays",
+      "Bubbling up",
+      "Refreshing",
+      "Rendering reflections",
+      "Breezing through",
+      "Charging",
+      "Shimmering",
+      "Streaming",
+      "Updating the future",
+      "Connecting",
     ],
   },
 ];

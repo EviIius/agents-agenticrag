@@ -99,6 +99,7 @@ export const GREETING_TIMING = {
     bloom: 320,
     decode: 240,
     fade: 200,
+    bubble: 320,
   } satisfies Record<GreetingStyle, number>,
   /** The latest a character may start, so long words compress their stagger. */
   spread: {
@@ -109,6 +110,7 @@ export const GREETING_TIMING = {
     bloom: 200,
     decode: 0,
     fade: 0,
+    bubble: 220,
   } satisfies Record<GreetingStyle, number>,
   step: {
     rise: 18,
@@ -118,6 +120,7 @@ export const GREETING_TIMING = {
     bloom: 26,
     decode: 0,
     fade: 0,
+    bubble: 24,
   } satisfies Record<GreetingStyle, number>,
   decode: 320,
 };

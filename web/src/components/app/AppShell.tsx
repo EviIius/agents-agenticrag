@@ -38,6 +38,7 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { fixtureTitles } from "@/design/fixtures";
 import { useAppEntrance } from "@/hooks/useAppEntrance";
 import { AnimatedGreeting } from "./AnimatedGreeting";
+import { PaletteScene } from "./PaletteScene";
 export function AppShell({ children }: { children?: ReactNode }) {
   const ui = useUI();
   const entering = useAppEntrance(true);
@@ -97,6 +98,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
           <div className="thread-scroll">{children}</div>
         ) : empty ? (
           <section className="empty-chat" aria-label="New chat">
+            <PaletteScene />
             <p className="mb-5 text-center text-xs text-fg-3">
               Foundation preview · Fake runtime
             </p>

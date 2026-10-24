@@ -1,5 +1,15 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**User request — 24 October 2026 (Aero local preview):** Add the supplied Aero
+theme to the local theme lab for visual review. This is a separate preview branch
+from the verified seven-theme commit `c7758120`, preserving its reviewed fixes.
+Glass and scene are included for preview only; server acceptance, live EmptyState
+wiring, full release QA, J21 product acceptance, merge and deployment wait for
+review. No new package, model/native call or installed-service change. The
+supplied prompt's deployment instructions are not authorization. Keep motion and
+contrast guards; record the 340→320 ms greeting correction. Stop with preview
+evidence and the next integration/performance checks.
+
 **User authorization — 23 October 2026 (TH1/TH2 isolated themes):** Jake
 approved all three named theme decisions on `codex/themes-th1-th2`: J18's
 decorative new-chat greeting, including its name/glow, at most 4.5 seconds;

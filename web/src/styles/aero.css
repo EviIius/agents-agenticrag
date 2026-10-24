@@ -1,0 +1,496 @@
+/* TH1 · Aero: the one palette with materials. Glass layers over a sky scene, glossy gel
+   controls, and a skyline behind the new chat (components/app/PaletteScene.tsx).
+   The solid tokens in palettes.css are what each glass layer composites to over the
+   darkest part of the scene, so check_contrast.py measures what text actually sits on.
+   Keep the alphas below in step with those tokens. Motion is in motion.css. */
+
+[data-palette="aero"] {
+  --aero-sky: linear-gradient(
+    180deg,
+    #2f9fe0 0%,
+    #6cc6f2 32%,
+    #b5e5fb 62%,
+    #e8f8ff 100%
+  );
+  --aero-sky-soft: linear-gradient(180deg, #bfe8fb 0%, #eaf8ff 100%);
+  --aero-sun: radial-gradient(
+    circle at 86% 6%,
+    rgb(255 255 255 / 0.95),
+    rgb(255 248 214 / 0.5) 7%,
+    transparent 24%
+  );
+  --aero-glass-main: rgb(255 255 255 / 0.8);
+  --aero-glass-side: rgb(255 255 255 / 0.66);
+  --aero-glass-surface: rgb(255 255 255 / 0.86);
+  --aero-glass-soft: rgb(255 255 255 / 0.62);
+  --aero-glass-edge: rgb(255 255 255 / 0.95);
+  --aero-blur: blur(18px) saturate(160%);
+  --aero-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.9), 0 14px 34px -14px rgb(6 72 138 / 0.45);
+  --aero-gloss: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 0.55) 0%,
+    rgb(255 255 255 / 0.14) 36%,
+    rgb(255 255 255 / 0) 42%,
+    rgb(255 255 255 / 0) 82%,
+    rgb(255 255 255 / 0.18) 100%
+  );
+  --aero-gel-edge: rgb(3 58 112 / 0.55);
+  --aero-gel-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.55), inset 0 -3px 6px rgb(0 30 70 / 0.18),
+    0 2px 8px -2px rgb(6 80 150 / 0.45);
+  --aero-bubble-gel: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #eaf7ff 46%,
+    #d2edff 52%,
+    #e4f5ff 100%
+  );
+  --aero-ink: linear-gradient(
+    180deg,
+    #0e5fa8 0%,
+    #063c73 50%,
+    #02294f 51%,
+    #0a4f8c 100%
+  );
+  --aero-ink-glow: rgb(255 255 255 / 0.85);
+  --aero-tower-top: #f4fcff;
+  --aero-tower-mid: #bfe6fa;
+  --aero-tower-low: #7cc8ee;
+  --aero-tower-edge: rgb(255 255 255 / 0.9);
+  --aero-window: rgb(255 255 255 / 0.5);
+  --aero-rail: rgb(255 255 255 / 0.85);
+  --aero-water: linear-gradient(180deg, #a6e3f9 0%, #4bb8e8 100%);
+  --aero-hill-light: #c6f58c;
+  --aero-hill: #6ccf45;
+  --aero-hill-dark: #2c9a3c;
+  --aero-bubble-rim: rgb(255 255 255 / 0.85);
+  --aero-bubble-tint: rgb(150 225 255 / 0.35);
+}
+[data-palette="aero"][data-theme="dark"] {
+  --aero-sky: linear-gradient(
+    180deg,
+    #020c1c 0%,
+    #04203f 40%,
+    #0a4566 78%,
+    #0b5d78 100%
+  );
+  --aero-sky-soft: linear-gradient(180deg, #06223a 0%, #0a3a52 100%);
+  --aero-sun: radial-gradient(
+    circle at 84% 9%,
+    rgb(220 240 255 / 0.5),
+    rgb(120 200 255 / 0.12) 6%,
+    transparent 16%
+  );
+  --aero-glass-main: rgb(4 22 40 / 0.74);
+  --aero-glass-side: rgb(2 14 26 / 0.74);
+  --aero-glass-surface: rgb(6 24 44 / 0.84);
+  --aero-glass-soft: rgb(8 34 56 / 0.62);
+  --aero-glass-edge: rgb(140 220 255 / 0.28);
+  --aero-shadow:
+    inset 0 1px 0 rgb(160 230 255 / 0.18), 0 16px 40px -14px rgb(0 0 0 / 0.6);
+  --aero-gloss: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 0.4) 0%,
+    rgb(255 255 255 / 0.1) 36%,
+    rgb(255 255 255 / 0) 42%,
+    rgb(255 255 255 / 0) 82%,
+    rgb(255 255 255 / 0.12) 100%
+  );
+  --aero-gel-edge: rgb(150 230 255 / 0.55);
+  --aero-gel-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 -3px 6px rgb(0 40 70 / 0.25),
+    0 0 14px -2px rgb(43 182 242 / 0.55);
+  /* At night the gel highlight stays above the text line. */
+  --aero-bubble-gel:
+    linear-gradient(180deg, rgb(120 210 255 / 0.16) 0, transparent 8px), #0a3349;
+  --aero-ink: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #d9f4ff 50%,
+    #8fdcff 51%,
+    #c7efff 100%
+  );
+  --aero-ink-glow: rgb(80 200 255 / 0.55);
+  --aero-tower-top: #1c5f86;
+  --aero-tower-mid: #0d3b5c;
+  --aero-tower-low: #072640;
+  --aero-tower-edge: rgb(120 220 255 / 0.55);
+  --aero-window: rgb(150 230 255 / 0.5);
+  --aero-rail: rgb(120 220 255 / 0.8);
+  --aero-water: linear-gradient(180deg, #0c4f6e 0%, #04223a 100%);
+  --aero-hill-light: #2c8f6a;
+  --aero-hill: #145a4a;
+  --aero-hill-dark: #0a3530;
+  --aero-bubble-rim: rgb(140 230 255 / 0.7);
+  --aero-bubble-tint: rgb(60 190 255 / 0.25);
+}
+
+/* The sky sits behind the whole app; the main column is frosted except on a new chat. */
+html[data-palette="aero"] body {
+  background: var(--aero-sun), var(--aero-sky);
+  background-attachment: fixed;
+}
+[data-palette="aero"] :is(.app-main, .theme-lab-main) {
+  background: var(--aero-glass-main);
+}
+[data-palette="aero"] :is(.app-main, .theme-lab-main):has(.empty-chat) {
+  background: transparent;
+}
+[data-palette="aero"] :is(.sidebar-desktop, .theme-lab-sidebar) {
+  background: transparent;
+  box-shadow: inset -1px 0 0 var(--aero-glass-edge);
+}
+[data-palette="aero"] .bg-sidebar-bg {
+  background: var(--aero-glass-side);
+  backdrop-filter: var(--aero-blur);
+  -webkit-backdrop-filter: var(--aero-blur);
+}
+[data-palette="aero"] [data-slot="sheet-content"] .bg-sidebar-bg {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Glass panels: composer, overlays, cards. */
+[data-palette="aero"]
+  :is(
+    .composer,
+    .design-card,
+    [data-slot="dialog-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="popover-content"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="select-content"],
+    [data-slot="sheet-content"],
+    [data-slot="drawer-content"]
+  ) {
+  background: var(--aero-glass-surface);
+  backdrop-filter: var(--aero-blur);
+  -webkit-backdrop-filter: var(--aero-blur);
+  border-color: var(--aero-glass-edge);
+  box-shadow: var(--aero-shadow);
+}
+
+/* Gel: the vivid fill gets a gloss on its upper half and a bottom glow. */
+[data-palette="aero"]
+  :is([data-slot="button"][data-variant="default"], .bg-brand-fill) {
+  background-image: var(--aero-gloss);
+  border: 1px solid var(--aero-gel-edge);
+  box-shadow: var(--aero-gel-shadow);
+  text-shadow: 0 1px 1px rgb(0 30 70 / 0.35);
+}
+[data-palette="aero"]
+  [data-slot="switch"][data-state="checked"]
+  [data-slot="switch-track"] {
+  background-image: var(--aero-gloss);
+  box-shadow: var(--aero-gel-shadow);
+}
+[data-palette="aero"]
+  :is(
+    [data-slot="button"][data-variant="outline"],
+    [data-slot="segmented-choice"]
+  ) {
+  background-color: var(--aero-glass-soft);
+  background-image: var(--aero-gloss);
+  border-color: var(--aero-glass-edge);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+[data-palette="aero"] .user-bubble {
+  background: var(--aero-bubble-gel);
+  border: 1px solid var(--aero-glass-edge);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.7),
+    0 3px 10px -4px rgb(12 100 180 / 0.35);
+}
+
+/* The greeting is printed in glossy ink with a soft glow. */
+[data-palette="aero"] .greeting {
+  filter: drop-shadow(0 1px 0 var(--aero-ink-glow))
+    drop-shadow(0 8px 18px rgb(6 72 138 / 0.25));
+}
+[data-palette="aero"] .greeting:not([data-animate]) .greet-word,
+[data-palette="aero"] .greeting[data-animate] .greet-char,
+[data-palette="aero"] .greeting-name {
+  background: var(--aero-ink);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+[data-palette="aero"] .empty-chat > p {
+  width: fit-content;
+  margin-inline: auto;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--aero-glass-soft);
+  color: var(--text-2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* The scene. Everything here is decoration under aria-hidden. */
+.aero-scene {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.aero-sun {
+  position: absolute;
+  top: 4%;
+  right: 8%;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgb(255 255 255 / 0.95) 0 18%,
+    rgb(255 246 200 / 0.55) 30%,
+    transparent 70%
+  );
+}
+.aero-rays {
+  position: absolute;
+  top: calc(4% + 75px - 800px);
+  right: calc(8% + 75px - 800px);
+  width: 1600px;
+  height: 1600px;
+  background: repeating-conic-gradient(
+    rgb(255 255 255 / 0.16) 0deg 4deg,
+    transparent 4deg 15deg
+  );
+  mask-image: radial-gradient(circle, #000 0 6%, transparent 42%);
+  -webkit-mask-image: radial-gradient(circle, #000 0 6%, transparent 42%);
+}
+.aero-flare {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      circle at 74% 24%,
+      rgb(170 240 255 / 0.4) 0 7px,
+      transparent 8px
+    ),
+    radial-gradient(
+      circle at 66% 36%,
+      rgb(255 255 255 / 0.22) 0 20px,
+      transparent 21px
+    ),
+    radial-gradient(
+      circle at 57% 50%,
+      rgb(160 255 190 / 0.16) 0 38px,
+      transparent 39px
+    ),
+    radial-gradient(
+      circle at 50% 61%,
+      rgb(255 255 255 / 0.1) 0 60px,
+      transparent 61px
+    );
+}
+.aero-cloud {
+  position: absolute;
+  width: 380px;
+  height: 120px;
+  opacity: 0.9;
+  background:
+    radial-gradient(
+      closest-side at 28% 62%,
+      rgb(255 255 255 / 0.95),
+      transparent
+    ),
+    radial-gradient(
+      closest-side at 52% 42%,
+      rgb(255 255 255 / 0.95),
+      transparent
+    ),
+    radial-gradient(
+      closest-side at 74% 64%,
+      rgb(255 255 255 / 0.9),
+      transparent
+    );
+  filter: blur(2px);
+}
+.aero-cloud-a {
+  top: 10%;
+  left: 4%;
+}
+.aero-cloud-b {
+  top: 24%;
+  left: 52%;
+  width: 260px;
+  height: 84px;
+  opacity: 0.7;
+}
+.aero-aurora {
+  display: none;
+  position: absolute;
+  top: 2%;
+  left: -10%;
+  width: 120%;
+  height: 48%;
+  background:
+    radial-gradient(
+      ellipse 40% 55% at 30% 55%,
+      rgb(60 255 180 / 0.5),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 34% 50% at 66% 40%,
+      rgb(60 200 255 / 0.46),
+      transparent 70%
+    );
+  filter: blur(30px);
+}
+[data-theme="dark"] .aero-aurora {
+  display: block;
+}
+[data-theme="dark"] :is(.aero-rays, .aero-cloud, .aero-flare) {
+  display: none;
+}
+.aero-skyline {
+  position: absolute;
+  left: 0;
+  bottom: 14%;
+  width: 100%;
+  height: 28%;
+}
+.aero-stop-top {
+  stop-color: var(--aero-tower-top);
+}
+.aero-stop-mid {
+  stop-color: var(--aero-tower-mid);
+}
+.aero-stop-low {
+  stop-color: var(--aero-tower-low);
+}
+.aero-window {
+  fill: var(--aero-window);
+}
+.aero-tower-edge {
+  fill: none;
+  stroke: var(--aero-tower-edge);
+  stroke-width: 1.5;
+}
+.aero-spire {
+  stroke: var(--aero-tower-edge);
+  stroke-width: 2;
+}
+.aero-rail {
+  fill: none;
+  stroke: var(--aero-rail);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.aero-water {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 14%;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgb(255 255 255 / 0.18) 0 1px,
+      transparent 1px 7px
+    ),
+    var(--aero-water);
+}
+.aero-reflection {
+  width: 100%;
+  height: 100%;
+  opacity: 0.32;
+  mask-image: linear-gradient(180deg, #000, transparent 90%);
+  -webkit-mask-image: linear-gradient(180deg, #000, transparent 90%);
+}
+.aero-hill {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at 50% 8%,
+    var(--aero-hill-light) 0%,
+    var(--aero-hill) 34%,
+    var(--aero-hill-dark) 78%
+  );
+  box-shadow: inset 0 16px 26px -12px rgb(255 255 255 / 0.65);
+}
+[data-theme="dark"] .aero-hill {
+  box-shadow: inset 0 10px 22px -12px rgb(120 230 255 / 0.5);
+}
+.aero-hill-back {
+  right: -22%;
+  bottom: -26%;
+  width: 62%;
+  height: 40%;
+  filter: brightness(0.92);
+}
+.aero-hill-front {
+  left: -18%;
+  bottom: -30%;
+  width: 70%;
+  height: 46%;
+}
+.aero-bubble {
+  position: absolute;
+  left: var(--x);
+  bottom: -60px;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  opacity: 0;
+  background: radial-gradient(
+    circle at 32% 28%,
+    rgb(255 255 255 / 0.95) 0 9%,
+    rgb(255 255 255 / 0.25) 22%,
+    rgb(255 255 255 / 0.04) 60%,
+    var(--aero-bubble-tint) 100%
+  );
+  box-shadow:
+    inset 0 0 0 1px var(--aero-bubble-rim),
+    inset -3px -5px 9px var(--aero-bubble-tint);
+}
+
+/* Palette picker swatch and theme lab card. */
+.palette-sample[data-palette="aero"] {
+  background: var(--aero-sky);
+}
+.palette-sample[data-palette="aero"]::after {
+  content: "";
+  position: absolute;
+  left: -20%;
+  bottom: -70%;
+  width: 90%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at 50% 10%,
+    var(--aero-hill-light),
+    var(--aero-hill) 40%,
+    var(--aero-hill-dark)
+  );
+}
+.palette-sample[data-palette="aero"] > .palette-sample-bubble {
+  background: var(--aero-bubble-gel);
+}
+.palette-sample[data-palette="aero"] > .palette-sample-send {
+  z-index: 1;
+  background-image: var(--aero-gloss);
+  box-shadow: var(--aero-gel-shadow);
+}
+.theme-lab-card[data-palette="aero"] {
+  background: var(--aero-sky-soft);
+  border-color: var(--aero-glass-edge);
+  box-shadow: var(--aero-shadow);
+}
+[data-palette="aero"] .theme-lab-window {
+  background: transparent;
+  border-color: var(--aero-glass-edge);
+}
+[data-palette="aero"] .theme-lab-controls {
+  background: var(--aero-glass-surface);
+  backdrop-filter: var(--aero-blur);
+  -webkit-backdrop-filter: var(--aero-blur);
+}
