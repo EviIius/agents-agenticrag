@@ -79,6 +79,7 @@ const WorkflowsPreview = lazy(() => import("./WorkflowsPreview"));
 const WorkflowHomePreview = lazy(() => import("./WorkflowHomePreview"));
 const WorkflowStudioPreview = lazy(() => import("./WorkflowStudioPreview"));
 const WorkingPreview = lazy(() => import("./WorkingPreview"));
+const ThemesPreview = lazy(() => import("./ThemesPreview"));
 const Markdown = lazy(() => import("@/components/chat/Markdown"));
 const LibraryAnswersPreview = lazy(() => import("./LibraryAnswersPreview"));
 export function DesignPage() {
@@ -104,6 +105,12 @@ export function DesignPage() {
     return (
       <Suspense fallback={<p>Loading chat images…</p>}>
         <ChatImagesPreview />
+      </Suspense>
+    );
+  if (new URLSearchParams(location.search).has("themes"))
+    return (
+      <Suspense fallback={<p>Loading themes…</p>}>
+        <ThemesPreview />
       </Suspense>
     );
   if (new URLSearchParams(location.search).has("indicator"))
@@ -177,6 +184,9 @@ export function DesignPage() {
           </Button>
           <Button variant="outline" onClick={() => ui.set({ theme: "system" })}>
             System
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/design?themes">Themes</Link>
           </Button>
           <Button asChild variant="outline">
             <Link to="/design?everyday">Everyday chat states</Link>

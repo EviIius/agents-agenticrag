@@ -8,6 +8,7 @@ import {
   type WorkingPhase,
 } from "@/lib/status-words";
 import { AtelierMark } from "./AtelierMark";
+import { paletteById } from "@/lib/palettes";
 import { Button } from "@/components/ui/button";
 
 function WorkingLabel({ text, live }: { text: string; live: boolean }) {
@@ -62,7 +63,11 @@ export function WorkingLine({
     began,
     phase?.kind === "working" && playful,
   );
-  const words = useMemo(() => statusSequence(id), [id]);
+  const paletteWords = useUI((s) => paletteById(s.palette).words);
+  const words = useMemo(
+    () => statusSequence(id, paletteWords ?? undefined),
+    [id, paletteWords],
+  );
   const label =
     phase?.kind === "working" && playful
       ? `${words[clock.index % words.length]}…`

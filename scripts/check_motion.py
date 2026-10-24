@@ -8,7 +8,17 @@ ROOT = Path(__file__).resolve().parents[1]
 DEAD = re.compile(
     r"(?<![\w-])(?:animate-(?:in|out)|(?:fade|zoom)-(?:in|out)(?:-\d+)?|slide-(?:in-from|out-to)-[\w-]+|transition-all)(?![\w-])"
 )
-ALLOWED = {"opacity", "transform", "height", "width", "stroke-dasharray", "stroke-dashoffset"}
+ALLOWED = {
+    "opacity",
+    "transform",
+    "height",
+    "width",
+    "stroke-dasharray",
+    "stroke-dashoffset",
+}
+# TH2: the theme switch clips the view-transition snapshot of the new theme. It runs once,
+# on the transition's own layer, so clip-path is allowed there and nowhere else.
+VIEW_TRANSITION_ONLY = {"theme-reveal": {"clip-path"}}
 
 
 def violations(source: Path, allow_globals: bool = False) -> list[str]:
@@ -24,7 +34,9 @@ def violations(source: Path, allow_globals: bool = False) -> list[str]:
             errors.append(f"{relative}:{line}: dead utility {match.group()}")
         for match in re.finditer(r"@keyframes\s+([\w-]+)\s*\{", text):
             name = match.group(1)
-            if path != motion and not (allow_globals and relative == Path("styles/globals.css")):
+            if path != motion and not (
+                allow_globals and relative == Path("styles/globals.css")
+            ):
                 errors.append(f"{relative}: keyframe {name} outside motion.css")
             start, depth, end = match.end(), 1, match.end()
             while end < len(text) and depth:
@@ -32,11 +44,30 @@ def violations(source: Path, allow_globals: bool = False) -> list[str]:
                 end += 1
             block = text[start : end - 1]
             for prop in re.findall(r"([\w-]+)\s*:", block):
-                if prop not in ALLOWED:
+                if prop not in ALLOWED and prop not in VIEW_TRANSITION_ONLY.get(
+                    name, set()
+                ):
                     errors.append(f"{relative}: {name} animates forbidden {prop}")
             outside = text[: match.start()] + text[end:]
             if not re.search(r"\b" + re.escape(name) + r"\b", outside):
                 errors.append(f"{relative}: unused keyframe {name}")
+            if name in VIEW_TRANSITION_ONLY:
+                for rule in re.finditer(r"([^{}]+)\{([^{}]*)\}", outside):
+                    if not re.search(
+                        r"animation(?:-name)?\s*:[^;}]*\btheme-reveal\b", rule[2]
+                    ):
+                        continue
+                    selectors = [selector.strip() for selector in rule[1].split(",")]
+                    if not all(
+                        re.fullmatch(
+                            r'html(?:\[data-theme-reveal="circle"\])?::view-transition-new\(root\)',
+                            selector,
+                        )
+                        for selector in selectors
+                    ):
+                        errors.append(
+                            f"{relative}: theme-reveal must target the new root snapshot"
+                        )
         if re.search(r"will-change\s*:|willChange\s*:", text):
             errors.append(f"{relative}: static will-change")
     return errors

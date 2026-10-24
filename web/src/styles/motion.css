@@ -293,18 +293,21 @@ html [data-slot="drawer-overlay"][data-vaul-overlay][data-state] {
 }
 
 /* Conversation motion: presentation flags are cleared after each entrance. */
+/* TH2: new rows enter with the palette's send personality (palettes.css). */
 @keyframes row-in {
   from {
     opacity: 0;
-    transform: translateY(var(--shift-md));
+    transform: translateY(var(--send-shift, var(--shift-md)))
+      scale(var(--send-scale, 1));
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 article[data-fresh="true"] {
-  animation: row-in var(--dur-med) var(--ease-out) both;
+  animation: row-in var(--send-dur, var(--dur-med))
+    var(--send-ease, var(--ease-out)) both;
 }
 @keyframes app-in {
   from {
@@ -679,13 +682,43 @@ article[data-fresh="true"] {
 }
 .mark-dot {
   opacity: 1;
+  fill: var(--brand-fill);
+  transform-origin: 12px 16.3px;
+}
+.mark-glow {
+  fill: var(--brand-fill);
+  opacity: 0;
   transform-origin: 12px 16.3px;
 }
 .atelier-mark[data-loop="draw"] .mark-a {
-  animation: mark-draw 1.8s var(--ease-out) infinite;
+  animation: mark-draw var(--mark-draw, 1.8s)
+    var(--mark-draw-ease, var(--ease-out)) infinite;
 }
 .atelier-mark[data-loop="draw"] .mark-dot {
-  animation: mark-dot-drop 1.8s var(--ease-out) infinite;
+  animation: mark-dot-drop var(--mark-draw, 1.8s)
+    var(--mark-draw-ease, var(--ease-out)) infinite;
+}
+/* TH2 · Each palette's thinking loop. Cobalt keeps the original bob. */
+[data-palette="lime"] .atelier-mark[data-loop="think"] .mark-dot {
+  animation: mark-dot-bounce 0.9s var(--ease-pop) infinite;
+}
+[data-palette="paper"] .atelier-mark[data-loop="think"] .mark-dot {
+  animation: mark-dot-blot 1.8s ease-in-out infinite;
+}
+[data-palette="ember"] .atelier-mark .mark-glow {
+  animation: mark-glow-pulse 1.6s ease-in-out infinite;
+}
+[data-palette="orchid"] .atelier-mark[data-loop="think"] .mark-dot {
+  animation: mark-dot-orbit 1.4s linear infinite;
+}
+[data-palette="midnight"] .atelier-mark[data-loop="think"] .mark-dot {
+  animation: mark-dot-twinkle 1.6s ease-in-out infinite;
+}
+[data-palette="midnight"] .atelier-mark .mark-glow {
+  animation: mark-glow-pulse 2.4s ease-in-out infinite;
+}
+[data-palette="mono"] .atelier-mark[data-loop="think"] .mark-dot {
+  animation: mark-dot-fade 1.4s ease-in-out infinite;
 }
 .atelier-mark[data-loop="think"] .mark-base {
   opacity: 0;
@@ -840,6 +873,223 @@ article[data-fresh="true"] {
     opacity: 0;
     transform: translateY(-4px);
   }
+}
+@keyframes mark-dot-bounce {
+  0%,
+  100% {
+    transform: translateY(0) scale(1.1, 0.88);
+  }
+  45% {
+    transform: translateY(-4px) scale(0.92, 1.08);
+  }
+}
+@keyframes mark-dot-blot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.3);
+  }
+}
+@keyframes mark-glow-pulse {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(1.4);
+  }
+}
+@keyframes mark-dot-orbit {
+  from {
+    transform: rotate(0deg) translateY(-2.4px) rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg) translateY(-2.4px) rotate(-360deg);
+  }
+}
+@keyframes mark-dot-twinkle {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(0.7);
+  }
+}
+@keyframes mark-dot-fade {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* TH2 · The new-chat greeting. Each palette has its own entrance (lib/palettes.ts);
+   characters start at --d (lib/greetings.ts). The reduced-motion blocks stop all of it,
+   and the component then renders the final line without spans. The heading carries
+   data-motion="ambient": decorative, never blocks input, capped at 4.5 s, so the
+   1 s settle budget in tests/helpers.ts skips it. */
+.greeting[data-animate] .greet-char {
+  animation: greet-rise 300ms var(--ease-out) both;
+  animation-delay: var(--d, 0ms);
+}
+.greeting[data-animate][data-style="roll"] .greet-cell {
+  overflow: hidden;
+}
+.greeting[data-animate][data-style="roll"] .greet-char {
+  animation: greet-roll 320ms var(--ease-pop) both;
+  animation-delay: var(--d, 0ms);
+}
+.greeting[data-animate][data-style="type"] .greet-char {
+  animation: greet-type 1ms linear both;
+  animation-delay: var(--d, 0ms);
+}
+.greeting[data-animate][data-style="type"] .greet-caret {
+  animation: caret-blink 0.9s steps(1) infinite;
+}
+.greeting[data-animate][data-style="glow"] .greet-word::after {
+  animation: greet-glow 700ms var(--ease-out) both;
+}
+.greeting[data-animate][data-style="bloom"] .greet-char {
+  animation: greet-bloom 320ms var(--ease-pop) both;
+  animation-delay: var(--d, 0ms);
+}
+.greeting[data-animate][data-style="decode"] .greet-char {
+  animation: greet-flicker 240ms linear both;
+}
+.greeting[data-animate][data-style="fade"] .greet-char {
+  animation: none;
+}
+.greeting[data-animate][data-style="fade"] .greet-word {
+  animation: opacity-in var(--dur-med) var(--ease-out) both;
+}
+.greeting[data-animate] .greet-word[data-leaving] {
+  animation: greet-out 120ms var(--ease-in) both;
+}
+.greeting[data-animate][data-style="roll"]
+  .greet-word[data-leaving]
+  .greet-char {
+  animation: greet-roll-out 120ms var(--ease-in) both;
+}
+.greeting[data-animate] .greeting-name {
+  animation: opacity-in 200ms var(--ease-out) both;
+  animation-delay: var(--d, 0ms);
+}
+@keyframes greet-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.42em);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes greet-roll {
+  from {
+    transform: translateY(-105%);
+  }
+  70% {
+    transform: translateY(6%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes greet-roll-out {
+  to {
+    transform: translateY(105%);
+  }
+}
+@keyframes greet-type {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes greet-glow {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  to {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+}
+@keyframes greet-bloom {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes greet-flicker {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.8;
+  }
+  45% {
+    opacity: 0.35;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes greet-out {
+  to {
+    opacity: 0;
+    transform: translateY(-0.24em);
+  }
+}
+
+/* TH2 · Theme switch. A circle of the new theme spreads from the tap
+   (lib/appearance.ts sets --reveal-x/y/r); Mono keeps the crossfade above. */
+@keyframes theme-reveal {
+  from {
+    clip-path: circle(0 at var(--reveal-x, 50%) var(--reveal-y, 50%));
+  }
+  to {
+    clip-path: circle(
+      var(--reveal-r, 150%) at var(--reveal-x, 50%) var(--reveal-y, 50%)
+    );
+  }
+}
+html[data-theme-reveal="circle"]::view-transition-old(root),
+html[data-theme-reveal="circle"]::view-transition-new(root) {
+  mix-blend-mode: normal;
+}
+html[data-theme-reveal="circle"]::view-transition-old(root) {
+  animation: none;
+}
+html[data-theme-reveal="circle"]::view-transition-new(root) {
+  animation: theme-reveal var(--reveal-dur, var(--dur-slow)) var(--ease-sheet)
+    both;
 }
 
 @media (prefers-reduced-motion: reduce) {

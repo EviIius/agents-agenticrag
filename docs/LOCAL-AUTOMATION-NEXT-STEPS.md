@@ -4,6 +4,13 @@
 workflows on the list where Local AI can start doing things for me automatically?”
 This is planning only; no automatic task or extra model call is started.
 
+23 October checkpoint: precision-editing trials are shelved. Review the isolated
+themes checkpoint before the next automation implementation.
+`AUTOMATION-FOLDER-PILOT-PLAN.md` turns this recommendation
+into a concrete NS0/NS1 proposal after the isolated themes checkpoint. It names
+the reusable graph/runner code and the missing folder-intake/output-writer work.
+No watcher, schedule, private folder access or native test is enabled by the plan.
+
 ## Already on the list
 
 - `next/workflow-studio/WORKFLOW-STUDIO-SPEC.md` §12, **WS-F**, explicitly lists
@@ -56,7 +63,7 @@ need to precede useful scheduled local workflows.
 
 ## Current priority boundary
 
-Finish photo-edit quality review and installer/fallback/release checks first.
-Then propose the narrow automation pilot and its permissions/acceptance tests.
+The earlier photo-edit priority is closed as shelved; do not restart it. Finish
+theme QA/review, then consider NS0 from the concrete folder-pilot proposal.
 Jake's roadmap question is not authorization to install a watcher, create an app
 or Codex schedule, restart agent trials, or let a model send messages/delete files.

@@ -1,5 +1,31 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**User authorization — 23 October 2026 (TH1/TH2 isolated themes):** Jake
+approved all three named theme decisions on `codex/themes-th1-th2`: J18's
+decorative new-chat greeting, including its name/glow, at most 4.5 seconds;
+J19's `clip-path` animation on the new root view-transition snapshot only;
+and J20's Newsreader interface font for Paper. Apply the supplied seven-palette
+theme code with these reviewed repairs and no new dependencies/model calls.
+The one-second settle gate remains for all other finite motion: exempt only
+known bounded greeting animations, not arbitrary ambient wrappers. Preserve
+ordinary chat payloads, existing reduced-motion support and release thresholds.
+See `docs/THEMES-INTEGRATION-PLAN.md`. Stop after checks, browser/visual evidence
+and SPEC H4 report. Main merge and deployment remain separately gated.
+Preparing a recording-folder pilot plan does not enable a watcher, schedule,
+folder access or new native/model calls. Precision-editing trials remain shelved.
+
+**TH1/TH2 technical closeout — 24 October 2026:** The isolated seven-palette
+candidate on `codex/themes-th1-th2` passes full checks (771 Python, 151 frontend,
+855 contrast pairs) and one complete Chromium/WebKit run (856 passed, four
+unchanged skips, zero failures; all 88 new theme cases pass). Initial JS is
+250,980/256,000 gzip bytes. Original inputs, 611 installed public files and 504
+frozen source/tooling files verify unchanged; main and the live app remain
+untouched. H4: `docs/THEMES-INTEGRATION-REPORT.md`, draft PR #10. Stop for visual
+review before joint server/web release approval; real iPhone/icon behavior is
+not checked and VoiceOver remains an unresolved historical limitation. The NS0
+recording-folder automation is a concrete proposal only; no watcher, schedule,
+private folder access or new native/model call is authorized by this closeout.
+
 The plan is docs/SPEC.md. Read it before changing anything. Work phase by phase and stop for review
 at the end of each phase with the report template in SPEC §H4.
 

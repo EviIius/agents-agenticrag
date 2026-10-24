@@ -5,6 +5,7 @@ import { fakeAppURL } from "./test-runtime";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { fileURLToPath, URL } from "node:url";
+import { PALETTE_IDS, paletteIcons } from "./src/lib/palettes";
 export default defineConfig({
   plugins: [
     react(),
@@ -31,6 +32,18 @@ export default defineConfig({
           "/icons/maskable-512.png",
           "/icons/apple-touch-icon.png",
         ];
+        for (const id of PALETTE_IDS) {
+          const icons = paletteIcons(id);
+          precache.push(icons.svg, icons.touch, icons.manifest);
+          if (id !== "cobalt") {
+            for (const name of [
+              "icon-192.png",
+              "icon-512.png",
+              "maskable-512.png",
+            ])
+              precache.push(`/icons/${id}/${name}`);
+          }
+        }
         for (const file of Object.values(bundle)) {
           if (file.type === "chunk" && file.isEntry) {
             precache.push(
