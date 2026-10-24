@@ -4,6 +4,11 @@
 workflows on the list where Local AI can start doing things for me automatically?”
 This is planning only; no automatic task or extra model call is started.
 
+23 October checkpoint: `AUTOMATION-FOLDER-PILOT-PLAN.md` turns this recommendation
+into a concrete NS0/NS1 proposal after the isolated themes checkpoint. It names
+the reusable graph/runner code and the missing folder-intake/output-writer work.
+No watcher, schedule, private folder access or native test is enabled by the plan.
+
 ## Already on the list
 
 - `next/workflow-studio/WORKFLOW-STUDIO-SPEC.md` §12, **WS-F**, explicitly lists

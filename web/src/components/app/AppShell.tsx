@@ -37,6 +37,7 @@ import { useUI } from "@/stores/ui";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { fixtureTitles } from "@/design/fixtures";
 import { useAppEntrance } from "@/hooks/useAppEntrance";
+import { AnimatedGreeting } from "./AnimatedGreeting";
 export function AppShell({ children }: { children?: ReactNode }) {
   const ui = useUI();
   const entering = useAppEntrance(true);
@@ -99,14 +100,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
             <p className="mb-5 text-center text-xs text-fg-3">
               Foundation preview · Fake runtime
             </p>
-            <h1 className="greeting">
-              {new Date().getHours() < 12
-                ? "Good morning"
-                : new Date().getHours() < 18
-                  ? "Good afternoon"
-                  : "Good evening"}
-              {ui.name ? `, ${ui.name}` : ""}
-            </h1>
+            <AnimatedGreeting />
             {composer}
             <div className="mt-4 flex flex-wrap justify-center gap-2">
               {["Explain", "Write", "Code"].map((suggestion) => (

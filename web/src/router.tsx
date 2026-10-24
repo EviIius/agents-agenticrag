@@ -2,7 +2,6 @@ import config from "../../shared/config.json";
 import { createBrowserRouter } from "react-router";
 import { LiveAppShell } from "@/components/app/LiveAppShell";
 import App from "./App";
-import { AppShell } from "@/components/app/AppShell";
 export const router = createBrowserRouter([
   {
     element: <App />,
@@ -49,11 +48,20 @@ export const router = createBrowserRouter([
           },
         ],
       },
-      { path: "/design/chat/:chatId?", element: <AppShell /> },
+      {
+        path: "/design/chat/:chatId?",
+        lazy: async () => {
+          const { AppShell } = await import("@/components/app/AppShell");
+          return { Component: AppShell };
+        },
+      },
       {
         path: "/design",
         lazy: async () => {
-          const { DesignPage } = await import("@/design/DesignPage");
+          const [{ AppShell }, { DesignPage }] = await Promise.all([
+            import("@/components/app/AppShell"),
+            import("@/design/DesignPage"),
+          ]);
           return {
             Component: () => (
               <AppShell>

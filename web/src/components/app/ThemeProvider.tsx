@@ -1,46 +1,34 @@
 import { useEffect, useInsertionEffect, useRef, type ReactNode } from "react";
 import { useUI } from "@/stores/ui";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { resolvedTheme } from "@/lib/theme";
+import { applyAppearance, trackRevealOrigin } from "@/lib/appearance";
+import { PALETTE_STORAGE_KEY } from "@/lib/palettes";
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const reduced = useReducedMotion();
   const applied = useRef(false);
-  const { theme, answerFont, textSize, reduceMotion } = useUI();
+  const { theme, palette, answerFont, textSize, reduceMotion } = useUI();
   useEffect(() => {
+    trackRevealOrigin();
     const media = matchMedia("(prefers-color-scheme: dark)");
     const apply = () => {
-      const resolved = resolvedTheme(theme, media.matches);
-      const update = () => {
-        document.documentElement.dataset.theme = resolved;
-        const bg = getComputedStyle(document.documentElement)
-          .getPropertyValue("--bg")
-          .trim();
-        document
-          .querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')
-          .forEach((meta) => {
-            meta.content = bg;
-          });
-      };
-      if (
-        applied.current &&
-        document.documentElement.dataset.theme !== resolved &&
-        !reduced &&
-        document.startViewTransition
-      ) {
-        const transition = document.startViewTransition(update);
-        void transition.finished.catch(() => {});
-      } else update();
+      applyAppearance({
+        theme,
+        palette,
+        systemDark: media.matches,
+        animate: applied.current && !reduced,
+      });
       applied.current = true;
     };
     apply();
     try {
       localStorage.setItem("workbench-theme", theme);
+      localStorage.setItem(PALETTE_STORAGE_KEY, palette);
     } catch {
       /* Storage may be unavailable. */
     }
     media.addEventListener("change", apply);
     return () => media.removeEventListener("change", apply);
-  }, [theme, reduced]);
+  }, [theme, palette, reduced]);
   // Apply motion CSS before Radix layout effects decide whether an exit is animated.
   // A passive effect cancels that exit afterward, leaving Presence waiting forever.
   useInsertionEffect(() => {

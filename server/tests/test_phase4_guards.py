@@ -101,3 +101,24 @@ def test_motion_guard_rejects_dead_classes_and_forbidden_keyframes(tmp_path: Pat
         "[data-live] { animation: reveal 200ms; }"
     )
     assert violations(tmp_path) == []
+    (tmp_path / "styles/motion.css").write_text(
+        "@keyframes theme-reveal { from { clip-path: circle(0); } } "
+        "@keyframes wipe { from { clip-path: circle(0); } } "
+        "html::view-transition-new(root) { animation: theme-reveal 320ms; } "
+        "[data-live] { animation: wipe 200ms; }"
+    )
+    errors = violations(tmp_path)
+    assert errors == ["styles/motion.css: wipe animates forbidden clip-path"]
+
+
+def test_theme_reveal_exception_cannot_animate_a_regular_element(tmp_path: Path) -> None:
+    (tmp_path / "styles").mkdir()
+    for selector in [".card", "html::view-transition-old(root)", "html::view-transition-new(card)"]:
+        (tmp_path / "styles/motion.css").write_text(
+            "@keyframes theme-reveal { from { clip-path: circle(0); } } "
+            + selector
+            + " { animation: theme-reveal 320ms; }"
+        )
+        assert violations(tmp_path) == [
+            "styles/motion.css: theme-reveal must target the new root snapshot"
+        ]

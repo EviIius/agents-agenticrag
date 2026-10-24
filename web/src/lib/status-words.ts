@@ -39,10 +39,14 @@ export const STATUS_WORDS = [
   "Rummaging",
 ] as const;
 
-export function statusSequence(id: string): string[] {
+/** A stable shuffle per message. `list` is the palette's own words (TH2). */
+export function statusSequence(
+  id: string,
+  list: readonly string[] = STATUS_WORDS,
+): string[] {
   let seed = 2166136261;
   for (const char of id) seed = Math.imul(seed ^ char.charCodeAt(0), 16777619);
-  const words: string[] = [...STATUS_WORDS];
+  const words: string[] = [...list];
   for (let i = words.length - 1; i > 0; i--) {
     seed += 0x6d2b79f5;
     let value = Math.imul(seed ^ (seed >>> 15), seed | 1);

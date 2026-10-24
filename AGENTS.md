@@ -1,5 +1,19 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**User authorization — 23 October 2026 (TH1/TH2 isolated themes):** Jake
+approved all three named theme decisions on `codex/themes-th1-th2`: J18's
+decorative new-chat greeting, including its name/glow, at most 4.5 seconds;
+J19's `clip-path` animation on the new root view-transition snapshot only;
+and J20's Newsreader interface font for Paper. Apply the supplied seven-palette
+theme code with these reviewed repairs and no new dependencies/model calls.
+The one-second settle gate remains for all other finite motion: exempt only
+known bounded greeting animations, not arbitrary ambient wrappers. Preserve
+ordinary chat payloads, existing reduced-motion support and release thresholds.
+See `docs/THEMES-INTEGRATION-PLAN.md`. Stop after checks, browser/visual evidence
+and SPEC H4 report. Main merge and deployment remain separately gated.
+Preparing a recording-folder pilot plan does not enable a watcher, schedule,
+folder access or new native/model calls. Precision-editing trials remain shelved.
+
 The plan is docs/SPEC.md. Read it before changing anything. Work phase by phase and stop for review
 at the end of each phase with the report template in SPEC §H4.
 
