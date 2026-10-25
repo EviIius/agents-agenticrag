@@ -14,10 +14,33 @@ export async function settle(page: Page) {
         const frame = () => {
           const animations = document.getAnimations().filter((animation) => {
             const timing = animation.effect?.getComputedTiming();
+            // Approved TH2 exception: only the bounded greeting keyframes.
+            // An arbitrary data-motion="ambient" wrapper cannot bypass G3.
+            const target = (animation.effect as KeyframeEffect | null)?.target;
+            const ambient =
+              animation instanceof CSSAnimation &&
+              target instanceof Element &&
+              !!target.closest('h1.greeting[data-motion="ambient"]') &&
+              [
+                "greet-rise",
+                "greet-roll",
+                "greet-roll-out",
+                "greet-type",
+                "greet-glow",
+                "greet-bloom",
+                "greet-bubble",
+                "greet-flicker",
+                "greet-out",
+                "opacity-in",
+              ].includes(animation.animationName) &&
+              !!timing &&
+              typeof timing.endTime === "number" &&
+              timing.endTime <= 900;
             return (
               animation.playState === "running" &&
               timing &&
-              Number.isFinite(timing.endTime)
+              Number.isFinite(timing.endTime) &&
+              !ambient
             );
           });
           clearFrames = animations.length ? 0 : clearFrames + 1;

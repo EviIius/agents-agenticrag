@@ -187,7 +187,8 @@ test("thinking menu says Model default and exposes only reported options", async
     name: "Model default",
     exact: true,
   });
-  await expect(option).toHaveText("Model default");
+  await expect(option).toHaveText("Default");
+  await expect(option).toHaveAttribute("title", "Model default");
   await expect(option).toHaveAttribute("aria-checked", "true");
   await expect(
     page.getByRole("menuitemradio", { name: "High", exact: true }),

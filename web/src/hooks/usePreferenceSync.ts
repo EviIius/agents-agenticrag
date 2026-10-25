@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { useUI } from "@/stores/ui";
+import { isPaletteId } from "@/lib/palettes";
+import { GREETING_MODES, type GreetingMode } from "@/lib/greetings";
 
 /** Appearance is stored on the Mac so it follows the user between devices. */
 export function usePreferenceSync(settings?: Record<string, unknown>) {
@@ -12,6 +14,11 @@ export function usePreferenceSync(settings?: Record<string, unknown>) {
     const theme = settings["appearance.theme"];
     if (theme === "light" || theme === "dark" || theme === "system")
       patch.theme = theme;
+    const palette = settings["appearance.palette"];
+    if (isPaletteId(palette)) patch.palette = palette;
+    const greeting = settings["appearance.greeting"];
+    if (GREETING_MODES.includes(greeting as GreetingMode))
+      patch.greeting = greeting as GreetingMode;
     const font = settings["appearance.font"];
     if (font === "serif" || font === "sans") patch.answerFont = font;
     const size = settings["appearance.size"];
@@ -27,6 +34,8 @@ export function usePreferenceSync(settings?: Record<string, unknown>) {
   useEffect(() => {
     const preferences = (state: ReturnType<typeof useUI.getState>) => ({
       "appearance.theme": state.theme,
+      "appearance.palette": state.palette,
+      "appearance.greeting": state.greeting,
       "appearance.font": state.answerFont,
       "appearance.size": state.textSize,
       "appearance.reduce_motion": state.reduceMotion,

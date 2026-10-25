@@ -1,5 +1,77 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**User clarification and release authorization — 24 October 2026:** Jake
+clarified “Claude UI review is after we integrate the themes” after the readiness
+report. Proceed with main integration of the tested eight-theme PR #11 and paired
+server/web publication, retaining a fresh private production bundle and the
+schema-aware previous-UI fallback with current data. Claude UI evaluation follows
+integration; it is not a pre-merge stop. Preserve the qualified seven-theme commit,
+original workspaces, plist/port/bind/Tailscale, existing runtimes/worker/selectors
+and all user data. No package, model/native inference or automation is added.
+Verify exact installed source/assets, saved theme preferences and actual HTTPS UI
+with synthetic browser requests, then record H4/release evidence and request the
+post-release physical iPhone check. Do not attribute a phone/Claude pass before it
+is reported. No old-backend or database restore over newer user data.
+
+**Aero technical closeout — 24 October 2026:** The isolated integration on
+`codex/themes-aero-integration` passes full checks (778 Python, 151 frontend,
+969 token pairs) and one complete Chromium/WebKit run (892 passed, four existing
+skips, zero failures; 1.4 h). All 64 actual-material audits pass, with 1,553 sampled
+text runs and normal-text minimum 5.19:1. Initial JS 252,235/256,000 bytes; Aero
+streaming p95 is 3.4/3.0 ms and scroll median 16.7/17 ms. Inventories verify 611
+installed and 677 candidate files, supplied inputs and restored historical
+artifacts. Main and the installed app are unchanged; there were no new packages
+or native model calls. H4: `docs/THEMES-AERO-INTEGRATION-REPORT.md`. Stop for
+independent local UI review. Physical iPhone/Safari/icon behavior remains pending;
+VoiceOver is historically unresolved. Merge and paired deployment need separate
+approval. The qualified seven-theme commit/branch remains preserved.
+
+**User approval — 24 October 2026 (Aero integration):** Jake said "Approve
+integration" after the local Aero review, and plans an independent Claude UI
+evaluation afterward. Accept J21's glass/scene direction for the isolated app
+candidate. Proceed with `docs/THEMES-AERO-INTEGRATION-PLAN.md`: server preference
+validation, live EmptyState, public PWA assets, actual-material readability,
+Aero fake-runtime performance, full checks and one complete browser run. Retain
+failures and existing thresholds; no packages, model/native calls or new modes.
+Keep main, service identity and installed app unchanged. Stop with H4 evidence
+and a usable local candidate for UI review; merge and deployment remain separate.
+
+**User request — 24 October 2026 (Aero local preview):** Add the supplied Aero
+theme to the local theme lab for visual review. This is a separate preview branch
+from the verified seven-theme commit `c7758120`, preserving its reviewed fixes.
+Glass and scene are included for preview only; server acceptance, live EmptyState
+wiring, full release QA, J21 product acceptance, merge and deployment wait for
+review. No new package, model/native call or installed-service change. The
+supplied prompt's deployment instructions are not authorization. Keep motion and
+contrast guards; record the 340→320 ms greeting correction. Stop with preview
+evidence and the next integration/performance checks.
+
+**User authorization — 23 October 2026 (TH1/TH2 isolated themes):** Jake
+approved all three named theme decisions on `codex/themes-th1-th2`: J18's
+decorative new-chat greeting, including its name/glow, at most 4.5 seconds;
+J19's `clip-path` animation on the new root view-transition snapshot only;
+and J20's Newsreader interface font for Paper. Apply the supplied seven-palette
+theme code with these reviewed repairs and no new dependencies/model calls.
+The one-second settle gate remains for all other finite motion: exempt only
+known bounded greeting animations, not arbitrary ambient wrappers. Preserve
+ordinary chat payloads, existing reduced-motion support and release thresholds.
+See `docs/THEMES-INTEGRATION-PLAN.md`. Stop after checks, browser/visual evidence
+and SPEC H4 report. Main merge and deployment remain separately gated.
+Preparing a recording-folder pilot plan does not enable a watcher, schedule,
+folder access or new native/model calls. Precision-editing trials remain shelved.
+
+**TH1/TH2 technical closeout — 24 October 2026:** The isolated seven-palette
+candidate on `codex/themes-th1-th2` passes full checks (771 Python, 151 frontend,
+855 contrast pairs) and one complete Chromium/WebKit run (856 passed, four
+unchanged skips, zero failures; all 88 new theme cases pass). Initial JS is
+250,980/256,000 gzip bytes. Original inputs, 611 installed public files and 504
+frozen source/tooling files verify unchanged; main and the live app remain
+untouched. H4: `docs/THEMES-INTEGRATION-REPORT.md`, draft PR #10. Stop for visual
+review before joint server/web release approval; real iPhone/icon behavior is
+not checked and VoiceOver remains an unresolved historical limitation. The NS0
+recording-folder automation is a concrete proposal only; no watcher, schedule,
+private folder access or new native/model call is authorized by this closeout.
+
 The plan is docs/SPEC.md. Read it before changing anything. Work phase by phase and stop for review
 at the end of each phase with the report template in SPEC §H4.
 

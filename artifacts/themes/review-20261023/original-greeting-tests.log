@@ -1,0 +1,183 @@
+npm notice run workbench-web@1.0.0-alpha.0 e2e
+npm notice run playwright test tests/theme-review.spec.ts
+[WebServer] INFO:     Started server process [7885]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:18080 (Press CTRL+C to quit)
+[WebServer] INFO:     Started server process [7888]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:18787 (Press CTRL+C to quit)
+[WebServer] npm notice run workbench-web@1.0.0-alpha.0 dev
+[WebServer] npm notice run vite --host 127.0.0.1 --port 5173 --strictPort
+[WebServer] (node:7917) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "./test-runtime" without a file extension (vite.config.ts:4:28). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+Running 4 tests using 1 worker
+
+(node:7918) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/theme-review.spec.ts:3:1 › English only takes effect during a greeting exit (3.3s)
+(node:7932) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [chromium] › tests/theme-review.spec.ts:18:1 › turning reduced motion off does not resume an abandoned greeting (1.9s)
+(node:7937) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  3 [webkit] › tests/theme-review.spec.ts:3:1 › English only takes effect during a greeting exit (3.3s)
+(node:7950) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  4 [webkit] › tests/theme-review.spec.ts:18:1 › turning reduced motion off does not resume an abandoned greeting (2.0s)
+
+
+  1) [chromium] › tests/theme-review.spec.ts:3:1 › English only takes effect during a greeting exit
+
+    Error: expect(locator).not.toHaveAttribute(expected) failed
+
+    Locator: locator('h1.greeting')
+    Expected pattern: not /.*/
+    Received string: "true"
+    Timeout: 1000ms
+
+    Call log:
+      - Expect "not toHaveAttribute" locator('h1.greeting') with timeout 1000ms
+      - waiting for locator('h1.greeting')
+        7 × locator resolved to <h1 class="greeting" data-style="rise" data-animate="true" data-motion="ambient" aria-label="Good evening">…</h1>
+          - unexpected value "true"
+        5 × locator resolved to <h1 class="greeting" data-style="rise" data-landed="true" data-animate="true" data-motion="ambient" aria-label="Good evening">…</h1>
+          - unexpected value "true"
+
+
+      11 |     useUI.getState().set({ greeting: "english" });
+      12 |   });
+    > 13 |   await expect(heading).not.toHaveAttribute("data-animate", /.*/, { timeout: 1000 });
+         |                             ^
+      14 |   await expect(heading.locator(".greet-word")).toHaveAttribute("lang", "en");
+      15 |   await expect(heading.locator(".greet-word")).not.toHaveAttribute("data-leaving", /.*/);
+      16 | });
+        at /Users/evilius/.codex/worktrees/themes-th1-th2/agents-agenticrag/web/tests/theme-review.spec.ts:13:29
+
+    Error Context: test-results/theme-review-English-only--965a0-fect-during-a-greeting-exit-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/theme-review-English-only--965a0-fect-during-a-greeting-exit-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/theme-review-English-only--965a0-fect-during-a-greeting-exit-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/theme-review.spec.ts:18:1 › turning reduced motion off does not resume an abandoned greeting
+
+    Error: expect(locator).not.toHaveAttribute(expected) failed
+
+    Locator: locator('h1.greeting')
+    Expected pattern: not /.*/
+    Received string: "true"
+    Timeout: 1000ms
+
+    Call log:
+      - Expect "not toHaveAttribute" locator('h1.greeting') with timeout 1000ms
+      - waiting for locator('h1.greeting')
+        12 × locator resolved to <h1 class="greeting" data-style="rise" data-animate="true" data-motion="ambient" aria-label="Good evening">…</h1>
+           - unexpected value "true"
+
+
+      25 |   await expect(heading.locator(".greet-word")).toHaveAttribute("lang", "en");
+      26 |   await page.getByRole("switch", { name: "Reduce motion", exact: true }).uncheck();
+    > 27 |   await expect(heading).not.toHaveAttribute("data-animate", /.*/, { timeout: 1000 });
+         |                             ^
+      28 |   await expect(heading.locator(".greet-word")).toHaveAttribute("lang", "en");
+      29 | });
+      30 |
+        at /Users/evilius/.codex/worktrees/themes-th1-th2/agents-agenticrag/web/tests/theme-review.spec.ts:27:29
+
+    Error Context: test-results/theme-review-turning-reduc-bc170-esume-an-abandoned-greeting-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/theme-review-turning-reduc-bc170-esume-an-abandoned-greeting-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/theme-review-turning-reduc-bc170-esume-an-abandoned-greeting-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [webkit] › tests/theme-review.spec.ts:3:1 › English only takes effect during a greeting exit ──
+
+    Error: expect(locator).not.toHaveAttribute(expected) failed
+
+    Locator: locator('h1.greeting')
+    Expected pattern: not /.*/
+    Received string: "true"
+    Timeout: 1000ms
+
+    Call log:
+      - Expect "not toHaveAttribute" locator('h1.greeting') with timeout 1000ms
+      - waiting for locator('h1.greeting')
+        7 × locator resolved to <h1 class="greeting" data-style="rise" data-animate="true" data-motion="ambient" aria-label="Good evening">…</h1>
+          - unexpected value "true"
+        5 × locator resolved to <h1 class="greeting" data-style="rise" data-landed="true" data-animate="true" data-motion="ambient" aria-label="Good evening">…</h1>
+          - unexpected value "true"
+
+
+      11 |     useUI.getState().set({ greeting: "english" });
+      12 |   });
+    > 13 |   await expect(heading).not.toHaveAttribute("data-animate", /.*/, { timeout: 1000 });
+         |                             ^
+      14 |   await expect(heading.locator(".greet-word")).toHaveAttribute("lang", "en");
+      15 |   await expect(heading.locator(".greet-word")).not.toHaveAttribute("data-leaving", /.*/);
+      16 | });
+        at /Users/evilius/.codex/worktrees/themes-th1-th2/agents-agenticrag/web/tests/theme-review.spec.ts:13:29
+
+    Error Context: test-results/theme-review-English-only--965a0-fect-during-a-greeting-exit-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/theme-review-English-only--965a0-fect-during-a-greeting-exit-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/theme-review-English-only--965a0-fect-during-a-greeting-exit-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [webkit] › tests/theme-review.spec.ts:18:1 › turning reduced motion off does not resume an abandoned greeting
+
+    Error: expect(locator).not.toHaveAttribute(expected) failed
+
+    Locator: locator('h1.greeting')
+    Expected pattern: not /.*/
+    Received string: "true"
+    Timeout: 1000ms
+
+    Call log:
+      - Expect "not toHaveAttribute" locator('h1.greeting') with timeout 1000ms
+      - waiting for locator('h1.greeting')
+        11 × locator resolved to <h1 class="greeting" data-style="rise" data-animate="true" data-motion="ambient" aria-label="Good evening">…</h1>
+           - unexpected value "true"
+
+
+      25 |   await expect(heading.locator(".greet-word")).toHaveAttribute("lang", "en");
+      26 |   await page.getByRole("switch", { name: "Reduce motion", exact: true }).uncheck();
+    > 27 |   await expect(heading).not.toHaveAttribute("data-animate", /.*/, { timeout: 1000 });
+         |                             ^
+      28 |   await expect(heading.locator(".greet-word")).toHaveAttribute("lang", "en");
+      29 | });
+      30 |
+        at /Users/evilius/.codex/worktrees/themes-th1-th2/agents-agenticrag/web/tests/theme-review.spec.ts:27:29
+
+    Error Context: test-results/theme-review-turning-reduc-bc170-esume-an-abandoned-greeting-webkit/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/theme-review-turning-reduc-bc170-esume-an-abandoned-greeting-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/theme-review-turning-reduc-bc170-esume-an-abandoned-greeting-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    [chromium] › tests/theme-review.spec.ts:3:1 › English only takes effect during a greeting exit ─
+    [chromium] › tests/theme-review.spec.ts:18:1 › turning reduced motion off does not resume an abandoned greeting
+    [webkit] › tests/theme-review.spec.ts:3:1 › English only takes effect during a greeting exit ───
+    [webkit] › tests/theme-review.spec.ts:18:1 › turning reduced motion off does not resume an abandoned greeting

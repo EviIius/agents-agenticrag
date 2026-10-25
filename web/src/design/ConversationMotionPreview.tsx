@@ -6,13 +6,11 @@ import { LiveThread } from "@/components/chat/LiveThread";
 import { ModelPicker } from "@/components/app/ModelPicker";
 import { ChatList } from "@/components/app/ChatList";
 import { EmptyState } from "@/components/app/EmptyState";
-import { useUI } from "@/stores/ui";
 import { useFreshRows } from "@/stores/fresh";
 import { fixtureMessage, fixtureModels } from "./ProductionFixtures";
 import type { Chat, Message } from "@/lib/api";
 
 export function ConversationMotionPreview() {
-  const ui = useUI();
   const [rows, setRows] = useState<Message[]>([]);
   const [pending, setPending] = useState<Message | null>(null);
   const [stage, setStage] = useState("waiting");
@@ -182,7 +180,7 @@ export function ConversationMotionPreview() {
           return true;
         }}
       />
-      <EmptyState ui={ui} composer={<Composer model={model} suggestions />} />
+      <EmptyState composer={<Composer model={model} suggestions />} />
     </section>
   );
 }

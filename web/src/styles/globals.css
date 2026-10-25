@@ -45,6 +45,10 @@
   --brand-hover: #2448c4;
   --brand-soft: #e8eefe; /* selected rows, toggle-on background */
   --on-brand: #ffffff;
+  /* Signature fill: send button, switches, the mark's dot. Equals --brand in Cobalt;
+     a vivid palette (Lime) uses a brighter fill with its own label colour. */
+  --brand-fill: #2f5bea;
+  --on-brand-fill: #ffffff;
   /* Status */
   --success: #1d7a4b;
   --warning: #8a5a00;
@@ -128,6 +132,8 @@
   --brand-hover: #93aeff;
   --brand-soft: #24304f;
   --on-brand: #0d1430;
+  --brand-fill: #7c9dff;
+  --on-brand-fill: #0d1430;
   --success: #5fd394;
   --warning: #f2b455;
   --danger: #ff8a7a;
@@ -144,16 +150,19 @@
 }
 
 /* shadcn variable mapping (data-theme is set on <html>, so these resolve per theme).
-   Our tokens use --line* names so they never collide with shadcn's --border/--input. */
-:root {
+   Our tokens use --line* names so they never collide with shadcn's --border/--input.
+   [data-palette] re-resolves the mapping inside a nested palette preview (TH1). */
+:root,
+[data-palette] {
   --background: var(--bg);
   --foreground: var(--text);
   --card: var(--surface);
   --card-foreground: var(--text);
   --popover: var(--surface);
   --popover-foreground: var(--text);
-  --primary: var(--brand);
-  --primary-foreground: var(--on-brand);
+  /* TH1: primary buttons wear the signature fill (equal to --brand in Cobalt). */
+  --primary: var(--brand-fill);
+  --primary-foreground: var(--on-brand-fill);
   --secondary: var(--surface-2);
   --secondary-foreground: var(--text);
   --muted: var(--surface-2);
@@ -194,6 +203,8 @@
   --color-brand-hover: var(--brand-hover);
   --color-brand-soft: var(--brand-soft);
   --color-on-brand: var(--on-brand);
+  --color-brand-fill: var(--brand-fill);
+  --color-on-brand-fill: var(--on-brand-fill);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
@@ -397,6 +408,39 @@ input::placeholder {
   flex-direction: column;
   justify-content: safe center;
   padding: 24px;
+  position: relative;
+  isolation: isolate;
+}
+/* TH2 · A soft wash of the palette behind the greeting (transparent in Mono). */
+.empty-chat::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(60% 42% at 50% 36%, var(--aura), transparent 72%);
+}
+/* Midnight: a still field of faint stars. */
+[data-palette="midnight"] .empty-chat::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.6;
+  background-image:
+    radial-gradient(1px 1px at 8% 14%, var(--text-3), transparent),
+    radial-gradient(1px 1px at 21% 63%, var(--text-3), transparent),
+    radial-gradient(1.5px 1.5px at 33% 22%, var(--text-2), transparent),
+    radial-gradient(1px 1px at 44% 81%, var(--text-3), transparent),
+    radial-gradient(1px 1px at 57% 9%, var(--text-3), transparent),
+    radial-gradient(1.5px 1.5px at 68% 47%, var(--brand), transparent),
+    radial-gradient(1px 1px at 79% 18%, var(--text-3), transparent),
+    radial-gradient(1px 1px at 88% 71%, var(--text-3), transparent),
+    radial-gradient(1px 1px at 94% 36%, var(--text-2), transparent),
+    radial-gradient(1px 1px at 13% 88%, var(--text-3), transparent),
+    radial-gradient(1px 1px at 61% 93%, var(--text-3), transparent),
+    radial-gradient(1px 1px at 3% 46%, var(--text-3), transparent);
 }
 .greeting {
   font-family: var(--font-reading);
@@ -404,6 +448,140 @@ input::placeholder {
   line-height: 40px;
   margin: 0 auto 28px;
   text-align: center;
+  position: relative;
+  isolation: isolate;
+}
+.greeting-line {
+  display: inline-block;
+  max-width: 100%;
+}
+.greet-word {
+  display: inline-block;
+  position: relative;
+  white-space: pre;
+}
+.greet-cell,
+.greet-char {
+  display: inline-block;
+  white-space: pre;
+}
+.greet-cell {
+  vertical-align: top;
+}
+/* Newsreader has no Japanese, Korean, Chinese or Devanagari: use each script's system serif. */
+.greet-word:lang(ja) {
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+}
+.greet-word:lang(ko) {
+  font-family: "AppleMyungjo", "Nanum Myeongjo", serif;
+}
+.greet-word:lang(zh) {
+  font-family: "Songti SC", "Noto Serif SC", serif;
+}
+.greet-word:lang(hi) {
+  font-family: "Kohinoor Devanagari", "Noto Serif Devanagari", serif;
+}
+.greet-caret {
+  display: inline-block;
+  width: 2px;
+  height: 0.85em;
+  margin-left: 3px;
+  vertical-align: -0.08em;
+  background: var(--brand);
+}
+.greeting[data-landed] .greet-caret {
+  opacity: 0;
+}
+.greeting[data-style="glow"] .greet-word::after {
+  content: "";
+  position: absolute;
+  inset: -45% -16%;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--brand-fill) 30%, transparent),
+    transparent
+  );
+}
+/* TH1 · Palette picker. Each sample carries its own data-palette and data-theme. */
+.palette-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 10px;
+}
+.palette-option {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+}
+.palette-option[aria-pressed="true"] {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 1px var(--brand);
+}
+.palette-sample {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  height: 68px;
+  padding: 9px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+}
+.palette-sample > span {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+}
+.palette-sample > .palette-sample-bubble {
+  justify-self: end;
+  width: 46%;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--user-bubble);
+}
+.palette-sample > .palette-sample-text {
+  width: 72%;
+  background: var(--text);
+}
+.palette-sample > .palette-sample-text + .palette-sample-text {
+  width: 48%;
+  background: var(--text-3);
+}
+.palette-sample > .palette-sample-link {
+  width: 34%;
+  background: var(--brand);
+}
+.palette-sample > .palette-sample-send {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--brand-fill);
+}
+.palette-name {
+  font-weight: 500;
+  padding-inline: 2px;
+}
+.palette-blurb {
+  padding-inline: 2px;
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 16px;
 }
 .chat-panel {
   width: var(--panel-w);
@@ -1016,10 +1194,10 @@ html[data-compact-viewport] .model-picker-close-footer {
   background: var(--text-3);
 }
 .composer-switch[data-on="true"] {
-  background: var(--brand);
+  background: var(--brand-fill);
 }
 .composer-switch[data-on="true"]::before {
-  background: var(--on-brand);
+  background: var(--on-brand-fill);
   transform: translateX(12px);
 }
 .composer-thinking {

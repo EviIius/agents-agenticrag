@@ -58,6 +58,8 @@ async def get(store: Store, public: bool = False) -> dict[str, Any]:
 async def patch(store: Store, values: dict[str, Any]) -> None:
     allowed = set(DEFAULTS) | {
         "appearance.theme",
+        "appearance.palette",
+        "appearance.greeting",
         "appearance.font",
         "appearance.size",
         "appearance.reduce_motion",
@@ -67,6 +69,18 @@ async def patch(store: Store, values: dict[str, Any]) -> None:
     for key, options in {
         "new_chat_model": ("last_used", "fixed"),
         "appearance.theme": ("system", "light", "dark"),
+        # TH1: keep in step with PALETTE_IDS and GREETING_MODES in the web app.
+        "appearance.palette": (
+            "cobalt",
+            "lime",
+            "paper",
+            "ember",
+            "orchid",
+            "midnight",
+            "mono",
+            "aero",
+        ),
+        "appearance.greeting": ("languages", "surprise", "english"),
         "appearance.font": ("serif", "sans"),
         "appearance.size": ("S", "M", "L"),
         "appearance.reduce_motion": ("system", "always"),

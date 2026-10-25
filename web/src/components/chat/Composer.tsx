@@ -953,7 +953,7 @@ export function Composer({
                           : disabled || waiting || warned || !value.trim())
                     }
                     onClick={running ? onStop : undefined}
-                    className={`size-11 rounded-full disabled:bg-surface-3 disabled:text-fg-2 disabled:opacity-100 ${running ? "bg-surface-3 text-fg" : "bg-brand text-on-brand"}`}
+                    className={`size-11 rounded-full disabled:bg-surface-3 disabled:text-fg-2 disabled:opacity-100 ${running ? "bg-surface-3 text-fg" : "bg-brand-fill text-on-brand-fill"}`}
                   >
                     <span key={running ? "stop" : "send"} data-slot="send-icon">
                       {running ? <Square /> : <ArrowUp />}

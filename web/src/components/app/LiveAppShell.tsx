@@ -39,7 +39,6 @@ import { IconButton } from "./IconButton";
 import { Composer } from "@/components/chat/Composer";
 import { LiveThread } from "@/components/chat/LiveThread";
 import { SettingsDialog } from "@/components/settings/SettingsDialog";
-import { LiveSettingsPane } from "@/components/settings/LiveSettings";
 import {
   ChatControlsUnavailable,
   LiveChatSettings,
@@ -67,6 +66,11 @@ import { useAppEntrance } from "@/hooks/useAppEntrance";
 import { useLibraryIndex } from "@/hooks/useLibraryIndex";
 import type { Scope } from "@/components/chat/LibraryControl";
 const FolderDialog = lazy(() => import("./FolderDialog"));
+const LiveSettingsPane = lazy(() =>
+  import("@/components/settings/LiveSettings").then((module) => ({
+    default: module.LiveSettingsPane,
+  })),
+);
 const WorkflowNotifier = lazy(
   () => import("@/components/workflows/WorkflowNotifier"),
 );
@@ -1011,7 +1015,7 @@ export function LiveAppShell() {
               }
             />
           ) : !chatId ? (
-            <EmptyState ui={ui} composer={composer} />
+            <EmptyState composer={composer} />
           ) : (
             <>
               <LiveThread
@@ -1104,14 +1108,16 @@ export function LiveAppShell() {
         <SettingsDialog
           searchEnabled={Boolean(bootstrap.data?.features.web_search)}
           renderPane={(pane) => (
-            <LiveSettingsPane
-              pane={pane}
-              bootstrap={bootstrap.data}
-              models={models.data ?? []}
-              onModelAction={(model) =>
-                model.loaded ? operateModel(model, true) : changeModel(model)
-              }
-            />
+            <Suspense fallback={<p role="status">Loading settings…</p>}>
+              <LiveSettingsPane
+                pane={pane}
+                bootstrap={bootstrap.data}
+                models={models.data ?? []}
+                onModelAction={(model) =>
+                  model.loaded ? operateModel(model, true) : changeModel(model)
+                }
+              />
+            </Suspense>
           )}
         />
         <Suspense fallback={null}>

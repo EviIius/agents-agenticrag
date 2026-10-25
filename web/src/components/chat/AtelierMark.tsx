@@ -29,6 +29,13 @@ export function AtelierMark({ think = false }: { think?: boolean }) {
         strokeLinejoin="round"
       />
       <circle
+        className="mark-glow"
+        cx="12"
+        cy="16.3"
+        r="3.4"
+        fill="currentColor"
+      />
+      <circle
         className="mark-dot"
         cx="12"
         cy="16.3"

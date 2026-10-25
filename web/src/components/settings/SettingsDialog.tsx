@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/select";
 import { useUI } from "@/stores/ui";
 import type { ThemePreference } from "@/lib/theme";
+import { paletteById } from "@/lib/palettes";
+import { GreetingChoice, PalettePicker } from "./PalettePicker";
 import { useCallback, useEffect, useRef } from "react";
 function centerActiveTab(nav: HTMLElement) {
   const selected = nav.querySelector<HTMLElement>('[aria-current="page"]');
@@ -62,6 +64,7 @@ export function SettingsDialog({
         ...basePanes.slice(3),
       ];
   const ui = useUI();
+  const darkOnly = !paletteById(ui.palette).modes.includes("light");
   const reduced = useReducedMotion();
   const pane = ui.settingsPane;
   const navigation = useRef<HTMLElement>(null);
@@ -131,6 +134,7 @@ export function SettingsDialog({
                           data-slot="segmented-choice"
                           className="min-h-11 capitalize"
                           aria-pressed={theme === ui.theme}
+                          disabled={darkOnly && theme !== "dark"}
                           onClick={() => ui.set({ theme })}
                         >
                           {theme[0].toUpperCase() + theme.slice(1)}
@@ -138,7 +142,15 @@ export function SettingsDialog({
                       ),
                     )}
                   </div>
+                  {darkOnly && (
+                    <p className="mt-2 text-xs text-fg-3">
+                      {paletteById(ui.palette).name} is always dark. Your choice
+                      comes back when you pick another palette.
+                    </p>
+                  )}
                 </fieldset>
+                <PalettePicker />
+                <GreetingChoice />
                 <fieldset>
                   <legend className="mb-2 font-medium">Answer font</legend>
                   <div className="flex flex-wrap gap-2">
@@ -151,6 +163,7 @@ export function SettingsDialog({
                         data-slot="segmented-choice"
                         className="min-h-11 capitalize"
                         aria-pressed={answerFont === ui.answerFont}
+                        disabled={ui.palette === "paper"}
                         onClick={() => ui.set({ answerFont })}
                       >
                         {answerFont === "serif"
@@ -159,6 +172,12 @@ export function SettingsDialog({
                       </Button>
                     ))}
                   </div>
+                  {ui.palette === "paper" && (
+                    <p className="mt-2 text-xs text-fg-3">
+                      Paper uses Newsreader throughout. Your answer font choice
+                      returns when you pick another palette.
+                    </p>
+                  )}
                 </fieldset>
                 <fieldset>
                   <legend className="mb-2 font-medium">Text size</legend>
