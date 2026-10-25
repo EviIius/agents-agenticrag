@@ -1,5 +1,45 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**User approval — 25 October 2026 (Part A publication):** Jake said “approved”
+after the complete Part A report and PR #12 review stop. Merge the qualified
+blur repair and publish its static build only, with a fresh private UI fallback
+and SQLite online backup. Preserve the current schema-aware backend/worker,
+all current data, runtimes/selectors, service PID/identity/port/bind and Tailscale
+route. Retain old hashed assets for open clients; publish index and service
+worker last. Verify exact local/HTTPS CSS and actual installed browser rendering
+using intercepted synthetic API data, with no live chat mutation or inference.
+Do not restore the backup database over newer user work. Record actual release
+evidence and the pending physical-device check separately from technical QA.
+
+**Design critique A technical closeout — 25 October 2026:** The production blur
+regression is reproduced against the exact live CSS (seven missing standard
+declarations), repaired, and guarded in source and built output. `make check`
+passes 785 Python / 151 frontend / 969 contrast pairs; one complete browser run
+passes 900 cases with four unchanged skips and zero failures (1.3 h). Eight
+production material cases sample 584 text runs, minimum 5.64:1 with/without blur.
+Initial JS is 252,228 bytes; Aero render p95 2.8/3.0 ms and scroll median 16.7/17 ms.
+All 456 executed source files, 600 installed public files and 15 supplied inputs
+verify unchanged; 1,908 historical artifacts were restored after preserving the
+fresh run and 108 additional captures. No native model call, package, schema,
+backend or installed-app change. H4: `docs/AERO-BLUR-FIX-REPORT.md`, draft PR #12.
+Stop for Part A review before merge/publication or Part B. J22–J25 are approved
+for the later checkpoints; no archive behavior has been implemented. Physical
+iPhone/Safari application checks and historical VoiceOver remain pending.
+
+**Design critique follow-up — 25 October 2026:** Jake supplied Claude's live UI
+review and Part A–D proposal, then explicitly approved all four decisions J22–J25:
+visible last-image follow-up editing in image mode, feature starters, a sidebar
+Library page, and reversible greeting-only archiving after a day. Start with the
+isolated Part A production Aero blur repair on `codex/aero-blur-fix`, preserving
+the supplied private screenshots outside Git and the installed app during QA.
+Verify the actual minified CSS as well as source order and readable overlays
+over synthetic images in Chromium/WebKit. No new packages/model calls, runtime,
+prompt, service, data or sampling changes. Report each part and stop for review;
+Part A does not implement the later behavior changes. Before C5 implementation,
+present the required additive archive schema and narrow classification/undo rule;
+do not delete chats, add a classifier call, or infer capabilities from model tags.
+See `docs/DESIGN-CRITIQUE-IMPLEMENTATION-PLAN.md`.
+
 **Theme release closeout — 24 October 2026:** PR #11 merged as `326acbaa`
 (including the seven-theme history from #10) and all eight themes are live.
 The exact qualified source and 476 static files are published through the PE1
