@@ -21,6 +21,7 @@
   --aero-glass-main: rgb(255 255 255 / 0.8);
   --aero-glass-side: rgb(255 255 255 / 0.66);
   --aero-glass-surface: rgb(255 255 255 / 0.86);
+  --aero-glass-overlay: rgb(255 255 255 / 0.96);
   --aero-glass-soft: rgb(255 255 255 / 0.62);
   --aero-glass-edge: rgb(255 255 255 / 0.95);
   --aero-blur: blur(18px) saturate(160%);
@@ -84,6 +85,7 @@
   --aero-glass-main: rgb(4 22 40 / 0.74);
   --aero-glass-side: rgb(2 14 26 / 0.74);
   --aero-glass-surface: rgb(6 24 44 / 0.84);
+  --aero-glass-overlay: rgb(6 24 44 / 0.96);
   --aero-glass-soft: rgb(8 34 56 / 0.62);
   --aero-glass-edge: rgb(140 220 255 / 0.28);
   --aero-shadow:
@@ -142,22 +144,24 @@ html[data-palette="aero"] body {
 }
 [data-palette="aero"] .bg-sidebar-bg {
   background: var(--aero-glass-side);
-  backdrop-filter: var(--aero-blur);
   -webkit-backdrop-filter: var(--aero-blur);
+  backdrop-filter: var(--aero-blur);
 }
 [data-palette="aero"] [data-slot="sheet-content"] .bg-sidebar-bg {
   background: transparent;
-  backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 /* The runtime label also needs a readable backing over the new-chat sky. */
 [data-palette="aero"] :is(.topbar, .theme-lab-topbar) {
   background: var(--aero-glass-surface);
-  backdrop-filter: var(--aero-blur);
   -webkit-backdrop-filter: var(--aero-blur);
+  backdrop-filter: var(--aero-blur);
 }
 
+/* Keep the standard declaration last: production CSS optimization coalesces the
+   prefixed pair. Test the built CSS as well as these source declarations. */
 /* Glass panels: composer, overlays, cards. */
 [data-palette="aero"]
   :is(
@@ -173,10 +177,26 @@ html[data-palette="aero"] body {
     [data-slot="drawer-content"]
   ) {
   background: var(--aero-glass-surface);
-  backdrop-filter: var(--aero-blur);
   -webkit-backdrop-filter: var(--aero-blur);
+  backdrop-filter: var(--aero-blur);
   border-color: var(--aero-glass-edge);
   box-shadow: var(--aero-shadow);
+}
+
+/* Reading surfaces need a stronger backing over photographs than the composer
+   and sidebar, including when backdrop filtering is unavailable. */
+[data-palette="aero"]
+  :is(
+    [data-slot="dialog-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="popover-content"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="select-content"],
+    [data-slot="sheet-content"],
+    [data-slot="drawer-content"]
+  ) {
+  background: var(--aero-glass-overlay);
 }
 
 /* Keep the glossy rim outside the label, including on the shortest buttons. */
@@ -201,8 +221,8 @@ html[data-palette="aero"] body {
   background-color: var(--aero-glass-soft);
   background-image: var(--aero-gloss);
   border-color: var(--aero-glass-edge);
-  backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 [data-palette="aero"] .user-bubble {
   background: var(--aero-bubble-gel);
@@ -232,8 +252,8 @@ html[data-palette="aero"] body {
   border-radius: 999px;
   background: var(--aero-glass-soft);
   color: var(--text-2);
-  backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
 
 /* The scene. Everything here is decoration under aria-hidden. */
@@ -497,6 +517,6 @@ html[data-palette="aero"] body {
 }
 [data-palette="aero"] .theme-lab-controls {
   background: var(--aero-glass-surface);
-  backdrop-filter: var(--aero-blur);
   -webkit-backdrop-filter: var(--aero-blur);
+  backdrop-filter: var(--aero-blur);
 }

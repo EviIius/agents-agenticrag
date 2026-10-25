@@ -1,5 +1,19 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**Design critique follow-up — 25 October 2026:** Jake supplied Claude's live UI
+review and Part A–D proposal, then explicitly approved all four decisions J22–J25:
+visible last-image follow-up editing in image mode, feature starters, a sidebar
+Library page, and reversible greeting-only archiving after a day. Start with the
+isolated Part A production Aero blur repair on `codex/aero-blur-fix`, preserving
+the supplied private screenshots outside Git and the installed app during QA.
+Verify the actual minified CSS as well as source order and readable overlays
+over synthetic images in Chromium/WebKit. No new packages/model calls, runtime,
+prompt, service, data or sampling changes. Report each part and stop for review;
+Part A does not implement the later behavior changes. Before C5 implementation,
+present the required additive archive schema and narrow classification/undo rule;
+do not delete chats, add a classifier call, or infer capabilities from model tags.
+See `docs/DESIGN-CRITIQUE-IMPLEMENTATION-PLAN.md`.
+
 **Theme release closeout — 24 October 2026:** PR #11 merged as `326acbaa`
 (including the seven-theme history from #10) and all eight themes are live.
 The exact qualified source and 476 static files are published through the PE1

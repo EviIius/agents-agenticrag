@@ -25,7 +25,8 @@ check:
 	. scripts/tool-env.sh; uv run --directory server python ../scripts/check_motion.py
 	. scripts/tool-env.sh; uv run --directory server python ../scripts/privacy_audit.py
 	. scripts/tool-env.sh; npm run check --prefix web
-e2e:
+	. scripts/tool-env.sh; npm run build --prefix web
+e2e: build
 	. scripts/tool-env.sh; npm run e2e --prefix web
 fmt:
 	. scripts/tool-env.sh; uv run --directory server ruff check app tests --fix; uv run --directory server ruff format app tests
