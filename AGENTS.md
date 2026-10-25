@@ -1,5 +1,20 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**Design critique A technical closeout — 25 October 2026:** The production blur
+regression is reproduced against the exact live CSS (seven missing standard
+declarations), repaired, and guarded in source and built output. `make check`
+passes 785 Python / 151 frontend / 969 contrast pairs; one complete browser run
+passes 900 cases with four unchanged skips and zero failures (1.3 h). Eight
+production material cases sample 584 text runs, minimum 5.64:1 with/without blur.
+Initial JS is 252,228 bytes; Aero render p95 2.8/3.0 ms and scroll median 16.7/17 ms.
+All 456 executed source files, 600 installed public files and 15 supplied inputs
+verify unchanged; 1,908 historical artifacts were restored after preserving the
+fresh run and 108 additional captures. No native model call, package, schema,
+backend or installed-app change. H4: `docs/AERO-BLUR-FIX-REPORT.md`, draft PR #12.
+Stop for Part A review before merge/publication or Part B. J22–J25 are approved
+for the later checkpoints; no archive behavior has been implemented. Physical
+iPhone/Safari application checks and historical VoiceOver remain pending.
+
 **Design critique follow-up — 25 October 2026:** Jake supplied Claude's live UI
 review and Part A–D proposal, then explicitly approved all four decisions J22–J25:
 visible last-image follow-up editing in image mode, feature starters, a sidebar
