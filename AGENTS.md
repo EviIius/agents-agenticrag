@@ -1,5 +1,18 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**User clarification and release authorization — 24 October 2026:** Jake
+clarified “Claude UI review is after we integrate the themes” after the readiness
+report. Proceed with main integration of the tested eight-theme PR #11 and paired
+server/web publication, retaining a fresh private production bundle and the
+schema-aware previous-UI fallback with current data. Claude UI evaluation follows
+integration; it is not a pre-merge stop. Preserve the qualified seven-theme commit,
+original workspaces, plist/port/bind/Tailscale, existing runtimes/worker/selectors
+and all user data. No package, model/native inference or automation is added.
+Verify exact installed source/assets, saved theme preferences and actual HTTPS UI
+with synthetic browser requests, then record H4/release evidence and request the
+post-release physical iPhone check. Do not attribute a phone/Claude pass before it
+is reported. No old-backend or database restore over newer user data.
+
 **Aero technical closeout — 24 October 2026:** The isolated integration on
 `codex/themes-aero-integration` passes full checks (778 Python, 151 frontend,
 969 token pairs) and one complete Chromium/WebKit run (892 passed, four existing
