@@ -119,3 +119,11 @@ Full check/browser evidence and review status are in
 remain pending; this does not authorize main merge, deployment, native/model
 trials or recording-folder automation. J18–J20 approvals remain, and J21's
 glass/scene direction is accepted for the isolated candidate.
+
+## 24 October publication closeout
+
+The eight themes, including Aero, are now merged and live through PR #11. Jake
+clarified that Claude UI review comes after integration. See
+`THEMES-AERO-RELEASE-REPORT.md`; physical iPhone/icon/GPU review remains pending.
+The NS0 recording-folder pilot is still a separate proposed next scope, not an
+automation enabled by this release.

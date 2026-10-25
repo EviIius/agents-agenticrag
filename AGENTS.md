@@ -1,5 +1,20 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**Theme release closeout — 24 October 2026:** PR #11 merged as `326acbaa`
+(including the seven-theme history from #10) and all eight themes are live.
+The exact qualified source and 476 static files are published through the PE1
+schema-aware procedure. A fresh 2,200-file private production bundle verifies;
+602 installed files and four unchanged worker files match. All 1,806 rows across
+57 pre-existing tables and 126 non-DB inputs were preserved before restart;
+schema 14 integrity/FKs pass afterward. The plist/route, runtimes, transcription
+and image selectors remain unchanged; downtime was 4.127 seconds. Local/verified
+HTTPS health/assets and two installed-UI engines pass. No model inference,
+package/model download or automation was added. H4:
+`docs/THEMES-AERO-RELEASE-REPORT.md`. Claude UI review now follows integration,
+as Jake requested. The physical iPhone check has been requested and remains
+pending; no VoiceOver or saved-icon acceptance is invented. Keep current data
+and the reference-aware backend/worker for any previous-UI fallback.
+
 **User clarification and release authorization — 24 October 2026:** Jake
 clarified “Claude UI review is after we integrate the themes” after the readiness
 report. Proceed with main integration of the tested eight-theme PR #11 and paired

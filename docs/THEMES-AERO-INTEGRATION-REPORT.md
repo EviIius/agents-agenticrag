@@ -1,5 +1,10 @@
 # Aero integration report — local UI review candidate
 
+> Release update — 24 October 2026: Jake clarified that Claude UI review is after
+> integration. PR #11 is merged and the paired update is live. See
+> `THEMES-AERO-RELEASE-REPORT.md` for actual publication evidence and pending phone
+> checks. The local-candidate report below is retained as checkpoint history.
+
 24 October 2026 · `codex/themes-aero-integration`, building on `89aac412`
 (Aero preview) and the preserved seven-theme `c7758120` candidate.
 
