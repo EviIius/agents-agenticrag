@@ -1,5 +1,21 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**Part A release closeout — 25 October 2026:** PR #12 merged as `958891be`
+and the exact 476-file qualified static build is live. Forty-four old hashed
+assets are retained (520 installed static files); 47 files were published.
+The same service PID 77443 remains running, with unchanged plist/bind/port/route,
+126 backend/lock/shared files, four worker files and runtime/configuration hashes.
+A fresh private previous-UI copy and schema-14 online DB backup verify; current
+data was not restored or written by the controller. Local/verified HTTPS health
+and nine exact asset hashes pass. Four actual-HTTPS Chromium/WebKit UI cases
+pass with all APIs intercepted, no page/asset errors and no native model call or
+live mutation. Earlier full 785/151/900 gates, 456 source hashes, 166 evidence
+hashes and 15 input files remain intact. H4:
+`docs/AERO-BLUR-FIX-RELEASE-REPORT.md`. Physical iPhone/Safari application review
+is still pending; no VoiceOver pass is claimed. J22–J25 remain approved for the
+next separate Part B/C checkpoints. Keep current data/backend/worker in any
+previous-static fallback; never restore the snapshot database over newer work.
+
 **User approval — 25 October 2026 (Part A publication):** Jake said “approved”
 after the complete Part A report and PR #12 review stop. Merge the qualified
 blur repair and publish its static build only, with a fresh private UI fallback

@@ -1,5 +1,11 @@
 # Design critique Part A — production glass report
 
+> **Release update — 25 October:** Jake approved this checkpoint. PR #12 is
+> merged and the web-only fix is live. See
+> [the release report](AERO-BLUR-FIX-RELEASE-REPORT.md) for actual installed
+> verification and the private UI fallback. The technical checkpoint below is
+> retained as history; its pre-release statements no longer describe live status.
+
 25 October 2026 · branch `codex/aero-blur-fix` · draft PR #12.
 
 > **Technical QA complete:** one full run passes 900 browser tests with four
