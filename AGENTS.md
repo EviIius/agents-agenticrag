@@ -1,5 +1,16 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**User approval — 25 October 2026 (Part A publication):** Jake said “approved”
+after the complete Part A report and PR #12 review stop. Merge the qualified
+blur repair and publish its static build only, with a fresh private UI fallback
+and SQLite online backup. Preserve the current schema-aware backend/worker,
+all current data, runtimes/selectors, service PID/identity/port/bind and Tailscale
+route. Retain old hashed assets for open clients; publish index and service
+worker last. Verify exact local/HTTPS CSS and actual installed browser rendering
+using intercepted synthetic API data, with no live chat mutation or inference.
+Do not restore the backup database over newer user work. Record actual release
+evidence and the pending physical-device check separately from technical QA.
+
 **Design critique A technical closeout — 25 October 2026:** The production blur
 regression is reproduced against the exact live CSS (seven missing standard
 declarations), repaired, and guarded in source and built output. `make check`
