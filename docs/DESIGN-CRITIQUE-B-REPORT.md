@@ -127,6 +127,10 @@ At 100 tokens/s, render p95 is Cobalt 3.6/3.0 ms and Aero 3.4/3.0 ms
   floating controls above the following assistant. Earlier results are retained;
   a fresh complete run is required.
 
+Raw tool logs and automated failure contexts retain their original generated
+whitespace. Source/docs diff checks pass; retained evidence is not reformatted
+to silence whitespace diagnostics.
+
 ## Test-diff ledger
 
 See `artifacts/design-critique-b-20261025/test-diff-ledger.md` for each edited test.
