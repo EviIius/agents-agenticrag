@@ -38,7 +38,7 @@ for (const width of [320, 390, 768, 1440]) {
         });
       await page.getByRole("button", { name: "Choose model" }).click();
       await expect(
-        page.getByRole("option", { name: /fake-chat/ }),
+        page.getByRole("gridcell", { name: /fake-chat/ }),
       ).toBeVisible();
       await page
         .locator('[data-slot="drawer-content"]')
@@ -113,7 +113,7 @@ for (const width of [320, 390, 768, 1440]) {
       ).toBeDisabled();
       await context.fill("8192");
       await expect(
-        controls.getByRole("button", { name: "Apply context length" }),
+        controls.getByRole("button", { name: "Save settings" }),
       ).toBeEnabled();
       await page.getByRole("button", { name: "Close chat controls" }).click();
       await page.keyboard.press("Control+,");
@@ -213,7 +213,7 @@ for (const width of [390, 1440]) {
     });
     await page.goto("/c/" + chat.id);
     await page.getByRole("button", { name: "Choose model" }).click();
-    await page.getByRole("option", { name: /fake-reasoning/ }).click();
+    await page.getByRole("gridcell", { name: /fake-reasoning/ }).click();
     await expect(
       page.getByRole("button", { name: "Choose model" }),
     ).toContainText("fake-reasoning");
@@ -228,7 +228,7 @@ for (const width of [390, 1440]) {
       page.getByRole("button", { name: "Choose model" }),
     ).toContainText("fake-reasoning");
     await page.getByRole("button", { name: "Choose model" }).click();
-    const selected = page.getByRole("option", { name: /fake-reasoning/ });
+    const selected = page.getByRole("gridcell", { name: /fake-reasoning/ });
     await expect(selected).toContainText("Loaded");
     if (width < 640)
       await page.getByRole("button", { name: "Close", exact: true }).click();

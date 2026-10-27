@@ -51,7 +51,7 @@ for (const width of [390, 1440]) {
       await expect(
         page.getByText("fake-vision loaded", { exact: true }),
       ).toBeVisible();
-      const selected = page.getByRole("option", { name: /^fake-vision/ });
+      const selected = page.getByRole("gridcell", { name: /^fake-vision/ });
       await expect(selected).toContainText("Loaded");
       await expect(
         selected.getByRole("img", { name: "Selected for chat" }),
@@ -68,7 +68,7 @@ for (const width of [390, 1440]) {
       ).toContainText("fake-vision");
       await expect(page.locator(".composer textarea")).toHaveAttribute(
         "placeholder",
-        "Message fake-vision…",
+        "Message…",
       );
       if (chat)
         expect(
@@ -94,15 +94,13 @@ for (const width of [390, 1440]) {
         controls.getByRole("button", { name: "64K", exact: true }),
       ).toHaveCount(0);
       await context.fill("16384");
-      await controls
-        .getByRole("button", { name: "Apply context length" })
-        .click();
+      await controls.getByRole("button", { name: "Save settings" }).click();
       await controls.getByRole("button", { name: "32K", exact: true }).click();
       await expect(
         controls.getByRole("button", { name: "32K", exact: true }),
       ).toHaveAttribute("aria-pressed", "true");
       await controls
-        .getByRole("button", { name: "Apply context length", exact: true })
+        .getByRole("button", { name: "Save settings", exact: true })
         .click();
       if (width < 640) {
         const drawer = page.getByRole("dialog", { name: "Chat controls" });
@@ -207,7 +205,7 @@ test("failed Load stays visibly unloaded and reports the error", async ({
     page.getByText("Couldn’t load fake-vision", { exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("option", { name: /^fake-vision/ }),
+    page.getByRole("gridcell", { name: /^fake-vision/ }),
   ).toContainText("Not loaded");
   await expect(
     page.getByRole("button", { name: "Load fake-vision", exact: true }),

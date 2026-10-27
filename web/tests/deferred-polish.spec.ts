@@ -169,33 +169,39 @@ for (const width of [390, 1440]) {
       .click();
     const filters = page.getByRole("group", { name: "Filter models" });
     await expect(
-      page.getByRole("option", { name: /^fake-chat/ }),
-    ).toContainText("Selected");
-    await filters.getByRole("button", { name: "Images", exact: true }).click();
-    await expect(page.getByRole("option")).toHaveCount(1);
-    await expect(page.getByRole("option")).toContainText("fake-vision");
+      page.getByRole("gridcell", { name: /^fake-chat/ }),
+    ).toHaveAttribute("data-active-model", "true");
+    await filters.getByRole("button", { name: "Vision", exact: true }).click();
+    await expect(page.locator('[data-slot="model-choice"]')).toHaveCount(1);
+    await expect(page.locator('[data-slot="model-choice"]')).toContainText(
+      "fake-vision",
+    );
     await expect(
-      filters.getByRole("button", { name: "Images", exact: true }),
+      filters.getByRole("button", { name: "Vision", exact: true }),
     ).toHaveAttribute("aria-pressed", "true");
     await filters
       .getByRole("button", { name: "Reasoning", exact: true })
       .click();
-    await expect(page.getByRole("option")).toHaveCount(1);
-    await expect(page.getByRole("option")).toContainText("fake-reasoning");
+    await expect(page.locator('[data-slot="model-choice"]')).toHaveCount(1);
+    await expect(page.locator('[data-slot="model-choice"]')).toContainText(
+      "fake-reasoning",
+    );
     await filters.getByRole("button", { name: "Tools", exact: true }).click();
-    await expect(page.getByRole("option")).toHaveCount(0);
+    await expect(page.locator('[data-slot="model-choice"]')).toHaveCount(0);
     await expect(
       page.getByText("No matching models.", { exact: true }),
     ).toBeVisible();
     await filters.getByRole("button", { name: "Loaded", exact: true }).click();
-    await expect(page.getByRole("option")).toHaveCount(1);
-    await expect(page.getByRole("option")).toContainText("fake-chat");
+    await expect(page.locator('[data-slot="model-choice"]')).toHaveCount(1);
+    await expect(page.locator('[data-slot="model-choice"]')).toContainText(
+      "fake-chat",
+    );
     await filters.getByRole("button", { name: "All", exact: true }).click();
-    await expect(page.getByRole("option")).toHaveCount(3);
+    await expect(page.locator('[data-slot="model-choice"]')).toHaveCount(3);
     await page
       .getByRole("combobox", { name: "Search models", exact: true })
       .fill("fake-vision");
-    await expect(page.getByRole("option")).toHaveCount(1);
+    await expect(page.locator('[data-slot="model-choice"]')).toHaveCount(1);
     await page
       .getByRole("combobox", { name: "Search models", exact: true })
       .fill("");
@@ -238,7 +244,7 @@ for (const width of [320, 390]) {
       exact: true,
     });
     await search.fill("fake-vision");
-    const option = drawer.getByRole("option", { name: /^fake-vision/ });
+    const option = drawer.getByRole("gridcell", { name: /^fake-vision/ });
     await option.scrollIntoViewIfNeeded();
     await expect(option).toBeInViewport({ ratio: 0.99 });
     const command = await drawer.locator('[data-slot="command"]').boundingBox();

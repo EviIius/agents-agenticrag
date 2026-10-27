@@ -108,10 +108,14 @@ test("keyboard walkthrough send stop regenerate branch model switch citation", a
   ).toHaveCount(0);
   await expect(composer).toBeFocused();
   await expect(
-    page.locator(".meta").filter({ hasText: /stopped/i }),
+    page
+      .locator('[data-slot="reply-outcome"]')
+      .getByRole("status")
+      .filter({ hasText: /^Stopped$/ }),
   ).toBeVisible();
   await page
-    .getByRole("button", { name: "Regenerate answer", exact: true })
+    .locator('[data-slot="reply-outcome"]')
+    .getByRole("button", { name: "Retry", exact: true })
     .last()
     .focus();
   await page.keyboard.press("Enter");
@@ -142,7 +146,7 @@ test("keyboard walkthrough send stop regenerate branch model switch citation", a
   await page
     .getByRole("combobox", { name: "Search models" })
     .fill("fake-reasoning");
-  const model = page.getByRole("option", { name: /fake-reasoning/ });
+  const model = page.getByRole("gridcell", { name: /fake-reasoning/ });
   await expect(model).toHaveAttribute("data-selected", "true");
   await page.keyboard.press("Enter");
   await expect(
@@ -228,7 +232,10 @@ test("Escape stops a send before the run response arrives", async ({
   ).toBeVisible();
   await composer.press("Escape");
   await expect(
-    page.locator(".meta").filter({ hasText: /stopped/i }),
+    page
+      .locator('[data-slot="reply-outcome"]')
+      .getByRole("status")
+      .filter({ hasText: /^Stopped$/ }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Stop generating" }),

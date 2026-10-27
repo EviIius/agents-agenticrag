@@ -55,7 +55,6 @@ for (const width of [390, 1440]) {
       .getByRole("textbox", { name: "System prompt", exact: true })
       .fill("Be concise. Parameter integration check.");
     await page.getByRole("spinbutton", { name: "Context length" }).fill("4096");
-    await page.getByRole("button", { name: "Apply context length" }).click();
     await page
       .getByRole("button", { name: "Save settings", exact: true })
       .click();
@@ -109,6 +108,9 @@ for (const width of [390, 1440]) {
       page.getByRole("spinbutton", { name: "Temperature", exact: true }),
     ).toHaveValue("0.55");
     await page.getByRole("button", { name: "Reset to model defaults" }).click();
+    await page
+      .getByRole("button", { name: "Save settings", exact: true })
+      .click();
     await expect.poll(async () => (await detail()).chat.params).toEqual({});
     await close();
     const followup = `Runtime defaults ${width} ${browserName}`;

@@ -14,7 +14,7 @@ async function chatModel(page: Page) {
   await page.getByRole("button", { name: "Choose model", exact: true }).click();
   await page.getByPlaceholder("Search models…").fill("fake-chat");
   await page
-    .getByRole("option")
+    .locator('[data-slot="model-choice"]')
     .filter({ hasText: "fake-chat" })
     .first()
     .click();

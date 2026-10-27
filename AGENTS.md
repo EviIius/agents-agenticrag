@@ -1,5 +1,36 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**Design critique B technical closeout — 27 October 2026:** B1–B9 are implemented
+on `codex/design-critique-b`, using existing schema-14 references and answer/image
+paths. One complete make check passes 785 Python /157 frontend /969 contrast
+pairs; one complete Chromium/WebKit run passes 918 cases with four unchanged skips
+and zero failures (1.4 h). Preserve the earlier product, fixture and selector
+failures; the ledger changes no threshold, timeout or skip. All 526 executed source
+hashes and 72 final synthetic captures verify. Render p95 is at most 3.6 ms and
+first-token overhead at most 91.5 ms; initial module JS is 255,345 /256,000 bytes.
+All 32,377 historical artifacts, 15 supplied inputs, 520 installed static files,
+126 backend/lock/shared files and four worker files remain intact. PID 77443,
+plist/bind/port/route, runtimes/selectors and local/verified HTTPS health verify.
+No native inference, new dependency, migration, prompt/sampling change, live API
+mutation, merge or deployment. H4: `docs/DESIGN-CRITIQUE-B-REPORT.md`. Stop with a
+draft PR for Part B review. Physical iPhone/installed Safari remain pending and
+VoiceOver remains a historical limitation. J24/J25 Part C/D work is not started;
+present the archive schema and narrow rule before its implementation.
+
+**User continuation — 25 October 2026 (design critique B):** After the Part A
+release report, Jake said “cotinue”. Proceed with B1–B9 on the separate
+`codex/design-critique-b` branch, per `docs/DESIGN-CRITIQUE-B-PLAN.md` and the
+already approved J22/J23 decisions. Reuse schema-14 photo references and existing
+answer/image requests; no migration, dependency, native inference, prompt or
+sampling-policy change. Preserve literal unavailable-source states and ordinary
+text sends. Model grouping uses runtime metadata; the reviewed exact display
+alias is presentation only, and stored names/visibility win. One Save is an
+explicit change to the old separate context Apply/reset flow; retain parameter,
+validation, rejection and draft tests. Record all changed test selectors in the
+ledger without weakening their behavior, thresholds or skips. Keep the installed
+app and main unchanged; stop with full H4 evidence and a draft PR before merge or
+publication. J24/J25 and later C/D work remain separate checkpoints.
+
 **Part A release closeout — 25 October 2026:** PR #12 merged as `958891be`
 and the exact 476-file qualified static build is live. Forty-four old hashed
 assets are retained (520 installed static files); 47 files were published.

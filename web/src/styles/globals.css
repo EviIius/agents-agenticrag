@@ -1885,3 +1885,21 @@ html[data-compact-viewport] .model-picker-close-footer {
   border: 1px solid var(--line);
   overflow: hidden;
 }
+
+/* Keep a prompt visually attached to its answer. Actions float on precise pointers. */
+.message-row-user {
+  position: relative;
+  padding-bottom: 0;
+}
+@media (hover: hover) and (pointer: fine) {
+  .message-row-user [data-slot="message-footer"] {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    transform: translateY(100%);
+    z-index: 1;
+  }
+}
+.message-row:not(.message-row-user) + .message-row-user {
+  padding-top: calc(var(--spacing) * 12);
+}

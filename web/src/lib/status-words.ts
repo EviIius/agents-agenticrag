@@ -1,4 +1,5 @@
 import type { Message } from "./api";
+import { modelLabel } from "./chat-presentation";
 
 export const STATUS_WORDS = [
   "Spelunking",
@@ -84,8 +85,7 @@ export function workingPhase(
   position?: number,
 ): WorkingPhase | null {
   if (message.status !== "streaming" || message.content) return null;
-  const model =
-    message.model?.display_name || message.model?.model_id || "model";
+  const model = message.model ? modelLabel(message.model) : "model";
   if (stage === "queued")
     return {
       kind: "queued",

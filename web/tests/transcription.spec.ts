@@ -170,7 +170,7 @@ test("T-6 too-large transcript warns; switching model changes budget", async ({
     .getByRole("button", { name: "Choose model", exact: true })
     .first()
     .click();
-  await page.getByRole("option", { name: /^fake-vision/ }).click();
+  await page.getByRole("gridcell", { name: /^fake-vision/ }).click();
   await expect(
     page.getByRole("button", { name: "Choose model", exact: true }).first(),
   ).toContainText("fake-vision");

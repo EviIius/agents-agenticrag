@@ -36,10 +36,10 @@ for (const width of [390, 1440])
       await shot("new-chat");
       await page.getByRole("button", { name: "Choose model" }).click();
       await expect(
-        page.getByRole("option", { name: /fake-reasoning/ }),
+        page.getByRole("gridcell", { name: /fake-reasoning/ }),
       ).toBeVisible();
       await shot("model-picker");
-      await page.getByRole("option", { name: /fake-reasoning/ }).click();
+      await page.getByRole("gridcell", { name: /fake-reasoning/ }).click();
       await page
         .locator(".composer textarea")
         .fill("#think Review this interface");
@@ -208,14 +208,19 @@ for (const width of [390, 1440])
       await expect(
         page.getByRole("heading", { name: "Welcome to Aether" }),
       ).not.toBeVisible();
-      await page.getByRole("button", { name: "Explain", exact: true }).click();
-      await expect(page.locator(".composer textarea")).toHaveValue("Explain ");
-      await expect(page.locator(".composer textarea")).toBeFocused();
       await page
-        .getByRole("button", { name: "Search the web", exact: true })
+        .getByRole("button", { name: "Ask my files", exact: true })
         .click();
-      await expect(await webTool(page)).toHaveAttribute("aria-checked", "true");
-      await expect(page.locator(".composer textarea")).toHaveValue(
-        "Search the web for ",
-      );
+      await expect(
+        page.getByRole("menu", { name: "Tools", exact: true }),
+      ).toBeVisible();
+      await expect(page.locator(".composer textarea")).toHaveValue("");
+      const searchTool = await webTool(page);
+      await searchTool.click();
+      await expect(searchTool).toHaveAttribute("aria-checked", "true");
+      await page.keyboard.press("Escape");
+      await page
+        .locator(".composer textarea")
+        .fill("Search the web for a synthetic example");
+      await expect(page.locator(".composer textarea")).toBeFocused();
     });

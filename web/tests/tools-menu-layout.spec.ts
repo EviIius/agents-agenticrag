@@ -122,10 +122,10 @@ for (const size of sizes)
         menu.getByRole("menuitemradio", { name: "Off", exact: true }),
       ).toBeFocused();
       await menu
-        .getByRole("menuitemradio", { name: "Xhigh", exact: true })
+        .getByRole("menuitemradio", { name: "Max", exact: true })
         .click();
       await expect(
-        menu.getByRole("menuitemradio", { name: "Xhigh", exact: true }),
+        menu.getByRole("menuitemradio", { name: "Max", exact: true }),
       ).toBeChecked();
       await page.keyboard.press("Escape");
       await expect(menu).toHaveCount(0);

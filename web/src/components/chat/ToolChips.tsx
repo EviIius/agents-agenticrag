@@ -1,6 +1,7 @@
 import { Brain, Globe, X } from "lucide-react";
 import { LibraryControl } from "./LibraryControl";
 import type { LibraryTools } from "./ToolsMenu";
+import { thinkingLabel } from "@/lib/chat-presentation";
 export function ToolChips({
   web,
   library,
@@ -56,7 +57,7 @@ export function ToolChips({
           "Thinking",
           thinkValue === "off"
             ? "No thinking"
-            : `Think · ${thinkValue[0].toUpperCase() + thinkValue.slice(1)}`,
+            : `Think · ${thinkingLabel(thinkValue)}`,
           <Brain />,
           () => onThinkChange?.(null),
         )}

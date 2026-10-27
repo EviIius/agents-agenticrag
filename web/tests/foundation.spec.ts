@@ -46,7 +46,7 @@ for (const theme of ["light", "dark"] as const) {
         .click();
       await expect(page.getByPlaceholder("Search models…")).toBeVisible();
       await page.getByPlaceholder("Search models…").fill("vision");
-      await page.getByRole("option", { name: /fake-vision/ }).click();
+      await page.getByRole("gridcell", { name: /fake-vision/ }).click();
       await expect(
         page.getByRole("button", { name: "Choose model", exact: true }),
       ).toContainText("fake-vision");

@@ -1,3 +1,4 @@
+import { modelLabel } from "@/lib/chat-presentation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/app/IconButton";
@@ -24,9 +25,12 @@ export function ModelField({
 }) {
   const { models, compatible } = useResources();
   const defaultModel = useStudio((s) => s.draft.graph.settings.default_model);
-  const defaultName =
-    models.find((m) => defaultModel && modelKey(m) === modelKey(defaultModel))
-      ?.display_name ?? defaultModel?.model_id;
+  const defaultInfo = models.find(
+    (m) => defaultModel && modelKey(m) === modelKey(defaultModel),
+  );
+  const defaultName = defaultInfo
+    ? modelLabel(defaultInfo)
+    : defaultModel?.model_id;
   const selected =
     value === "workflow_default" ? "default" : value ? modelKey(value) : "none";
   const choices = models
@@ -34,7 +38,7 @@ export function ModelField({
     .map((m) => ({
       value: modelKey(m),
       label:
-        m.display_name +
+        modelLabel(m) +
         (compatible.some(
           (c) =>
             c.connection_id === m.connection_id && c.model_id === m.model_id,

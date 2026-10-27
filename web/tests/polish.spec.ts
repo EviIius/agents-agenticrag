@@ -83,12 +83,12 @@ for (const width of [320, 390, 1440])
           .getByRole("option", { name: "Switch model…", exact: true })
           .click();
         await expect(
-          page.getByRole("option", { name: /fake-reasoning/ }),
+          page.getByRole("gridcell", { name: /fake-reasoning/ }),
         ).toBeVisible();
         await settle(page);
         await page.keyboard.press("Escape");
         await expect(
-          page.getByRole("option", { name: /fake-reasoning/ }),
+          page.getByRole("gridcell", { name: /fake-reasoning/ }),
         ).not.toBeVisible();
         await settle(page);
         await page.keyboard.press("Control+/");

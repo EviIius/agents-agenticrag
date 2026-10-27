@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Model } from "@/lib/api";
 import type { LibraryControl } from "./LibraryControl";
+import { thinkingLabel } from "@/lib/chat-presentation";
 
 export type LibraryTools = React.ComponentProps<typeof LibraryControl>;
 export function ToolsMenu({
@@ -213,14 +214,10 @@ export function ToolsMenu({
                   onSelect={(e) => e.preventDefault()}
                   title={level === "auto" ? "Model default" : undefined}
                   aria-label={
-                    level === "auto"
-                      ? "Model default"
-                      : level[0].toUpperCase() + level.slice(1)
+                    level === "auto" ? "Model default" : thinkingLabel(level)
                   }
                 >
-                  {level === "auto"
-                    ? "Default"
-                    : level[0].toUpperCase() + level.slice(1)}
+                  {level === "auto" ? "Default" : thinkingLabel(level)}
                 </DropdownMenuRadioItem>
               ))}
             </DropdownMenuRadioGroup>
