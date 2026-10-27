@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { SamplingDraft } from "@/components/settings/SamplingFields";
 export type ControlDraft = {
   values: SamplingDraft;
+  defaultValues?: SamplingDraft;
   prompt: string;
   useDefault: boolean;
   reasoning: string;
@@ -12,6 +13,8 @@ export type SavedControlDraft = {
   draft: ControlDraft;
   baseline: string;
   contextBaseline: string;
+  defaultsBaseline?: string;
+  sourceReasoning?: string;
 };
 export function controlsKey(
   chat?: string,

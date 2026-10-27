@@ -43,12 +43,15 @@ export function SamplingFields({
   values,
   onChange,
   prefix = "sampling",
+  labelPrefix = "",
 }: {
   values: SamplingDraft;
   onChange: (values: SamplingDraft) => void;
   prefix?: string;
+  labelPrefix?: string;
 }) {
-  return samplingControls.map(([key, label, min, max, step]) => {
+  return samplingControls.map(([key, name, min, max, step]) => {
+    const label = labelPrefix + name;
     const value = values[key],
       error = samplingError(key, value),
       id = `${prefix}-${key}-error`;
@@ -60,7 +63,12 @@ export function SamplingFields({
     };
     return (
       <fieldset key={key} className="mb-5">
-        <legend className="text-sm font-medium">{label}</legend>
+        <legend className="flex w-full justify-between gap-2 text-sm font-medium">
+          <span>{label}</span>
+          <span className="font-normal text-fg-2">
+            {value === undefined ? "Model default" : value}
+          </span>
+        </legend>
         <label className="my-2 flex min-h-11 items-center gap-2 text-xs text-fg-2">
           <Switch
             aria-label={`Use model default for ${label}`}
@@ -69,11 +77,9 @@ export function SamplingFields({
               change(checked ? undefined : String(key === "seed" ? 0 : min))
             }
           />
-          Model default
+          <span className="sr-only">Use model default</span>
         </label>
-        {value === undefined ? (
-          <p className="text-xs text-fg-3">Model default</p>
-        ) : (
+        {value !== undefined && (
           <>
             {key !== "seed" && (
               <Slider

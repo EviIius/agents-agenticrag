@@ -149,7 +149,10 @@ test("5B document context warning follows model switch and removal deletes text"
     16000,
   );
   await page.getByRole("button", { name: "Choose model" }).click();
-  await page.getByRole("option").filter({ hasText: "fake-vision" }).click();
+  await page
+    .locator('[data-slot="model-choice"]')
+    .filter({ hasText: "fake-vision" })
+    .click();
   await expect(
     page.getByRole("button", { name: "Choose model" }),
   ).toContainText("fake-vision");

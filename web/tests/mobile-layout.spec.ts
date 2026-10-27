@@ -117,7 +117,7 @@ for (const width of [320, 390, 768, 1440]) {
       const closeBounds = await close.boundingBox();
       expect(closeBounds!.y + closeBounds!.height).toBeLessThanOrEqual(446);
       await expect(
-        page.getByRole("option", { name: /fake-chat/ }),
+        page.getByRole("gridcell", { name: /fake-chat/ }),
       ).toBeVisible();
       await settle(page);
       await page.screenshot({
@@ -214,7 +214,7 @@ test("tablet model picker keeps its footer above a reduced viewport", async ({
     .getByRole("combobox", { name: "Search models" })
     .fill("Test model 29");
   await expect(
-    popover.getByRole("option", { name: /Test model 29/ }),
+    popover.getByRole("gridcell", { name: /Test model 29/ }),
   ).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(popover).not.toBeVisible();

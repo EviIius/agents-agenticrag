@@ -82,7 +82,14 @@ const WorkingPreview = lazy(() => import("./WorkingPreview"));
 const ThemesPreview = lazy(() => import("./ThemesPreview"));
 const Markdown = lazy(() => import("@/components/chat/Markdown"));
 const LibraryAnswersPreview = lazy(() => import("./LibraryAnswersPreview"));
+const ChatStatePreview = lazy(() => import("./ChatStatePreview"));
 export function DesignPage() {
+  if (new URLSearchParams(location.search).has("chat-state"))
+    return (
+      <Suspense fallback={<p>Loading chat states…</p>}>
+        <ChatStatePreview />
+      </Suspense>
+    );
   if (new URLSearchParams(location.search).has("photo-edit"))
     return (
       <Suspense fallback={<p>Loading photo editing…</p>}>

@@ -60,9 +60,9 @@ test("Tools keeps switches open, reports actual thinking levels, and chips turn 
   await expect(
     page.getByRole("menuitemcheckbox", { name: "Library", exact: true }),
   ).toBeChecked();
-  await page.getByRole("menuitemradio", { name: "Xhigh", exact: true }).click();
+  await page.getByRole("menuitemradio", { name: "Max", exact: true }).click();
   await expect(
-    page.getByRole("menuitemradio", { name: "Xhigh", exact: true }),
+    page.getByRole("menuitemradio", { name: "Max", exact: true }),
   ).toBeChecked();
   await page.keyboard.press("Escape");
   await expect(tools).toBeFocused();
@@ -81,7 +81,7 @@ test("Tools keeps switches open, reports actual thinking levels, and chips turn 
     .click();
   await expect(tools).toBeFocused();
   await expect(
-    page.getByRole("button", { name: "Think · Xhigh", exact: true }),
+    page.getByRole("button", { name: "Think · Max", exact: true }),
   ).toHaveCount(0);
   await page
     .getByRole("button", { name: "Turn Library off", exact: true })

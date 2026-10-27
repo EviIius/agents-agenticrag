@@ -20,7 +20,8 @@ import {
   useState,
   type RefObject,
 } from "react";
-import { TriangleAlert, ImagePlus } from "lucide-react";
+import { TriangleAlert } from "lucide-react";
+import { modelLabel, replyState } from "@/lib/chat-presentation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { Message, Source, WebRead, Model, Bootstrap } from "@/lib/api";
@@ -32,6 +33,7 @@ import { SourcesSheet } from "./SourcesSheet";
 import MessageAttachments from "./MessageAttachments";
 const Markdown = lazy(() => import("./Markdown"));
 const ImageTurn = lazy(() => import("./ImageTurn"));
+const ImagePrompt = lazy(() => import("./ImagePrompt"));
 function Attachments({
   message,
   local,
@@ -54,6 +56,7 @@ function Attachments({
   );
 }
 type LiveThreadProps = {
+  imagePreview?: boolean;
   attachmentLocal?: Record<string, AttachmentLocal>;
   attachmentFixtures?: React.ComponentProps<typeof AttachmentTray>["fixtures"];
   onImageIteration?: ImageIteration;
@@ -68,6 +71,8 @@ type LiveThreadProps = {
   onSettings?: (pane?: string) => void;
   onChatSettings?: () => void;
   onNew?: () => void;
+  onContinue?: (message: Message) => void;
+  continueBlocked?: boolean;
   messages: Message[];
   all: Message[];
   stage?: string;
@@ -108,12 +113,15 @@ export function LiveThread({
   onSettings,
   onChatSettings,
   onNew,
+  onContinue,
+  continueBlocked,
   onRegenerateWith,
   pending,
   position,
   onScrollChange,
   attachmentLocal,
   attachmentFixtures,
+  imagePreview,
 }: LiveThreadProps) {
   const [editing, setEditing] = useState<string | null>(null),
     [draft, setDraft] = useState("");
@@ -128,6 +136,7 @@ export function LiveThread({
     onSettings,
     onChatSettings,
     onNew,
+    onContinue,
     onRegenerateWith,
     renderSources,
   });
@@ -142,6 +151,7 @@ export function LiveThread({
       onSettings,
       onChatSettings,
       onNew,
+      onContinue,
       onRegenerateWith,
       renderSources,
     };
@@ -161,6 +171,7 @@ export function LiveThread({
       onSettings: (pane?: string) => handlers.current.onSettings?.(pane),
       onChatSettings: () => handlers.current.onChatSettings?.(),
       onNew: () => handlers.current.onNew?.(),
+      onContinue: (message: Message) => handlers.current.onContinue?.(message),
       onRegenerateWith: (message: Message, model: Model) =>
         handlers.current.onRegenerateWith?.(message, model),
     }),
@@ -248,6 +259,16 @@ export function LiveThread({
               key={message.id}
               message={message}
               lastAssistant={last?.id === message.id}
+              continueBlocked={continueBlocked}
+              replyImages={
+                message.role === "user" && message.kind === "image"
+                  ? (messages.find(
+                      (row) =>
+                        row.role === "assistant" &&
+                        row.parent_id === message.id,
+                    )?.images ?? undefined)
+                  : undefined
+              }
               all={all}
               threadImages={message.kind === "image" ? threadImages : undefined}
               position={message.status === "streaming" ? position : undefined}
@@ -263,6 +284,7 @@ export function LiveThread({
                 message.attachments?.length ? attachmentLocal : undefined
               }
               attachmentFixtures={attachmentFixtures}
+              imagePreview={imagePreview}
               {...stable}
               editing={editing === message.id ? editing : null}
               draft={editing === message.id ? draft : ""}
@@ -349,6 +371,7 @@ type MessageRowProps = Omit<
 > & {
   message: Message;
   threadImages?: ImageJob[];
+  replyImages?: ImageJob[];
   lastAssistant?: boolean;
   sources?: Source[];
   reads?: WebRead[];
@@ -379,6 +402,9 @@ export const MessageRow = memo(function MessageRow({
   onSettings,
   onChatSettings,
   onNew,
+  onContinue,
+  continueBlocked,
+  replyImages,
   onRegenerateWith,
   onImageAction,
   editing,
@@ -387,12 +413,13 @@ export const MessageRow = memo(function MessageRow({
   setDraft,
   attachmentLocal,
   attachmentFixtures,
+  imagePreview,
 }: MessageRowProps) {
   const fresh = useFreshRow(message.id);
   const content = (
     <article
       aria-label={`${message.role} message`}
-      className="min-w-0 py-4"
+      className={`message-row min-w-0 py-4 ${message.role === "user" ? "message-row-user" : ""}`}
       data-fresh={fresh || undefined}
       onAnimationEnd={(event) => {
         if (event.target === event.currentTarget)
@@ -401,7 +428,7 @@ export const MessageRow = memo(function MessageRow({
       data-message-id={message.id}
       id={`m-${message.id}`}
       style={
-        message.status !== "streaming"
+        message.status !== "streaming" && message.role !== "user"
           ? { contentVisibility: "auto", containIntrinsicSize: "auto 180px" }
           : undefined
       }
@@ -450,14 +477,15 @@ export const MessageRow = memo(function MessageRow({
             />
             <div className="user-bubble ml-auto w-fit">
               {message.kind === "image" && (
-                <p className="mb-1 flex items-center gap-1 text-xs text-fg-2">
-                  <ImagePlus className="size-3" />
-                  Image
-                  {(all.find((row) => row.parent_id === message.id)?.images
-                    ?.length ?? 1) > 1
-                    ? ` · ${all.find((row) => row.parent_id === message.id)?.images?.length} images`
-                    : ""}
-                </p>
+                <Suspense
+                  fallback={<p className="text-xs text-fg-2">Image request</p>}
+                >
+                  <ImagePrompt
+                    key={replyImages?.[0]?.id}
+                    jobs={replyImages ?? []}
+                    preview={imagePreview}
+                  />
+                </Suspense>
               )}
               <p className="whitespace-pre-wrap break-words">
                 {message.content}
@@ -468,6 +496,7 @@ export const MessageRow = memo(function MessageRow({
       ) : message.kind === "image" ? (
         <Suspense fallback={<p role="status">Loading images…</p>}>
           <ImageTurn
+            preview={imagePreview}
             message={message}
             all={all}
             onBranch={onBranch}
@@ -485,7 +514,7 @@ export const MessageRow = memo(function MessageRow({
             </p>
           ) : null}
           <p className="mb-4 text-xs text-fg-3 break-all">
-            {message.model?.display_name}
+            {message.model ? modelLabel(message.model) : "Assistant"}
           </p>
           {!message.reasoning && (
             <WorkingLine
@@ -606,6 +635,32 @@ export const MessageRow = memo(function MessageRow({
               </>
             )}
           {renderSources?.(message, sources ?? [], reads ?? [])}
+          {replyState(message) && (
+            <div
+              className="mt-3 flex flex-wrap items-center gap-1 text-sm text-fg-2"
+              data-slot="reply-outcome"
+            >
+              <span role="status">{replyState(message)}</span>
+              {message.status === "stopped" &&
+                message.content.trim() &&
+                onContinue && (
+                  <Button
+                    variant="ghost"
+                    disabled={continueBlocked}
+                    onClick={() => onContinue(message)}
+                  >
+                    Continue
+                  </Button>
+                )}
+              <Button
+                variant="ghost"
+                disabled={continueBlocked}
+                onClick={() => onRegenerate(message)}
+              >
+                Retry
+              </Button>
+            </div>
+          )}
         </>
       )}
       {message.status !== "streaming" &&
@@ -628,6 +683,7 @@ export const MessageRow = memo(function MessageRow({
                 }}
                 onRegenerate={() => onRegenerate(message)}
                 onBranch={onBranch}
+                hideRegenerate={!!replyState(message)}
               />
             </div>
             {message.role === "assistant" && (

@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
+import { modelLabel } from "@/lib/chat-presentation";
 import { siblings } from "@/lib/tree";
 export function MessageActions({
   message,
@@ -32,7 +33,9 @@ export function MessageActions({
   onBranch,
   models = [],
   onRegenerateWith,
+  hideRegenerate = false,
 }: {
+  hideRegenerate?: boolean;
   models?: Model[];
   onRegenerateWith?: (model: Model) => void;
   message: Message;
@@ -67,9 +70,11 @@ export function MessageActions({
         )
       ) : (
         <>
-          <IconButton label="Regenerate answer" onClick={onRegenerate}>
-            <RotateCcw />
-          </IconButton>
+          {!hideRegenerate && (
+            <IconButton label="Regenerate answer" onClick={onRegenerate}>
+              <RotateCcw />
+            </IconButton>
+          )}
           {models.length > 0 && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -84,7 +89,7 @@ export function MessageActions({
                     key={m.connection_id + m.model_id}
                     onSelect={() => onRegenerateWith?.(m)}
                   >
-                    {m.display_name}
+                    {modelLabel(m)}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -99,7 +104,10 @@ export function MessageActions({
             <PopoverContent className="max-h-[60dvh] overflow-y-auto">
               <dl className="space-y-3 text-xs">
                 {[
-                  ["Model", message.model?.display_name ?? "Unknown"],
+                  [
+                    "Model",
+                    message.model ? modelLabel(message.model) : "Unknown",
+                  ],
                   [
                     "Speed",
                     message.stats

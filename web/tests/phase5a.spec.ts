@@ -116,7 +116,7 @@ for (const width of [390, 1440]) {
     await request.delete(`/api/presets/${preset.id}`);
     expect((await detail()).chat).toEqual(before);
   });
-  test(`5A retained edits, validation and separate context Apply ${width}`, async ({
+  test(`5A retained edits, validation and unified settings Save ${width}`, async ({
     page,
     request,
   }) => {
@@ -157,13 +157,18 @@ for (const width of [390, 1440]) {
     await panel
       .getByRole("spinbutton", { name: "Context length" })
       .fill("8192");
-    await panel.getByRole("button", { name: "Apply context length" }).click();
+    await panel.getByRole("button", { name: "Save settings" }).click();
     await expect(
-      panel.getByRole("button", { name: "Apply context length" }),
+      panel.getByRole("button", { name: "Save settings" }),
     ).toBeDisabled();
-    expect(chatPatches).toEqual([]);
-    await expect(save).toBeEnabled();
-    await save.click();
+    expect(chatPatches).toEqual([]); // New-chat sampling stays in the local draft until Send.
+    const updatedModels = await (await request.get("/api/models")).json();
+    expect(
+      updatedModels.find(
+        (m: { model_id: string }) => m.model_id === "fake-chat",
+      ).context_length,
+    ).toBe(8192);
+    await expect(save).toBeDisabled();
     await expect(save).toContainText("Saved");
     await close(page);
     await expect(
@@ -243,14 +248,20 @@ test("5A model name dialog, dual-name picker search and reset", async ({
   await page.getByRole("button", { name: "Choose model" }).click();
   await page.getByPlaceholder("Search models…").fill("fake-chat");
   await expect(
-    page.getByRole("option").filter({ hasText: "Synthetic Display" }),
+    page
+      .locator('[data-slot="model-choice"]')
+      .filter({ hasText: "Synthetic Display" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("option").filter({ hasText: "Synthetic Display" }),
+    page
+      .locator('[data-slot="model-choice"]')
+      .filter({ hasText: "Synthetic Display" }),
   ).toContainText("fake-chat");
   await page.getByPlaceholder("Search models…").fill("Synthetic Display");
   await expect(
-    page.getByRole("option").filter({ hasText: "Synthetic Display" }),
+    page
+      .locator('[data-slot="model-choice"]')
+      .filter({ hasText: "Synthetic Display" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Close", exact: true }).click();
   await page.keyboard.press("Control+,");
@@ -372,7 +383,10 @@ test("5A unfinished controls are isolated between chats and models", async ({
     .chat;
   expect(unchanged.params).toEqual({});
   await page.getByRole("button", { name: "Choose model" }).click();
-  await page.getByRole("option").filter({ hasText: "fake-vision" }).click();
+  await page
+    .locator('[data-slot="model-choice"]')
+    .filter({ hasText: "fake-vision" })
+    .click();
   await expect(
     page.getByRole("button", { name: "Choose model" }),
   ).toContainText("fake-vision");

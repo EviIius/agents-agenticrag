@@ -20,6 +20,8 @@ import {
 import { drafts } from "@/lib/composer-drafts";
 import { useFreshRows } from "@/stores/fresh";
 import type { PhotoSubmission } from "./usePhotoEdit";
+import type { PhotoReference } from "./usePhotoEdit";
+import type { ImageJob } from "@/lib/image-events";
 
 type Accepted = components["schemas"]["ChatImageResponse"];
 type Submission = {
@@ -27,6 +29,8 @@ type Submission = {
   chat?: Chat;
   key: string;
   seeds: number[];
+  reference?: PhotoReference;
+  parent?: string | null;
 };
 const submissions = new Map<string, Submission>();
 
@@ -105,15 +109,31 @@ export function useChatImages({
     fixed?: number[],
     sourceJob?: string,
     photo?: PhotoSubmission,
+    followup?: ImageJob,
   ) {
     if (busy || blocked) return false;
     const origin = chatId ?? "new";
+    const parent = followup
+      ? messages.find(
+          (row) =>
+            row.role === "assistant" &&
+            row.images?.some((job) => job.id === followup.id),
+        )?.id
+      : undefined;
+    if (followup && (!chatId || !parent)) {
+      setError(
+        "The selected image is no longer in this chat. Choose a source again.",
+      );
+      return false;
+    }
     const signature = JSON.stringify([
       prompt,
       count,
       fixed,
       sourceJob,
       photo?.reference.id,
+      followup?.id,
+      parent,
     ]);
     let saved = submissions.get(origin);
     if (!saved || saved.signature !== signature) {
@@ -125,6 +145,7 @@ export function useChatImages({
             : saved?.chat,
         key: crypto.randomUUID(),
         seeds: fixed ?? imageSeeds(count),
+        parent,
       };
       submissions.set(origin, saved);
     }
@@ -146,6 +167,11 @@ export function useChatImages({
                   : {},
               );
       const id = chatId ?? saved.chat!.id;
+      if (followup && !saved.reference)
+        saved.reference = await api<PhotoReference>(
+          `/chats/${id}/image-references/from-job`,
+          { source_job_id: followup.id },
+        );
       const response = await api<Accepted>(`/chats/${id}/images`, {
         request_key: saved.key,
         prompt,
@@ -153,6 +179,12 @@ export function useChatImages({
         seeds: saved.seeds,
         ...(sourceJob ? { source_job_id: sourceJob } : {}),
         ...(photo ? { reference_id: photo.reference.id } : {}),
+        ...(followup
+          ? {
+              reference_id: saved.reference!.id,
+              parent_id: saved.parent,
+            }
+          : {}),
       });
       commit(id, response, saved.chat);
       submissions.delete(origin);

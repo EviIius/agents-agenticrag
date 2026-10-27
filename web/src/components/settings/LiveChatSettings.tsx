@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useId, useState } from "react";
+import { lazy, Suspense, useEffect, useId, useRef, useState } from "react";
 import { Check, X } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import {
   type Params,
   type Preset,
 } from "@/lib/api";
+import { modelLabel } from "@/lib/chat-presentation";
 import { useUI } from "@/stores/ui";
 import {
   controlsKey,
@@ -50,6 +51,7 @@ export function LiveChatSettings({
   request = api,
   queryScope = [],
   initialPreset = "none",
+  imageOnly = false,
 }: {
   chat?: Chat;
   model?: Model;
@@ -63,6 +65,7 @@ export function LiveChatSettings({
   request?: typeof api;
   queryScope?: string[];
   initialPreset?: string;
+  imageOnly?: boolean;
 }) {
   const contextId = useId();
   const key = controlsKey(
@@ -78,6 +81,7 @@ export function LiveChatSettings({
   const initialPrompt = chat?.system_prompt ?? draftPrompt;
   const initial: ControlDraft = {
     values: samplingDraft(initialParams),
+    defaultValues: samplingDraft(model?.params_defaults ?? {}),
     prompt: initialPrompt ?? "",
     useDefault: initialPrompt == null,
     reasoning:
@@ -88,16 +92,52 @@ export function LiveChatSettings({
     preset: initialPreset,
   };
   const kept = useControlDrafts.getState().drafts[key];
-  const [draft, setDraft] = useState(kept?.draft ?? initial),
-    [baseline, setBaseline] = useState(kept?.baseline ?? signature(initial)),
+  const sourceReasoning =
+    typeof initialParams.reasoning === "string"
+      ? initialParams.reasoning
+      : "default";
+  const restored =
+    kept && kept.sourceReasoning !== sourceReasoning
+      ? {
+          ...kept,
+          draft: { ...kept.draft, reasoning: sourceReasoning },
+          baseline: JSON.stringify([
+            ...(JSON.parse(kept.baseline) as unknown[]).slice(0, 2),
+            sourceReasoning,
+          ]),
+        }
+      : kept;
+  const [draft, setDraft] = useState(restored?.draft ?? initial),
+    [baseline, setBaseline] = useState(
+      restored?.baseline ?? signature(initial),
+    ),
     [contextBaseline, setContextBaseline] = useState(
       kept?.contextBaseline ?? initial.context,
     ),
     [saved, setSaved] = useState(false),
     [busy, setBusy] = useState(false),
-    [contextBusy, setContextBusy] = useState(false),
+    [defaultsBaseline, setDefaultsBaseline] = useState(
+      kept?.defaultsBaseline ?? JSON.stringify(initial.defaultValues),
+    ),
     [editor, setEditor] = useState(false),
     [presetOpen, setPresetOpen] = useState(false);
+  const externalReasoning =
+    typeof initialParams.reasoning === "string"
+      ? initialParams.reasoning
+      : "default";
+  const previousReasoning = useRef(externalReasoning);
+  useEffect(() => {
+    if (externalReasoning === previousReasoning.current) return;
+    previousReasoning.current = externalReasoning;
+    setDraft((old) => ({ ...old, reasoning: externalReasoning }));
+    setBaseline((old) => {
+      const [values, prompt] = JSON.parse(old) as [
+        ControlDraft["values"],
+        string | null,
+      ];
+      return JSON.stringify([values, prompt, externalReasoning]);
+    });
+  }, [externalReasoning]);
   const choosePreset = useUI((s) => s.choosePreset);
   useEffect(() => {
     if (choosePreset && !defaultsOnly) {
@@ -105,18 +145,34 @@ export function LiveChatSettings({
       useUI.getState().set({ choosePreset: false });
     }
   }, [choosePreset, defaultsOnly]);
-  const dirty = signature(draft) !== baseline,
+  const chatDirty = signature(draft) !== baseline,
+    defaultsDirty =
+      !defaultsOnly && JSON.stringify(draft.defaultValues) !== defaultsBaseline,
+    dirty = chatDirty || defaultsDirty,
     contextDirty = draft.context !== contextBaseline;
   useEffect(() => {
-    useControlDrafts
-      .getState()
-      .keep(
-        key,
-        dirty || contextDirty
-          ? { draft, baseline, contextBaseline }
-          : undefined,
-      );
-  }, [key, draft, baseline, contextBaseline, dirty, contextDirty]);
+    useControlDrafts.getState().keep(
+      key,
+      dirty || contextDirty
+        ? {
+            draft,
+            baseline,
+            contextBaseline,
+            defaultsBaseline,
+            sourceReasoning,
+          }
+        : undefined,
+    );
+  }, [
+    key,
+    draft,
+    baseline,
+    contextBaseline,
+    defaultsBaseline,
+    sourceReasoning,
+    dirty,
+    contextDirty,
+  ]);
   useEffect(() => {
     if (!saved) return;
     const timer = setTimeout(() => setSaved(false), 1500);
@@ -143,34 +199,57 @@ export function LiveChatSettings({
     Number.isSafeInteger(context) &&
     context >= 1024 &&
     (!limit || context <= limit);
-  const save = async (reset = false) => {
-    if (busy || !model || (!reset && !valid)) return;
+  const save = async () => {
+    if (
+      busy ||
+      !model ||
+      !valid ||
+      !validContext ||
+      !samplingValid(draft.defaultValues ?? {})
+    )
+      return;
     setBusy(true);
     try {
-      const next = reset
-        ? { ...draft, values: {}, reasoning: "default" }
-        : draft;
-      const p = reset ? {} : params;
-      const result = defaultsOnly
-        ? await onDefaults(p)
-        : await onSave(next.useDefault ? null : next.prompt, p);
-      if (result !== false) {
-        useControlDrafts
-          .getState()
-          .keep(
-            key,
-            contextDirty
-              ? { draft: next, baseline: signature(next), contextBaseline }
-              : undefined,
-          );
-        setDraft(next);
-        setBaseline(signature(next));
-        setSaved(true);
+      if (chatDirty && !imageOnly) {
+        const result = defaultsOnly
+          ? await onDefaults(params)
+          : await onSave(draft.useDefault ? null : draft.prompt, params);
+        if (result === false) return;
+        setBaseline(signature(draft));
       }
+      if (defaultsDirty && !imageOnly) {
+        const next = {
+          ...samplingParams(draft.defaultValues ?? {}),
+          ...(typeof model.params_defaults?.reasoning === "string"
+            ? { reasoning: model.params_defaults?.reasoning }
+            : {}),
+        };
+        if ((await onDefaults(next)) === false) return;
+        setDefaultsBaseline(JSON.stringify(draft.defaultValues));
+      }
+      if (contextDirty) {
+        if ((await onContext(context)) === false) return;
+        setContextBaseline(draft.context);
+      }
+      setSaved(true);
     } finally {
       setBusy(false);
     }
   };
+  useEffect(() => {
+    const escape = (event: KeyboardEvent) => {
+      if (
+        event.key === "Escape" &&
+        !event.defaultPrevented &&
+        !document.querySelector(
+          '[data-slot="select-content"], [data-slot="dialog-content"], [data-slot="dropdown-menu-content"]',
+        )
+      )
+        useUI.getState().set({ panel: false });
+    };
+    window.addEventListener("keydown", escape);
+    return () => window.removeEventListener("keydown", escape);
+  }, []);
   return (
     <section className="p-5" aria-label="Chat controls">
       {!drawer && (
@@ -190,10 +269,11 @@ export function LiveChatSettings({
       )}
       <fieldset disabled={busy} className="min-w-0">
         <p className="mb-3 text-xs text-fg-2" aria-label="Settings model">
-          {model?.display_name ?? "Choose a model"}
+          {model ? modelLabel(model) : "Choose a model"}
         </p>
-        {!defaultsOnly && (
+        {!defaultsOnly && !imageOnly && (
           <>
+            <h3 className="mb-4 text-sm font-medium">This chat</h3>
             <label className="mb-5 block text-sm">
               Preset
               <Select
@@ -214,6 +294,10 @@ export function LiveChatSettings({
                   const p = presets.data?.find((p) => p.id === id);
                   change({
                     preset: id,
+                    reasoning:
+                      typeof p?.params?.reasoning === "string"
+                        ? p.params!.reasoning
+                        : "default",
                     values: samplingDraft(p?.params ?? {}),
                     prompt: p?.system_prompt ?? "",
                     useDefault: p?.system_prompt == null,
@@ -264,49 +348,43 @@ export function LiveChatSettings({
             />
           </>
         )}
-        <h3 className="mb-4 text-sm font-medium">Sampling</h3>
-        <SamplingFields
-          values={draft.values}
-          onChange={(values) => change({ values })}
-        />
-        {!defaultsOnly && (
-          <Button
-            className="mb-6"
-            variant="ghost"
-            disabled={!model || !valid || busy}
-            onClick={() => void onDefaults(params)}
-          >
-            Save as model defaults
-          </Button>
+        {imageOnly ? (
+          <p className="mb-5 text-sm text-fg-2">
+            Image turns use the image engine's settings. Your text model
+            settings are kept.
+          </p>
+        ) : (
+          <>
+            <h3 className="mb-4 text-sm font-medium">
+              {defaultsOnly ? "Every chat with this model" : "Sampling"}
+            </h3>
+            <SamplingFields
+              values={draft.values}
+              onChange={(values) => change({ values })}
+            />
+            {!defaultsOnly && (
+              <details className="mb-5 border-t border-line pt-4">
+                <summary className="min-h-11 cursor-pointer text-sm font-medium">
+                  Every chat with this model
+                </summary>
+                <p className="mb-4 text-xs text-fg-2">
+                  Saved model defaults. Explicit chat and preset values take
+                  precedence.
+                </p>
+                <SamplingFields
+                  prefix="model-sampling"
+                  labelPrefix="Model "
+                  values={draft.defaultValues ?? {}}
+                  onChange={(defaultValues) => change({ defaultValues })}
+                />
+              </details>
+            )}
+          </>
         )}
-        {(model?.reasoning || params.reasoning) && (
-          <label className="mb-5 block text-sm">
-            Reasoning
-            <Select
-              value={draft.reasoning}
-              onValueChange={(reasoning) => change({ reasoning })}
-            >
-              <SelectTrigger aria-label="Reasoning">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="default">Model default</SelectItem>
-                {(model?.reasoning?.options ?? []).map((value) => (
-                  <SelectItem key={value} value={value}>
-                    {value[0].toUpperCase() + value.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </label>
-        )}
-        <fieldset
-          disabled={contextBusy}
-          className="mb-6 border-t border-line pt-5"
-        >
+        <fieldset disabled={busy} className="mb-6 border-t border-line pt-5">
           <legend className="text-sm font-medium">Context length</legend>
           <p className="mb-3 text-xs text-fg-2">
-            Applies to {model?.display_name ?? "this model"} in every chat.
+            Applies to {model ? modelLabel(model) : "this model"} in every chat.
           </p>
           <Input
             aria-label="Context length"
@@ -343,43 +421,26 @@ export function LiveChatSettings({
                 </Button>
               ))}
           </div>
-          <Button
-            variant="outline"
-            aria-label="Apply context length"
-            disabled={!model || !validContext || !contextDirty || contextBusy}
-            onClick={async () => {
-              setContextBusy(true);
-              try {
-                if ((await onContext(context)) !== false) {
-                  useControlDrafts
-                    .getState()
-                    .keep(
-                      key,
-                      dirty
-                        ? { draft, baseline, contextBaseline: draft.context }
-                        : undefined,
-                    );
-                  setContextBaseline(draft.context);
-                }
-              } finally {
-                setContextBusy(false);
-              }
-            }}
-          >
-            {contextBusy ? "Applying…" : "Apply"}
-          </Button>
         </fieldset>
         <footer className="sticky bottom-0 -mx-5 -mb-5 flex flex-col gap-2 border-t border-line bg-surface p-5">
           {(dirty || contextDirty) && (
             <p className="text-xs text-fg-2" role="status">
-              Unsaved changes{contextDirty ? " · Context needs Apply" : ""}
+              Unsaved changes
             </p>
           )}
           <Button
             aria-label={
               defaultsOnly ? "Save as model defaults" : "Save settings"
             }
-            disabled={!model || !valid || !validContext || !dirty || busy}
+            disabled={
+              !model ||
+              !valid ||
+              !validContext ||
+              (!dirty && !contextDirty) ||
+              busy ||
+              !samplingValid(draft.defaultValues ?? {}) ||
+              (imageOnly && !contextDirty)
+            }
             onClick={() => void save()}
           >
             {saved ? (
@@ -397,8 +458,8 @@ export function LiveChatSettings({
           </Button>
           <Button
             variant="ghost"
-            disabled={!model || busy}
-            onClick={() => void save(true)}
+            disabled={!model || busy || imageOnly}
+            onClick={() => change({ values: {} })}
           >
             Reset to model defaults
           </Button>

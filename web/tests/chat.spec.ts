@@ -69,7 +69,10 @@ test("Stop persists partial text and closes runtime connection", async ({
   await expect(page.getByText(/token0 token1/)).toBeVisible();
   await page.getByRole("button", { name: "Stop generating" }).click();
   await expect(
-    page.locator(".meta").filter({ hasText: /stopped/i }),
+    page
+      .locator('[data-slot="reply-outcome"]')
+      .getByRole("status")
+      .filter({ hasText: /^Stopped$/ }),
   ).toBeVisible();
   await expect
     .poll(

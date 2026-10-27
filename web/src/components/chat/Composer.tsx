@@ -47,7 +47,9 @@ import {
   imageRefinements,
   type ImageComposerCommand,
 } from "@/lib/composer-drafts";
+import { modelLabel } from "@/lib/chat-presentation";
 import { validImageSeed } from "@/lib/image-seeds";
+import type { ImageJob } from "@/lib/image-events";
 const AttachmentTray = lazy(() =>
   import("./AttachmentTray").then((m) => ({ default: m.AttachmentTray })),
 );
@@ -97,7 +99,13 @@ export function Composer({
   onDiscardPasted,
   photoEdit,
   onPhotoFile,
+  followupJob,
+  recentPrompts = [],
+  onPictureModeChange,
 }: {
+  onPictureModeChange?: (value: boolean) => void;
+  followupJob?: ImageJob;
+  recentPrompts?: string[];
   photoEdit?: PhotoEditor;
   onPhotoFile?: (file: File) => void;
   attachmentFixtures?: React.ComponentProps<typeof AttachmentTray>["fixtures"];
@@ -121,6 +129,7 @@ export function Composer({
     seeds?: number[],
     sourceJob?: string,
     photo?: PhotoSubmission,
+    followup?: ImageJob,
   ) => Promise<boolean>;
   optimistic?: boolean;
   libraryControl?: React.ComponentProps<typeof LibraryControl>;
@@ -160,8 +169,15 @@ export function Composer({
     draftKey ? imageRefinements.get(draftKey) : undefined,
   );
   const [imageMode, setImageMode] = useState(initialImageMode);
+  const [createFresh, setCreateFresh] = useState(false);
   const editing = !!photoEdit?.draft.active;
+  const followup =
+    imageMode && !createFresh && !refinement ? followupJob : undefined;
   const pictureMode = imageMode || editing;
+  useEffect(
+    () => onPictureModeChange?.(pictureMode),
+    [pictureMode, onPictureModeChange],
+  );
   const photoInput = useRef<HTMLInputElement>(null);
   useLayoutEffect(() => {
     if (editing) setImageMode(false);
@@ -220,6 +236,7 @@ export function Composer({
   };
   const toggleImage = () => {
     photoEdit?.setActive(false);
+    setCreateFresh(false);
     setImageMode((mode) => !mode);
     requestAnimationFrame(() => textarea.current?.focus());
   };
@@ -364,17 +381,18 @@ export function Composer({
         imageBusy ||
         !imageAvailable ||
         !imageValue.trim() ||
-        !validSeeds ||
-        !completeSeeds
+        (!followup && (!validSeeds || !completeSeeds))
       )
         return;
       const submitted = imageValue,
         version = revision.current;
       const accepted = await onImageSend?.(
         submitted,
-        count,
-        fixedSeeds ? seeds.slice(0, count).map(Number) : undefined,
+        followup ? 1 : count,
+        !followup && fixedSeeds ? seeds.slice(0, count).map(Number) : undefined,
         refinement?.job.id,
+        undefined,
+        followup,
       );
       if (
         accepted !== false &&
@@ -389,6 +407,7 @@ export function Composer({
       ) {
         setImageValue("");
         setRefinement(undefined);
+        setCreateFresh(false);
         if (draftKey) imageRefinements.delete(draftKey);
       }
       return;
@@ -478,6 +497,32 @@ export function Composer({
             Photo editing is unavailable on this server. Your draft is kept.
           </p>
         )}
+        {followup && (
+          <div
+            data-slot="image-followup"
+            className="mb-3 flex flex-wrap items-center gap-3 rounded-xl border border-line bg-surface-2 p-3"
+          >
+            <img
+              src={`/api/images/jobs/${followup.id}/output/png`}
+              alt="Image to edit"
+              className="size-14 shrink-0 rounded-lg object-contain"
+            />
+            <div className="min-w-0 flex-1 text-sm">
+              <p className="font-medium">Edit last image</p>
+              <p className="text-xs text-fg-2">
+                This photo will be used as the reference.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full sm:w-auto"
+              onClick={() => setCreateFresh(true)}
+            >
+              Create image instead
+            </Button>
+          </div>
+        )}
         {imageMode && refinement && (
           <div
             className="mb-3 flex w-fit max-w-full items-center gap-2 rounded-lg border border-line bg-surface-2 px-2 py-1 text-sm text-fg-2"
@@ -548,7 +593,7 @@ export function Composer({
               : imageMode
                 ? "Image prompt"
                 : model
-                  ? `Message ${model.display_name}`
+                  ? `Message ${modelLabel(model)}`
                   : "Message"
           }
           placeholder={
@@ -557,7 +602,7 @@ export function Composer({
               : imageMode
                 ? "Describe an image…"
                 : model
-                  ? `Message ${model.display_name}…`
+                  ? "Message…"
                   : disabled
                     ? "Choose a model to begin…"
                     : "Message…"
@@ -717,6 +762,7 @@ export function Composer({
                 onImage={() => {
                   setToolsOpen(false);
                   toggleImage();
+                  setCreateFresh(true);
                 }}
                 model={model}
                 thinkValue={thinkValue}
@@ -767,11 +813,11 @@ export function Composer({
               onClick={toggleImage}
             >
               <ImageIcon className="size-4" />
-              Image
+              {followup ? "Edit image" : "Create image"}
               <X className="size-3" />
             </Button>
           )}
-          {imageMode && (
+          {imageMode && !followup && (
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -933,7 +979,9 @@ export function Composer({
                         : editing
                           ? "Edit photo"
                           : imageMode
-                            ? "Create image"
+                            ? followup
+                              ? "Edit image"
+                              : "Create image"
                             : "Send message"
                     }
                     disabled={
@@ -948,8 +996,7 @@ export function Composer({
                           ? imageBusy ||
                             !imageAvailable ||
                             !imageValue.trim() ||
-                            !validSeeds ||
-                            !completeSeeds
+                            (!followup && (!validSeeds || !completeSeeds))
                           : disabled || waiting || warned || !value.trim())
                     }
                     onClick={running ? onStop : undefined}
@@ -965,9 +1012,11 @@ export function Composer({
                 {editing
                   ? "Edit photo"
                   : imageMode
-                    ? !validSeeds || !completeSeeds
+                    ? !followup && (!validSeeds || !completeSeeds)
                       ? "Set one valid seed for each image, or leave all empty"
-                      : "Create image"
+                      : followup
+                        ? "Edit image"
+                        : "Create image"
                     : waiting
                       ? `Waiting for ${waitingCount} ${waitingCount === 1 ? "file" : "files"}`
                       : running
@@ -990,17 +1039,34 @@ export function Composer({
             {(recordingReady
               ? ["Summarize", "Action items", "Decisions"]
               : [
-                  "Explain",
-                  "Write",
-                  "Code",
-                  ...(onWebChange ? ["Search the web"] : []),
+                  ...(onPhotoFile && imageStatus?.editing_available
+                    ? ["Edit a photo"]
+                    : []),
+                  ...(transcriptionReady ? ["Transcribe a recording"] : []),
+                  ...(libraryControl ? ["Ask my files"] : []),
+                  ...recentPrompts.slice(0, 2),
                 ]
             ).map((label) => (
               <Button
                 key={label}
                 variant="outline"
                 className="min-h-11 rounded-full bg-surface text-sm"
+                title={label}
                 onClick={() => {
+                  if (!recordingReady && label === "Edit a photo") {
+                    photoInput.current?.click();
+                    return;
+                  }
+                  if (!recordingReady && label === "Transcribe a recording") {
+                    fileInput.current?.click();
+                    return;
+                  }
+                  if (!recordingReady && label === "Ask my files") {
+                    if (libraryControl?.reason) setToolsOpen(true);
+                    else libraryControl?.onToggle(true);
+                    textarea.current?.focus();
+                    return;
+                  }
                   updateDraft(
                     recordingReady
                       ? ({
@@ -1009,15 +1075,13 @@ export function Composer({
                             "List action items from this recording.",
                           Decisions: "List the decisions from this recording.",
                         }[label] ?? "")
-                      : label === "Search the web"
-                        ? "Search the web for "
-                        : label + " ",
+                      : label,
                   );
                   if (label === "Search the web") onWebChange?.(true);
                   textarea.current?.focus();
                 }}
               >
-                {label}
+                <span className="max-w-52 truncate">{label}</span>
               </Button>
             ))}
           </div>

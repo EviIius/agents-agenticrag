@@ -22,6 +22,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Outlet, useLocation, useMatch, useNavigate } from "react-router";
 import {
   useQuery,
+  useQueries,
   useQueryClient,
   useInfiniteQuery,
   keepPreviousData,
@@ -60,6 +61,11 @@ import {
 import type { components } from "@/lib/api-types";
 import { detachTranscription, attachRun } from "@/lib/sse";
 import { latestLeaf, visiblePath } from "@/lib/tree";
+import {
+  followupImage,
+  modelLabel,
+  recentChats,
+} from "@/lib/chat-presentation";
 import { useTranscripts } from "@/stores/transcripts";
 import { usePreferenceSync } from "@/hooks/usePreferenceSync";
 import { useAppEntrance } from "@/hooks/useAppEntrance";
@@ -165,7 +171,11 @@ export function LiveAppShell() {
     : (defaultPreset?.system_prompt ?? draftPrompt);
   const models = useQuery({
     queryKey: ["models"],
-    queryFn: () => api<Model[]>("/models"),
+    queryFn: async () =>
+      (await api<Model[]>("/models")).map((model) => ({
+        ...model,
+        display_name: modelLabel(model),
+      })),
     enabled: !!bootstrap.data?.connections.length,
     refetchInterval: () => (document.hidden ? false : 30000),
   });
@@ -215,6 +225,21 @@ export function LiveAppShell() {
     getNextPageParam: (last) => last.next_cursor ?? undefined,
   });
   const historyItems = history.data?.pages.flatMap((page) => page.items) ?? [];
+  const recent = useQueries({
+    queries: recentChats(historyItems).map((chat) => ({
+      queryKey: ["chat", chat.id],
+      queryFn: () => api<Detail>(`/chats/${chat.id}`),
+      enabled: !chatId && !workspace,
+    })),
+  });
+  const recentPrompts = [
+    ...new Set(
+      recent.flatMap((result) => {
+        const first = result.data?.messages.find((row) => row.role === "user");
+        return first?.content.trim() ? [first.content] : [];
+      }),
+    ),
+  ];
   const detect = useQuery({
     queryKey: ["detect"],
     queryFn: () =>
@@ -422,6 +447,7 @@ export function LiveAppShell() {
     command: ImageComposerCommand;
   }>();
   const [photoLoaded, setPhotoLoaded] = useState(false);
+  const [pictureMode, setPictureMode] = useState(false);
   const [photo, setPhoto] = useState<PhotoEditor>();
   const [photoCommand, setPhotoCommand] = useState<PhotoCommand>();
   const choosePhoto = (source: PhotoCommand["source"]) => {
@@ -596,6 +622,13 @@ export function LiveAppShell() {
           new URLSearchParams(routeSearch).has("image")
         }
         onImageSend={chatImages.send}
+        followupJob={followupImage(
+          visiblePath(
+            chatImages.messages,
+            detail.data?.chat.current_leaf_id ?? null,
+          ),
+        )}
+        recentPrompts={recentPrompts}
         onImageCommandApplied={(key) =>
           setImageCommand((saved) =>
             saved?.command.key === key ? undefined : saved,
@@ -611,6 +644,7 @@ export function LiveAppShell() {
         audioExtensions={audioExtensions}
         attachmentExtensions={bootstrap.data?.attachment_extensions}
         model={current}
+        onPictureModeChange={setPictureMode}
         disabled={!current || busy || chatImages.busy || !!loadingModel}
         running={running}
         onStop={stop}
@@ -725,6 +759,7 @@ export function LiveAppShell() {
       />
     ) : (
       <LiveChatSettings
+        imageOnly={pictureMode}
         drawer={phone && !wide}
         key={`${chatId ?? "new"}:${current?.connection_id}:${current?.model_id}:${defaultPreset?.id}`}
         chat={detail.data?.chat}
@@ -1049,6 +1084,16 @@ export function LiveAppShell() {
                 }
                 onChatSettings={() => ui.set({ panel: true })}
                 onNew={() => navigate("/")}
+                onContinue={(message) =>
+                  void onSend("Continue your previous answer.", message.id)
+                }
+                continueBlocked={
+                  running ||
+                  chatImages.busy ||
+                  !!loadingModel ||
+                  effectiveFiles.length > 0 ||
+                  uploads.length > 0
+                }
                 onEdit={(m, text) => onSend(text, m.parent_id ?? null)}
                 onBranch={(id) =>
                   void mutate(

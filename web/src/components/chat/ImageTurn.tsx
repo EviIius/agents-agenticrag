@@ -126,7 +126,7 @@ export default function ImageTurn({
             vision={vision}
             onIteration={onIteration}
             onOpen={(frame) => setViewer({ job, frame })}
-            onRetry={() => onAction?.(message, "retry")}
+            managed
           />
         ))}
       </div>
@@ -234,7 +234,9 @@ export function ImageFrame({
   onIteration,
   onOpen,
   vision = false,
+  managed = false,
 }: {
+  managed?: boolean;
   position?: number;
   onIteration?: ImageIteration;
   onOpen?: (frame: HTMLElement) => void;
@@ -265,7 +267,9 @@ export function ImageFrame({
         : job.state === "interrupted"
           ? "Interrupted"
           : job.state === "cancelled"
-            ? "Cancelled"
+            ? managed
+              ? ""
+              : "Cancelled"
             : next
               ? "Next"
               : "";
@@ -350,7 +354,7 @@ export function ImageFrame({
             ) : (
               <>
                 <span>{label}</span>
-                {(retryable || failed) && (
+                {((retryable && onRetry) || failed) && (
                   <Button
                     variant="outline"
                     className="h-11"
