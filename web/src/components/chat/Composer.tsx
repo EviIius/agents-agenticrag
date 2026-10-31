@@ -97,9 +97,13 @@ export function Composer({
   onDiscardPasted,
   photoEdit,
   onPhotoFile,
+  onComputer,
+  attachmentsAllowed = true,
 }: {
   photoEdit?: PhotoEditor;
   onPhotoFile?: (file: File) => void;
+  onComputer?: () => void;
+  attachmentsAllowed?: boolean;
   attachmentFixtures?: React.ComponentProps<typeof AttachmentTray>["fixtures"];
   attachmentLocal?: Record<string, AttachmentLocal>;
   onPreviewLoaded?: (id: string) => void;
@@ -289,7 +293,7 @@ export function Composer({
       (u) => !u.failed && ["preparing", "reading"].includes(u.phase ?? ""),
     );
   useEffect(() => {
-    if (pictureMode || coarse || fileCount >= 8) return;
+    if (!attachmentsAllowed || pictureMode || coarse || fileCount >= 8) return;
     const listener = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "u") {
         event.preventDefault();
@@ -298,7 +302,7 @@ export function Composer({
     };
     window.addEventListener("keydown", listener);
     return () => window.removeEventListener("keydown", listener);
-  }, [pictureMode, coarse, fileCount]);
+  }, [attachmentsAllowed, pictureMode, coarse, fileCount]);
   const recordingReady = files.some(
     (file) => file.kind === "audio" && file.transcript?.status === "ready",
   );
@@ -651,55 +655,58 @@ export function Composer({
         <div className="composer-tool-row-main">
           {!pictureMode && (
             <>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span
-                    className="composer-attach"
-                    title={
-                      fileCount >= 8
-                        ? "8 files is the limit for one message"
-                        : "Attach files · ⌘U"
-                    }
-                  >
-                    <Button
-                      type="button"
-                      variant="outline"
-                      aria-label="Attach files"
-                      aria-hidden={coarse || undefined}
-                      tabIndex={coarse ? -1 : 0}
-                      disabled={fileCount >= 8}
-                      onClick={() => {
-                        if (!coarse) fileInput.current?.click();
-                      }}
+              {attachmentsAllowed && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span
+                      className="composer-attach"
+                      title={
+                        fileCount >= 8
+                          ? "8 files is the limit for one message"
+                          : "Attach files · ⌘U"
+                      }
                     >
-                      <Plus />
-                    </Button>
-                    <input
-                      type="file"
-                      multiple
-                      ref={fileInput}
-                      aria-label="Attach files"
-                      className="composer-file-input"
-                      disabled={fileCount >= 8}
-                      accept={fileAccept(
-                        attachmentExtensions,
-                        audioExtensions,
-                        transcriptionReady,
-                      )}
-                      onChange={(e) => {
-                        onAttach?.(Array.from(e.target.files ?? []));
-                        e.target.value = "";
-                      }}
-                    />
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {fileCount >= 8
-                    ? "8 files is the limit for one message"
-                    : "Attach files · ⌘U"}
-                </TooltipContent>
-              </Tooltip>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        aria-label="Attach files"
+                        aria-hidden={coarse || undefined}
+                        tabIndex={coarse ? -1 : 0}
+                        disabled={fileCount >= 8}
+                        onClick={() => {
+                          if (!coarse) fileInput.current?.click();
+                        }}
+                      >
+                        <Plus />
+                      </Button>
+                      <input
+                        type="file"
+                        multiple
+                        ref={fileInput}
+                        aria-label="Attach files"
+                        className="composer-file-input"
+                        disabled={fileCount >= 8}
+                        accept={fileAccept(
+                          attachmentExtensions,
+                          audioExtensions,
+                          transcriptionReady,
+                        )}
+                        onChange={(e) => {
+                          onAttach?.(Array.from(e.target.files ?? []));
+                          e.target.value = "";
+                        }}
+                      />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {fileCount >= 8
+                      ? "8 files is the limit for one message"
+                      : "Attach files · ⌘U"}
+                  </TooltipContent>
+                </Tooltip>
+              )}
               <ToolsMenu
+                onComputer={onComputer}
                 open={toolsOpen}
                 onOpenChange={setToolsOpen}
                 buttonRef={toolsButton}

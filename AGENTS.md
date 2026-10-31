@@ -1,5 +1,29 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**AS0 technical closeout — 31 October 2026:** The default-off fake desktop
+controller and chat review flow pass full checks: 821 Python / 156 frontend,
+92.2% assistant coverage, and 922 Chromium/WebKit browser cases with four unchanged
+skips and zero failures. Both scripted Messages/Notes demonstrations use the
+same controller. Shared task SSE avoids a reproduced HTTP/1.1 connection-starvation
+problem; the existing bulk-delete browser test now awaits its completed response.
+All 644 frozen source files, 32,388 historical artifacts and 646 installed public
+files verify; main, Part B, plist and service PID 77443 remain unchanged. H4:
+`docs/ASSISTANT-AS0-REPORT.md`, draft PR #15. No native app/model access, permission
+grant, external send, package install, production migration, merge or deployment.
+Stop for AS0 review before AS1's concrete native-driver/permission scope. AS2 model
+calls, AS3 sending and schema-15 release/fallback qualification remain separate.
+
+**User continuation — 30 October 2026 (AS0):** Jake said “continue” after the
+reusable typed computer-use plan. Accept the M0.1 technical planning checkpoint
+and implement AS0 on `codex/assistant-as0`: strict shared desktop contracts,
+scripted fake Messages/Notes driver, durable task/approval/cancellation state,
+default-off capability and chat/design review states. The concrete additive
+schema and implementation boundary are in `docs/ASSISTANT-AS0-PLAN.md`; apply
+only to isolated development/test databases. No new dependency, model/native
+call, live Mac app/permission/data access, send, Research restart, main merge
+or deployment. Keep ordinary provider/prompt/sampling paths unchanged. Stop
+with H4 evidence and a draft PR before AS1 native-driver qualification.
+
 **User scope clarification — 30 October 2026 (reusable computer use):** Jake
 confirmed typed requests as well as optional voice, and wants a computer-use
 assistant that can work across apps. Apple Messages is the first pilot, not the

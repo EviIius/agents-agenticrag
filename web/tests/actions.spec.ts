@@ -261,9 +261,18 @@ test("data export, confirmation and About details", async ({
   await confirmation
     .getByRole("textbox", { name: "Type DELETE to confirm" })
     .fill("DELETE");
+  // The nested confirmation hides Settings while deletion is still running.
+  // Wait for the mutation, then assert its durable result within the existing budget.
+  const deleted = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/api/chats") &&
+      response.request().method() === "DELETE",
+  );
   await confirmation
     .getByRole("button", { name: "Delete chats", exact: true })
     .click();
+  expect((await deleted).status()).toBe(204);
+  await expect(confirmation).not.toBeVisible();
   await expect(settings).not.toBeVisible();
   await expect
     .poll(
