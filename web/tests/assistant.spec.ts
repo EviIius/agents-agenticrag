@@ -127,6 +127,62 @@ test.describe("AS0 actual fake controller in chat", () => {
     }
   });
 
+  test("eight pending tasks share one event stream and Cancel stays responsive", async ({
+    page,
+    request,
+  }) => {
+    const chat: Chat = await (
+      await request.post("/api/chats", { data: {} })
+    ).json();
+    createdChats.push(Promise.resolve(chat));
+    for (let i = 0; i < 8; i++) {
+      const result = await request.post(
+        `/api/chats/${chat.id}/assistant-tasks`,
+        {
+          data: {
+            request_key: `multiplex-${i}`,
+            text: `Synthetic pending task ${i}`,
+            fixture: "messages",
+          },
+        },
+      );
+      expect(result.status()).toBe(202);
+    }
+    const streams: string[] = [];
+    page.on("request", (request) => {
+      const url = new URL(request.url());
+      if (
+        url.pathname.startsWith("/api/assistant/") &&
+        url.pathname.endsWith("/events")
+      )
+        streams.push(url.pathname);
+    });
+    await page.goto(`/c/${chat.id}`);
+    await page.getByRole("button", { name: "Tools", exact: true }).click();
+    await page.getByRole("menuitem", { name: /Use computer/ }).click();
+    const cards = page.getByRole("article", {
+      name: "Computer task",
+      exact: true,
+    });
+    await expect(cards).toHaveCount(8);
+    await expect(
+      cards.first().getByRole("button", { name: "Cancel", exact: true }),
+    ).toBeVisible();
+    await expect.poll(() => streams.length).toBe(1);
+    expect(streams).toEqual(["/api/assistant/events"]);
+    await cards
+      .first()
+      .getByRole("button", { name: "Cancel", exact: true })
+      .click();
+    await expect(cards.first().getByRole("status")).toHaveText("Stopped", {
+      timeout: 5000,
+    });
+    expect(
+      (await (await request.post(fakeAppURL + "/tests/assistant/state")).json())
+        .executed,
+    ).toBe(0);
+  });
+
   test("same chat controller edits Messages then Notes, survives reload, calls no model", async ({
     page,
     request,

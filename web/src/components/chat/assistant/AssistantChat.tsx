@@ -6,7 +6,7 @@ import { api, type Chat, type Model } from "@/lib/api";
 import type { components } from "@/lib/api-types";
 import { TaskCard, type DesktopTask, type TaskDecision } from "./TaskCard";
 
-import { attachDesktopTask, terminalTask } from "@/lib/assistant-stream";
+import { attachDesktopTasks, terminalTask } from "@/lib/assistant-stream";
 
 type TaskList = components["schemas"]["TaskList"];
 export default function AssistantChat({
@@ -51,21 +51,12 @@ export default function AssistantChat({
   putRef.current = put;
   const [reconnecting, setReconnecting] = useState(false);
   useEffect(() => {
-    const disconnected = new Set<string>();
-    const cleanup = activeIds
-      ? activeIds.split(",").map((id) =>
-          attachDesktopTask(
-            id,
-            (task) => putRef.current(task),
-            (retrying) => {
-              if (retrying) disconnected.add(id);
-              else disconnected.delete(id);
-              setReconnecting(disconnected.size > 0);
-            },
-          ),
-        )
-      : [];
-    return () => cleanup.forEach((stop) => stop());
+    if (!activeIds) return;
+    return attachDesktopTasks(
+      activeIds.split(","),
+      (task) => putRef.current(task),
+      setReconnecting,
+    );
   }, [activeIds]);
   const decide = async (id: string, body: TaskDecision) => {
     put(await api<DesktopTask>(`/assistant/tasks/${id}/decision`, body));

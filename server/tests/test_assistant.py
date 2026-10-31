@@ -20,6 +20,7 @@ from app.assistant.contracts import (
     DesktopTask,
     TaskCreate,
     TaskDecision,
+    TaskEvent,
     digest,
     screen_point,
 )
@@ -487,6 +488,7 @@ async def test_disabled_or_unconfigured_apis_fail_closed(
         ) as client,
     ):
         for method, path, body in [
+            ("GET", "/api/assistant/events?tasks=" + CHAT, None),
             ("GET", f"/api/chats/{CHAT}/assistant-tasks", None),
             ("GET", "/api/assistant/tasks/missing", None),
             (
@@ -542,6 +544,44 @@ async def test_enabled_api_round_trip_and_no_provider_calls(
     assert "assistant.snapshot" in stream.text and "fake" in stream.text
     assert (await client.get(f"/api/chats/{chat['id']}")).json()["messages"] == []
     assert (await client.delete(f"/api/chats/{chat['id']}")).status_code == 204
+
+
+async def test_shared_stream_replays_all_selected_tasks_once_and_bounds_subscriptions(
+    chat_app: tuple[FastAPI, httpx.AsyncClient, FastAPI],
+) -> None:
+    app, client, _ = chat_app
+    app.state.config.assistant_enabled = True
+    host = DesktopTasks(app.state.store, FakeDesktopDriver(), ScriptedProposal())
+    app.state.assistant = host
+    chat = (await client.post("/api/chats", json={})).json()
+    identifiers = []
+    for index in range(8):
+        task = await host.create(
+            chat["id"],
+            TaskCreate(request_key=f"multiplex-{index}", text="Synthetic", fixture="messages"),
+        )
+        await settled(host, task.id)
+        identifiers.append(task.id)
+    for identifier in identifiers:
+        await host.cancel(identifier)
+    url = "/api/assistant/events?tasks=" + ",".join(identifiers)
+    response = await client.get(url)
+    assert response.status_code == 200
+    events = [
+        TaskEvent.model_validate_json(line[6:])
+        for line in response.text.splitlines()
+        if line.startswith("data: ")
+    ]
+    assert {event.task.id for event in events} == set(identifiers)
+    assert set({event.task.id: event.task.state for event in events}.values()) == {"cancelled"}
+    sequences = [int(line[4:]) for line in response.text.splitlines() if line.startswith("id: ")]
+    assert sequences == sorted(set(sequences))
+    replay = await client.get(url, headers={"last-event-id": str(sequences[-1])})
+    assert replay.status_code == 200 and not replay.text.strip()
+    for selected in [identifiers[0] + "," + identifiers[0], "z" * 32, ",".join(identifiers * 2)]:
+        assert (
+            await client.get("/api/assistant/events", params={"tasks": selected})
+        ).status_code == 422
 
 
 async def test_migration_is_additive_and_preserves_schema14_rows(tmp_path: Path) -> None:

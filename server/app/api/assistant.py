@@ -1,9 +1,10 @@
 """Default-off AS0 fake desktop APIs; no native action or provider dispatch."""
 
+import re
 from collections.abc import AsyncIterator
 from typing import cast
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Query, Request
 from sse_starlette import EventSourceResponse
 
 from ..assistant.contracts import DesktopTask, TaskCreate, TaskDecision, TaskEvent, TaskList
@@ -60,6 +61,33 @@ async def events(identifier: str, request: Request) -> EventSourceResponse:
 
     async def stream() -> AsyncIterator[dict[str, str]]:
         async for sequence, event in host.tail(identifier, after):
+            yield {"id": str(sequence), "event": event.type, "data": event.model_dump_json()}
+
+    return EventSourceResponse(stream(), ping=15, headers={"Cache-Control": "no-cache"})
+
+
+@router.get("/assistant/events")
+async def task_events(
+    request: Request, tasks: str = Query(min_length=32, max_length=263)
+) -> EventSourceResponse:
+    """One browser connection for every active task, including pending approvals."""
+    host = manager(request)
+    identifiers = tuple(tasks.split(","))
+    if (
+        not 1 <= len(identifiers) <= 8
+        or len(set(identifiers)) != len(identifiers)
+        or any(not re.fullmatch(r"[a-f0-9]{32}", identifier) for identifier in identifiers)
+    ):
+        raise AppError("validation_error", "Select one to eight distinct computer tasks.", 422)
+    for identifier in identifiers:
+        await host.get(identifier)
+    try:
+        after = max(0, int(request.headers.get("last-event-id", "0")))
+    except ValueError:
+        after = 0
+
+    async def stream() -> AsyncIterator[dict[str, str]]:
+        async for sequence, event in host.tail_many(identifiers, after):
             yield {"id": str(sequence), "event": event.type, "data": event.model_dump_json()}
 
     return EventSourceResponse(stream(), ping=15, headers={"Cache-Control": "no-cache"})

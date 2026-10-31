@@ -1,9 +1,9 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { attachDesktopTask, type DesktopTask } from "./assistant-stream";
+import { attachDesktopTasks, type DesktopTask } from "./assistant-stream";
 
 afterEach(() => vi.unstubAllGlobals());
 
-function harness() {
+function harness(ids = ["synthetic"]) {
   let listener: (event: { data: string }) => void = () => {};
   let paint: FrameRequestCallback = () => {};
   const close = vi.fn();
@@ -33,7 +33,7 @@ function harness() {
       close = close;
     },
   );
-  const stop = attachDesktopTask("synthetic", snapshot, connection);
+  const stop = attachDesktopTasks(ids, snapshot, connection);
   const emit = (revision: number, state = "running", id = "synthetic") =>
     listener({
       data: JSON.stringify({
@@ -102,4 +102,23 @@ it("reports reconnect status and ignores a snapshot from another task", () => {
   h.emit(99, "complete", "other-task");
   expect(requestAnimationFrame).not.toHaveBeenCalled();
   expect(h.close).not.toHaveBeenCalled();
+});
+
+it("multiplexes tasks in one connection without losing either frame update or closing early", () => {
+  const h = harness(["synthetic", "second"]);
+  h.emit(2);
+  h.emit(7, "awaiting_approval", "second");
+  h.emit(1);
+  h.paint();
+  expect(
+    h.snapshot.mock.calls.map(([task]) => [task.id, task.revision]),
+  ).toEqual([
+    ["synthetic", 2],
+    ["second", 7],
+  ]);
+  h.emit(3, "complete");
+  expect(h.close).not.toHaveBeenCalled();
+  h.emit(8, "cancelled", "second");
+  h.paint();
+  expect(h.close).toHaveBeenCalledOnce();
 });

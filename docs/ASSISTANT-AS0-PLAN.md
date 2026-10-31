@@ -55,7 +55,9 @@ schema change before release. No rollback drops new task records over live data.
   awaiting review; queued cancellation never dispatches later.
 - Existing capacity coordinates future model invocations; AS0 makes none.
   Desktop actions have their own serial lock, not a competing model queue.
-- Existing SSE/event-ID and rAF patterns for live UI, no status polling.
+- Existing SSE/event-ID and rAF patterns for live UI, no status polling. Use
+  one multiplexed browser connection for all active tasks so pending approvals
+  cannot exhaust HTTP/1.1 connections and block actions.
 
 ## Acceptance and evidence
 

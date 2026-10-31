@@ -5,32 +5,43 @@ export const terminalTask = (task: DesktopTask) =>
   !["queued", "running", "awaiting_approval"].includes(task.state);
 
 /** Durable snapshots use SSE replay; paint only the newest revision per frame. */
-export function attachDesktopTask(
-  id: string,
+export function attachDesktopTasks(
+  ids: string[],
   snapshot: (task: DesktopTask) => void,
   connection: (reconnecting: boolean) => void,
 ) {
-  const source = new EventSource(`/api/assistant/tasks/${id}/events`);
+  const source = new EventSource(
+    `/api/assistant/events?tasks=${encodeURIComponent(ids.join(","))}`,
+  );
+  const selected = new Set(ids);
+  const finished = new Set<string>();
   let frame = 0;
-  let pending: DesktopTask | undefined;
-  let revision = -1;
+  const pending = new Map<string, DesktopTask>();
+  const revisions = new Map<string, number>();
   source.addEventListener("assistant.snapshot", (event) => {
     const data = JSON.parse(
       (event as MessageEvent<string>).data,
     ) as components["schemas"]["TaskEvent"];
     const task = data.task;
-    if (task.id !== id || task.revision <= revision) return;
-    revision = task.revision;
-    pending = task;
+    if (
+      !selected.has(task.id) ||
+      task.revision <= (revisions.get(task.id) ?? -1)
+    )
+      return;
+    revisions.set(task.id, task.revision);
+    pending.set(task.id, task);
     if (!frame)
       frame = requestAnimationFrame(() => {
         frame = 0;
-        if (pending) snapshot(pending);
-        pending = undefined;
+        pending.forEach((task) => snapshot(task));
+        pending.clear();
       });
     if (terminalTask(task)) {
-      source.close();
-      connection(false);
+      finished.add(task.id);
+      if (finished.size === selected.size) {
+        source.close();
+        connection(false);
+      }
     }
   });
   source.onopen = () => connection(false);
@@ -38,6 +49,6 @@ export function attachDesktopTask(
   return () => {
     source.close();
     cancelAnimationFrame(frame);
-    pending = undefined;
+    pending.clear();
   };
 }

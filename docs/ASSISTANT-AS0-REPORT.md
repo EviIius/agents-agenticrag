@@ -1,6 +1,6 @@
 # Assistant AS0 report
 
-30 October 2026 · `codex/assistant-as0` · isolated fake-only candidate
+30–31 October 2026 · `codex/assistant-as0` · isolated fake-only candidate
 
 ## Summary
 
@@ -10,7 +10,7 @@ receives the typed goal separately from observed source text. Both demonstration
 are scripted; no natural-language understanding or native app success is claimed.
 The feature defaults off and its driver is available only in development. Main,
 the installed application and the separate design critique branch are unchanged.
-**Full regression qualification is running; this report is not yet a completion claim.**
+**Transport correction passes focused checks; final full suites are running.**
 
 ## Done-when checklist
 
@@ -25,7 +25,7 @@ the installed application and the separate design critique branch are unchanged.
 | Default-off bootstrap/API and no native implementation | Pass | Disabled/unavailable API tests; dev-and-flag constructor guard |
 | Old schema definitions/rows preserved | Pass in isolated DB | Schema-14→15 test, idempotent migration and FK checks; no production migration |
 | Ordinary provider paths unchanged, no new package/model call | Final regression pending | Unchanged providers/runs/prompts/locks plus payload tests in the full suites |
-| Full `make check` / `make e2e` | **Pending** | Logs in `artifacts/assistant-as0-20261030/` |
+| Full `make check` / `make e2e` | **Pending after shared-stream correction** | Logs in `artifacts/assistant-as0-20261030/` |
 | Installed files, service and other branches preserved | Initial verification passed; final pending | 646-file inventory; PID 77443; final verification follows regression |
 | Human/native acceptance | **Not claimed** | AS1 app access and later model/send trials require their own scope |
 
@@ -35,8 +35,8 @@ the installed application and the separate design critique branch are unchanged.
   migration 015, config/bootstrap/lifespan wiring, cancellation before chat deletion and feature-gated history for task-only chats.
 - Web: lazy `AssistantChat`, `TaskCard`, SSE/rAF helper, optional Tools entry and
   attachment-free task composer; design preview and regenerated API types.
-- QA: 35 fake controller/API/migration cases, four stream-client unit cases,
-  20 browser cases, synthetic test-server controls and assistant coverage target.
+- QA: 36 fake controller/API/migration cases, five stream-client unit cases,
+  22 browser cases, synthetic test-server controls and assistant coverage target.
 - Six old migration tests now expect schema 15 after the full migrator runs;
   their preservation assertions remain. Historical version-13/14 fixtures and the
   existing release helper's supported-schema limit are unchanged.
@@ -63,15 +63,21 @@ untouched. No speed or answer-quality gain is inferred from scripted tests.
 
 Evidence directory: `artifacts/assistant-as0-20261030/`.
 
-- Focused final controller tests: **35 passed** (`focused-final.txt`).
-- Scoped coverage diagnostic: **585/632 lines, 92.6%**; this is additional evidence,
+- Focused controller tests: **36 passed** (`focused-stream-fix.txt`).
+- Scoped coverage diagnostic: **585/632 lines, 92.6%**, confirmed in full `make check`; this is additional evidence,
   not a replacement for the unchanged 80% full-suite gates.
-- Frontend lint/type/format/unit checkpoint: **155 passed**, including four new
-  stream tests (`frontend-check-final.txt`).
-- Focused browser run: **20 passed**, Chromium and WebKit, after the contract and
-  history refinements (`browser-focused-qualified.txt`).
+- Frontend lint/type/format/unit checkpoint: **156 passed**, including five new
+  stream tests (`frontend-check-stream-fix.txt`).
+- Focused browser run: **22 passed**, Chromium and WebKit, including eight pending
+  tasks sharing one stream with responsive cancellation (`browser-focused-stream-fix.txt`).
 - Initial JS: **252,564 gzip bytes / 256,000 budget** (`bundle.json`).
-- Full-suite results: pending.
+- Before the final transport correction, full `make check` passed **820 Python
+  tests and 155 frontend unit tests**, all coverage
+  targets ≥80%, 969 contrast token pairs across eight palettes, types/lint/format,
+  API generation/additive compatibility, privacy scan, motion and built glass guard
+  passed. `make-check-before-stream-fix.txt` retains that output; it is not the
+  final source qualification.
+- Final full `make check` and `make e2e`: pending.
 
 Retained development failures: schema-name collision with workflow `Point`, type/
 format errors, a test-only GET route shadowed by the SPA fallback, graceful restart
@@ -80,7 +86,11 @@ it now captures its own created chat IDs. Task-only chats are included in histor
 when the capability is available, without adding task content to text context.
 Diagnostic full-suite attempts were intentionally interrupted during contract
 and history review; their nonzero results are retained and are not passing gates. The final
-runs use `source-manifest.json`. Private failure traces are retained outside Git.
+runs use `source-manifest.json`. A standalone HTTP/1.1 probe proved eight separate
+streams starved an ordinary request (six connections opened, ping timed out).
+The corrected transport multiplexes up to eight IDs over one stream, preserving
+event ordering/replay and per-task rAF batching. The API rejects invalid or
+duplicate subscriptions; an eight-task browser test checks responsive Cancel. Private failure traces are retained outside Git.
 
 ## Screenshots
 
@@ -96,5 +106,5 @@ VoiceOver limitation remains unresolved.
 After full qualification, review this fake foundation before AS1. The next scope
 is qualifying a concrete shared Mac driver on an allowlisted app and one designated
 test conversation, initially read-only with no inference or send. AS2 adds bounded
-local-model tasks; AS3 separately qualifies one approved send. No native access,
-model trial, merge or deployment follows automatically from this report.
+local-model tasks; AS3 separately qualifies one approved send. The preview must be reopened from Tools after a reload; task records remain
+durable. No native access, model trial, merge or deployment follows automatically from this report.

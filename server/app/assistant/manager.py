@@ -411,21 +411,33 @@ class DesktopTasks:
             )
 
     async def tail(self, identifier: str, after: int = 0) -> AsyncIterator[tuple[int, TaskEvent]]:
+        async for event in self.tail_many((identifier,), after):
+            yield event
+
+    async def tail_many(
+        self, identifiers: tuple[str, ...], after: int = 0
+    ) -> AsyncIterator[tuple[int, TaskEvent]]:
+        if not 1 <= len(identifiers) <= 8:
+            raise ValueError("Subscribe to one to eight tasks.")
+        placeholders = ",".join("?" for _ in identifiers)
         while True:
             async with self.changed:
                 rows = await self.store.rows(
-                    "SELECT id,snapshot_json FROM assistant_events WHERE task_id=? AND "
+                    "SELECT id,snapshot_json FROM assistant_events WHERE task_id IN ("
+                    + placeholders
+                    + ") AND "
                     "id>? ORDER BY id",
-                    (identifier, after),
+                    (*identifiers, after),
                 )
-                task = await self.get(identifier)
-                if not rows and task.state not in TERMINAL:
+                tasks = [await self.get(identifier) for identifier in identifiers]
+                terminal = all(task.state in TERMINAL for task in tasks)
+                if not rows and not terminal:
                     await self.changed.wait()
                     continue
             for row in rows:
                 after = row["id"]
                 yield after, TaskEvent(task=DesktopTask.model_validate_json(row["snapshot_json"]))
-            if task.state in TERMINAL:
+            if terminal:
                 return
 
     async def close(self) -> None:
