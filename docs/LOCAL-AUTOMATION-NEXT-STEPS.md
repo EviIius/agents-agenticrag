@@ -4,6 +4,12 @@
 workflows on the list where Local AI can start doing things for me automatically?”
 This is planning only; no automatic task or extra model call is started.
 
+30 October priority clarification: Jake's immediate target is conversational
+search, opening Mac apps and reading/drafting replies in Apple Messages. See
+[Assistant first](ASSISTANT-FIRST-PLAN.md). That is now the first proposed scope;
+the recording-folder pilot below remains on the backlog. No Messages access,
+send, driver installation or native test is authorized by this planning update.
+
 23 October checkpoint: precision-editing trials are shelved. Review the isolated
 themes checkpoint before the next automation implementation.
 `AUTOMATION-FOLDER-PILOT-PLAN.md` turns this recommendation

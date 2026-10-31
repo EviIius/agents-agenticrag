@@ -1,5 +1,27 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**User priority clarification — 30 October 2026 (personal assistant):** Jake
+clarified that the immediate goal is natural-language requests to search, open
+apps, read a message and prepare/respond to it, and selected Apple Messages
+(iMessage and forwarded texts) as the first messaging target. Reprioritize the
+planning work accordingly: `docs/ASSISTANT-FIRST-PLAN.md` replaces the audit's
+initial recording-folder-first recommendation. This records the target and
+first-app selection, not approval to inspect Messages data, send a message,
+grant OS permissions, install a driver/model, make new native calls or deploy.
+Prepare the concrete milestone/QA boundaries before implementation; retain
+the existing stopped trials and separate main/Part B review boundaries.
+
+**Harness planning checkpoint — 30 October 2026:** After Codex offered a
+feasibility review or M0.1 architecture audit, Jake said “Do what you think is
+best.” This branch performs the documentation-only M0.1 audit in
+`docs/harness-notes.md`, preserving the supplied proposal verbatim in
+`docs/local-models-plan.md`. The proposal is reference material, not a replacement
+for SPEC or blanket authorization for its embedded build prompts. No feature,
+model call, package/model installation, new runtime, permission grant, background
+schedule, external write, main merge or deployment is authorized by this note.
+Stop for the M0.1 report/review; M0.2 and later scopes remain proposals. The
+separate design-critique B draft PR remains at its existing review boundary.
+
 **Part A release closeout — 25 October 2026:** PR #12 merged as `958891be`
 and the exact 476-file qualified static build is live. Forty-four old hashed
 assets are retained (520 installed static files); 47 files were published.

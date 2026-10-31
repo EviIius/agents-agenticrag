@@ -7,6 +7,13 @@ items remain proposals, without installations or external actions.
 
 ## Current order
 
+30 October update: the order below is historical. Jake clarified that a
+conversational personal assistant is the priority and selected Apple Messages
+for the first read/draft/reviewed-send path. See
+[Assistant first](ASSISTANT-FIRST-PLAN.md) for the revised milestones. Themes
+are already live; the separate Part B design candidate is still under review.
+The folder pilot, town and other capabilities remain later proposals.
+
 1. **Photo-editing trials closed:** PE5 compares focused regions; PE6 fixes brim
    overlap with one fresh acceptance generation. Full quality still falls short,
    so precision-editing release/further trials are shelved as Jake requested.
