@@ -10,6 +10,10 @@ the existing architecture, reuse opportunities, conflicts and recommended order.
 The main corrections concern existing workflows/capacity, Ollama-only transport,
 private storage, transcript overlap, operation-specific approvals and unqualified
 model/resource/latency claims. No feature implementation or inference occurred.
+After this report, Jake clarified that conversational search/app actions and
+Apple Messages replies are the priority. `ASSISTANT-FIRST-PLAN.md` and the audit's
+revised §6 reflect that direction; the initial folder-first recommendation is
+superseded, with the earlier commit/evidence retained.
 
 ## Done-when checklist
 
@@ -20,7 +24,7 @@ model/resource/latency claims. No feature implementation or inference occurred.
 | Seven projects mapped to existing source and missing work | Pass | Notes §3 |
 | Phase 9, migration 010, priority and service checked | Pass | Notes §§2–4; actual SQL, capacity implementation and sanitized observations |
 | External claims checked against primary documentation or marked unknown | Pass with explicit unknowns | Notes §4, including failed upstream URL retrievals and untested local compatibility |
-| Practical next scope and deviations recorded | Pass | Notes §§5–7; narrow automation proposal precedes general computer use |
+| Practical next scope and deviations recorded | Pass | Notes §§5–7 and Assistant first; conversational app tasks take priority after Jake's clarification |
 | No application, dependency, runtime, production data or UI changes | Pass | Docs-only diff, installed-code/plist before/after inventory and final health |
 | Jake has reviewed and agreed with M0.1 | **Pending** | This is the supplied plan's human acceptance gate; not inferred from choosing the audit |
 
@@ -31,6 +35,8 @@ model/resource/latency claims. No feature implementation or inference occurred.
 - `docs/local-models-plan.md`: exact supplied document.
 - `docs/harness-notes.md`: architecture map, corrections, primary sources and
   recommended build order.
+- `docs/ASSISTANT-FIRST-PLAN.md`: clarified personal-assistant target, Apple
+  Messages source-only preflight, concrete milestones and QA/review boundaries.
 - This H4 report and `artifacts/harness-m0-1-20261030/`: sanitized host observations,
   code/plist preservation and focused verification. No screenshots or audio.
 
@@ -40,9 +46,9 @@ SPEC and accumulated user amendments remain authoritative. The proposal's
 embedded kickoff/build prompts are not treated as new feature authorization.
 No application specification or existing release threshold changes.
 
-The recommended product order starts with one existing-workflow automation rather
-than a general computer-use stack. Existing schema/queue/glossary mechanisms are
-reused. Broad runtime support, strict chat priority, repo-local production data,
+The revised product order starts with conversational app tasks and Apple Messages
+drafts. Existing schema/queue/glossary mechanisms are reusable. Broad runtime
+support, strict chat priority, repo-local production data,
 blanket retry and arbitrary 40 GB residency are not accepted as current facts.
 
 ## Runtime observations
@@ -66,6 +72,14 @@ Evidence is under `artifacts/harness-m0-1-20261030/`.
   not a semantic or image privacy proof.
 - `git diff --check`: required clean for this documentation change.
 
+Priority-clarification supplement: `assistant-priority-check.json` verifies 42
+local links, the unchanged supplied plan, all 646 installed files and plist, and
+local health. `messages-dictionary-preflight.json` records public command/class
+names only: a send command exists, but no message-history class is exposed.
+`assistant-priority-privacy.txt` records the new pattern scan. These checks did
+not launch Messages, read a conversation, grant permissions or send anything.
+No additional automated test suite or native call was run for this supplement.
+
 `make check` and `make e2e` were **not rerun**: there is no executable/UI/API/schema
 change. Their earlier passes are not represented as fresh QA. No native/model,
 desktop-control, VM, DataHub, voice or image-generation test ran. No accuracy or
@@ -77,9 +91,10 @@ None. This milestone has no UI change and intentionally captures no private scre
 
 ## Open questions for Jake / review stop
 
-The completed audit is ready for M0.1 review. The next recommended scope is a
-default-off recording-to-meeting-pack automation using the existing workflow
-engine, with concrete trigger, privacy, failure/restart and quality criteria.
+The completed audit is ready for M0.1 review. The next recommended scope is AS0's
+offline task contracts and review UI, followed by AS1's source/permission
+preflight for a narrow Mac app/Apple Messages bridge. The exact scope and
+acceptance criteria are in `ASSISTANT-FIRST-PLAN.md`.
 M0.2/feature code, new dependencies/models/native trials and external actions
 remain separate scopes. Main, the live app and pending design-critique PR #13
 remain unchanged; no application merge or deployment occurred.

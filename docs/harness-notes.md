@@ -9,10 +9,13 @@ corrections required before implementation. Keep Aether's existing application,
 native Ollama adapter, workflow engine and capacity controller. Add capabilities
 one at a time, with evidence that they accomplish a useful task.
 
-**Recommended first product addition: one opt-in recording-to-meeting-pack
-automation using the existing workflow engine.** Computer use remains a separate
-experimental track, beginning with offline coordinate/policy tests and a
-locate-only trial. A planner/grounder split should follow a measured need.
+**Updated after Jake clarified the goal:** prioritize a conversational personal
+assistant in the existing chat: search, open an allowed Mac app, read a selected
+Apple Messages conversation and prepare a reply for approval. Jake selected
+Apple Messages (iMessage and forwarded texts). The concrete first scope is
+[Assistant first](ASSISTANT-FIRST-PLAN.md). It supersedes this audit's initial
+recording-folder-first recommendation; that useful automation remains later work.
+A planner/grounder split should follow a measured need.
 
 This is a recommendation for review, not implementation approval. The supplied
 [plan](local-models-plan.md) is preserved byte for byte; this audit records its
@@ -283,31 +286,27 @@ all driver actions and simultaneous model residency remain unqualified.
 | Order | Scope | Review evidence before progressing |
 | --- | --- | --- |
 | 0 — now | Finish this M0.1 map and review the pending Part B UI candidate independently. | Accurate source map, explicit deviations, read-only host facts and unchanged production. No forced Part B merge to do planning. |
-| 1 | A **narrow M0.2 scope** for one local automatic workflow, with a default-off flag and exact permissions; no omnibus seven-feature amendment. | Written trigger/input/output/retry/catch-up/storage rules and frozen synthetic acceptance tasks before code. |
-| 2 | Recording-folder → existing transcription → meeting-pack draft → review → chosen local output. | File-settling and duplicate identity; bounded backlog; failed-step retry; restart/cancel; private logging; source-linked decisions; unprovided owners/dates absent. Successful work not repeated. |
-| 3 | Small eval result adapter and a locate-only computer-use pilot. Start with a suitable installed model **only if runtime metadata and an approved trial support it**. | Synthetic labelled screens, coordinate tests, no clicks; pinned driver/model scope if a new install is needed; held-out target accuracy and latency. |
-| 4 | One approved-action desktop demo, then a VM task suite before unattended use. | Durable operation approval, stale-screen rejection, no host/guest confusion, actual task checker, cancellation and bounded resources. |
+| 1 | Narrow assistant scope: typed task → validated tool → result in the current chat. Apple Messages is the first messaging app. | [AS0](ASSISTANT-FIRST-PLAN.md): fake contracts, exact app/thread binding, approval and Stop tests before native execution. |
+| 2 | Mac bridge preflight, then a bounded real trial: open one app, search public information, read one selected test conversation and draft a reply. | Verify actual transcript access, recipient identity, local-only model requests, budgets and outputs. No send in this trial. |
+| 3 | Explicit Send/Edit/Cancel in chat; then phone push-to-talk. | One-time exact recipient/text approval, changed-thread invalidation, uncertain-send handling and phone checks. Separate native-send and speech scopes. |
+| 4 | Extend app coverage through a locate-only driver pilot and VM-backed computer-use tasks. | Prefer a tested structured app interface; use a vision driver when necessary. Pin dependencies/model and validate coordinates before actions. |
 | 5 | Compare single model against planner/grounder **only when needed**. | Matched screens/tasks, equal call/time/resource budgets, failure accounting and repeated results; sign-off before changing defaults. |
-| 6 | Transcript edit review, optional phone voice, DataHub drafts then reviewed writes. | Separate quality/latency/privacy contracts per capability. Voice starts with a small round trip; DataHub starts synthetic and draft-only. |
+| 6 | Recording-folder automation, transcript edit review, DataHub drafts then reviewed writes. | Reuse the [folder pilot](AUTOMATION-FOLDER-PILOT-PLAN.md); keep per-capability quality, permissions, retention and restart gates. |
 | 7 | Brindle Hollow as its own optional application/service. | Actual prototype supplied; bounded inference budget, shared admission API, independent state/backups and 72-hour synthetic soak with chat contention measurements. |
 
-For step 1, the concrete proposal should select one folder pair and workflow,
-declare skip/catch-up behavior, a durable idempotency key, queue bound and a pause
-switch. A source file becoming stable must not itself grant permission to send
-messages, operate other apps or delete originals. Start with synthetic files and
-an explicit review block before final output; background content is a draft.
-
-This sequence differs from the supplied computer-use-first build order because
-the existing workflow engine offers a shorter path to the user's automatic-task
-goal. If computer use is the immediate priority, steps 3–4 can follow M0.2 instead;
-the same evidence and permission boundaries apply.
+The original audit recommended recording-folder automation first because it
+reuses the workflow engine. Jake's subsequent clarification makes conversational
+app actions the immediate goal. This revision changes the recommendation while
+retaining the source audit and its permission/quality boundaries. It does not
+require shipping a general screen-clicking agent before a useful Messages demo.
 
 ## 7. Remaining decisions and limits
 
-- M0.1 review: does this map and narrower order match Jake's priorities?
-- The first unattended task's exact folders, interval, output format and
-  approval/retention rules belong in its reviewable implementation plan.
-- Computer use still needs a named driver/dependency scope, first app allowlist,
+- The assistant target and Apple Messages selection are now explicit. Review the
+  concrete AS0/AS1 scope in `ASSISTANT-FIRST-PLAN.md` before implementation.
+- Messages transcript access is not established by the app's send-capable scripting
+  dictionary. Test one selected conversation through a reviewed bridge first.
+- General computer use still needs a named driver/dependency scope, first app allowlist,
   trial model/runtime/checkpoint and explicit local-call allowance.
 - DataHub version/location, real-work-data permission and the town prototype/repo
   remain unknown; do not guess or inspect private project folders to fill them.

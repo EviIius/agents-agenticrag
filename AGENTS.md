@@ -1,5 +1,16 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**User priority clarification — 30 October 2026 (personal assistant):** Jake
+clarified that the immediate goal is natural-language requests to search, open
+apps, read a message and prepare/respond to it, and selected Apple Messages
+(iMessage and forwarded texts) as the first messaging target. Reprioritize the
+planning work accordingly: `docs/ASSISTANT-FIRST-PLAN.md` replaces the audit's
+initial recording-folder-first recommendation. This records the target and
+first-app selection, not approval to inspect Messages data, send a message,
+grant OS permissions, install a driver/model, make new native calls or deploy.
+Prepare the concrete milestone/QA boundaries before implementation; retain
+the existing stopped trials and separate main/Part B review boundaries.
+
 **Harness planning checkpoint — 30 October 2026:** After Codex offered a
 feasibility review or M0.1 architecture audit, Jake said “Do what you think is
 best.” This branch performs the documentation-only M0.1 audit in
