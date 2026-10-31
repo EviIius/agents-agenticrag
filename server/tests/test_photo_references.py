@@ -376,7 +376,7 @@ async def test_migration_preserves_all_populated_v13_columns(tmp_path: Path) -> 
         await db.execute("PRAGMA foreign_keys=ON")
         await migrate(db)
         await migrate(db)
-        assert await (await db.execute("PRAGMA user_version")).fetchone() == (14,)
+        assert await (await db.execute("PRAGMA user_version")).fetchone() == (15,)
         assert not await (await db.execute("PRAGMA foreign_key_check")).fetchall()
         assert await (await db.execute("PRAGMA integrity_check")).fetchone() == ("ok",)
     assert snapshot(target, columns)[1] == before

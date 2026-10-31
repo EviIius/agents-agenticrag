@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
 from .api import (
+    assistant,
     attachments,
     backup,
     chat_images,
@@ -67,6 +68,15 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
             app.state.capacity = Capacity(
                 config.data_dir / "native.lock" if config.image_home else None
             )
+            app.state.assistant = None
+            if config.assistant_enabled and config.dev:
+                from .assistant.driver import FakeDesktopDriver, ScriptedProposal
+                from .assistant.manager import DesktopTasks
+
+                app.state.assistant = DesktopTasks(
+                    app.state.store, FakeDesktopDriver(), ScriptedProposal()
+                )
+                await app.state.assistant.recover()
             app.state.registry = Registry(
                 app.state.store, app.state.capacity if config.image_home else None
             )
@@ -113,6 +123,8 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
             try:
                 yield
             finally:
+                if app.state.assistant:
+                    await app.state.assistant.close()
                 await app.state.workflow_graphs.close()
                 await app.state.workflows.close()
                 await app.state.images.close()
@@ -145,6 +157,7 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
 
     app.include_router(health_router)
     for router in (
+        assistant.router,
         attachments.router,
         folders.router,
         images.router,

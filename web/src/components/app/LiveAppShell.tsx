@@ -75,6 +75,9 @@ const WorkflowNotifier = lazy(
   () => import("@/components/workflows/WorkflowNotifier"),
 );
 const DropOverlay = lazy(() => import("@/components/chat/DropOverlay"));
+const AssistantChat = lazy(
+  () => import("@/components/chat/assistant/AssistantChat"),
+);
 const PhotoEditingHost = lazy(
   () => import("@/components/chat/PhotoEditingHost"),
 );
@@ -119,6 +122,7 @@ export function LiveAppShell() {
     [debounced, setDebounced] = useState(""),
     [above, setAbove] = useState(false),
     [scrolled, setScrolled] = useState(false);
+  const [computer, setComputer] = useState(false);
   useEffect(() => {
     setScrolled(false);
     setAbove(false);
@@ -291,7 +295,8 @@ export function LiveAppShell() {
     audioExtensions,
     upload,
   } = useUploads({ query, bootstrap, current, retainedPreviewIds });
-  const allowFileDrop = !workspace && !ui.settings && !ui.panel && !ui.sidebar;
+  const allowFileDrop =
+    !computer && !workspace && !ui.settings && !ui.panel && !ui.sidebar;
   const [dropTarget, setDropTarget] = useState(false);
   const [hasDragged, setHasDragged] = useState(false);
   useEffect(() => {
@@ -584,6 +589,11 @@ export function LiveAppShell() {
         </Suspense>
       )}
       <Composer
+        onComputer={
+          bootstrap.data?.features.assistant
+            ? () => setComputer(true)
+            : undefined
+        }
         key={chatId ?? "new"}
         draftKey={chatId ?? "new"}
         images
@@ -1014,6 +1024,20 @@ export function LiveAppShell() {
                 })
               }
             />
+          ) : computer && bootstrap.data?.features.assistant ? (
+            <Suspense fallback={<p className="p-4">Loading computer use…</p>}>
+              <AssistantChat
+                key={chatId ?? "new"}
+                chatId={chatId}
+                parentId={detail.data?.chat.current_leaf_id}
+                model={current}
+                onExit={() => setComputer(false)}
+                onCreated={(id) => {
+                  refresh();
+                  navigate("/c/" + id);
+                }}
+              />
+            </Suspense>
           ) : !chatId ? (
             <EmptyState composer={composer} />
           ) : (

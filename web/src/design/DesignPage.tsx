@@ -71,6 +71,7 @@ const webMessage: Message = {
   },
 };
 const AttachmentsPreview = lazy(() => import("./AttachmentsPreview"));
+const AssistantPreview = lazy(() => import("./AssistantPreview"));
 const AttachmentThreadPreview = lazy(() => import("./AttachmentThreadPreview"));
 const ImagesPreview = lazy(() => import("./ImagesPreview"));
 const ChatImagesPreview = lazy(() => import("./ChatImagesPreview"));
@@ -83,6 +84,12 @@ const ThemesPreview = lazy(() => import("./ThemesPreview"));
 const Markdown = lazy(() => import("@/components/chat/Markdown"));
 const LibraryAnswersPreview = lazy(() => import("./LibraryAnswersPreview"));
 export function DesignPage() {
+  if (new URLSearchParams(location.search).has("assistant"))
+    return (
+      <Suspense fallback={<p>Loading computer use…</p>}>
+        <AssistantPreview />
+      </Suspense>
+    );
   if (new URLSearchParams(location.search).has("photo-edit"))
     return (
       <Suspense fallback={<p>Loading photo editing…</p>}>

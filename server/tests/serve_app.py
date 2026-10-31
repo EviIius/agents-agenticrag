@@ -53,6 +53,54 @@ async def lifespan(server: FastAPI) -> AsyncIterator[None]:
 app.router.lifespan_context = lifespan
 
 
+@app.post("/tests/assistant/setup")
+async def setup_fake_desktop(enabled: bool = True) -> dict[str, bool]:
+    """Test-only switch: the production router has no feature-enabling endpoint."""
+    from app.assistant.driver import FakeDesktopDriver, ScriptedProposal
+    from app.assistant.manager import DesktopTasks
+
+    if app.state.assistant:
+        await app.state.assistant.close()
+    app.state.config.assistant_enabled = enabled
+    app.state.assistant = (
+        DesktopTasks(app.state.store, FakeDesktopDriver(), ScriptedProposal()) if enabled else None
+    )
+    if app.state.assistant:
+        await app.state.assistant.recover()
+    return {"enabled": enabled}
+
+
+@app.post("/tests/assistant/change")
+async def change_fake_desktop(change: str) -> dict[str, bool]:
+    driver = app.state.assistant.driver
+    if change == "incoming":
+        window = driver.windows["fake.messages"]
+        driver.windows["fake.messages"] = window.model_copy(
+            update={
+                "conversation": window.conversation.model_copy(
+                    update={"latest_id": "changed", "incoming": "Can we meet at 4 pm instead?"}
+                )
+            }
+        )
+    elif change == "revoke":
+        driver.permission = False
+    elif change == "hold":
+        driver.hold = asyncio.Event()
+    elif change == "uncertain":
+        driver.uncertain = True
+    return {"changed": True}
+
+
+@app.post("/tests/assistant/state")
+async def inspect_fake_desktop() -> dict[str, object]:
+    driver = app.state.assistant.driver
+    return {
+        "executed": len(driver.executed),
+        "texts": [action.text for _, action in driver.executed],
+        "reaped": driver.reaped.is_set(),
+    }
+
+
 @app.post("/tests/images/release")
 async def release_fake_image() -> dict[str, bool]:
     """Release the actual fake worker after its second denoising event."""

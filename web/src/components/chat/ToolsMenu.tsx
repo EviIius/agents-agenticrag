@@ -1,4 +1,11 @@
-import { Brain, BookOpen, Globe, ImageIcon, Wrench } from "lucide-react";
+import {
+  Brain,
+  BookOpen,
+  Globe,
+  ImageIcon,
+  Monitor,
+  Wrench,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -31,6 +38,7 @@ export function ToolsMenu({
   model,
   thinkValue,
   onThinkChange,
+  onComputer,
 }: {
   open: boolean;
   onOpenChange: (value: boolean) => void;
@@ -48,6 +56,7 @@ export function ToolsMenu({
   model?: Model;
   thinkValue?: string;
   onThinkChange?: (value: string | null) => void;
+  onComputer?: () => void;
 }) {
   return (
     <DropdownMenu modal={false} open={open} onOpenChange={onOpenChange}>
@@ -61,7 +70,8 @@ export function ToolsMenu({
             !library &&
             !images &&
             !model?.reasoning &&
-            !thinkValue
+            !thinkValue &&
+            !onComputer
           }
           className="composer-tools"
           aria-label="Tools"
@@ -81,6 +91,19 @@ export function ToolsMenu({
           Tools
         </DropdownMenuLabel>
         <div className="composer-tools-actions">
+          {onComputer && (
+            <DropdownMenuItem
+              className="composer-tool-row"
+              onSelect={onComputer}
+              aria-label="Use computer"
+            >
+              <Monitor />
+              <span>
+                <b>Use computer</b>
+                <small>Fake desktop preview</small>
+              </span>
+            </DropdownMenuItem>
+          )}
           {onWebChange && (
             <DropdownMenuCheckboxItem
               checked={web && !webBlocked}
