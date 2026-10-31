@@ -12,7 +12,10 @@ one at a time, with evidence that they accomplish a useful task.
 **Updated after Jake clarified the goal:** prioritize a conversational personal
 assistant in the existing chat: search, open an allowed Mac app, read a selected
 Apple Messages conversation and prepare a reply for approval. Jake selected
-Apple Messages (iMessage and forwarded texts). The concrete first scope is
+Apple Messages (iMessage and forwarded texts), then clarified that typed requests
+should drive a reusable computer-use assistant across apps. Messages is the first
+pilot; shared observe/act/verify tools are part of the initial architecture.
+The concrete first scope is
 [Assistant first](ASSISTANT-FIRST-PLAN.md). It supersedes this audit's initial
 recording-folder-first recommendation; that useful automation remains later work.
 A planner/grounder split should follow a measured need.
@@ -286,10 +289,10 @@ all driver actions and simultaneous model residency remain unqualified.
 | Order | Scope | Review evidence before progressing |
 | --- | --- | --- |
 | 0 — now | Finish this M0.1 map and review the pending Part B UI candidate independently. | Accurate source map, explicit deviations, read-only host facts and unchanged production. No forced Part B merge to do planning. |
-| 1 | Narrow assistant scope: typed task → validated tool → result in the current chat. Apple Messages is the first messaging app. | [AS0](ASSISTANT-FIRST-PLAN.md): fake contracts, exact app/thread binding, approval and Stop tests before native execution. |
-| 2 | Mac bridge preflight, then a bounded real trial: open one app, search public information, read one selected test conversation and draft a reply. | Verify actual transcript access, recipient identity, local-only model requests, budgets and outputs. No send in this trial. |
+| 1 | Reusable computer-use contracts: typed task → observe → propose → authorize → act → verify in the current chat. Apple Messages is the first pilot. | [AS0](ASSISTANT-FIRST-PLAN.md): fake driver in two apps, coordinate/state binding, approval and Stop tests before native execution. |
+| 2 | Shared driver preflight, then a bounded real trial: open one app, search public information, read one selected test conversation and draft a reply. | Verify actual transcript access, recipient identity, shared observations, local-only requests, budgets and outputs. No send in this trial. |
 | 3 | Explicit Send/Edit/Cancel in chat; then phone push-to-talk. | One-time exact recipient/text approval, changed-thread invalidation, uncertain-send handling and phone checks. Separate native-send and speech scopes. |
-| 4 | Extend app coverage through a locate-only driver pilot and VM-backed computer-use tasks. | Prefer a tested structured app interface; use a vision driver when necessary. Pin dependencies/model and validate coordinates before actions. |
+| 4 | Prove reuse in Notes/browser, then separately scope VM-backed tasks. | Same desktop driver and task controller; add structured adapters where useful. Pin dependencies/model and validate task success before expanding the allowlist. |
 | 5 | Compare single model against planner/grounder **only when needed**. | Matched screens/tasks, equal call/time/resource budgets, failure accounting and repeated results; sign-off before changing defaults. |
 | 6 | Recording-folder automation, transcript edit review, DataHub drafts then reviewed writes. | Reuse the [folder pilot](AUTOMATION-FOLDER-PILOT-PLAN.md); keep per-capability quality, permissions, retention and restart gates. |
 | 7 | Brindle Hollow as its own optional application/service. | Actual prototype supplied; bounded inference budget, shared admission API, independent state/backups and 72-hour synthetic soak with chat contention measurements. |
@@ -297,8 +300,9 @@ all driver actions and simultaneous model residency remain unqualified.
 The original audit recommended recording-folder automation first because it
 reuses the workflow engine. Jake's subsequent clarification makes conversational
 app actions the immediate goal. This revision changes the recommendation while
-retaining the source audit and its permission/quality boundaries. It does not
-require shipping a general screen-clicking agent before a useful Messages demo.
+retaining the source audit and its permission/quality boundaries. The subsequent
+clarification makes reusable computer-use tooling part of the first architecture
+milestone, with narrowly qualified app access beginning in Messages.
 
 ## 7. Remaining decisions and limits
 

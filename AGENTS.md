@@ -1,5 +1,14 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**User scope clarification — 30 October 2026 (reusable computer use):** Jake
+confirmed typed requests as well as optional voice, and wants a computer-use
+assistant that can work across apps. Apple Messages is the first pilot, not the
+boundary of the product. Plan one shared observe → propose → authorize → act →
+verify interface; app-specific adapters may improve reliability within it.
+`docs/ASSISTANT-FIRST-PLAN.md` now includes general desktop tools from the first
+architecture milestone and a second-app reuse gate. This clarification does not
+grant native trials, private app access, sends, installations or deployment.
+
 **User priority clarification — 30 October 2026 (personal assistant):** Jake
 clarified that the immediate goal is natural-language requests to search, open
 apps, read a message and prepare/respond to it, and selected Apple Messages

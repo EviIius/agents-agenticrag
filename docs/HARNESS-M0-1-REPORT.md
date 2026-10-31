@@ -14,6 +14,9 @@ After this report, Jake clarified that conversational search/app actions and
 Apple Messages replies are the priority. `ASSISTANT-FIRST-PLAN.md` and the audit's
 revised §6 reflect that direction; the initial folder-first recommendation is
 superseded, with the earlier commit/evidence retained.
+Jake then confirmed typed computer use across apps: shared observe/act/verify
+contracts now start in AS0, Messages remains the pilot and AS4 tests second-app
+reuse. This is a planning clarification, not a native-driver qualification.
 
 ## Done-when checklist
 
@@ -24,7 +27,7 @@ superseded, with the earlier commit/evidence retained.
 | Seven projects mapped to existing source and missing work | Pass | Notes §3 |
 | Phase 9, migration 010, priority and service checked | Pass | Notes §§2–4; actual SQL, capacity implementation and sanitized observations |
 | External claims checked against primary documentation or marked unknown | Pass with explicit unknowns | Notes §4, including failed upstream URL retrievals and untested local compatibility |
-| Practical next scope and deviations recorded | Pass | Notes §§5–7 and Assistant first; conversational app tasks take priority after Jake's clarification |
+| Practical next scope and deviations recorded | Pass | Notes §§5–7 and Assistant first; reusable computer use through typed chat, with Messages as the pilot |
 | No application, dependency, runtime, production data or UI changes | Pass | Docs-only diff, installed-code/plist before/after inventory and final health |
 | Jake has reviewed and agreed with M0.1 | **Pending** | This is the supplied plan's human acceptance gate; not inferred from choosing the audit |
 
@@ -80,6 +83,12 @@ names only: a send command exists, but no message-history class is exposed.
 not launch Messages, read a conversation, grant permissions or send anything.
 No additional automated test suite or native call was run for this supplement.
 
+Computer-use clarification: `computer-use-scope-check.json` verifies the reusable
+driver/two-app contracts are present, 41 local links in the three core planning
+documents resolve, all 646 installed files/plist remain intact and local health
+passes. `computer-use-scope-privacy.txt` records its pattern scan. No desktop
+capture/action, installation, private message access or native inference occurred.
+
 `make check` and `make e2e` were **not rerun**: there is no executable/UI/API/schema
 change. Their earlier passes are not represented as fresh QA. No native/model,
 desktop-control, VM, DataHub, voice or image-generation test ran. No accuracy or
@@ -93,7 +102,8 @@ None. This milestone has no UI change and intentionally captures no private scre
 
 The completed audit is ready for M0.1 review. The next recommended scope is AS0's
 offline task contracts and review UI, followed by AS1's source/permission
-preflight for a narrow Mac app/Apple Messages bridge. The exact scope and
+preflight for the shared desktop driver under a narrow app allowlist. Messages
+is the first pilot and a second app must reuse the same controller. The scope and
 acceptance criteria are in `ASSISTANT-FIRST-PLAN.md`.
 M0.2/feature code, new dependencies/models/native trials and external actions
 remain separate scopes. Main, the live app and pending design-critique PR #13
