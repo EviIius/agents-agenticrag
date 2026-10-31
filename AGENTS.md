@@ -1,5 +1,16 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**Harness planning checkpoint — 30 October 2026:** After Codex offered a
+feasibility review or M0.1 architecture audit, Jake said “Do what you think is
+best.” This branch performs the documentation-only M0.1 audit in
+`docs/harness-notes.md`, preserving the supplied proposal verbatim in
+`docs/local-models-plan.md`. The proposal is reference material, not a replacement
+for SPEC or blanket authorization for its embedded build prompts. No feature,
+model call, package/model installation, new runtime, permission grant, background
+schedule, external write, main merge or deployment is authorized by this note.
+Stop for the M0.1 report/review; M0.2 and later scopes remain proposals. The
+separate design-critique B draft PR remains at its existing review boundary.
+
 **Part A release closeout — 25 October 2026:** PR #12 merged as `958891be`
 and the exact 476-file qualified static build is live. Forty-four old hashed
 assets are retained (520 installed static files); 47 files were published.
