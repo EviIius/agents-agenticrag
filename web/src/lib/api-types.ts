@@ -21,6 +21,129 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/chats/{chat_id}/assistant-tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listing */
+        get: operations["listing_api_chats__chat_id__assistant_tasks_get"];
+        put?: never;
+        /** Create */
+        post: operations["create_api_chats__chat_id__assistant_tasks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/assistant/tasks/{identifier}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get */
+        get: operations["get_api_assistant_tasks__identifier__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/assistant/tasks/{identifier}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Decision */
+        post: operations["decision_api_assistant_tasks__identifier__decision_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/assistant/tasks/{identifier}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel */
+        post: operations["cancel_api_assistant_tasks__identifier__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/assistant/tasks/{identifier}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Events */
+        get: operations["events_api_assistant_tasks__identifier__events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/assistant/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Task Events
+         * @description One browser connection for every active task, including pending approvals.
+         */
+        get: operations["task_events_api_assistant_events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/_schema/assistant-event": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Event Schema */
+        get: operations["event_schema_api__schema_assistant_event_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/attachments": {
         parameters: {
             query?: never;
@@ -2376,6 +2499,201 @@ export interface components {
             type: "reasoning.delta" | "text.delta";
             data: components["schemas"]["DeltaData"];
         };
+        /** DesktopAction */
+        DesktopAction: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "click" | "type_text" | "key" | "scroll" | "send_reply";
+            /** App Id */
+            app_id: string;
+            /** Window Id */
+            window_id: string;
+            /** Observation */
+            observation: string;
+            /** Target Id */
+            target_id: string;
+            /**
+             * Text
+             * @default
+             */
+            text: string;
+            /** Key */
+            key?: ("Tab" | "Escape") | null;
+            point?: components["schemas"]["DesktopPoint"] | null;
+            /**
+             * Delta
+             * @default 0
+             */
+            delta: number;
+        };
+        /** DesktopApproval */
+        DesktopApproval: {
+            /** Id */
+            id: string;
+            action: components["schemas"]["DesktopAction"];
+            /** Expires At */
+            expires_at: number;
+        };
+        /** DesktopConversation */
+        DesktopConversation: {
+            /** Id */
+            id: string;
+            /** Participants */
+            participants: components["schemas"]["DesktopParticipant"][];
+            /** Latest Id */
+            latest_id: string;
+            /** Incoming */
+            incoming: string;
+        };
+        /** DesktopElement */
+        DesktopElement: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /**
+             * Value
+             * @default
+             */
+            value: string;
+            /**
+             * Role
+             * @default text
+             * @enum {string}
+             */
+            role: "text" | "editor" | "button";
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            /** Commits */
+            commits?: boolean | null;
+            bounds?: components["schemas"]["DesktopRect"] | null;
+        };
+        /** DesktopFrame */
+        DesktopFrame: {
+            bounds: components["schemas"]["DesktopRect"];
+            /** Scale */
+            scale: number;
+            /** Capture Width */
+            capture_width: number;
+            /** Capture Height */
+            capture_height: number;
+            crop: components["schemas"]["DesktopRect"];
+            /** Image Width */
+            image_width: number;
+            /** Image Height */
+            image_height: number;
+        };
+        /** DesktopObservation */
+        DesktopObservation: {
+            /** App Id */
+            app_id: string;
+            /** App Name */
+            app_name: string;
+            /** Window Id */
+            window_id: string;
+            /** Revision */
+            revision: number;
+            frame: components["schemas"]["DesktopFrame"];
+            /** Elements */
+            elements: components["schemas"]["DesktopElement"][];
+            conversation?: components["schemas"]["DesktopConversation"] | null;
+        };
+        /** DesktopParticipant */
+        DesktopParticipant: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Address */
+            address: string;
+        };
+        /** DesktopPoint */
+        DesktopPoint: {
+            /** X */
+            x: number;
+            /** Y */
+            y: number;
+            /**
+             * Space
+             * @enum {string}
+             */
+            space: "image_pixels" | "normalized_1000";
+        };
+        /** DesktopRect */
+        DesktopRect: {
+            /** X */
+            x: number;
+            /** Y */
+            y: number;
+            /** Width */
+            width: number;
+            /** Height */
+            height: number;
+        };
+        /** DesktopStep */
+        DesktopStep: {
+            /** Label */
+            label: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "complete" | "awaiting_approval" | "running" | "failed";
+        };
+        /** DesktopTask */
+        DesktopTask: {
+            /** Id */
+            id: string;
+            /** Chat Id */
+            chat_id: string;
+            /** Parent Id */
+            parent_id?: string | null;
+            /** Text */
+            text: string;
+            /**
+             * Fixture
+             * @enum {string}
+             */
+            fixture: "messages" | "notes";
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "queued" | "running" | "awaiting_approval" | "needs_input" | "complete" | "cancelled" | "failed" | "interrupted" | "outcome_unknown";
+            /**
+             * Revision
+             * @default 0
+             */
+            revision: number;
+            /**
+             * Stage
+             * @default Queued
+             */
+            stage: string;
+            observation?: components["schemas"]["DesktopObservation"] | null;
+            approval?: components["schemas"]["DesktopApproval"] | null;
+            approved_action?: components["schemas"]["DesktopAction"] | null;
+            /**
+             * Steps
+             * @default []
+             */
+            steps: components["schemas"]["DesktopStep"][];
+            /** Error */
+            error?: string | null;
+            /** Created At */
+            created_at: string;
+            /**
+             * Fake
+             * @default true
+             * @constant
+             */
+            fake: true;
+        };
         /** Detection */
         Detection: {
             /**
@@ -3878,6 +4196,49 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** TaskCreate */
+        TaskCreate: {
+            /** Request Key */
+            request_key: string;
+            /** Text */
+            text: string;
+            /**
+             * Fixture
+             * @enum {string}
+             */
+            fixture: "messages" | "notes";
+            /** Parent Id */
+            parent_id?: string | null;
+        };
+        /** TaskDecision */
+        TaskDecision: {
+            /** Approval Id */
+            approval_id: string;
+            /** Revision */
+            revision: number;
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "approve" | "cancel";
+            /** Text */
+            text?: string | null;
+        };
+        /** TaskEvent */
+        TaskEvent: {
+            /**
+             * Type
+             * @default assistant.snapshot
+             * @constant
+             */
+            type: "assistant.snapshot";
+            task: components["schemas"]["DesktopTask"];
+        };
+        /** TaskList */
+        TaskList: {
+            /** Tasks */
+            tasks: components["schemas"]["DesktopTask"][];
+        };
         /** Template */
         Template: {
             /** Id */
@@ -4336,6 +4697,251 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listing_api_chats__chat_id__assistant_tasks_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                chat_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_api_chats__chat_id__assistant_tasks_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                chat_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DesktopTask"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_api_assistant_tasks__identifier__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DesktopTask"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    decision_api_assistant_tasks__identifier__decision_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskDecision"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DesktopTask"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_api_assistant_tasks__identifier__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DesktopTask"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    events_api_assistant_tasks__identifier__events_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    task_events_api_assistant_events_get: {
+        parameters: {
+            query: {
+                tasks: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    event_schema_api__schema_assistant_event_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskEvent"];
                 };
             };
         };

@@ -1,5 +1,16 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**User continuation — 30 October 2026 (AS0):** Jake said “continue” after the
+reusable typed computer-use plan. Accept the M0.1 technical planning checkpoint
+and implement AS0 on `codex/assistant-as0`: strict shared desktop contracts,
+scripted fake Messages/Notes driver, durable task/approval/cancellation state,
+default-off capability and chat/design review states. The concrete additive
+schema and implementation boundary are in `docs/ASSISTANT-AS0-PLAN.md`; apply
+only to isolated development/test databases. No new dependency, model/native
+call, live Mac app/permission/data access, send, Research restart, main merge
+or deployment. Keep ordinary provider/prompt/sampling paths unchanged. Stop
+with H4 evidence and a draft PR before AS1 native-driver qualification.
+
 **User scope clarification — 30 October 2026 (reusable computer use):** Jake
 confirmed typed requests as well as optional voice, and wants a computer-use
 assistant that can work across apps. Apple Messages is the first pilot, not the

@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     legacy_db: Path = Path.home() / ".local/share/agenticrag/.data/workbench-chats.db"
     transcribe_home: Path | None = None
     image_home: Path | None = None
+    assistant_enabled: bool = False
 
     @property
     def hosts(self) -> set[str]:

@@ -66,6 +66,8 @@ async def export_all(request: Request) -> Response:
 @router.delete("", status_code=204)
 async def delete_all(body: DeleteChats, request: Request) -> None:
     store = request.app.state.store
+    if request.app.state.assistant:
+        await request.app.state.assistant.close()
     # Cancel and await generators before deleting their message rows.
     for run in list(request.app.state.runs.runs.values()):
         if not run.closed:
@@ -88,7 +90,10 @@ async def listing(
 ) -> ChatList:
     store = request.app.state.store
     params: list[object] = []
-    sql = "SELECT * FROM chats WHERE EXISTS (SELECT 1 FROM messages WHERE chat_id=chats.id)"
+    present = "EXISTS (SELECT 1 FROM messages WHERE chat_id=chats.id)"
+    if request.app.state.assistant is not None:
+        present += " OR EXISTS (SELECT 1 FROM assistant_tasks WHERE chat_id=chats.id)"
+    sql = "SELECT * FROM chats WHERE (" + present + ")"
     if folder is not None:
         if folder == "none":
             sql += " AND folder_id IS NULL"
@@ -169,6 +174,8 @@ async def patch(identifier: str, body: ChatPatch, request: Request) -> Chat:
 async def delete(identifier: str, request: Request) -> None:
     store = request.app.state.store
     await chats.chat(store, identifier)
+    if request.app.state.assistant:
+        await request.app.state.assistant.cancel_chat(identifier)
     for run in list(request.app.state.runs.runs.values()):
         if run.message.chat_id == identifier and not run.closed:
             await request.app.state.runs.cancel(run.id)
