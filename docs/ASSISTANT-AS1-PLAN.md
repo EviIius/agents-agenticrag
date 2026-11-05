@@ -122,7 +122,7 @@ Report offline results separately from live results. AS1-A needs its concrete
 bridge/permission approval before execution. AS1-B message reading, AS2 model
 tasks, AS3 sending and any merge/deployment remain separate checkpoints.
 
-## AS1-A outcome and proposed AS1-A2 follow-up
+## AS1-A outcome and approved AS1-A2 follow-up
 
 Seven approved requests ran. Messages opening and its 66-node structure passed,
 without truncation. Notes opening passed, but its focused root was `AXSheet`
@@ -132,7 +132,12 @@ reproduces the refusal. No guard, helper, model or dependency change is proposed
 The first-failure rule stopped native execution; the eighth revocation check was
 not run. Do not spend the unused request on a retry.
 
-**Proposed separate scope, requiring approval:** at most two fresh one-shot
+Jake authorized the following scope by saying “Continue” after reviewing the
+stopped report and two-request proposal on draft PR #16. Confirmation that the
+normal Notes editor is selected, and subsequent manual revocation, remain actual
+setup steps; approval alone does not establish either state.
+
+**Approved separate scope:** at most two fresh one-shot
 requests, using the same sealed build and identity, with the same deadlines and
 privacy limits. Retain the original seven requests and failure unchanged. Use a
 separate fixed private `native-followup` ledger, with an operator cap of two;

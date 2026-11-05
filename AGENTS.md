@@ -1,5 +1,16 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**User authorization — 4 November 2026 (AS1-A2):** Jake said “Continue” after
+the stopped-trial report and concrete two-request Notes/editor + revocation
+proposal on draft PR #16. Proceed with that exact follow-up using the same sealed
+helper and unchanged window guard. This approves the native scope; confirmation
+that the ordinary Notes editor is selected is still required before the first
+request, and manual permission revocation before the second. At most two new
+one-shot Notes structure requests in a fixed separate `native-followup` ledger;
+retain AS1-A's seven requests/failure and do not use its unused slot. Stop on the
+first unexpected failure. No extra open/prompt/check, retry, rebuild, private
+text, screenshot, input/send, model call, package, main merge or deployment.
+
 **AS1-A stopped trial — 4 November 2026:** The sealed five-file implementation
 passes full `make check` (856 Python / 156 frontend / 969 contrast pairs) and 16
 compiled offline checks. Jake confirmed the helper's own enabled permission entry
@@ -9,8 +20,8 @@ without truncation. Notes returned an `AXSheet` root (11 nodes), refused by the
 host's required `AXWindow` guard. Offline replay confirms that exact cause; no
 source/guard change or native retry occurred. First-failure stopping prevents
 spending the unused eighth request; revocation refusal remains untested. The
-two-request AS1-A2 Notes/editor + revocation proposal in `docs/ASSISTANT-AS1-PLAN.md`
-needs separate approval. No message text, screenshot, model call, input/send,
+two-request AS1-A2 Notes/editor + revocation scope in `docs/ASSISTANT-AS1-PLAN.md`
+was subsequently authorized above; its manual setup requirements remain. No message text, screenshot, model call, input/send,
 main merge or deployment. AS1 is unqualified; AS1-B remains unimplemented. H4:
 `docs/ASSISTANT-AS1-REPORT.md`; sanitized outcomes and refusal analysis are in
 `artifacts/assistant-as1-20261104/`.

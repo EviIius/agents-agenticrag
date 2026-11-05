@@ -7,7 +7,7 @@
 Seven approved native requests ran after the full regression check passed.
 Permission and both app openings passed; Messages returned 66 role-only nodes.
 Notes exposed a modal `AXSheet`, refused by the host's normal-window guard.
-The trial stopped at that first failure; revocation refusal is untested.
+The original trial stopped; its two-request follow-up is approved but not run.
 No text, screenshot, input or model call occurred; AS1 remains unqualified.
 
 ## Done-when checklist
@@ -26,6 +26,7 @@ No text, screenshot, input or model call occurred; AS1 remains unqualified.
 | Real Notes opening | Pass | Sixth request: expected application identity, 0.346 s |
 | Real Notes structure observation | **Failed host acceptance** | Seventh request: `AXSheet` root, 11 nodes; `notes-refusal-analysis.json` |
 | Permission revocation refusal | **Not run** | First-failure stop; unused eighth request retained |
+| AS1-A2 follow-up preparation | Approved; awaiting normal Notes editor confirmation | Five synthetic operator checks pass; `followup-operator-offline.json` |
 | Selected conversation text, recipient and latest-message identity | **Not implemented/qualified** | AS1-B follows a reviewed structure map; no guessed parser |
 | Native driver integrated with chat or model | **Not implemented/qualified** | Existing fake-only constructor remains unchanged |
 
@@ -107,6 +108,13 @@ the grant to Codex/Terminal/Python instead of Aether Desktop Trial.
   response hash. The five frozen implementation files and exact sealed helper
   remain unchanged. This is a refused modal sheet, not evidence of a permission,
   timing or local-model failure.
+- AS1-A2's operator passes **five synthetic checks** for its two-request cap,
+  phase order, first-failure stopping, initial permission refusal and unexpected
+  revocation success. All use fake transports and temporary files, with zero
+  native calls. Its exact source is retained as `followup-operator.py`, SHA-256
+  `4fc4f2f4785fa8fb11f6c31487921e64a44cc4d03f3371c10310b07018d22bae`.
+  The frozen five-file core and sealed app remain unchanged. AS1-A2 has consumed
+  no native request; manual normal-editor confirmation remains pending.
 - Full `make check` passes against the frozen five-file new-source inventory:
   **856 Python / 156 frontend tests**, 969 contrast pairs, lint/types/format,
   API/additive contract, motion/privacy checks and production build/glass guard.
@@ -129,7 +137,7 @@ the grant to Codex/Terminal/Python instead of Aether Desktop Trial.
 No desktop screenshots were captured. Jake's permission photo stays outside
 repo evidence. The previous fake AS0 design screenshots remain unchanged.
 
-## Open questions for Jake / proposed follow-up
+## Open questions for Jake / remaining manual setup
 
 Jake approved **Aether Desktop Trial**, `dev.agenticrag.aether.desktop-trial`,
 the exact sealed build above, and at most eight one-shot requests with no retry.
@@ -137,13 +145,15 @@ Seven have run, with the first failure preserved. The original scope has stopped
 do not use its remaining request as a retry. The helper's permission has not been
 revoked/checked by this trial yet. Jake may disable it manually at any time.
 
-The concrete **AS1-A2** proposal in `ASSISTANT-AS1-PLAN.md` requires separate
-approval under the first-failure rule: one Notes structure request after Jake
+Jake authorized **AS1-A2** by saying “Continue” after the concrete proposal in
+`ASSISTANT-AS1-PLAN.md`: one Notes structure request after Jake
 selects the normal disposable-note editor, then one refusal check after he
 manually disables the helper. Same sealed build, at most two new requests, no
 retry/rebuild/extra open or permission prompt, and all existing privacy limits.
-The original failed trial remains retained. If the first request fails, stop
-again. No text read, screenshot, typing, send, model call, main merge or deployment.
+The original failed trial remains retained. Confirmation that Notes now shows
+the ordinary editor is pending; authorization is not a claim about window state.
+If the first request fails, stop again. No text read, screenshot, typing, send,
+model call, main merge or deployment.
 
 Even successful role-only probes leave the selected-message reader and native
 chat integration open for AS1-B review; they do not establish recipient identity
