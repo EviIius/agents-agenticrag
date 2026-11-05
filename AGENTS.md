@@ -1,5 +1,67 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**AS1-A2 closeout — 5 November 2026:** Both approved follow-up requests passed
+on the unchanged sealed helper/core. After Jake confirmed the ordinary Notes
+editor, its role-only structure passed (43 nodes, no truncation, 0.121 s). After
+he confirmed Aether Desktop Trial manually disabled, a fresh helper refused
+Notes observation (`permission_required`, no target, zero nodes, 0.094 s).
+The two-request follow-up budget is exhausted; do not repeat or add native calls.
+AS1-A's original seven requests and modal-sheet refusal remain unchanged. Only
+the exact-build Messages/Notes role-only preflight is qualified; AS1-B text,
+recipient/latest-message identity, native chat/model integration, actual native
+cancellation and cross-version permission identity remain open. No private text,
+screenshot, input/send, model call, package, main merge or deployment. Stop for
+review with `docs/ASSISTANT-AS1-REPORT.md`; native evidence is in
+`artifacts/assistant-as1-20261104/native-followup-progress.json`.
+
+**User authorization — 4 November 2026 (AS1-A2):** Jake said “Continue” after
+the stopped-trial report and concrete two-request Notes/editor + revocation
+proposal on draft PR #16. Proceed with that exact follow-up using the same sealed
+helper and unchanged window guard. This approves the native scope; confirmation
+that the ordinary Notes editor is selected is still required before the first
+request, and manual permission revocation before the second. At most two new
+one-shot Notes structure requests in a fixed separate `native-followup` ledger;
+retain AS1-A's seven requests/failure and do not use its unused slot. Stop on the
+first unexpected failure. No extra open/prompt/check, retry, rebuild, private
+text, screenshot, input/send, model call, package, main merge or deployment.
+
+**AS1-A stopped trial — 4 November 2026:** The sealed five-file implementation
+passes full `make check` (856 Python / 156 frontend / 969 contrast pairs) and 16
+compiled offline checks. Jake confirmed the helper's own enabled permission entry
+and both selected test windows. Seven of eight approved native requests ran:
+permission grant/recheck and both app openings passed; Messages returned 66 nodes
+without truncation. Notes returned an `AXSheet` root (11 nodes), refused by the
+host's required `AXWindow` guard. Offline replay confirms that exact cause; no
+source/guard change or native retry occurred. First-failure stopping prevents
+spending the unused eighth request; revocation refusal remains untested. The
+two-request AS1-A2 Notes/editor + revocation scope in `docs/ASSISTANT-AS1-PLAN.md`
+was subsequently authorized above; its manual setup requirements remain. No message text, screenshot, model call, input/send,
+main merge or deployment. AS1 is unqualified; AS1-B remains unimplemented. H4:
+`docs/ASSISTANT-AS1-REPORT.md`; sanitized outcomes and refusal analysis are in
+`artifacts/assistant-as1-20261104/`.
+
+**User approval — 4 November 2026 (AS1-A):** Jake approved the bounded AS1-A
+trial after reviewing the named helper/permission scope on draft PR #16. Once
+the regression check passes, execute at most eight one-shot requests from
+`docs/ASSISTANT-AS1-PLAN.md`, using the sealed build with manifest SHA-256
+`2b42d2f56b37226e5b26ecb6009957422fd8faea9eaf7635744c715c2c99d4ef`.
+Jake manually grants/revokes Accessibility to Aether Desktop Trial and selects
+his self-conversation/test Notes window. Verify actual permission attribution
+before app observation. No message text, screenshots, model calls, typing,
+sending, new package, main merge or deployment. Preserve the first failure and
+stop on unexpected target/identity, timeout, protocol/privacy or resource failure;
+no automatic retry or extra request beyond the declared eight.
+
+**User continuation — 4 November 2026 (AS1 preparation):** Jake said “Continue”
+after the AS0 report and selected a conversation with himself for the Messages
+pilot. Accept the AS0 technical checkpoint and prepare AS1 on `codex/assistant-as1`:
+a fixed, host-authored Swift helper using installed Apple frameworks, isolated
+build, strict private-job protocol and offline tests. The concrete native scope
+and permission identity are in `docs/ASSISTANT-AS1-PLAN.md`. AS1's existing rule
+still requires agreeing that bridge/permission scope before live execution.
+No native app/Accessibility access or prompt, private conversation read, model
+call, new package, main merge or deployment is granted by this preparation note.
+
 **AS0 technical closeout — 31 October 2026:** The default-off fake desktop
 controller and chat review flow pass full checks: 821 Python / 156 frontend,
 92.2% assistant coverage, and 922 Chromium/WebKit browser cases with four unchanged
