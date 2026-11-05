@@ -1,5 +1,28 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**AS1-A progress — 4 November 2026:** The sealed five-file implementation passes
+full `make check` (856 Python / 156 frontend / 969 contrast pairs) and 16 compiled
+offline checks. Two of eight approved native requests have run: permission and
+request_access, both expected `permission_required` with zero app nodes/targets.
+Do not repeat those requests. Wait for Jake to confirm the helper's own System
+Settings identity and prepare his self-conversation/test note before the approved
+permission recheck/open/structure steps. No app has been opened or inspected.
+AS1-B text/recipient qualification remains unimplemented; no model call, send,
+main merge or deployment. H4/progress: `docs/ASSISTANT-AS1-REPORT.md` and
+`artifacts/assistant-as1-20261104/native-progress.json`.
+
+**User approval — 4 November 2026 (AS1-A):** Jake approved the bounded AS1-A
+trial after reviewing the named helper/permission scope on draft PR #16. Once
+the regression check passes, execute at most eight one-shot requests from
+`docs/ASSISTANT-AS1-PLAN.md`, using the sealed build with manifest SHA-256
+`2b42d2f56b37226e5b26ecb6009957422fd8faea9eaf7635744c715c2c99d4ef`.
+Jake manually grants/revokes Accessibility to Aether Desktop Trial and selects
+his self-conversation/test Notes window. Verify actual permission attribution
+before app observation. No message text, screenshots, model calls, typing,
+sending, new package, main merge or deployment. Preserve the first failure and
+stop on unexpected target/identity, timeout, protocol/privacy or resource failure;
+no automatic retry or extra request beyond the declared eight.
+
 **User continuation — 4 November 2026 (AS1 preparation):** Jake said “Continue”
 after the AS0 report and selected a conversation with himself for the Messages
 pilot. Accept the AS0 technical checkpoint and prepare AS1 on `codex/assistant-as1`:

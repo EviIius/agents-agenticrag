@@ -1,0 +1,159 @@
+E501 Line too long (111 > 100)
+   --> app/assistant/mac_probe.py:102:101
+    |
+100 |         if reading != bool(self.nodes) or reading and self.trusted is not True:
+101 |             raise ValueError("Unexpected structure.")
+102 |         if self.operation in {"permission", "request_access"} and self.status in {"ok", "permission_required"}:
+    |                                                                                                     ^^^^^^^^^^^
+103 |             if self.trusted != (self.status == "ok"):
+104 |                 raise ValueError("Unexpected permission status.")
+    |
+
+E501 Line too long (110 > 100)
+   --> app/assistant/mac_probe.py:206:101
+    |
+204 |         job.mkdir(mode=0o700)
+205 |         private_write(job / "request.json", request.model_dump_json().encode())
+206 |         records.append({"request_id": request.request_id, "operation": request.operation, "app": request.app})
+    |                                                                                                     ^^^^^^^^^^
+207 |         temporary = directory / (request.request_id + ".ledger")
+208 |         private_write(temporary, json.dumps(records).encode())
+    |
+
+E501 Line too long (111 > 100)
+  --> tests/test_mac_probe.py:39:101
+   |
+37 |     build.mkdir(mode=0o700)
+38 |     bundle = build / "Aether Desktop Trial.app"
+39 |     files = {"Contents/MacOS/DesktopTrial": b"synthetic executable", "Contents/Info.plist": b"synthetic plist"}
+   |                                                                                                     ^^^^^^^^^^^
+40 |     for name, raw in files.items():
+41 |         file = bundle / name
+   |
+
+E501 Line too long (101 > 100)
+  --> tests/test_mac_probe.py:72:101
+   |
+70 |     {"trusted": False}, {"nodes": []},
+71 | ])
+72 | def test_reply_refuses_wrong_identity_private_text_and_forged_trees(changes: dict[str, Any]) -> None:
+   |                                                                                                     ^
+73 |     job = request()
+74 |     with pytest.raises(probe.ProbeFailure) as error:
+   |
+
+E501 Line too long (106 > 100)
+   --> tests/test_mac_probe.py:114:101
+    |
+114 | def test_private_files_refuse_replacement_symlinks_oversize_and_broad_permissions(tmp_path: Path) -> None:
+    |                                                                                                     ^^^^^^
+115 |     file = tmp_path / "private"
+116 |     probe.private_write(file, b"synthetic")
+    |
+
+E501 Line too long (107 > 100)
+   --> tests/test_mac_probe.py:136:101
+    |
+134 |     directory = probe.reserve(root, job)
+135 |     assert directory.stat().st_mode & 0o777 == 0o700
+136 |     assert json.loads(probe.private_read(directory / "request.json", 4096))["request_id"] == job.request_id
+    |                                                                                                     ^^^^^^^
+137 |     with pytest.raises(probe.ProbeFailure):
+138 |         probe.reserve(root, job)
+    |
+
+E501 Line too long (114 > 100)
+   --> tests/test_mac_probe.py:180:101
+    |
+178 |         await probe.run_probe(tmp_path, "", tmp_path, request())
+179 |     with pytest.raises(probe.ProbeFailure, match="expired"):
+180 |         await probe.run_probe(tmp_path, "", tmp_path, request(expires_at=time.time() - 1), approved_scope="as1-a")
+    |                                                                                                     ^^^^^^^^^^^^^^
+
+E501 Line too long (121 > 100)
+   --> tests/test_mac_probe.py:192:101
+    |
+190 |         calls.append(args)
+191 |         directory = Path(args[-1])
+192 |         probe.private_write(directory / "helper.json", json.dumps({"request_id": job.request_id, "pid": 12345}).encode())
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^
+193 |         probe.private_write(directory / "response.json", response(job))
+194 |         return Process(done=True)
+    |
+
+E501 Line too long (103 > 100)
+   --> tests/test_mac_probe.py:198:101
+    |
+196 |     reply = await probe.run_probe(build, digest, tmp_path / "trial", job, approved_scope="as1-a")
+197 |     assert reply.status == "ok" and len(calls) == 1
+198 |     assert calls[0][:5] == ("/usr/bin/open", "-n", "-W", "-a", str(build / "Aether Desktop Trial.app"))
+    |                                                                                                     ^^^
+
+E501 Line too long (110 > 100)
+   --> tests/test_mac_probe.py:214:101
+    |
+212 |     async def spawn(*args: str, **kwargs: object) -> Process:
+213 |         if args[0] == "/bin/ps":
+214 |             command = f"{build}/Aether Desktop Trial.app/Contents/MacOS/DesktopTrial --native-job {directory}"
+    |                                                                                                     ^^^^^^^^^^
+215 |             return Process(done=True, output=command.encode())
+216 |         probe.private_write(directory / "helper.json", json.dumps({"request_id": job.request_id, "pid": 12345}).encode())
+    |
+
+E501 Line too long (121 > 100)
+   --> tests/test_mac_probe.py:216:101
+    |
+214 |             command = f"{build}/Aether Desktop Trial.app/Contents/MacOS/DesktopTrial --native-job {directory}"
+215 |             return Process(done=True, output=command.encode())
+216 |         probe.private_write(directory / "helper.json", json.dumps({"request_id": job.request_id, "pid": 12345}).encode())
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^
+217 |         launched.set()
+218 |         if when == "spawning":
+    |
+
+E501 Line too long (111 > 100)
+   --> tests/test_mac_probe.py:227:101
+    |
+225 |     monkeypatch.setattr(asyncio, "create_subprocess_exec", spawn)
+226 |     monkeypatch.setattr(os, "kill", stop)
+227 |     task = asyncio.create_task(probe.run_probe(build, digest, tmp_path / "trial", job, approved_scope="as1-a"))
+    |                                                                                                     ^^^^^^^^^^^
+228 |     await launched.wait()
+229 |     if when != "deadline":
+    |
+
+E501 Line too long (105 > 100)
+   --> tests/test_mac_probe.py:243:101
+    |
+241 |     job = tmp_path / ("a" * 32)
+242 |     job.mkdir()
+243 |     probe.private_write(job / "helper.json", json.dumps({"request_id": job.name, "pid": 12345}).encode())
+    |                                                                                                     ^^^^^
+244 |     async def inspect(*args: str, **kwargs: object) -> Process:
+245 |         return Process(done=True, output=b"another application")
+    |
+
+E501 Line too long (116 > 100)
+   --> tests/test_mac_probe.py:255:101
+    |
+253 |     root = Path(__file__).resolve().parents[2]
+254 |     source = (root / "tools/mac_desktop/Probe.swift").read_text()
+255 |     for forbidden in ["kAXValueAttribute", "kAXTitleAttribute", "kAXDescriptionAttribute", "kAXIdentifierAttribute",
+    |                                                                                                     ^^^^^^^^^^^^^^^^
+256 |                       "AXUIElementPerformAction", "AXUIElementSetAttributeValue", "CGEvent", "ScreenCaptureKit", "chat.db"]:
+257 |         assert forbidden not in source
+    |
+
+E501 Line too long (124 > 100)
+   --> tests/test_mac_probe.py:256:101
+    |
+254 |     source = (root / "tools/mac_desktop/Probe.swift").read_text()
+255 |     for forbidden in ["kAXValueAttribute", "kAXTitleAttribute", "kAXDescriptionAttribute", "kAXIdentifierAttribute",
+256 |                       "AXUIElementPerformAction", "AXUIElementSetAttributeValue", "CGEvent", "ScreenCaptureKit", "chat.db"]:
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^
+257 |         assert forbidden not in source
+258 |     assert "mac_probe" not in (root / "server/app/main.py").read_text()
+    |
+
+Found 15 errors.
+2 files reformatted

@@ -55,7 +55,12 @@ and reject coordinate actions without qualified capture metadata. Keep AS0's
 fake-only constructor and native-action refusal until the actual observation
 adapter is qualified. A structure digest is not a conversation identity.
 
-## AS1-A proposed native scope — separate approval before execution
+## AS1-A approved native scope
+
+Jake approved this bounded trial on 4 November after reviewing the sealed helper
+and permission scope on draft PR #16. The full regression check passed before
+the first request. Manual confirmation of the actual permission identity remains
+required before app inspection; approval does not substitute for that observation.
 
 At most **eight one-shot helper requests**, each with a 15-second host deadline
 and shorter bounded Accessibility traversal. No automatic retry. Stop on an
