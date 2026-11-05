@@ -157,3 +157,11 @@ If the follow-up is declined, Jake can disable the helper manually; record the
 revocation control as untested. Even a successful follow-up would qualify only
 this role-only preflight. AS1-B's selected text/recipient adapter and actual native
 cancellation/upgrade-identity qualification remain open.
+
+**AS1-A2 outcome — 5 November:** both approved requests passed on the unchanged
+sealed build. The ordinary Notes window returned 43 role-only nodes without
+truncation (0.121 s); after Jake's manual disable, a fresh helper refused access
+with no target and zero nodes (0.094 s). The two-request follow-up budget is
+exhausted. Retain the original seven-request trial and modal refusal. No further
+native request, re-enable or AS1-B text access is authorized by this closeout.
+Stop with the report for review before the selected-conversation reader.

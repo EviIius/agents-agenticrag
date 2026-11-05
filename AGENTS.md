@@ -1,5 +1,19 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**AS1-A2 closeout — 5 November 2026:** Both approved follow-up requests passed
+on the unchanged sealed helper/core. After Jake confirmed the ordinary Notes
+editor, its role-only structure passed (43 nodes, no truncation, 0.121 s). After
+he confirmed Aether Desktop Trial manually disabled, a fresh helper refused
+Notes observation (`permission_required`, no target, zero nodes, 0.094 s).
+The two-request follow-up budget is exhausted; do not repeat or add native calls.
+AS1-A's original seven requests and modal-sheet refusal remain unchanged. Only
+the exact-build Messages/Notes role-only preflight is qualified; AS1-B text,
+recipient/latest-message identity, native chat/model integration, actual native
+cancellation and cross-version permission identity remain open. No private text,
+screenshot, input/send, model call, package, main merge or deployment. Stop for
+review with `docs/ASSISTANT-AS1-REPORT.md`; native evidence is in
+`artifacts/assistant-as1-20261104/native-followup-progress.json`.
+
 **User authorization — 4 November 2026 (AS1-A2):** Jake said “Continue” after
 the stopped-trial report and concrete two-request Notes/editor + revocation
 proposal on draft PR #16. Proceed with that exact follow-up using the same sealed

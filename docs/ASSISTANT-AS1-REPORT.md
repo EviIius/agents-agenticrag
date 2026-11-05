@@ -1,14 +1,14 @@
-# AS1-A stopped preflight report
+# AS1 role-only preflight report
 
-4 November 2026 · `codex/assistant-as1` · native qualification remains open
+4–5 November 2026 · `codex/assistant-as1` · message reading and native chat integration remain open
 
 ## Summary
 
-Seven approved native requests ran after the full regression check passed.
-Permission and both app openings passed; Messages returned 66 role-only nodes.
-Notes exposed a modal `AXSheet`, refused by the host's normal-window guard.
-The original trial stopped; its two-request follow-up is approved but not run.
-No text, screenshot, input or model call occurred; AS1 remains unqualified.
+The original trial passed Messages and preserved Notes' modal-sheet refusal.
+Both separately approved follow-up requests passed on the unchanged sealed build.
+Messages/Notes returned 66/43 role-only nodes; revocation refused access with zero nodes.
+Only this exact-build structure preflight is qualified; selected-text/chat integration remains open.
+No text, screenshot, input, model call, merge or deployment occurred.
 
 ## Done-when checklist
 
@@ -19,14 +19,15 @@ No text, screenshot, input or model call occurred; AS1 remains unqualified.
 | Compiled fixture redaction, caps and private-file validation | Pass | 16 checks in `swift-offline.txt`; no `--native-job` execution |
 | Strict receipts, sealed build, durable eight-request budget, cancellation/deadline ownership | Pass with fake processes | `focused-final.txt`: 71 cases, including 35 new probe cases |
 | Full application checks | Pass | `make-check.txt`: 856 Python, 156 frontend, 969 contrast pairs |
-| Existing source, history and production preserved | Pass after stopped trial | `verification-after-trial.json`; five new / 644 AS0 / 646 installed files and 32,515 historical artifacts unchanged |
+| Existing source, history and production preserved | Pass after completed follow-up | `verification-after-followup.json`; five new / 644 AS0 / 646 installed files and 32,515 historical artifacts unchanged |
 | Native permission check and access request | Expected initial refusal; recheck passes after manual grant | `native-progress.json`: three permission requests total |
 | Real Messages opening | Pass | Fourth request verifies fixed installed application identity |
 | Real Messages structure observation | Pass for role-only preflight | Fifth request: 66 nodes, no truncation, 0.161 s |
 | Real Notes opening | Pass | Sixth request: expected application identity, 0.346 s |
-| Real Notes structure observation | **Failed host acceptance** | Seventh request: `AXSheet` root, 11 nodes; `notes-refusal-analysis.json` |
-| Permission revocation refusal | **Not run** | First-failure stop; unused eighth request retained |
-| AS1-A2 follow-up preparation | Approved; awaiting normal Notes editor confirmation | Five synthetic operator checks pass; `followup-operator-offline.json` |
+| Original Notes structure observation | **Failed host acceptance; retained** | Seventh original request: `AXSheet` root, 11 nodes; `notes-refusal-analysis.json` |
+| Follow-up Notes structure observation | Pass for role-only preflight | First AS1-A2 request: 43 nodes, no truncation, 0.121 s; `native-followup-progress.json` |
+| Permission revocation refusal | Pass | Second AS1-A2 request: fresh helper refuses, zero target/nodes, 0.094 s |
+| AS1-A2 follow-up | Two approved requests complete; no further native scope | Original eighth request remains unused; follow-up ledger exhausted |
 | Selected conversation text, recipient and latest-message identity | **Not implemented/qualified** | AS1-B follows a reviewed structure map; no guessed parser |
 | Native driver integrated with chat or model | **Not implemented/qualified** | Existing fake-only constructor remains unchanged |
 
@@ -78,11 +79,21 @@ failure: the host requires `AXWindow`. The sheet's purpose/content is unknown
 because no text attributes were read. The refusal does not establish that Notes
 cannot be supported; it does mean this trial did not qualify the second app.
 
-No native retry, eighth request, guard relaxation or source change followed.
+No automatic retry, original eighth request, guard relaxation or source change
+followed that refusal.
 No message read/send, desktop capture or model call has occurred. Jake's
 supplied photo was not copied into repo evidence. Raw role-only native receipts
 remain private; committed evidence contains statuses, counts and a response hash.
 No user data was used for fixtures.
+
+On 5 November, Jake confirmed the ordinary Notes editor ready for the separately
+approved AS1-A2 follow-up. Its first one-shot request accepted a normal window
+with 43 nodes, without truncation, in 0.121 seconds. Jake then confirmed the
+helper manually disabled. The second request, in a fresh helper process, returned
+`permission_required`, no target and zero nodes in 0.094 seconds. No prompt or
+re-enable followed. Both follow-up slots are consumed; no further native request
+is authorized. The original refusal/ledger remain unchanged. No helper/core
+rebuild, guard change, text read or other attribute collection occurred.
 
 The exact build's manifest SHA-256 is
 `2b42d2f56b37226e5b26ecb6009957422fd8faea9eaf7635744c715c2c99d4ef`;
@@ -114,7 +125,10 @@ the grant to Codex/Terminal/Python instead of Aether Desktop Trial.
   native calls. Its exact source is retained as `followup-operator.py`, SHA-256
   `4fc4f2f4785fa8fb11f6c31487921e64a44cc4d03f3371c10310b07018d22bae`.
   The frozen five-file core and sealed app remain unchanged. AS1-A2 has consumed
-  no native request; manual normal-editor confirmation remains pending.
+  both approved native requests. The offline report's zero-call/pending fields
+  describe preparation time; `native-followup-progress.json` records the actual
+  successful Notes and revocation checks. No new inference or broad regression
+  run was needed: the frozen implementation and UI/API wiring are unchanged.
 - Full `make check` passes against the frozen five-file new-source inventory:
   **856 Python / 156 frontend tests**, 969 contrast pairs, lint/types/format,
   API/additive contract, motion/privacy checks and production build/glass guard.
@@ -125,8 +139,9 @@ the grant to Codex/Terminal/Python instead of Aether Desktop Trial.
   predecessor; `historical-artifact-preservation.json` records the archive hash.
   All five new source files, 644 AS0 source files and 646 installed public files
   match their inventories. Main, AS0, the separate design branch, launchd plist
-  and service PID 77443 are unchanged. Local and normally verified HTTPS health
-  checks pass.
+  and service PID 77443 are unchanged. The fresh after-follow-up inventory and
+  seal check confirm preservation; local and normally verified HTTPS health
+  checks both return 200. See `verification-after-followup.json`.
 - No browser/UI wiring changed. AS0's retained 922 browser passes/four skips
   remain the unchanged baseline, not a new AS1 browser/native pass. Preparation
   is not a release or completed AS1 report; live qualification and release QA
@@ -137,24 +152,30 @@ the grant to Codex/Terminal/Python instead of Aether Desktop Trial.
 No desktop screenshots were captured. Jake's permission photo stays outside
 repo evidence. The previous fake AS0 design screenshots remain unchanged.
 
-## Open questions for Jake / remaining manual setup
+## Open questions for Jake / next checkpoint
 
 Jake approved **Aether Desktop Trial**, `dev.agenticrag.aether.desktop-trial`,
 the exact sealed build above, and at most eight one-shot requests with no retry.
 Seven have run, with the first failure preserved. The original scope has stopped;
-do not use its remaining request as a retry. The helper's permission has not been
-revoked/checked by this trial yet. Jake may disable it manually at any time.
+do not use its remaining request as a retry. The separately approved AS1-A2
+follow-up completed both requests and verified refusal after manual revocation.
+The helper remains disabled; do not re-enable or issue another native request.
 
 Jake authorized **AS1-A2** by saying “Continue” after the concrete proposal in
 `ASSISTANT-AS1-PLAN.md`: one Notes structure request after Jake
 selects the normal disposable-note editor, then one refusal check after he
 manually disables the helper. Same sealed build, at most two new requests, no
 retry/rebuild/extra open or permission prompt, and all existing privacy limits.
-The original failed trial remains retained. Confirmation that Notes now shows
-the ordinary editor is pending; authorization is not a claim about window state.
-If the first request fails, stop again. No text read, screenshot, typing, send,
-model call, main merge or deployment.
+The original failed trial remains retained. Jake confirmed both manual setup
+steps; both follow-up gates passed. No text read, screenshot, typing, send, model
+call, main merge or deployment occurred. No additional OS setup is pending for
+this scope.
 
-Even successful role-only probes leave the selected-message reader and native
-chat integration open for AS1-B review; they do not establish recipient identity
-or prove that a local model can reliably operate either app.
+Next is AS1-B: review a bounded selected-conversation reader and its text-only
+observation contract before implementation/native text access. It must establish
+the actual direct recipient and message identity from explicit app evidence,
+limit collection to the selected self-thread (at most eight messages), and
+refuse ambiguous panes, groups or missing identity. A self-thread with no incoming
+message must report that state explicitly. No sidebar-wide text dump or Messages
+database access. Native chat integration and AS2 model tasks remain later gates;
+these successful role-only probes do not prove model-driven computer use.
