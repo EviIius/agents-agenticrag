@@ -2,11 +2,12 @@
 
 **AS1-A progress — 4 November 2026:** The sealed five-file implementation passes
 full `make check` (856 Python / 156 frontend / 969 contrast pairs) and 16 compiled
-offline checks. Two of eight approved native requests have run: permission and
-request_access, both expected `permission_required` with zero app nodes/targets.
-Do not repeat those requests. Wait for Jake to confirm the helper's own System
-Settings identity and prepare his self-conversation/test note before the approved
-permission recheck/open/structure steps. No app has been opened or inspected.
+offline checks. Four of eight approved native requests have run: permission and
+request_access returned expected `permission_required`; after Jake confirmed the
+helper's own enabled permission entry with a private photo, permission recheck
+and fixed-path Messages opening passed. Do not repeat those requests. Wait for
+confirmation that his self-conversation/test note are selected before structure
+inspection. Messages was opened; no app structure or text has been inspected.
 AS1-B text/recipient qualification remains unimplemented; no model call, send,
 main merge or deployment. H4/progress: `docs/ASSISTANT-AS1-REPORT.md` and
 `artifacts/assistant-as1-20261104/native-progress.json`.

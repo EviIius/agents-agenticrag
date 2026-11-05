@@ -8,23 +8,25 @@ Prepared a fixed, locally signed Swift helper and strict one-shot transport for
 the first real Mac preflight. Jake selected his conversation with himself.
 The built helper exposes permission/open/role-structure operations only, with
 no message text, screenshot or input API. Offline paths and synthetic process
-tests and the full regression check pass. Jake approved AS1-A. Its first two
-native requests checked permission and requested access; both correctly reported
-that access is required. App inspection is waiting for his manual setup and
-confirmation of the helper's permission identity. AS1 is not qualified yet.
+tests and the full regression check pass. Jake approved AS1-A and confirmed the
+helper's own enabled permission entry with a private photo. Four requests have
+run: initial permission refusal/request, successful permission recheck and
+verified Messages opening. Structure inspection awaits confirmation that his
+self-conversation/test note are selected. AS1 is not qualified yet.
 
 ## Done-when checklist
 
 | Item | Status | Evidence |
 | --- | --- | --- |
-| Named bridge, app allowlist, permission identity and bounded native scope | Approved; actual permission attribution pending | `ASSISTANT-AS1-PLAN.md`; exact Messages/Notes Info.plist metadata |
+| Named bridge, app allowlist, permission identity and bounded native scope | Approved; helper identity confirmed by Jake's supplied photo | `ASSISTANT-AS1-PLAN.md`; private photo kept outside repository |
 | Build without packages, downloads, app launch or permission prompt | Pass | `build-03.txt`, `build-manifest.json`, `signature.txt`; existing Swift toolchain |
 | Compiled fixture redaction, caps and private-file validation | Pass | 16 checks in `swift-offline.txt`; no `--native-job` execution |
 | Strict receipts, sealed build, durable eight-request budget, cancellation/deadline ownership | Pass with fake processes | `focused-final.txt`: 71 cases, including 35 new probe cases |
 | Full application checks | Pass | `make-check.txt`: 856 Python, 156 frontend, 969 contrast pairs |
 | Existing AS0 source and production preserved | Pass after checks | `verification-after-check.json`; 644 AS0 / 646 installed files unchanged |
-| Native permission check and access request | Expected refusal | `native-progress.json`: two requests, no app observation |
-| Actual helper permission identity and real app opening/observation | **Pending manual setup** | Approved scope; user confirmation required before observation |
+| Native permission check and access request | Expected initial refusal; recheck passes after manual grant | `native-progress.json`: three permission requests total |
+| Real Messages opening | Pass | Fourth request verifies fixed installed application identity |
+| Real app structure observation | **Pending selected-window confirmation** | No structure request executed yet |
 | Selected conversation text, recipient and latest-message identity | **Not implemented/qualified** | AS1-B follows a reviewed structure map; no guessed parser |
 | Native driver integrated with chat or model | **Not implemented/qualified** | Existing fake-only constructor remains unchanged |
 
@@ -61,12 +63,15 @@ Installed public metadata reports macOS 27.0 and bundle IDs
 Reading those Info.plist files did not open or inspect either app.
 The existing compiler built and locally ad-hoc-signed the helper. Only manifest,
 invented tree and private test-file validation paths were executed during the
-offline checks. After the full regression check passed, two one-shot native jobs
+offline checks. After the full regression check passed, four one-shot native jobs
 ran through Launch Services. The first checked trust without prompting; the
-second requested permission. Both returned `permission_required`, with zero
-structure nodes and no target app. The user was asked to confirm the helper's
-own identity in System Settings and prepare the self-conversation/test note.
-No app opening, message read/send, screenshot or model call has occurred.
+second requested permission. Both returned `permission_required`. Jake then
+supplied a photo showing Aether Desktop Trial enabled under its own name. The
+third request confirmed trust; the fourth opened and verified the expected
+Messages application. They completed in 0.085 and 0.089 seconds respectively.
+No structure nodes have been requested. Confirmation of the selected test
+conversation/note remains pending. No message read/send, desktop capture or
+model call has occurred. Jake's supplied photo was not copied into repo evidence.
 No user data was used for fixtures.
 
 The exact build's manifest SHA-256 is
@@ -114,10 +119,10 @@ The previous fake AS0 design screenshots remain unchanged.
 
 Jake approved **Aether Desktop Trial**, `dev.agenticrag.aether.desktop-trial`,
 the exact sealed build above, and at most eight one-shot requests with no retry.
-Two have run. Before the remaining approved probes, Jake must confirm that System
-Settings attributes access to **Aether Desktop Trial**, enable that entry, and
-select his self-conversation and a disposable Notes window. If the responsible
-identity is Codex/Terminal/Python, stop without granting those broader privileges.
+Four have run. Jake's supplied photo confirms the enabled **Aether Desktop Trial**
+entry, and the fresh helper trust check passed. Before the remaining approved
+structure probes, confirmation that his self-conversation and a disposable Notes
+window are selected is required. No additional permission grant is requested.
 Permission revocation is also manual, followed by a fresh refusal check. No text
 read, screenshot, typing, send, model call, main merge or deployment is included.
 The ordered scope and stop conditions remain in `ASSISTANT-AS1-PLAN.md`.
