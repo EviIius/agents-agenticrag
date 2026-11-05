@@ -1,16 +1,19 @@
 # AGENTS.md — rules for coding agents in this repo
 
-**AS1-A progress — 4 November 2026:** The sealed five-file implementation passes
-full `make check` (856 Python / 156 frontend / 969 contrast pairs) and 16 compiled
-offline checks. Four of eight approved native requests have run: permission and
-request_access returned expected `permission_required`; after Jake confirmed the
-helper's own enabled permission entry with a private photo, permission recheck
-and fixed-path Messages opening passed. Do not repeat those requests. Wait for
-confirmation that his self-conversation/test note are selected before structure
-inspection. Messages was opened; no app structure or text has been inspected.
-AS1-B text/recipient qualification remains unimplemented; no model call, send,
-main merge or deployment. H4/progress: `docs/ASSISTANT-AS1-REPORT.md` and
-`artifacts/assistant-as1-20261104/native-progress.json`.
+**AS1-A stopped trial — 4 November 2026:** The sealed five-file implementation
+passes full `make check` (856 Python / 156 frontend / 969 contrast pairs) and 16
+compiled offline checks. Jake confirmed the helper's own enabled permission entry
+and both selected test windows. Seven of eight approved native requests ran:
+permission grant/recheck and both app openings passed; Messages returned 66 nodes
+without truncation. Notes returned an `AXSheet` root (11 nodes), refused by the
+host's required `AXWindow` guard. Offline replay confirms that exact cause; no
+source/guard change or native retry occurred. First-failure stopping prevents
+spending the unused eighth request; revocation refusal remains untested. The
+two-request AS1-A2 Notes/editor + revocation proposal in `docs/ASSISTANT-AS1-PLAN.md`
+needs separate approval. No message text, screenshot, model call, input/send,
+main merge or deployment. AS1 is unqualified; AS1-B remains unimplemented. H4:
+`docs/ASSISTANT-AS1-REPORT.md`; sanitized outcomes and refusal analysis are in
+`artifacts/assistant-as1-20261104/`.
 
 **User approval — 4 November 2026 (AS1-A):** Jake approved the bounded AS1-A
 trial after reviewing the named helper/permission scope on draft PR #16. Once

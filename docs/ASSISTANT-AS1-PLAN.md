@@ -121,3 +121,34 @@ branches intact. No production wiring/schema/UI changes belong to preparation.
 Report offline results separately from live results. AS1-A needs its concrete
 bridge/permission approval before execution. AS1-B message reading, AS2 model
 tasks, AS3 sending and any merge/deployment remain separate checkpoints.
+
+## AS1-A outcome and proposed AS1-A2 follow-up
+
+Seven approved requests ran. Messages opening and its 66-node structure passed,
+without truncation. Notes opening passed, but its focused root was `AXSheet`
+(11 nodes), which the host refused because a normal `AXWindow` is required.
+The sheet's purpose and text were not read. Offline replay of that saved receipt
+reproduces the refusal. No guard, helper, model or dependency change is proposed.
+The first-failure rule stopped native execution; the eighth revocation check was
+not run. Do not spend the unused request on a retry.
+
+**Proposed separate scope, requiring approval:** at most two fresh one-shot
+requests, using the same sealed build and identity, with the same deadlines and
+privacy limits. Retain the original seven requests and failure unchanged. Use a
+separate fixed private `native-followup` ledger, with an operator cap of two;
+never reset the original ledger or use its remaining slot.
+
+1. Jake manually selects the ordinary editor window for his disposable Notes
+   note, dismissing any modal sheet himself. Run exactly one Notes `structure`
+   request. Require an accepted normal-window receipt; stop on any failure or
+   unexpected target, identity, timeout, protocol/privacy or resource result.
+2. If the first request passes, Jake manually disables **Aether Desktop Trial**
+   in System Settings. Run one fresh Notes `structure` request. Require
+   `permission_required`, no target and zero nodes. Do not prompt or re-enable.
+
+No extra permission check, app-open request, retry, text/title/value/identifier
+read, screenshot, input, model call, package, rebuild, merge or deployment.
+If the follow-up is declined, Jake can disable the helper manually; record the
+revocation control as untested. Even a successful follow-up would qualify only
+this role-only preflight. AS1-B's selected text/recipient adapter and actual native
+cancellation/upgrade-identity qualification remain open.

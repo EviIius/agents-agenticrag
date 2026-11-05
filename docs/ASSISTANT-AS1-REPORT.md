@@ -1,18 +1,14 @@
-# AS1 preparation and permission preflight report
+# AS1-A stopped preflight report
 
 4 November 2026 · `codex/assistant-as1` · native qualification remains open
 
 ## Summary
 
-Prepared a fixed, locally signed Swift helper and strict one-shot transport for
-the first real Mac preflight. Jake selected his conversation with himself.
-The built helper exposes permission/open/role-structure operations only, with
-no message text, screenshot or input API. Offline paths and synthetic process
-tests and the full regression check pass. Jake approved AS1-A and confirmed the
-helper's own enabled permission entry with a private photo. Four requests have
-run: initial permission refusal/request, successful permission recheck and
-verified Messages opening. Structure inspection awaits confirmation that his
-self-conversation/test note are selected. AS1 is not qualified yet.
+Seven approved native requests ran after the full regression check passed.
+Permission and both app openings passed; Messages returned 66 role-only nodes.
+Notes exposed a modal `AXSheet`, refused by the host's normal-window guard.
+The trial stopped at that first failure; revocation refusal is untested.
+No text, screenshot, input or model call occurred; AS1 remains unqualified.
 
 ## Done-when checklist
 
@@ -23,10 +19,13 @@ self-conversation/test note are selected. AS1 is not qualified yet.
 | Compiled fixture redaction, caps and private-file validation | Pass | 16 checks in `swift-offline.txt`; no `--native-job` execution |
 | Strict receipts, sealed build, durable eight-request budget, cancellation/deadline ownership | Pass with fake processes | `focused-final.txt`: 71 cases, including 35 new probe cases |
 | Full application checks | Pass | `make-check.txt`: 856 Python, 156 frontend, 969 contrast pairs |
-| Existing AS0 source and production preserved | Pass after checks | `verification-after-check.json`; 644 AS0 / 646 installed files unchanged |
+| Existing source, history and production preserved | Pass after stopped trial | `verification-after-trial.json`; five new / 644 AS0 / 646 installed files and 32,515 historical artifacts unchanged |
 | Native permission check and access request | Expected initial refusal; recheck passes after manual grant | `native-progress.json`: three permission requests total |
 | Real Messages opening | Pass | Fourth request verifies fixed installed application identity |
-| Real app structure observation | **Pending selected-window confirmation** | No structure request executed yet |
+| Real Messages structure observation | Pass for role-only preflight | Fifth request: 66 nodes, no truncation, 0.161 s |
+| Real Notes opening | Pass | Sixth request: expected application identity, 0.346 s |
+| Real Notes structure observation | **Failed host acceptance** | Seventh request: `AXSheet` root, 11 nodes; `notes-refusal-analysis.json` |
+| Permission revocation refusal | **Not run** | First-failure stop; unused eighth request retained |
 | Selected conversation text, recipient and latest-message identity | **Not implemented/qualified** | AS1-B follows a reviewed structure map; no guessed parser |
 | Native driver integrated with chat or model | **Not implemented/qualified** | Existing fake-only constructor remains unchanged |
 
@@ -50,9 +49,9 @@ selection, package or service wiring changes. The helper is a preflight tool,
 not a second agent or a qualified native `DesktopDriver`.
 
 AS1-A uses role structure before text: inspecting every label in a Messages
-window could collect other conversations. The structure preflight will establish
-the selected-pane boundary before a separately reviewed reader. It does not
-establish a recipient or message identity. AS0's required capture geometry also
+window could collect other conversations. The structure preflight informs the
+selected-pane design before a separately reviewed reader. It does not qualify
+that boundary or establish a recipient or message identity. AS0's required capture geometry also
 needs a genuine text-only representation before native observation integration;
 do not invent screenshot dimensions to satisfy that contract.
 
@@ -63,15 +62,25 @@ Installed public metadata reports macOS 27.0 and bundle IDs
 Reading those Info.plist files did not open or inspect either app.
 The existing compiler built and locally ad-hoc-signed the helper. Only manifest,
 invented tree and private test-file validation paths were executed during the
-offline checks. After the full regression check passed, four one-shot native jobs
+offline checks. After the full regression check passed, seven one-shot native jobs
 ran through Launch Services. The first checked trust without prompting; the
 second requested permission. Both returned `permission_required`. Jake then
 supplied a photo showing Aether Desktop Trial enabled under its own name. The
 third request confirmed trust; the fourth opened and verified the expected
 Messages application. They completed in 0.085 and 0.089 seconds respectively.
-No structure nodes have been requested. Confirmation of the selected test
-conversation/note remains pending. No message read/send, desktop capture or
-model call has occurred. Jake's supplied photo was not copied into repo evidence.
+Jake then confirmed both test windows were ready. Messages structure returned
+66 nodes without truncation in 0.161 seconds. Notes opening passed in 0.346
+seconds, but its structure request failed host acceptance in 0.105 seconds.
+The helper's saved response contained 11 nodes rooted at `AXSheet`, without
+truncation. Offline validation reproduces the `Expected focused window` guard
+failure: the host requires `AXWindow`. The sheet's purpose/content is unknown
+because no text attributes were read. The refusal does not establish that Notes
+cannot be supported; it does mean this trial did not qualify the second app.
+
+No native retry, eighth request, guard relaxation or source change followed.
+No message read/send, desktop capture or model call has occurred. Jake's
+supplied photo was not copied into repo evidence. Raw role-only native receipts
+remain private; committed evidence contains statuses, counts and a response hash.
 No user data was used for fixtures.
 
 The exact build's manifest SHA-256 is
@@ -93,6 +102,11 @@ the grant to Codex/Terminal/Python instead of Aether Desktop Trial.
   the synthetic tests prove transport control flow only.
 - Focused lint, formatting and mypy pass. Initial formatting and test-double type
   errors are retained in the initial logs; no native trial failure is concealed.
+- Offline replay of the saved Notes response reproduces the root-role refusal
+  without a new native call; `notes-refusal-analysis.json` records the cause and
+  response hash. The five frozen implementation files and exact sealed helper
+  remain unchanged. This is a refused modal sheet, not evidence of a permission,
+  timing or local-model failure.
 - Full `make check` passes against the frozen five-file new-source inventory:
   **856 Python / 156 frontend tests**, 969 contrast pairs, lint/types/format,
   API/additive contract, motion/privacy checks and production build/glass guard.
@@ -112,20 +126,24 @@ the grant to Codex/Terminal/Python instead of Aether Desktop Trial.
 
 ## Screenshots
 
-None: this stage deliberately collects no real screen or private app content.
-The previous fake AS0 design screenshots remain unchanged.
+No desktop screenshots were captured. Jake's permission photo stays outside
+repo evidence. The previous fake AS0 design screenshots remain unchanged.
 
-## Remaining manual setup and qualification
+## Open questions for Jake / proposed follow-up
 
 Jake approved **Aether Desktop Trial**, `dev.agenticrag.aether.desktop-trial`,
 the exact sealed build above, and at most eight one-shot requests with no retry.
-Four have run. Jake's supplied photo confirms the enabled **Aether Desktop Trial**
-entry, and the fresh helper trust check passed. Before the remaining approved
-structure probes, confirmation that his self-conversation and a disposable Notes
-window are selected is required. No additional permission grant is requested.
-Permission revocation is also manual, followed by a fresh refusal check. No text
-read, screenshot, typing, send, model call, main merge or deployment is included.
-The ordered scope and stop conditions remain in `ASSISTANT-AS1-PLAN.md`.
+Seven have run, with the first failure preserved. The original scope has stopped;
+do not use its remaining request as a retry. The helper's permission has not been
+revoked/checked by this trial yet. Jake may disable it manually at any time.
+
+The concrete **AS1-A2** proposal in `ASSISTANT-AS1-PLAN.md` requires separate
+approval under the first-failure rule: one Notes structure request after Jake
+selects the normal disposable-note editor, then one refusal check after he
+manually disables the helper. Same sealed build, at most two new requests, no
+retry/rebuild/extra open or permission prompt, and all existing privacy limits.
+The original failed trial remains retained. If the first request fails, stop
+again. No text read, screenshot, typing, send, model call, main merge or deployment.
 
 Even successful role-only probes leave the selected-message reader and native
 chat integration open for AS1-B review; they do not establish recipient identity
