@@ -1,5 +1,15 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**User continuation — 4 November 2026 (AS1 preparation):** Jake said “Continue”
+after the AS0 report and selected a conversation with himself for the Messages
+pilot. Accept the AS0 technical checkpoint and prepare AS1 on `codex/assistant-as1`:
+a fixed, host-authored Swift helper using installed Apple frameworks, isolated
+build, strict private-job protocol and offline tests. The concrete native scope
+and permission identity are in `docs/ASSISTANT-AS1-PLAN.md`. AS1's existing rule
+still requires agreeing that bridge/permission scope before live execution.
+No native app/Accessibility access or prompt, private conversation read, model
+call, new package, main merge or deployment is granted by this preparation note.
+
 **AS0 technical closeout — 31 October 2026:** The default-off fake desktop
 controller and chat review flow pass full checks: 821 Python / 156 frontend,
 92.2% assistant coverage, and 922 Chromium/WebKit browser cases with four unchanged
