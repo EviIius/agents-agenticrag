@@ -1,0 +1,43 @@
+E501 Line too long (103 > 100)
+   --> app/assistant/mac_reader.py:98:101
+    |
+ 96 |     def byte_cap(cls, value: str, info: ValidationInfo) -> str:
+ 97 |         # Match Swift's UTF-8 limits, including multibyte source text.
+ 98 |         cap = 4000 if info.field_name == "value" else 1000 if info.field_name == "description" else 200
+    |                                                                                                     ^^^
+ 99 |         if len(value.encode()) > cap:
+100 |             raise ValueError("Candidate attribute exceeds its byte limit.")
+    |
+
+E501 Line too long (104 > 100)
+   --> app/assistant/mac_reader.py:128:101
+    |
+126 |         if len(set(paths)) != len(paths) or len(paths) + self.settable_excluded > 8:
+127 |             raise ValueError("Invalid candidate count.")
+128 |         if any(len(p) <= len(self.boundary) or p[: len(self.boundary)] != self.boundary for p in paths):
+    |                                                                                                     ^^^^
+129 |             raise ValueError("Candidate escaped its boundary.")
+130 |         if sum(len(item.value.encode()) for item in self.items) > 16_000:
+    |
+
+E501 Line too long (105 > 100)
+   --> tests/test_mac_reader.py:128:101
+    |
+128 | async def test_unapproved_or_expired_read_never_spawns(sealed: tuple[Path, str], tmp_path: Path) -> None:
+    |                                                                                                     ^^^^^
+129 |     for changes, approval in [({}, None), ({"expires_at": time.time() - 1}, "as1-b1")]:
+130 |         with pytest.raises(ProbeFailure):
+    |
+
+E501 Line too long (115 > 100)
+   --> tests/test_mac_reader.py:158:101
+    |
+156 |     async def launch(*args: str, **kwargs: Any) -> Process:
+157 |         directory = Path(args[-1])
+158 |         private_write(directory / "helper.json", json.dumps({"request_id": job.request_id, "pid": 12345}).encode())
+    |                                                                                                     ^^^^^^^^^^^^^^^
+159 |         private_write(directory / "response.json", packet(job))
+160 |         assert args[:4] == ("/usr/bin/open", "-n", "-W", "-a")
+    |
+
+Found 4 errors.

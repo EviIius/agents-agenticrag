@@ -1,0 +1,23 @@
+E501 Line too long (103 > 100)
+   --> app/assistant/mac_reader.py:98:101
+    |
+ 96 |     def byte_cap(cls, value: str, info: ValidationInfo) -> str:
+ 97 |         # Match Swift's UTF-8 limits, including multibyte source text.
+ 98 |         cap = 4000 if info.field_name == "value" else 1000 if info.field_name == "description" else 200
+    |                                                                                                     ^^^
+ 99 |         if len(value.encode()) > cap:
+100 |             raise ValueError("Candidate attribute exceeds its byte limit.")
+    |
+
+E501 Line too long (104 > 100)
+   --> app/assistant/mac_reader.py:128:101
+    |
+126 |         if len(set(paths)) != len(paths) or len(paths) + self.editable_excluded > 8:
+127 |             raise ValueError("Invalid candidate count.")
+128 |         if any(len(p) <= len(self.boundary) or p[: len(self.boundary)] != self.boundary for p in paths):
+    |                                                                                                     ^^^^
+129 |             raise ValueError("Candidate escaped its boundary.")
+130 |         if sum(len(item.value.encode()) for item in self.items) > 16_000:
+    |
+
+Found 2 errors.

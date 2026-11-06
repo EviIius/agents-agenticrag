@@ -114,6 +114,37 @@ def test_action_schema_forbids_scripts_submit_keys_and_nonfinite_points() -> Non
         DesktopPoint(x=float("nan"), y=0, space="image_pixels")
 
 
+def test_text_only_observation_has_no_invented_capture_and_blocks_coordinates() -> None:
+    driver = FakeDesktopDriver()
+    observed = driver.windows["fake.notes"].model_copy(update={"frame": None})
+    assert DesktopObservation.model_validate_json(observed.model_dump_json()).frame is None
+    action = DesktopAction(
+        kind="type_text",
+        app_id=observed.app_id,
+        window_id=observed.window_id,
+        observation=digest(observed),
+        target_id="editor",
+        text="A synthetic bounded text action.",
+    )
+    validate_action(observed, action, frozenset({observed.app_id}))
+    coordinate = action.model_copy(
+        update={"kind": "click", "text": "", "point": DesktopPoint(x=1, y=1, space="image_pixels")}
+    )
+    with pytest.raises(AppError, match="no qualified screen capture"):
+        validate_action(observed, coordinate, frozenset({observed.app_id}))
+    stale = action.model_copy(update={"observation": digest(driver.windows["fake.notes"])})
+    with pytest.raises(AppError, match="app changed"):
+        validate_action(observed, stale, frozenset({observed.app_id}))
+
+
+def test_existing_capture_observations_keep_their_serialized_contract() -> None:
+    observed = FakeDesktopDriver().windows["fake.notes"]
+    raw = observed.model_dump_json()
+    assert DesktopObservation.model_validate_json(raw).model_dump_json() == raw
+    assert observed.frame and observed.frame.capture_width == 1600
+    assert observed.model_dump(mode="json")["frame"]["scale"] == 2
+
+
 @pytest.mark.parametrize("fixture", ["messages", "notes"])
 async def test_same_controller_executes_only_reviewed_action_and_exact_edit(
     desktop: tuple[DesktopTasks, FakeDesktopDriver, Store], fixture: str

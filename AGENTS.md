@@ -1,5 +1,35 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**AS1-B preparation closeout — 5 November 2026:** The separate candidate passes
+full checks (897 Python / 156 frontend / 969 contrast pairs; assistant coverage
+91.2%), 112 focused Python cases, 31 compiled offline checks, six synthetic
+operator checks and 22 Chromium/WebKit assistant cases. Ten changed source files
+are frozen under `artifacts/assistant-as1b-20261105/source-manifest.json`.
+All 32,543 historical artifacts, 646 installed files, main/AS1-A/Part-B refs, plist
+and service PID 77443 verify preserved; expected source changes are declared.
+The new reader build-02 manifest is
+`644c77ce9d8c0f0b14cfb310d6895b866a21578c583aa24428cbf15da8d88034`.
+Review made the modifiability flag mandatory rather than defaulting missing
+evidence; source version one and its 896-test report remain at `e9d52264` and
+the retained v1 artifacts. Final source version two passes the full gate.
+No native job, permission prompt/re-enable, private text read or model call ran.
+The candidate is explicitly unqualified and unregistered; the controller stays
+fake-only. H4: `docs/ASSISTANT-AS1B-REPORT.md`. Review the concrete three-request
+AS1-B1 scope in `docs/ASSISTANT-AS1B-PLAN.md` before execution. No approval for
+that new native/private-text scope, actual identity/direction claims, AS2 calls,
+sending, merge or deployment is inferred from preparation.
+
+**User continuation — 5 November 2026 (AS1-B preparation):** Jake said
+“continue” after the completed role-only preflight and proposed selected-reader
+next step. Accept that technical checkpoint and prepare AS1-B on a separate
+`codex/assistant-as1b` branch: genuine text-only observation contracts, coordinate
+refusal without capture, a bounded private read-probe candidate and offline tests.
+Retain `codex/assistant-as1` at its closeout and its exact-build evidence. The
+concrete native text/permission scope must be reviewed before execution; this
+continuation grants no new native request, re-enable, private text read, model
+call, package, input/send, main merge or deployment. No parser may turn role
+paths, display names or candidate text into asserted recipient/message identity.
+
 **AS1-A2 closeout — 5 November 2026:** Both approved follow-up requests passed
 on the unchanged sealed helper/core. After Jake confirmed the ordinary Notes
 editor, its role-only structure passed (43 nodes, no truncation, 0.121 s). After
