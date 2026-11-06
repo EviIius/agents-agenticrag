@@ -91,7 +91,7 @@ class DesktopObservation(Contract):
     app_name: str = Field(min_length=1, max_length=120)
     window_id: str = Field(min_length=1, max_length=120)
     revision: int = Field(ge=0)
-    frame: DesktopFrame
+    frame: DesktopFrame | None = None  # text-only AX observations have no screen capture
     elements: tuple[DesktopElement, ...] = Field(max_length=50)
     conversation: DesktopConversation | None = None
 

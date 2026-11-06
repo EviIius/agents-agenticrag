@@ -2598,7 +2598,7 @@ export interface components {
             window_id: string;
             /** Revision */
             revision: number;
-            frame: components["schemas"]["DesktopFrame"];
+            frame?: components["schemas"]["DesktopFrame"] | null;
             /** Elements */
             elements: components["schemas"]["DesktopElement"][];
             conversation?: components["schemas"]["DesktopConversation"] | null;

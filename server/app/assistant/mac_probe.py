@@ -9,7 +9,7 @@ import signal
 import stat
 import time
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Protocol
 
 from pydantic import Field, ValidationError, field_validator, model_validator
 
@@ -200,7 +200,22 @@ def validate_reply(raw: bytes, request: ProbeRequest) -> ProbeReply:
         raise ProbeFailure("The helper returned an invalid receipt.") from None
 
 
-def reserve(directory: Path, request: ProbeRequest) -> Path:
+class TrialJob(Protocol):
+    @property
+    def request_id(self) -> str: ...
+
+    @property
+    def operation(self) -> str: ...
+
+    @property
+    def app(self) -> str | None: ...
+
+    def model_dump_json(self) -> str: ...
+
+
+def reserve(directory: Path, request: TrialJob, *, limit: int = 8) -> Path:
+    if type(limit) is not int or not 1 <= limit <= 8:
+        raise ProbeFailure("Invalid native trial budget.")
     if directory.is_symlink():
         raise ProbeFailure("Unsafe trial directory.")
     directory.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -211,7 +226,7 @@ def reserve(directory: Path, request: ProbeRequest) -> Path:
         fcntl.flock(stream, fcntl.LOCK_EX)
         ledger = directory / "ledger.json"
         records = json.loads(private_read(ledger, 20_000)) if ledger.exists() else []
-        if len(records) >= 8 or any(r["request_id"] == request.request_id for r in records):
+        if len(records) >= limit or any(r["request_id"] == request.request_id for r in records):
             raise ProbeFailure("The native trial budget or request was already consumed.")
         job = directory / request.request_id
         job.mkdir(mode=0o700)

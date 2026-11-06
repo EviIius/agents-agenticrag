@@ -69,6 +69,10 @@ def validate_action(
     if action.kind in {"click", "key"} and element.commits is not False:
         raise AppError("assistant_permission", "This action needs a separate send approval.", 403)
     if action.point:
+        if observation.frame is None:
+            raise AppError(
+                "assistant_target", "This observation has no qualified screen capture.", 422
+            )
         x, y = screen_point(observation.frame, action.point)
         bounds = element.bounds
         if not bounds or not (
