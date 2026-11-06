@@ -154,6 +154,13 @@ def test_permission_refusal_cannot_carry_private_content() -> None:
         reader.validate_read(packet(job, **{**negative, "candidate": candidate()}), job)
 
 
+def test_missing_modifiability_evidence_is_not_defaulted_to_read_only() -> None:
+    item = candidate()["items"][0]
+    del item["value_settable"]
+    with pytest.raises(ProbeFailure):
+        reader.validate_read(packet(request(), candidate=candidate(items=[item])), request())
+
+
 def test_boundary_requires_one_normal_window_and_exact_declared_text_areas() -> None:
     base = {
         "nodes": [

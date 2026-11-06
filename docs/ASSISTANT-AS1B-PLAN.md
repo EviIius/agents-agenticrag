@@ -79,6 +79,12 @@ Apple documents [attribute reads and unsupported-attribute errors](https://devel
 and [the value-modifiability check](https://developer.apple.com/documentation/applicationservices/1459972-axuielementisattributesettable).
 Those contracts do not prove this app exposes message/recipient identity.
 
+The collection protocol accepts only a bounded, explicitly unqualified candidate.
+The permission-refusal cleanup may follow successful collection; no further text
+read or model use follows. Semantic AS1 qualification is a separate private
+evidence review. Unexpected collection/protocol failures still stop the native
+scope immediately, including its remaining helper requests.
+
 The receipt is explicitly **unqualified candidate evidence**, not a
 `DesktopObservation.conversation`. Do not infer sender/direction from text
 content, invent an address from a display name, or invent persistent IDs from

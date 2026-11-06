@@ -17,9 +17,9 @@ The actual selected-conversation reader remains unqualified pending native evide
 | Text-only observation and coordinate refusal | Pass | `test_text_only_observation_has_no_invented_capture_and_blocks_coordinates` |
 | Existing captured observations and fake chat controller | Pass | Capture round-trip test; 22 focused browser cases |
 | Strict private candidate request/receipt and byte/path limits | Pass on invented packets | `test_mac_reader.py`; no qualified recipient/message output exists |
-| Three-request budget and owned cancellation | Pass with fake processes | 111 focused Python cases; six operator checks |
+| Three-request budget and owned cancellation | Pass with fake processes | 112 focused Python cases; six operator checks |
 | Sealed boundary, changed shape/content and compiled limits | Pass offline | 31 checks in `swift-offline.txt` |
-| Full application checks | Pass | 896 Python / 156 frontend / 969 contrast pairs; `make-check.txt` |
+| Full application checks | Pass on final version two | 897 Python / 156 frontend / 969 contrast pairs; `make-check.txt` |
 | Core coverage | Pass | Assistant 1,029/1,128 lines, 91.2% |
 | Historical evidence / installed app preservation | Pass | 32,543 retained artifacts / 646 installed files; `historical-artifact-preservation.json`, `verification.json` |
 | Real bounded text access and AX range/identity support | **Unexecuted / unqualified** | Concrete AS1-B1 scope in `ASSISTANT-AS1B-PLAN.md` |
@@ -95,10 +95,10 @@ attributes access to Codex/Terminal/Python rather than Aether Desktop Trial.
 
 ## Test output
 
-- Full `make check`: **896 Python tests**, **156 frontend tests**, **969 token
+- Full `make check`: **897 Python tests**, **156 frontend tests**, **969 token
   contrast pairs**, lint/format/types, API/additive guard, motion/privacy checks,
   production build and glass guard pass. Assistant coverage **91.2%**.
-- **111 focused Python cases pass**: 38 new reader cases, two new text/capture
+- **112 focused Python cases pass**: 39 new reader cases, two new text/capture
   cases and the original 71 controller/probe cases.
 - **31 compiled offline checks pass**: no qualified identity claims, literal
   untrusted data, caps and duplicate/escaped paths, changed content, modal roots,
@@ -112,6 +112,11 @@ attributes access to Codex/Terminal/Python rather than Aether Desktop Trial.
   cancellation, restart, shared SSE and disabled APIs work. No real model call.
 - Initial lint/type diagnostics and both build logs are retained. Fixes affected
   formatting/test-double typing; no native failure is hidden.
+- Review found the candidate's modifiability flag defaulted to false if omitted.
+  It now requires explicit evidence, with a missing-field regression case. The
+  initial source, 896-test gate and operator are retained at `e9d52264` and in
+  the v1 artifacts. The final source passed a second complete `make check`
+  (897 tests); the compiled helper already required that field and is unchanged.
 - The historical 922-case full browser result remains a baseline, not a new
   AS1-B full run. This is preparation, not a release or completed AS1. Broader
   release/native-driver qualification remains ahead; no UI behavior changed.

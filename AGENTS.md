@@ -1,14 +1,17 @@
 # AGENTS.md — rules for coding agents in this repo
 
 **AS1-B preparation closeout — 5 November 2026:** The separate candidate passes
-full checks (896 Python / 156 frontend / 969 contrast pairs; assistant coverage
-91.2%), 111 focused Python cases, 31 compiled offline checks, six synthetic
+full checks (897 Python / 156 frontend / 969 contrast pairs; assistant coverage
+91.2%), 112 focused Python cases, 31 compiled offline checks, six synthetic
 operator checks and 22 Chromium/WebKit assistant cases. Ten changed source files
 are frozen under `artifacts/assistant-as1b-20261105/source-manifest.json`.
 All 32,543 historical artifacts, 646 installed files, main/AS1-A/Part-B refs, plist
 and service PID 77443 verify preserved; expected source changes are declared.
 The new reader build-02 manifest is
 `644c77ce9d8c0f0b14cfb310d6895b866a21578c583aa24428cbf15da8d88034`.
+Review made the modifiability flag mandatory rather than defaulting missing
+evidence; source version one and its 896-test report remain at `e9d52264` and
+the retained v1 artifacts. Final source version two passes the full gate.
 No native job, permission prompt/re-enable, private text read or model call ran.
 The candidate is explicitly unqualified and unregistered; the controller stays
 fake-only. H4: `docs/ASSISTANT-AS1B-REPORT.md`. Review the concrete three-request

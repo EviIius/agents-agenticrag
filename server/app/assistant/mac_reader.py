@@ -83,7 +83,7 @@ class CandidateArea(Contract):
     description: str = Field(max_length=1000)
     identifier: str = Field(max_length=200)
     subrole: str = Field(max_length=200)
-    value_settable: Literal[False] = False
+    value_settable: Literal[False]
 
     @field_validator("path")
     @classmethod

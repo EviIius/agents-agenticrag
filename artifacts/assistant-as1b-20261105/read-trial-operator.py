@@ -2,7 +2,7 @@ import asyncio, fcntl, hashlib, json, os, sys, time, uuid
 from pathlib import Path
 root = Path("/Users/evilius/.codex/worktrees/harness-m0-1/agents-agenticrag")
 frozen_path = root / "artifacts/assistant-as1b-20261105/source-manifest.json"
-if hashlib.sha256(frozen_path.read_bytes()).hexdigest() != "1cb5e459fdd26b518495d3b401bd76dcbe0a133f28b1e7e5506e82770fae3a0a":
+if hashlib.sha256(frozen_path.read_bytes()).hexdigest() != "7d620afe0df0db58b52151d3c1755bef7c342f245e6bed6de9e3314d1e5ca071":
     raise SystemExit("The reviewed source manifest changed; stop.")
 for path, digest in json.loads(frozen_path.read_text())["files"].items():
     if hashlib.sha256((root / path).read_bytes()).hexdigest() != digest:
