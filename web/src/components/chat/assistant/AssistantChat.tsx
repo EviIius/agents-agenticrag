@@ -15,12 +15,14 @@ export default function AssistantChat({
   onCreated,
   onExit,
   model,
+  nativeOpening = false,
 }: {
   chatId?: string;
   parentId?: string | null;
   onCreated: (id: string) => void;
   onExit: () => void;
   model?: Model;
+  nativeOpening?: boolean;
 }) {
   const query = useQueryClient();
   const [fixture, setFixture] = useState<"messages" | "notes">("messages");
@@ -69,6 +71,7 @@ export default function AssistantChat({
     text: string;
     fixture: typeof fixture;
     key: string;
+    native: boolean;
   } | null>(null);
   const send = async (text: string) => {
     if (busy) return false;
@@ -77,7 +80,9 @@ export default function AssistantChat({
     try {
       if (
         attempt.current &&
-        (attempt.current.text !== text || attempt.current.fixture !== fixture)
+        (attempt.current.text !== text ||
+          attempt.current.fixture !== fixture ||
+          attempt.current.native !== nativeOpening)
       ) {
         attempt.current = null;
       }
@@ -90,11 +95,19 @@ export default function AssistantChat({
             model_id: model?.model_id,
           })
         ).id;
-      attempt.current ??= { id, text, fixture, key: crypto.randomUUID() };
+      attempt.current ??= {
+        id,
+        text,
+        fixture,
+        key: crypto.randomUUID(),
+        native: nativeOpening,
+      };
       const task = await api<DesktopTask>(`/chats/${id}/assistant-tasks`, {
         request_key: attempt.current.key,
         text,
-        fixture,
+        ...(nativeOpening
+          ? { mode: "open_app" as const }
+          : { fixture, mode: "demo" as const }),
         parent_id: parentId ?? null,
       } satisfies components["schemas"]["TaskCreate"]);
       put(task);
@@ -121,25 +134,28 @@ export default function AssistantChat({
             </Button>
           </div>
           <p className="mt-2 text-sm text-fg-2">
-            Fake desktop preview · select a scripted task and type a request. No
-            model is called.
+            {nativeOpening
+              ? "Ask your local AI to open Notes or Messages on your Mac. Reading and replying are not available yet."
+              : "Fake desktop preview · select a scripted task and type a request. No model is called."}
           </p>
-          <fieldset className="mt-4">
-            <legend className="mb-2 text-sm">Demo task</legend>
-            <div className="flex flex-wrap gap-2">
-              {(["messages", "notes"] as const).map((value) => (
-                <Button
-                  key={value}
-                  className="min-h-11"
-                  variant={fixture === value ? "default" : "outline"}
-                  aria-pressed={fixture === value}
-                  onClick={() => setFixture(value)}
-                >
-                  {value === "messages" ? "Messages demo" : "Notes demo"}
-                </Button>
-              ))}
-            </div>
-          </fieldset>
+          {!nativeOpening && (
+            <fieldset className="mt-4">
+              <legend className="mb-2 text-sm">Demo task</legend>
+              <div className="flex flex-wrap gap-2">
+                {(["messages", "notes"] as const).map((value) => (
+                  <Button
+                    key={value}
+                    className="min-h-11"
+                    variant={fixture === value ? "default" : "outline"}
+                    aria-pressed={fixture === value}
+                    onClick={() => setFixture(value)}
+                  >
+                    {value === "messages" ? "Messages demo" : "Notes demo"}
+                  </Button>
+                ))}
+              </div>
+            </fieldset>
+          )}
           {tasks.isError && (
             <p role="alert" className="mt-4 text-sm text-danger">
               Could not load computer tasks.{" "}
@@ -172,16 +188,21 @@ export default function AssistantChat({
       <div className="composer-row">
         <Composer
           attachmentsAllowed={false}
+          toolsAllowed={!nativeOpening}
           draftKey={`assistant:${chatId ?? "new"}`}
-          model={{
-            connection_id: "fake-desktop",
-            model_id: "fake-desktop",
-            display_name: "Fake desktop",
-            params_defaults: {},
-            chat_capable: true,
-            hidden: false,
-            embedding: false,
-          }}
+          model={
+            nativeOpening
+              ? model
+              : {
+                  connection_id: "fake-desktop",
+                  model_id: "fake-desktop",
+                  display_name: "Fake desktop",
+                  params_defaults: {},
+                  chat_capable: true,
+                  hidden: false,
+                  embedding: false,
+                }
+          }
           onSend={send}
           disabled={busy}
           error={error}

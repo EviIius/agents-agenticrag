@@ -54,16 +54,32 @@ app.router.lifespan_context = lifespan
 
 
 @app.post("/tests/assistant/setup")
-async def setup_fake_desktop(enabled: bool = True) -> dict[str, bool]:
+async def setup_fake_desktop(enabled: bool = True, native_open: bool = False) -> dict[str, bool]:
     """Test-only switch: the production router has no feature-enabling endpoint."""
+    from app.assistant.app_open import OpenDecision
+    from app.assistant.contracts import DesktopTask, OpenedApplication
     from app.assistant.driver import FakeDesktopDriver, ScriptedProposal
     from app.assistant.manager import DesktopTasks
+
+    class FakeOpening:
+        async def propose(self, task: DesktopTask) -> OpenDecision:
+            return OpenDecision(action="open_app", app="notes")
+
+        async def open(self, decision: OpenDecision) -> OpenedApplication:
+            return OpenedApplication(name="Notes", bundle_id="com.apple.Notes", pid=300)
 
     if app.state.assistant:
         await app.state.assistant.close()
     app.state.config.assistant_enabled = enabled
     app.state.assistant = (
-        DesktopTasks(app.state.store, FakeDesktopDriver(), ScriptedProposal()) if enabled else None
+        DesktopTasks(
+            app.state.store,
+            FakeDesktopDriver(),
+            ScriptedProposal(),
+            opening=FakeOpening() if native_open else None,
+        )
+        if enabled
+        else None
     )
     if app.state.assistant:
         await app.state.assistant.recover()

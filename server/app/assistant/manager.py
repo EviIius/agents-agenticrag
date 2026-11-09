@@ -20,13 +20,22 @@ from .contracts import (
     digest,
 )
 from .driver import DesktopDriver, ProposalSource, UnknownOutcome, validate_action
+from .mac_probe import finish_owned
+from .opening import OpeningService
 
 
 class DesktopTasks:
-    def __init__(self, store: Store, driver: DesktopDriver, proposer: ProposalSource) -> None:
+    def __init__(
+        self,
+        store: Store,
+        driver: DesktopDriver,
+        proposer: ProposalSource,
+        opening: OpeningService | None = None,
+    ) -> None:
         if not driver.fake:
             raise ValueError("AS0 has no native desktop implementation.")
         self.store, self.driver, self.proposer = store, driver, proposer
+        self.opening = opening
         self.allowed = frozenset({"fake.messages", "fake.notes"})
         self.jobs: dict[str, asyncio.Task[None]] = {}
         self.stops: dict[str, asyncio.Task[DesktopTask]] = {}
@@ -88,11 +97,14 @@ class DesktopTasks:
                 (body.request_key,),
             )
             if old:
-                if old["chat_id"] != chat_id or old["request_json"] != body.model_dump_json():
+                canonical = TaskCreate.model_validate_json(old["request_json"]).model_dump_json()
+                if old["chat_id"] != chat_id or canonical != body.model_dump_json():
                     raise AppError(
                         "assistant_conflict", "That request key belongs to another task.", 409
                     )
                 return await self.get(old["id"])
+            if body.mode == "open_app" and self.opening is None:
+                raise AppError("assistant_unavailable", "App opening is not configured.", 409)
             if not await self.store.one("SELECT id FROM chats WHERE id=?", (chat_id,)):
                 raise AppError("not_found", "Chat not found.", 404)
             if body.parent_id and not await self.store.one(
@@ -113,6 +125,8 @@ class DesktopTasks:
                 parent_id=body.parent_id,
                 text=body.text,
                 fixture=body.fixture,
+                mode=body.mode,
+                fake=body.mode == "demo",
                 state="queued",
                 created_at=now(),
             )
@@ -134,11 +148,15 @@ class DesktopTasks:
             return task
 
     async def prepare(self, identifier: str) -> None:
+        task = await self.get(identifier)
+        if task.mode == "open_app":
+            await self.prepare_open(identifier)
+            return
         try:
             async with asyncio.timeout(30), self.lock(identifier):
                 task = await self.get(identifier)
                 task = await self.save(task, state="running", stage="Opening fake app")
-                app_id = "fake." + task.fixture
+                app_id = "fake." + str(task.fixture)
                 async with self.desktop:
                     if app_id not in self.allowed:
                         raise AppError("assistant_permission", "This app is not allowed.", 403)
@@ -196,6 +214,94 @@ class DesktopTasks:
             task = await self.get(identifier)
             await self.save(
                 task, state="failed", stage="Could not prepare this computer task.", approval=None
+            )
+
+    async def prepare_open(self, identifier: str) -> None:
+        try:
+            async with asyncio.timeout(180), self.lock(identifier):
+                task = await self.get(identifier)
+                if task.state in TERMINAL:
+                    return
+                if self.opening is None:
+                    raise AppError("assistant_unavailable", "App opening is not configured.", 409)
+                task = await self.save(task, state="running", stage="Choosing an app")
+                decision = await self.opening.propose(task)
+                if decision.action == "refuse":
+                    await self.save(
+                        task,
+                        state="needs_input",
+                        stage=(
+                            "Try asking to open Notes or Messages. "
+                            "Other actions are not available yet."
+                        ),
+                    )
+                    return
+                async with self.desktop:
+                    cancellation = await self.store.one(
+                        "SELECT cancel_requested FROM assistant_tasks WHERE id=?", (identifier,)
+                    )
+                    if cancellation and cancellation["cancel_requested"]:
+                        raise asyncio.CancelledError
+                    name = "Notes" if decision.app == "notes" else "Messages"
+                    task = await self.save(
+                        task,
+                        native_dispatched=True,
+                        stage="Opening " + name,
+                        steps=[
+                            {"label": "Chose " + name, "state": "complete"},
+                            {"label": "Open and verify app", "state": "running"},
+                        ],
+                    )
+                    receipt = await self.opening.open(decision)
+                    if receipt.name != name:
+                        raise AppError(
+                            "assistant_target", "The opened app did not match the request.", 409
+                        )
+                    await self.save(
+                        task,
+                        state="complete",
+                        stage="Opened " + receipt.name,
+                        opened_app=receipt.model_dump(mode="json"),
+                        steps=[
+                            {"label": "Chose " + receipt.name, "state": "complete"},
+                            {"label": "Opened and verified " + receipt.name, "state": "complete"},
+                        ],
+                    )
+        except asyncio.CancelledError:
+            # Stop/restart cannot imply an already-dispatched OS operation was undone.
+            async def retain_unknown() -> None:
+                task = await self.get(identifier)
+                if task.native_dispatched and task.state not in TERMINAL:
+                    await self.save(
+                        task,
+                        state="outcome_unknown",
+                        stage="Stopped before verification. The app may have opened.",
+                        steps=[{"label": "App opening could not be verified", "state": "failed"}],
+                    )
+
+            await finish_owned(asyncio.create_task(retain_unknown()))
+            raise
+        except Exception as error:
+            task = await self.get(identifier)
+            safe = isinstance(error, AppError) and error.code.startswith("assistant_")
+            await self.save(
+                task,
+                state="outcome_unknown"
+                if task.native_dispatched
+                else "needs_input"
+                if safe
+                else "failed",
+                stage=(
+                    error.message
+                    if safe and isinstance(error, AppError)
+                    else "Could not verify whether the app opened."
+                    if task.native_dispatched
+                    else "Could not prepare this computer task."
+                ),
+                error=error.code if isinstance(error, AppError) else "assistant_open_failed",
+                steps=[{"label": "App opening could not be verified", "state": "failed"}]
+                if task.native_dispatched
+                else [],
             )
 
     async def decide(self, identifier: str, body: TaskDecision) -> DesktopTask:
@@ -391,7 +497,7 @@ class DesktopTasks:
             )
             state: State = (
                 "outcome_unknown"
-                if record
+                if record or task.native_dispatched
                 else "cancelled"
                 if row["cancel_requested"]
                 else "interrupted"

@@ -1031,6 +1031,7 @@ export function LiveAppShell() {
                 chatId={chatId}
                 parentId={detail.data?.chat.current_leaf_id}
                 model={current}
+                nativeOpening={bootstrap.data.features.assistant_open === true}
                 onExit={() => setComputer(false)}
                 onCreated={(id) => {
                   refresh();

@@ -26,6 +26,12 @@ async def bootstrap(request: Request) -> Bootstrap:
         connections=await listing(request),
         features={
             **({"assistant": True} if request.app.state.assistant is not None else {}),
+            **(
+                {"assistant_open": True}
+                if request.app.state.assistant is not None
+                and request.app.state.assistant.opening is not None
+                else {}
+            ),
             "library": bool(request.app.state.library.available),
             "web_search": any(service.configured(p) for p in values["web.provider_order"]),
             "transcription": (await request.app.state.transcription.engine.status()).ready,

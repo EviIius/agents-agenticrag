@@ -2598,7 +2598,7 @@ export interface components {
             window_id: string;
             /** Revision */
             revision: number;
-            frame: components["schemas"]["DesktopFrame"];
+            frame?: components["schemas"]["DesktopFrame"] | null;
             /** Elements */
             elements: components["schemas"]["DesktopElement"][];
             conversation?: components["schemas"]["DesktopConversation"] | null;
@@ -2655,11 +2655,14 @@ export interface components {
             parent_id?: string | null;
             /** Text */
             text: string;
+            /** Fixture */
+            fixture?: ("messages" | "notes") | null;
             /**
-             * Fixture
+             * Mode
+             * @default demo
              * @enum {string}
              */
-            fixture: "messages" | "notes";
+            mode: "demo" | "open_app";
             /**
              * State
              * @enum {string}
@@ -2690,9 +2693,14 @@ export interface components {
             /**
              * Fake
              * @default true
-             * @constant
              */
-            fake: true;
+            fake: boolean;
+            /**
+             * Native Dispatched
+             * @default false
+             */
+            native_dispatched: boolean;
+            opened_app?: components["schemas"]["OpenedApplication"] | null;
         };
         /** Detection */
         Detection: {
@@ -3585,6 +3593,21 @@ export interface components {
             /** Text */
             text: string;
         };
+        /** OpenedApplication */
+        OpenedApplication: {
+            /**
+             * Name
+             * @enum {string}
+             */
+            name: "Notes" | "Messages";
+            /**
+             * Bundle Id
+             * @enum {string}
+             */
+            bundle_id: "com.apple.Notes" | "com.apple.MobileSMS";
+            /** Pid */
+            pid: number;
+        };
         /** OutputConfig */
         OutputConfig: {
             /** Include */
@@ -4202,11 +4225,14 @@ export interface components {
             request_key: string;
             /** Text */
             text: string;
+            /** Fixture */
+            fixture?: ("messages" | "notes") | null;
             /**
-             * Fixture
+             * Mode
+             * @default demo
              * @enum {string}
              */
-            fixture: "messages" | "notes";
+            mode: "demo" | "open_app";
             /** Parent Id */
             parent_id?: string | null;
         };

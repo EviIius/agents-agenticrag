@@ -1,5 +1,210 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**Messages store preparation — 9 November 2026:** The approved separate Aether
+Messages Reader is frozen at build-07; public source-manifest SHA-256 is
+`aa8f0345c07e397cac2796378e5fa42f26419ab4962c295fed76255a514de0c8`.
+33 compiled invented-database cases and 47 new Python cases pass. Full check:
+1089 Python / 156 frontend / 969 contrast, assistant 91.5%; all 32,665 historical
+artifacts verify preserved. H4: `docs/ASSISTANT-MESSAGES-STORE-REPORT.md`.
+
+The private setup entry point was started; no Messages database has been opened,
+no native data reservation consumed and no model/input/send operation occurred.
+Jake's manual self-address save and Full Disk Access grant to only this exact
+helper are pending. Do not infer either confirmation from file existence or an
+old Accessibility approval. After his confirmation use the frozen operator for
+resolve → read → manual revoke/refusal, at most three one-shots, stopping on the
+first unexpected failure. Keep raw records/private addresses out of tools/Git/
+model context. No grant to broad parent apps, native retry, inference, merge or
+deployment is authorized by preparation. Native source/format/identity remain
+unqualified until those actual results; setup and invented tests are not a pass.
+
+**User approval — 9 November 2026 (Messages store bridge):** Jake approved the
+isolated read-only bridge trial in `docs/ASSISTANT-MESSAGES-STORE-PROPOSAL.md`.
+Prepare Aether Messages Reader using installed Swift/Foundation/system SQLite,
+invented databases and a frozen build first. Jake must manually grant/revoke
+Full Disk Access only to that exact helper and privately enter his exact chosen
+self-address before access. At most three declared one-shots in a fresh ledger:
+resolve the literal direct recipient, read up to eight supported text messages,
+then genuine revoked-access refusal. Stop on unexpected failure, schema/identity/
+format ambiguity or broad-parent permission requirement; no old-budget reuse,
+private values in Git/tools/model context, inference, input/send, new package,
+main merge or deployment. SQLite read-only/WAL constraints remain explicit.
+
+**Metadata checkpoint — 9 November 2026:** Both selected-container checks passed:
+13 elements / 494 metadata bytes in 0.282 s, then actual post-disable refusal in
+0.128 s. Outer containers have no IDs; inner containers and text areas repeat IDs.
+No exact recipient/message/direction binding is qualified. Close this AX route;
+keep its two-shot ledger exhausted and helper off. No bodies/model use occurred.
+Full checks pass (1042 Python / 156 frontend / 969 contrast; assistant 91.2%).
+48 compiled and 101 focused checks pass. All 32,654 historical artifacts verify.
+H4: `docs/ASSISTANT-MESSAGE-METADATA-REPORT.md`. Main/live remain unchanged.
+
+**User continuation — 9 November 2026 (selected metadata):** Jake continued
+after the read-only/chat checkpoint and freshly confirmed the self-conversation
+and empty composer ("youre good"). Execute the concrete bounded container-metadata
+scope in `docs/ASSISTANT-MESSAGE-METADATA-PLAN.md`: selected pane / existing area's
+two enclosing groups / area metadata only, no bodies/sidebar/scripting/database,
+two one-shots in a fresh sealed ledger, then helper access off. Keep old builds
+and budgets intact. No model use/call, input/send, new dependency/model, main
+merge or deployment. Metadata collection alone does not establish recipient or
+message identity; if insufficient, close the AX route with a specific alternative.
+
+**Read-only/chat checkpoint — 9 November 2026:** Jake continued the 8 November
+pilot and confirmed the selected self-conversation. Protocol-v2 bounded collection
+now passes: four text areas / 16 accepted bytes in 0.303 s, then actual permission
+refusal with no target/snapshot after disable (0.138 s). V1's structure refusal
+and unused slot are preserved at `74c5b362`; a separate role-only diagnostic and
+scoped selected-pane stability repair preceded a fresh two-request v2 ledger.
+Modifiability is observed metadata, never authority to type. Four areas share one
+identifier; no actual message/recipient/direction qualification, private model use
+or reply/send is claimed. Helper access remains off.
+
+The qualified opener is wired into the existing task/chat/SSE path, default-off
+and dev-only with a sealed qualification directory. Two declared actual API
+requests pass: Notes opens/verifies in 9.029 s cold; Calculator refuses in 4.392 s
+without dispatch. Duplicate requests cause no extra call/open. Pilot inference
+total is four requests including the earlier CLI proof; no warm-up or new package,
+model, sampling override, ordinary provider/search prompt, main merge or deployment.
+The two-call API budget and all completed/stopped ledgers remain exhausted/sealed.
+
+Full checks pass (982 Python / 156 frontend / 969 contrast; assistant 90.8%).
+Existing 22 browser cases pass; four new cases pass after fixing a test that counted
+five metadata-only requests as inference. Retain its first failed assertion/trace
+and the QA startup seed failure. Actual app outcomes render at 390/1440 without
+overflow, with no extra inference. No physical phone/native cancellation claim.
+H4: `docs/ASSISTANT-READONLY-AND-CHAT-REPORT.md`. The bounded private reader stays
+unregistered. Continue under Jake's existing pilot direction with concrete scopes;
+do not turn an unqualified snapshot into a conversation or reopen old budgets.
+Review native release qualification before changing dev-only/default-off limits.
+
+**Selected-self layout diagnosis — 8 November 2026:** The version-two snapshot
+stopped at `structure` before returning private data; keep its unused request
+sealed. Continue with exactly one fresh role/count-only request using the unchanged
+AS1-A build-03 in `native-layout-20261108b`, accepting truncation as diagnostic
+evidence rather than qualifying a read. Keep all text-bearing attributes and model
+calls excluded. Handle only this helper's Settings entry and disable it afterwards.
+
+**User continuation — 8 November 2026 (read-only snapshot and chat):** Jake said
+“Go on” after the app-opening checkpoint and confirmed his self-conversation is
+currently open on his number with an empty composer. Continue on the isolated
+branch. Implement `docs/ASSISTANT-READONLY-SNAPSHOT-PLAN.md`: AXValue modifiability
+is required boolean metadata, not a read filter or input authority. Keep the
+fixed pane, bounded range reads, byte/deadline/stability limits, private storage
+and zero input/send operations. Preserve old source/builds and every stopped
+ledger. Qualify one read and one post-disable refusal in a new two-request ledger,
+stopping on first unexpected failure. No model sees an unqualified candidate.
+Continue preparing the qualified app-opening primitive for the existing task/chat
+path; no main merge, live deployment, new package/model or external send.
+
+**Local app-opening checkpoint — 8 November 2026:** The daily installed 32K
+Qwen made two actual native Ollama requests total. Notes' first host verification
+failed despite a correct intent; preserve `dea4f5f5`. The corrected main-queue
+opener verified a saved Notes decision (zero new inference), then a fresh Messages
+task in 4.057 seconds. OS bundle/path/foreground PID checks passed; snapshots show
+65% free memory and zero swap after load. Exact v2 source is retained at
+`739443ed`. Full checks pass (924 Python / 156 frontend / 969 contrast, assistant
+91.71%); strict protocol-version hardening afterwards passes 926 Python, global
+lint/format/types and 97.22% coverage for the changed module, with saved positive
+receipts replayed and no new native/model calls. All 32,543 historical artifacts
+and the original ten reader source hashes are preserved; main/AS1-A/Part-B refs
+and local/HTTPS health pass. H4: `docs/ASSISTANT-APP-OPEN-REPORT.md`.
+
+This qualifies isolated app opening, not live chat integration or Messages
+reading/replying. Reader layout discovery passes offline, but the native reader
+refuses because both current areas advertise AXValue as settable. One separate
+capability-only diagnostic establishes those flags; no text values were requested
+there and no candidate was supplied to a model. All trial helper access is off.
+Keep every stopped ledger and its unused slots sealed. Continue under Jake's
+existing pilot direction with concrete bounded scopes; do not guess recipient or
+message identity, treat a modifiability flag as input authority, or infer a send,
+main merge/deployment, new package/model or further call in a completed ledger.
+
+**Capability diagnosis — 8 November 2026:** The dynamic reader passed the saved
+role-shape replay and 50 offline checks, but its single native read returned
+`unavailable`. Stop that scope and keep its unused slot. Under Jake's continuing
+pilot direction, prepare one separate capability-only request using a new sealed
+build: fixed selected pane, at most eight areas, only known attribute-presence
+booleans and AX modifiability/error codes. No title, description, identifier,
+body/range value, model call, input/send or screenshot. Add the exact diagnostic
+build through the delegated Settings flow, execute once in a new ledger and
+disable access afterwards. This identifies the API limitation without repeating
+private text collection or relaxing bounded-range/identity policy.
+
+**Bounded layout diagnosis — 8 November 2026:** Following the stopped reader
+and successful local-model app openings, use the existing unchanged AS1-A
+build-03 for exactly one Messages role/count-only request in a fresh
+`native-layout-20261108` ledger. Add that exact bundle through Settings under
+Jake's computer-control delegation, then disable it after the diagnostic.
+No private attributes, screenshot, new model call or retry. Compare the roles
+with the old sealed boundary offline; retain counts only publicly. This is
+diagnosis, not permission to weaken recipient/selection or text-read gates.
+
+**Computer-use continuation — 8 November 2026 (app opening):** Under Jake's
+direction to keep going until local-AI computer use works, qualify the first
+already-planned AS2 operation independently of private Messages reading. Follow
+`docs/ASSISTANT-APP-OPEN-PLAN.md`: at most two requests using the installed daily
+32K profile and native Ollama adapter, fixed Notes/Messages allowlist, exact
+foreground verification, unchanged user settings and shared capacity. No retries,
+new packages/models, private reads, inputs/sends, or live integration. Reader
+qualification remains required before a Messages reply task; opening an app is
+not evidence that reading/replying or general screen control works.
+
+**User delegation — 8 November 2026 (permission repair):** Jake asked Codex to
+take over the computer to add the revealed helper. Use the bundled Computer Use
+skill for System Settings/Finder only; add the exact unchanged AS1-B build-02
+and change only its own access entry. This supersedes manual-only setup for this
+operation, not the private read boundary or external-send gate. The original B1
+batch stopped after its second request refused permission; retain both receipts
+and do not spend its unused slot. With the exact app now visibly enabled and
+Jake's selected-self-conversation/empty-composer confirmation retained, run a
+corrected two-request scope in `native-b1-permission-fix`: one bounded read, then
+one refusal after switching only this helper off. Same sealed build/source,
+no automatic retry; stop on any unexpected failure. No raw private text in
+tools/Git, SDK inspection of Messages, model use of candidates, or send.
+
+**User direction — 8 November 2026 (computer-use pilot):** Jake said “Just keep
+going until the ability for computer use with local ai is possible” after the
+prepared AS1-B report and three-request trial proposal. Proceed with that exact
+AS1-B1 scope and continue implementation toward a working isolated local-AI
+pilot, retaining checkpoint evidence without requesting routine continuation
+approval again. Manual OS permission/selection/revocation facts still require
+Jake's action; never infer them from elapsed time or an old confirmation. Keep
+the declared native/model budgets, privacy/identity/resource gates and retained
+failures. This does not grant sending, broad inbox reads, new dependencies or
+models, screenshots, main merge or deployment. Exact external sends still need
+approval of recipient and text. The sealed AS1-B1 build remains the reviewed
+build-02; no native text access precedes its permission-identity/window setup.
+
+**AS1-B preparation closeout — 5 November 2026:** The separate candidate passes
+full checks (897 Python / 156 frontend / 969 contrast pairs; assistant coverage
+91.2%), 112 focused Python cases, 31 compiled offline checks, six synthetic
+operator checks and 22 Chromium/WebKit assistant cases. Ten changed source files
+are frozen under `artifacts/assistant-as1b-20261105/source-manifest.json`.
+All 32,543 historical artifacts, 646 installed files, main/AS1-A/Part-B refs, plist
+and service PID 77443 verify preserved; expected source changes are declared.
+The new reader build-02 manifest is
+`644c77ce9d8c0f0b14cfb310d6895b866a21578c583aa24428cbf15da8d88034`.
+Review made the modifiability flag mandatory rather than defaulting missing
+evidence; source version one and its 896-test report remain at `e9d52264` and
+the retained v1 artifacts. Final source version two passes the full gate.
+No native job, permission prompt/re-enable, private text read or model call ran.
+The candidate is explicitly unqualified and unregistered; the controller stays
+fake-only. H4: `docs/ASSISTANT-AS1B-REPORT.md`. Review the concrete three-request
+AS1-B1 scope in `docs/ASSISTANT-AS1B-PLAN.md` before execution. No approval for
+that new native/private-text scope, actual identity/direction claims, AS2 calls,
+sending, merge or deployment is inferred from preparation.
+
+**User continuation — 5 November 2026 (AS1-B preparation):** Jake said
+“continue” after the completed role-only preflight and proposed selected-reader
+next step. Accept that technical checkpoint and prepare AS1-B on a separate
+`codex/assistant-as1b` branch: genuine text-only observation contracts, coordinate
+refusal without capture, a bounded private read-probe candidate and offline tests.
+Retain `codex/assistant-as1` at its closeout and its exact-build evidence. The
+concrete native text/permission scope must be reviewed before execution; this
+continuation grants no new native request, re-enable, private text read, model
+call, package, input/send, main merge or deployment. No parser may turn role
+paths, display names or candidate text into asserted recipient/message identity.
+
 **AS1-A2 closeout — 5 November 2026:** Both approved follow-up requests passed
 on the unchanged sealed helper/core. After Jake confirmed the ordinary Notes
 editor, its role-only structure passed (43 nodes, no truncation, 0.121 s). After

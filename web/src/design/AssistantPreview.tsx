@@ -53,6 +53,8 @@ export function previewTask(state: DesktopTask["state"]): DesktopTask {
     chat_id: "design",
     text: "Read the latest message from Alex and prepare a reply.",
     fixture: "messages",
+    mode: "demo",
+    native_dispatched: false,
     state,
     revision: 1,
     stage: stages[state],
@@ -78,29 +80,72 @@ export function previewTask(state: DesktopTask["state"]): DesktopTask {
     fake: true,
   };
 }
+const openingStages = {
+  queued: "Queued",
+  running: "Choosing an app",
+  needs_input: "Try asking to open Notes or Messages.",
+  complete: "Opened Notes",
+  cancelled: "Stopped",
+  failed: "Could not prepare this computer task.",
+  interrupted: "Interrupted. Start a new task when ready.",
+  outcome_unknown: "Stopped before verification. The app may have opened.",
+} as const;
+export function previewOpening(state: keyof typeof openingStages): DesktopTask {
+  return {
+    id: "synthetic-opening",
+    chat_id: "design",
+    text: "Please open Notes.",
+    mode: "open_app",
+    fixture: null,
+    fake: false,
+    state,
+    revision: 1,
+    stage: openingStages[state],
+    created_at: "2026-11-08",
+    native_dispatched: state === "complete" || state === "outcome_unknown",
+    opened_app:
+      state === "complete"
+        ? { name: "Notes", bundle_id: "com.apple.Notes", pid: 300 }
+        : null,
+    steps: [],
+  };
+}
 export default function AssistantPreview() {
+  const native = new URLSearchParams(location.search).has("native");
   const requested = new URLSearchParams(location.search).get("state") as
     DesktopTask["state"] | null;
   const [task, setTask] = useState(() =>
-    previewTask(
-      requested && requested in stages ? requested : "awaiting_approval",
-    ),
+    native
+      ? previewOpening(
+          requested && requested in openingStages
+            ? (requested as keyof typeof openingStages)
+            : "running",
+        )
+      : previewTask(
+          requested && requested in stages ? requested : "awaiting_approval",
+        ),
   );
   const [saved, setSaved] = useState("");
   return (
     <div className="mx-auto max-w-3xl p-4">
-      <h1 className="text-xl font-medium">Computer use · Fake desktop</h1>
+      <h1 className="text-xl font-medium">
+        Computer use · {native ? "Your Mac" : "Fake desktop"}
+      </h1>
       <p className="mt-2 text-sm text-fg-2">
         Synthetic design states. No apps, messages or models are accessed.
       </p>
       <div className="mt-4 flex flex-wrap gap-2" aria-label="Preview states">
-        {Object.keys(stages).map((state) => (
+        {Object.keys(native ? openingStages : stages).map((state) => (
           <Button
             key={state}
             className="min-h-11"
             variant={task.state === state ? "default" : "outline"}
             onClick={() => {
-              setTask(previewTask(state as DesktopTask["state"]));
+              setTask(
+                native
+                  ? previewOpening(state as keyof typeof openingStages)
+                  : previewTask(state as DesktopTask["state"]),
+              );
               setSaved("");
             }}
           >
@@ -114,7 +159,11 @@ export default function AssistantPreview() {
           setSaved(body.text ?? "");
           setTask(previewTask("complete"));
         }}
-        onStop={async () => setTask(previewTask("cancelled"))}
+        onStop={async () =>
+          setTask(
+            native ? previewOpening("cancelled") : previewTask("cancelled"),
+          )
+        }
       />
       {saved && (
         <p role="status" className="break-words text-sm">

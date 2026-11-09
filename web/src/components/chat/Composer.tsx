@@ -99,11 +99,13 @@ export function Composer({
   onPhotoFile,
   onComputer,
   attachmentsAllowed = true,
+  toolsAllowed = true,
 }: {
   photoEdit?: PhotoEditor;
   onPhotoFile?: (file: File) => void;
   onComputer?: () => void;
   attachmentsAllowed?: boolean;
+  toolsAllowed?: boolean;
   attachmentFixtures?: React.ComponentProps<typeof AttachmentTray>["fixtures"];
   attachmentLocal?: Record<string, AttachmentLocal>;
   onPreviewLoaded?: (id: string) => void;
@@ -705,39 +707,45 @@ export function Composer({
                   </TooltipContent>
                 </Tooltip>
               )}
-              <ToolsMenu
-                onComputer={onComputer}
-                open={toolsOpen}
-                onOpenChange={setToolsOpen}
-                buttonRef={toolsButton}
-                web={web}
-                onWebChange={onWebChange}
-                webBlocked={webBlocked}
-                library={libraryControl}
-                images={images}
-                imageAvailable={imageAvailable}
-                imageReason={imageStatus?.reason ?? undefined}
-                photoAvailable={!!imageStatus?.editing_available}
-                onPhoto={
-                  onPhotoFile ? () => photoInput.current?.click() : undefined
-                }
-                onImage={() => {
-                  setToolsOpen(false);
-                  toggleImage();
-                }}
-                model={model}
-                thinkValue={thinkValue}
-                onThinkChange={onThinkChange}
-              />
-              <ToolChips
-                web={web && !webBlocked}
-                library={libraryControl}
-                thinkValue={thinkValue}
-                onWebChange={onWebChange}
-                onThinkChange={onThinkChange}
-                openTools={() => setToolsOpen(true)}
-                focusTools={() => toolsButton.current?.focus()}
-              />
+              {toolsAllowed && (
+                <>
+                  <ToolsMenu
+                    onComputer={onComputer}
+                    open={toolsOpen}
+                    onOpenChange={setToolsOpen}
+                    buttonRef={toolsButton}
+                    web={web}
+                    onWebChange={onWebChange}
+                    webBlocked={webBlocked}
+                    library={libraryControl}
+                    images={images}
+                    imageAvailable={imageAvailable}
+                    imageReason={imageStatus?.reason ?? undefined}
+                    photoAvailable={!!imageStatus?.editing_available}
+                    onPhoto={
+                      onPhotoFile
+                        ? () => photoInput.current?.click()
+                        : undefined
+                    }
+                    onImage={() => {
+                      setToolsOpen(false);
+                      toggleImage();
+                    }}
+                    model={model}
+                    thinkValue={thinkValue}
+                    onThinkChange={onThinkChange}
+                  />
+                  <ToolChips
+                    web={web && !webBlocked}
+                    library={libraryControl}
+                    thinkValue={thinkValue}
+                    onWebChange={onWebChange}
+                    onThinkChange={onThinkChange}
+                    openTools={() => setToolsOpen(true)}
+                    focusTools={() => toolsButton.current?.focus()}
+                  />
+                </>
+              )}
             </>
           )}
           {editing && (

@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     transcribe_home: Path | None = None
     image_home: Path | None = None
     assistant_enabled: bool = False
+    assistant_open_home: Path | None = None
 
     @property
     def hosts(self) -> set[str]:
