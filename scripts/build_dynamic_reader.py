@@ -46,7 +46,11 @@ def build(
         "LSMinimumSystemVersion": "13.0",
     }
     (bundle / "Contents/Info.plist").write_bytes(plistlib.dumps(info))
-    if source_name not in {"ReadProbeDynamic.swift", "ReadOnlySnapshot.swift"}:
+    if source_name not in {
+        "ReadProbeDynamic.swift",
+        "ReadOnlySnapshot.swift",
+        "SelectedMetadata.swift",
+    }:
         raise ValueError("Choose a fixed reader source.")
     source = ROOT / "tools/mac_desktop" / (source_name if boundary else "Probe.swift")
     if boundary:
@@ -54,7 +58,18 @@ def build(
         resources.mkdir()
         (resources / "read-boundary.json").write_bytes(boundary)
     snapshot = output / "source.snapshot.swift"
-    snapshot.write_bytes(source.read_bytes())
+    content = source.read_bytes()
+    if source_name == "SelectedMetadata.swift" and boundary:
+        shared = (ROOT / "tools/mac_desktop/ReadOnlySnapshot.swift").read_bytes()
+        markers = (b"struct Area: Codable", b"extension Reader {", b"    func body(")
+        if any(shared.count(marker) != 1 for marker in markers):
+            raise ValueError("The frozen read-only definitions changed.")
+        # Reuse only shape/selection and bounded metadata helpers. Exclude body
+        # reading at source level rather than relying on the linker to remove it.
+        shape = shared.split(markers[0])[0]
+        text = markers[1] + shared.split(markers[1])[1].split(markers[2])[0] + b"}\n"
+        content = shape + text + b"\n" + content
+    snapshot.write_bytes(content)
     os.chmod(snapshot, 0o600)
     subprocess.run(["/usr/bin/swiftc", "-O", str(snapshot), "-o", str(executable)], check=True)
     subprocess.run(

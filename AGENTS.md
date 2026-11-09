@@ -1,5 +1,36 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**User approval — 9 November 2026 (Messages store bridge):** Jake approved the
+isolated read-only bridge trial in `docs/ASSISTANT-MESSAGES-STORE-PROPOSAL.md`.
+Prepare Aether Messages Reader using installed Swift/Foundation/system SQLite,
+invented databases and a frozen build first. Jake must manually grant/revoke
+Full Disk Access only to that exact helper and privately enter his exact chosen
+self-address before access. At most three declared one-shots in a fresh ledger:
+resolve the literal direct recipient, read up to eight supported text messages,
+then genuine revoked-access refusal. Stop on unexpected failure, schema/identity/
+format ambiguity or broad-parent permission requirement; no old-budget reuse,
+private values in Git/tools/model context, inference, input/send, new package,
+main merge or deployment. SQLite read-only/WAL constraints remain explicit.
+
+**Metadata checkpoint — 9 November 2026:** Both selected-container checks passed:
+13 elements / 494 metadata bytes in 0.282 s, then actual post-disable refusal in
+0.128 s. Outer containers have no IDs; inner containers and text areas repeat IDs.
+No exact recipient/message/direction binding is qualified. Close this AX route;
+keep its two-shot ledger exhausted and helper off. No bodies/model use occurred.
+Full checks pass (1042 Python / 156 frontend / 969 contrast; assistant 91.2%).
+48 compiled and 101 focused checks pass. All 32,654 historical artifacts verify.
+H4: `docs/ASSISTANT-MESSAGE-METADATA-REPORT.md`. Main/live remain unchanged.
+
+**User continuation — 9 November 2026 (selected metadata):** Jake continued
+after the read-only/chat checkpoint and freshly confirmed the self-conversation
+and empty composer ("youre good"). Execute the concrete bounded container-metadata
+scope in `docs/ASSISTANT-MESSAGE-METADATA-PLAN.md`: selected pane / existing area's
+two enclosing groups / area metadata only, no bodies/sidebar/scripting/database,
+two one-shots in a fresh sealed ledger, then helper access off. Keep old builds
+and budgets intact. No model use/call, input/send, new dependency/model, main
+merge or deployment. Metadata collection alone does not establish recipient or
+message identity; if insufficient, close the AX route with a specific alternative.
+
 **Read-only/chat checkpoint — 9 November 2026:** Jake continued the 8 November
 pilot and confirmed the selected self-conversation. Protocol-v2 bounded collection
 now passes: four text areas / 16 accepted bytes in 0.303 s, then actual permission
