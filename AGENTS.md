@@ -1,5 +1,23 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**Messages store preparation — 9 November 2026:** The approved separate Aether
+Messages Reader is frozen at build-07; public source-manifest SHA-256 is
+`aa8f0345c07e397cac2796378e5fa42f26419ab4962c295fed76255a514de0c8`.
+33 compiled invented-database cases and 47 new Python cases pass. Full check:
+1089 Python / 156 frontend / 969 contrast, assistant 91.5%; all 32,665 historical
+artifacts verify preserved. H4: `docs/ASSISTANT-MESSAGES-STORE-REPORT.md`.
+
+The private setup entry point was started; no Messages database has been opened,
+no native data reservation consumed and no model/input/send operation occurred.
+Jake's manual self-address save and Full Disk Access grant to only this exact
+helper are pending. Do not infer either confirmation from file existence or an
+old Accessibility approval. After his confirmation use the frozen operator for
+resolve → read → manual revoke/refusal, at most three one-shots, stopping on the
+first unexpected failure. Keep raw records/private addresses out of tools/Git/
+model context. No grant to broad parent apps, native retry, inference, merge or
+deployment is authorized by preparation. Native source/format/identity remain
+unqualified until those actual results; setup and invented tests are not a pass.
+
 **User approval — 9 November 2026 (Messages store bridge):** Jake approved the
 isolated read-only bridge trial in `docs/ASSISTANT-MESSAGES-STORE-PROPOSAL.md`.
 Prepare Aether Messages Reader using installed Swift/Foundation/system SQLite,
