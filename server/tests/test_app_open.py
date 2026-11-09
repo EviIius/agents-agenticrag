@@ -57,6 +57,8 @@ def test_decision_rejects_unavailable_or_extra_operations(value: dict[str, Any])
         {"foreground_pid": 346},
         {"status": "failed"},
         {"pid": True},
+        {"protocol": True},
+        {"protocol": 1.0},
         {"text": "No private text is accepted"},
     ],
 )

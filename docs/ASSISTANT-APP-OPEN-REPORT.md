@@ -87,17 +87,33 @@ was retried in its original ledger; all private receipts are retained.
 
 ## Test output
 
-- **139 focused Python cases pass**, including 27 new app-opening/operator cases.
-  Lint and strict typing pass for the new server/test files.
+- Initial **139 focused Python cases pass**, including 27 new app-opening/operator
+  cases. Final review adds two protocol-version negatives, for 29 new cases.
 - Three invalid-argument checks pass on each compiled opener version; no app opens
   in these offline tests. The corrected native operations are reported separately.
 - Dynamic reader: **14 compiled layout checks**, **31 compiled privacy/protocol
   checks**, **five fake operator checks**, and the saved role-only shape replay pass.
 - Capability diagnostic: valid invented receipt plus **five negative validation
   checks** pass, including rejection of an unexpected text field.
-- Full application check and preservation results are recorded in the final
-  verification evidence alongside this report. No new browser suite is claimed:
-  no UI or endpoint changed; the earlier 22-case Chromium/WebKit result is historical.
+- Full `make check` passes: **924 Python / 156 frontend / 969 contrast checks**,
+  lint, strict types, API/motion/privacy guards, production build and glass guard.
+  Assistant coverage is 1,128/1,230 lines (91.71%). Only regenerated historical
+  coverage changed; its fresh output was archived before restoring the original.
+  All **32,543** historical artifact hashes verify intact.
+- Post-trial review found Pydantic's literal version accepted a boolean. The host
+  now requires an actual integer before checking version 1. Both saved valid OS
+  receipts replay successfully. Final full Python suite: **926 pass in 66.36 s**;
+  repository-wide Python lint/format/types pass. The final changed app-opening
+  module has **105/108 lines covered (97.22%)** in 29 focused checks. No prompt,
+  native binary or model request changed; no additional native/model call ran.
+  Exact executed v2 source remains at `739443ed` and the original v1 at `dea4f5f5`.
+- No new browser suite is claimed: no UI or endpoint changed; the earlier 22-case
+  Chromium/WebKit result is historical. Local and normally verified Tailscale
+  HTTPS health both return 200. Main/AS1-A/Part-B refs and the original ten frozen
+  source files are unchanged. The live service is running as PID 855; historical
+  PID 77443 from 5 November is gone. No initial 8 November PID was captured, so
+  no service-PID continuity or cause-of-change claim is made. No deploy/restart
+  command was executed.
 
 ## Screenshots
 

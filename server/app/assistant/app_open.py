@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Literal, Protocol
 
-from pydantic import Field, ValidationError, model_validator
+from pydantic import Field, ValidationError, field_validator, model_validator
 
 from ..providers.base import Adapter, ChatRequest, ProviderMessage
 from .contracts import Contract
@@ -44,6 +44,13 @@ class OpenReceipt(Contract):
     bundle_path: str
     pid: int = Field(gt=1)
     foreground_pid: int = Field(gt=1)
+
+    @field_validator("protocol", mode="before")
+    @classmethod
+    def version(cls, value: object) -> object:
+        if type(value) is not int:
+            raise ValueError("Invalid protocol version.")
+        return value
 
     @model_validator(mode="after")
     def verified(self) -> "OpenReceipt":

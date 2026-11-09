@@ -1,5 +1,28 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**Local app-opening checkpoint — 8 November 2026:** The daily installed 32K
+Qwen made two actual native Ollama requests total. Notes' first host verification
+failed despite a correct intent; preserve `dea4f5f5`. The corrected main-queue
+opener verified a saved Notes decision (zero new inference), then a fresh Messages
+task in 4.057 seconds. OS bundle/path/foreground PID checks passed; snapshots show
+65% free memory and zero swap after load. Exact v2 source is retained at
+`739443ed`. Full checks pass (924 Python / 156 frontend / 969 contrast, assistant
+91.71%); strict protocol-version hardening afterwards passes 926 Python, global
+lint/format/types and 97.22% coverage for the changed module, with saved positive
+receipts replayed and no new native/model calls. All 32,543 historical artifacts
+and the original ten reader source hashes are preserved; main/AS1-A/Part-B refs
+and local/HTTPS health pass. H4: `docs/ASSISTANT-APP-OPEN-REPORT.md`.
+
+This qualifies isolated app opening, not live chat integration or Messages
+reading/replying. Reader layout discovery passes offline, but the native reader
+refuses because both current areas advertise AXValue as settable. One separate
+capability-only diagnostic establishes those flags; no text values were requested
+there and no candidate was supplied to a model. All trial helper access is off.
+Keep every stopped ledger and its unused slots sealed. Continue under Jake's
+existing pilot direction with concrete bounded scopes; do not guess recipient or
+message identity, treat a modifiability flag as input authority, or infer a send,
+main merge/deployment, new package/model or further call in a completed ledger.
+
 **Capability diagnosis — 8 November 2026:** The dynamic reader passed the saved
 role-shape replay and 50 offline checks, but its single native read returned
 `unavailable`. Stop that scope and keep its unused slot. Under Jake's continuing
