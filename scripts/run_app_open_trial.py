@@ -18,7 +18,13 @@ from typing import Any, Literal
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "server"))
-from app.assistant.app_open import NativeAppOpener, perform_open, prompt_hash, propose_open
+from app.assistant.app_open import (
+    NativeAppOpener,
+    OpenDecision,
+    perform_open,
+    prompt_hash,
+    propose_open,
+)
 from app.assistant.mac_probe import private_read, private_write
 from app.capacity import Capacity
 from app.providers.base import ChatRequest, validate_reasoning
@@ -27,7 +33,8 @@ from app.schemas import ModelInfo
 
 import httpx
 
-STAGE = Path.home() / ".local/share/workbench/qa/assistant-app-open-20261108"
+BASE_STAGE = Path.home() / ".local/share/workbench/qa/assistant-app-open-20261108"
+STAGE = BASE_STAGE / "v2"
 CASES: tuple[tuple[Literal["notes", "messages"], str], ...] = (
     ("notes", "Bring Notes to the front."),
     ("messages", "Open Messages."),
@@ -131,11 +138,24 @@ async def trial(index: int, manifest: dict[str, Any]) -> dict[str, Any]:
                 keep_alive=connection["keep_alive"],
                 initially_loaded=model.loaded,
             )
-            # Count durably before the sole inference request. No warm-up or retries.
-            private_write(directory / (app + ".request"), json.dumps(result).encode())
-            result["reserved_requests"] = 1
             requested = time.monotonic()
-            decision = await propose_open(adapter, settings, task)
+            if index == 0:
+                # Replay exactly the retained correct Notes intent. No second Notes
+                # inference and no resetting/reusing the original failed ledger.
+                retained = private_read(BASE_STAGE / "notes.summary.json", 6000)
+                if hashlib.sha256(retained).hexdigest() != manifest["retained_notes_sha256"]:
+                    raise RuntimeError("The retained model decision changed.")
+                original = json.loads(retained)
+                if original["model_requests"] != 1 or original["prompt_sha256"] != prompt_hash():
+                    raise RuntimeError("The retained model decision is not from this trial.")
+                decision = OpenDecision.model_validate(original["decision"])
+                result["replayed_model_decision"] = True
+                result["reserved_requests"] = 0
+            else:
+                # Count durably before the sole new inference. No warm-up or retries.
+                private_write(directory / (app + ".request"), json.dumps(result).encode())
+                result["reserved_requests"] = 1
+                decision = await propose_open(adapter, settings, task)
             result.update(
                 model_wall_seconds=round(time.monotonic() - requested, 3),
                 queue_seconds=round(capacity.wait_seconds, 3),
@@ -176,7 +196,7 @@ def main() -> None:
     parser.add_argument("app", choices=[case[0] for case in CASES])
     parser.add_argument("--manifest-sha256", required=True)
     args = parser.parse_args()
-    frozen_path = ROOT / "artifacts/assistant-app-open-20261108/source-manifest.json"
+    frozen_path = ROOT / "artifacts/assistant-app-open-20261108/source-manifest-v2.json"
     if hashlib.sha256(frozen_path.read_bytes()).hexdigest() != args.manifest_sha256:
         raise SystemExit("Source manifest changed; stop.")
     frozen = json.loads(frozen_path.read_text())

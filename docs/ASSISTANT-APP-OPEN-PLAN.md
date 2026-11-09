@@ -46,3 +46,24 @@ this narrow proof as general clicking, text editing, read/reply or live chat sup
 After this proof, repair selected-window discovery using a fresh role-only
 diagnostic rather than weakening identity checks or feeding private candidates to
 a model. Messages reply integration remains blocked on exact identity/direction.
+
+## Retained failure and corrected scope
+
+The first request selected Notes correctly in 8.141 seconds. Foreground verification
+failed after the native deadline, so the second task did not run. Original source,
+manifest and sanitized result are retained at `dea4f5f5`, with the private executable
+and exhausted/stopped ledger unchanged. No success is inferred from the decision.
+
+Inspection found candidate state accessed from two queues. Apple's
+[open-completion documentation](https://developer.apple.com/documentation/appkit/nsworkspace/openapplication(at:configuration:completionhandler:))
+specifies a concurrent callback queue. Serialize its candidate update and focus
+check onto the main queue with the activation observer. This removes a real race;
+the uninstrumented first failure does not prove that race was its sole cause.
+
+Freeze a v2 source/build and a new two-operation ledger, not an extra attempt in the
+failed batch. First replay the exact retained Notes decision, **zero model calls**.
+Only if the corrected native operation verifies, run one new Messages request and
+one verified open. Thus the complete original + correction uses at most **two model
+requests total**, with no repeated Notes inference. Same app allowlist, deadlines,
+first-failure stop and data boundary. Before/after memory must be at least 15% free
+and swap growth no more than 1,024 MiB. These are snapshots, not peak measurements.

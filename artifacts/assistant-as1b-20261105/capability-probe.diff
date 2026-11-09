@@ -1,0 +1,51 @@
+--- ReadProbeDynamic.swift
++++ ReadProbeCapabilities.swift
+@@ -289,6 +289,36 @@
+                 "group_identifier": groupID,
+                 "boundary": boundary, "items": values, "settable_excluded": excluded]
+     }
++    // Capability flags only: no window title, identifier, description or text value.
++    func capabilities(_ process: NSRunningApplication, _ spec: BoundarySpec) throws -> [String: Any] {
++        let (shape, truncated) = try structure(process)
++        guard !truncated, let paths = candidatePaths(shape, spec) else { throw ProbeError.stale }
++        let window = try focused(AXUIElementCreateApplication(process.processIdentifier))
++        var rows: [[String: Any]] = []
++        for path in paths {
++            let area = try element(window, path)
++            try ready(area)
++            var settable = DarwinBoolean(false)
++            let modifiable = AXUIElementIsAttributeSettable(area, kAXValueAttribute as CFString, &settable)
++            var names: CFArray?
++            let attributesStatus = AXUIElementCopyAttributeNames(area, &names)
++            let attributes = names as? [String] ?? []
++            var parameterized: CFArray?
++            let parameterizedStatus = AXUIElementCopyParameterizedAttributeNames(area, &parameterized)
++            let parameters = parameterized as? [String] ?? []
++            rows.append([
++                "value_modifiability_status": Int(modifiable.rawValue),
++                "value_settable": settable.boolValue,
++                "attribute_names_status": Int(attributesStatus.rawValue),
++                "has_value": attributes.contains(kAXValueAttribute as String),
++                "has_character_count": attributes.contains(kAXNumberOfCharactersAttribute as String),
++                "parameterized_names_status": Int(parameterizedStatus.rawValue),
++                "has_string_for_range": parameters.contains(kAXStringForRangeParameterizedAttribute as String)
++            ])
++        }
++        guard !process.isTerminated else { throw ProbeError.stale }
++        return ["area_count": rows.count, "areas": rows]
++    }
+     func candidate(_ process: NSRunningApplication, _ spec: BoundarySpec) throws -> [String: Any] {
+         guard spec.nodes.count <= 160, spec.nodes.first?.path == [], spec.nodes.first?.role == "AXWindow",
+               !spec.boundary.isEmpty, spec.boundary.count < 8, !spec.paths.isEmpty, spec.paths.count <= 8,
+@@ -343,9 +373,9 @@
+           let bytes = try? Data(contentsOf: resource), bytes.count <= 50000 else { throw ProbeError.invalid }
+     let spec = try JSONDecoder().decode(BoundarySpec.self, from: bytes)
+     let verified = try running(key)
+-    let result = try Reader(job, directory).candidate(verified, spec)
++    let result = try Reader(job, directory).capabilities(verified, spec)
+     return ["status": "ok", "trusted": true, "target_pid": Int(verified.processIdentifier),
+-            "bundle_id": target.0, "candidate": result]
++            "bundle_id": target.0, "diagnostics": result]
+ }
+ 
+ func execute(_ directory: URL) async {

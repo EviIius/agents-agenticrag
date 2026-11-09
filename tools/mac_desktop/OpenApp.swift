@@ -44,8 +44,12 @@ let configuration = NSWorkspace.OpenConfiguration()
 configuration.activates = true
 configuration.addsToRecentItems = false
 workspace.openApplication(at: URL(fileURLWithPath: target.1), configuration: configuration) { app, error in
-    guard error == nil, let app = app else { _exit(69) }
-    candidate = app
-    finish()
+    // AppKit delivers this callback on a concurrent queue. Serialize candidate
+    // state and foreground inspection with the activation observer/main run loop.
+    DispatchQueue.main.async {
+        guard error == nil, let app = app else { _exit(69) }
+        candidate = app
+        finish()
+    }
 }
 application.run()

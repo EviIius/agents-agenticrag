@@ -22,7 +22,7 @@ def operator(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, passed: bool = Tru
     module.STAGE = tmp_path / "private"
     module.STAGE.mkdir(mode=0o700)
     manifest = {"build": {}, "files": {}, "prompt_sha256": prompt_hash()}
-    file = tmp_path / "artifacts/assistant-app-open-20261108/source-manifest.json"
+    file = tmp_path / "artifacts/assistant-app-open-20261108/source-manifest-v2.json"
     file.parent.mkdir(parents=True)
     file.write_text(json.dumps(manifest))
     module.digest = hashlib.sha256(file.read_bytes()).hexdigest()

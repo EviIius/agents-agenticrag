@@ -1,5 +1,25 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**Capability diagnosis — 8 November 2026:** The dynamic reader passed the saved
+role-shape replay and 50 offline checks, but its single native read returned
+`unavailable`. Stop that scope and keep its unused slot. Under Jake's continuing
+pilot direction, prepare one separate capability-only request using a new sealed
+build: fixed selected pane, at most eight areas, only known attribute-presence
+booleans and AX modifiability/error codes. No title, description, identifier,
+body/range value, model call, input/send or screenshot. Add the exact diagnostic
+build through the delegated Settings flow, execute once in a new ledger and
+disable access afterwards. This identifies the API limitation without repeating
+private text collection or relaxing bounded-range/identity policy.
+
+**Bounded layout diagnosis — 8 November 2026:** Following the stopped reader
+and successful local-model app openings, use the existing unchanged AS1-A
+build-03 for exactly one Messages role/count-only request in a fresh
+`native-layout-20261108` ledger. Add that exact bundle through Settings under
+Jake's computer-control delegation, then disable it after the diagnostic.
+No private attributes, screenshot, new model call or retry. Compare the roles
+with the old sealed boundary offline; retain counts only publicly. This is
+diagnosis, not permission to weaken recipient/selection or text-read gates.
+
 **Computer-use continuation — 8 November 2026 (app opening):** Under Jake's
 direction to keep going until local-AI computer use works, qualify the first
 already-planned AS2 operation independently of private Messages reading. Follow
