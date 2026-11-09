@@ -69,10 +69,12 @@ export function TaskCard({
       <header className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="flex items-center gap-2 text-sm font-medium">
           <Monitor className="size-4" aria-hidden />
-          Fake desktop
+          {task.fake ? "Fake desktop" : "Your Mac"}
         </h2>
         <span className="text-xs text-fg-2">
-          {task.observation?.app_name ?? "Computer task"}
+          {task.opened_app?.name ??
+            task.observation?.app_name ??
+            "Computer task"}
         </span>
       </header>
       <p className="mt-3 break-words text-sm">{task.text}</p>
@@ -200,7 +202,9 @@ export function TaskCard({
         </p>
       )}
       <p className="mt-4 text-xs text-fg-2">
-        Scripted demonstration. No Mac app is controlled and no message is sent.
+        {task.fake
+          ? "Scripted demonstration. No Mac app is controlled and no message is sent."
+          : "Runs locally on your Mac. App opening only."}
       </p>
     </article>
   );

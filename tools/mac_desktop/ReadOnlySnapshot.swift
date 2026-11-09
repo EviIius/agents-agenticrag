@@ -196,6 +196,11 @@ func candidatePaths(_ shape: [Node], _ spec: BoundarySpec) -> [[Int]]? {
 func shapeMatches(_ shape: [Node], _ spec: BoundarySpec) -> Bool {
     candidatePaths(shape, spec) != nil
 }
+func samePane(_ before: [Node], _ after: [Node], _ spec: BoundarySpec) -> Bool {
+    guard candidatePaths(before, spec) != nil, candidatePaths(after, spec) != nil else { return false }
+    return before.filter({ $0.path.starts(with: spec.boundary) }) ==
+        after.filter({ $0.path.starts(with: spec.boundary) })
+}
 struct Area: Codable, Equatable {
     let path: [Int]
     let value: String
@@ -321,7 +326,8 @@ extension Reader {
         guard !areas.isEmpty else { throw ProbeError.unavailable }
         let before = try snapshot(window, group, areas, spec.boundary)
         let (shapeAfter, truncatedAfter) = try structure(process)
-        guard !truncatedAfter, shapeAfter == shape, !process.isTerminated,
+        readStage = .stability
+        guard !truncatedAfter, samePane(shape, shapeAfter, spec), !process.isTerminated,
               CFEqual(window, try focused(application)), CFEqual(group, try element(window, spec.boundary))
         else { throw ProbeError.stale }
         for (path, area, modifiable) in areas {
@@ -332,8 +338,9 @@ extension Reader {
             guard AXUIElementIsAttributeSettable(area, kAXValueAttribute as CFString, &settable) == .success,
                   settable.boolValue == modifiable else { throw ProbeError.stale }
         }
+        let after = try snapshot(window, group, areas, spec.boundary)
         readStage = .stability
-        let result = try stableSlice(before, snapshot(window, group, areas, spec.boundary))
+        let result = try stableSlice(before, after)
         guard !process.isTerminated, CFEqual(window, try focused(application)) else { throw ProbeError.stale }
         return result
     }
@@ -379,6 +386,17 @@ if arguments.isEmpty || arguments == ["--manifest"] {
         "operations": ["read_selected"], "access": "read_only",
         "text_reading": true, "qualified_conversation": false, "screenshots": false, "input_actions": false]
     print(String(data: try JSONSerialization.data(withJSONObject: result, options: [.sortedKeys]), encoding: .utf8)!)
+} else if arguments == ["--stability-fixture"] {
+    do {
+        let data = FileHandle.standardInput.readData(ofLength: 100001)
+        guard data.count <= 100000, let object = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let expected = object["expected"], let before = object["before"], let after = object["after"] else { throw ProbeError.invalid }
+        let spec = try JSONDecoder().decode(BoundarySpec.self, from: JSONSerialization.data(withJSONObject: expected))
+        let first = try JSONDecoder().decode([Node].self, from: JSONSerialization.data(withJSONObject: before))
+        let second = try JSONDecoder().decode([Node].self, from: JSONSerialization.data(withJSONObject: after))
+        guard samePane(first, second, spec) else { throw ProbeError.stale }
+        print("{\"selected_pane_stable\":true,\"native_executed\":false}")
+    } catch { _exit(64) }
 } else if arguments == ["--boundary-fixture"] {
     do {
         let data = FileHandle.standardInput.readData(ofLength: 100001)

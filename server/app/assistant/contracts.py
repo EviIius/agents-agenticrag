@@ -131,8 +131,15 @@ class DesktopAction(Contract):
 class TaskCreate(Input):
     request_key: str = Field(pattern=r"^[A-Za-z0-9_-]{8,100}$")
     text: str = Field(min_length=1, max_length=4000, pattern=r"\S")
-    fixture: Literal["messages", "notes"]  # explicit demo selection, no intent heuristic
+    fixture: Literal["messages", "notes"] | None = None
+    mode: Literal["demo", "open_app"] = "demo"
     parent_id: str | None = Field(default=None, pattern=r"^[a-f0-9]{32}$")
+
+    @model_validator(mode="after")
+    def operation(self) -> "TaskCreate":
+        if (self.mode == "demo") != (self.fixture is not None):
+            raise ValueError("Choose a fixture only for the scripted preview.")
+        return self
 
 
 class TaskDecision(Input):
@@ -167,12 +174,26 @@ State = Literal[
 TERMINAL = {"needs_input", "complete", "cancelled", "failed", "interrupted", "outcome_unknown"}
 
 
+class OpenedApplication(Contract):
+    name: Literal["Notes", "Messages"]
+    bundle_id: Literal["com.apple.Notes", "com.apple.MobileSMS"]
+    pid: int = Field(gt=1)
+
+    @model_validator(mode="after")
+    def identity(self) -> "OpenedApplication":
+        expected = {"Notes": "com.apple.Notes", "Messages": "com.apple.MobileSMS"}
+        if self.bundle_id != expected[self.name]:
+            raise ValueError("Unexpected opened app identity.")
+        return self
+
+
 class DesktopTask(Contract):
     id: str
     chat_id: str
     parent_id: str | None = None
     text: str
-    fixture: Literal["messages", "notes"]
+    fixture: Literal["messages", "notes"] | None = None
+    mode: Literal["demo", "open_app"] = "demo"
     state: State
     revision: int = 0
     stage: str = "Queued"
@@ -182,7 +203,24 @@ class DesktopTask(Contract):
     steps: tuple[DesktopStep, ...] = Field(default=(), max_length=4)
     error: str | None = None
     created_at: str
-    fake: Literal[True] = True  # no native implementation exists in AS0
+    fake: bool = True
+    native_dispatched: bool = False
+    opened_app: OpenedApplication | None = None
+
+    @model_validator(mode="after")
+    def authority(self) -> "DesktopTask":
+        native = self.mode == "open_app"
+        if self.fake == native or (self.fixture is not None) == native:
+            raise ValueError("The task's driver identity is inconsistent.")
+        if native and (self.observation or self.approval or self.approved_action):
+            raise ValueError("App opening cannot carry observations or input approvals.")
+        if not native and (self.native_dispatched or self.opened_app):
+            raise ValueError("A preview cannot claim a native action.")
+        if self.opened_app and (not self.native_dispatched or self.state != "complete"):
+            raise ValueError("An app result needs a verified completed dispatch.")
+        if native and self.state == "complete" and self.opened_app is None:
+            raise ValueError("Completion needs a verified app result.")
+        return self
 
 
 class TaskEvent(Contract):

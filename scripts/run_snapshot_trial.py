@@ -35,9 +35,9 @@ async def trial(phase: str, manifest: dict) -> dict:
     }
     try:
         reply = await run_snapshot(
-            STAGE / "build-01",
+            STAGE / "build-02",
             manifest["build_manifest_sha256"],
-            STAGE / "native",
+            STAGE / "native-v2",
             request,
             approved_scope="readonly-self",
         )
@@ -79,7 +79,7 @@ async def trial(phase: str, manifest: dict) -> dict:
     except BaseException as error:
         result.update(status="failed", failure_type=type(error).__name__)
     result["elapsed_seconds"] = round(time.monotonic() - start, 3)
-    private_write(STAGE / (phase + ".summary.json"), json.dumps(result, indent=2).encode())
+    private_write(STAGE / ("v2-" + phase + ".summary.json"), json.dumps(result, indent=2).encode())
     return result
 
 
@@ -88,14 +88,14 @@ def main() -> None:
     parser.add_argument("phase", choices=["read", "revoked"])
     parser.add_argument("--manifest-sha256", required=True)
     args = parser.parse_args()
-    source = ROOT / "artifacts/assistant-readonly-20261108/source-manifest.json"
+    source = ROOT / "artifacts/assistant-readonly-20261108/source-manifest-v2.json"
     if hashlib.sha256(source.read_bytes()).hexdigest() != args.manifest_sha256:
         raise SystemExit("The frozen snapshot manifest changed.")
     manifest = json.loads(source.read_text())
     for path, digest in manifest["files"].items():
         if hashlib.sha256((ROOT / path).read_bytes()).hexdigest() != digest:
             raise SystemExit("The frozen snapshot source changed.")
-    directory = STAGE / "native"
+    directory = STAGE / "native-v2"
     directory.mkdir(mode=0o700, exist_ok=True)
     descriptor = os.open(directory / "operator.lock", os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
     with os.fdopen(descriptor, "r+") as lock:
@@ -105,7 +105,7 @@ def main() -> None:
         if len(records) != (0 if args.phase == "read" else 1):
             raise SystemExit("Wrong phase or the two-request budget is consumed.")
         if args.phase == "revoked":
-            first = json.loads(private_read(STAGE / "read.summary.json", 6000))
+            first = json.loads(private_read(STAGE / "v2-read.summary.json", 6000))
             if first.get("gate_passed") is not True:
                 raise SystemExit("The read failed; its remaining request is not available.")
         private_write(directory / (args.phase + ".attempt"), b"one-shot; no automatic retry")

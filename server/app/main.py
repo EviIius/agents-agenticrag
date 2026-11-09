@@ -65,21 +65,43 @@ def create_app(settings: Settings | None = None, static_dir: Path | None = None)
             app.state.image_uploads = ImageUploads()
             app.state.image_uploads.recover(config.data_dir / "attachments")
             app.state.documents.recover(config.data_dir / "attachments")
+            opening_settings = None
+            if config.assistant_enabled and config.dev and config.assistant_open_home:
+                from .assistant.opening import qualification
+
+                opening_settings = qualification(config.assistant_open_home)
             app.state.capacity = Capacity(
-                config.data_dir / "native.lock" if config.image_home else None
+                opening_settings.capacity_path
+                if opening_settings
+                else config.data_dir / "native.lock"
+                if config.image_home
+                else None
+            )
+            app.state.registry = Registry(
+                app.state.store,
+                app.state.capacity if config.image_home or opening_settings else None,
             )
             app.state.assistant = None
             if config.assistant_enabled and config.dev:
                 from .assistant.driver import FakeDesktopDriver, ScriptedProposal
                 from .assistant.manager import DesktopTasks
+                from .assistant.opening import NativeOpening
+
+                opening = (
+                    NativeOpening(
+                        app.state.store,
+                        app.state.registry,
+                        config.assistant_open_home,
+                        opening_settings,
+                    )
+                    if opening_settings and config.assistant_open_home
+                    else None
+                )
 
                 app.state.assistant = DesktopTasks(
-                    app.state.store, FakeDesktopDriver(), ScriptedProposal()
+                    app.state.store, FakeDesktopDriver(), ScriptedProposal(), opening=opening
                 )
                 await app.state.assistant.recover()
-            app.state.registry = Registry(
-                app.state.store, app.state.capacity if config.image_home else None
-            )
             app.state.images = Images(
                 app.state.store, config.data_dir, config.image_home, app.state.capacity
             )

@@ -1,5 +1,33 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**Read-only/chat checkpoint — 9 November 2026:** Jake continued the 8 November
+pilot and confirmed the selected self-conversation. Protocol-v2 bounded collection
+now passes: four text areas / 16 accepted bytes in 0.303 s, then actual permission
+refusal with no target/snapshot after disable (0.138 s). V1's structure refusal
+and unused slot are preserved at `74c5b362`; a separate role-only diagnostic and
+scoped selected-pane stability repair preceded a fresh two-request v2 ledger.
+Modifiability is observed metadata, never authority to type. Four areas share one
+identifier; no actual message/recipient/direction qualification, private model use
+or reply/send is claimed. Helper access remains off.
+
+The qualified opener is wired into the existing task/chat/SSE path, default-off
+and dev-only with a sealed qualification directory. Two declared actual API
+requests pass: Notes opens/verifies in 9.029 s cold; Calculator refuses in 4.392 s
+without dispatch. Duplicate requests cause no extra call/open. Pilot inference
+total is four requests including the earlier CLI proof; no warm-up or new package,
+model, sampling override, ordinary provider/search prompt, main merge or deployment.
+The two-call API budget and all completed/stopped ledgers remain exhausted/sealed.
+
+Full checks pass (982 Python / 156 frontend / 969 contrast; assistant 90.8%).
+Existing 22 browser cases pass; four new cases pass after fixing a test that counted
+five metadata-only requests as inference. Retain its first failed assertion/trace
+and the QA startup seed failure. Actual app outcomes render at 390/1440 without
+overflow, with no extra inference. No physical phone/native cancellation claim.
+H4: `docs/ASSISTANT-READONLY-AND-CHAT-REPORT.md`. The bounded private reader stays
+unregistered. Continue under Jake's existing pilot direction with concrete scopes;
+do not turn an unqualified snapshot into a conversation or reopen old budgets.
+Review native release qualification before changing dev-only/default-off limits.
+
 **Selected-self layout diagnosis — 8 November 2026:** The version-two snapshot
 stopped at `structure` before returning private data; keep its unused request
 sealed. Continue with exactly one fresh role/count-only request using the unchanged

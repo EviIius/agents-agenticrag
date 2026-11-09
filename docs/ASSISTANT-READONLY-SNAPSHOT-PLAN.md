@@ -59,3 +59,23 @@ App opening is already qualified separately. Continue its existing-chat integrat
 behind the default-off capability, preserving durable status/Stop and all ordinary
 chat payloads. Its next model/native test scope is declared separately before calls;
 do not consume further calls in the completed opening or reader ledgers.
+
+## V1 stop and scoped stability repair
+
+V1 returned `stale_window` at `structure`, with no snapshot returned. Its one
+consumed request and unused refusal slot remain sealed at `74c5b362`. A separate
+role-only diagnostic found 58 nodes/four areas, no truncation; the unchanged v1
+guard accepts that saved shape offline. This does not prove the exact transient
+cause of the original refusal, whose before/after structures were not retained.
+
+The code also compares the entire window after reading, including unused sidebar
+state. Replace that comparison with exact selected-pane shape equality plus fresh
+ancestor-role validation; retain window/group/control identity and both bounded
+text/metadata snapshots. An invented before/after sidebar change must pass;
+changed pane/ancestry/values still fail. Improve enum-stage attribution after the
+second traversal/snapshot, so subsequent refusals identify stability accurately.
+
+Freeze build-02 and a separate `native-v2` ledger for at most two one-shots: one
+read of the still-designated self-window, then one refusal after disable only if
+the read passes. Same caps, privacy, no model/input/send, no retries. Stop at the
+first unexpected failure and preserve v1; no guard is relaxed inside the pane.
