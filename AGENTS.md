@@ -1,5 +1,24 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**Selected-self layout diagnosis — 8 November 2026:** The version-two snapshot
+stopped at `structure` before returning private data; keep its unused request
+sealed. Continue with exactly one fresh role/count-only request using the unchanged
+AS1-A build-03 in `native-layout-20261108b`, accepting truncation as diagnostic
+evidence rather than qualifying a read. Keep all text-bearing attributes and model
+calls excluded. Handle only this helper's Settings entry and disable it afterwards.
+
+**User continuation — 8 November 2026 (read-only snapshot and chat):** Jake said
+“Go on” after the app-opening checkpoint and confirmed his self-conversation is
+currently open on his number with an empty composer. Continue on the isolated
+branch. Implement `docs/ASSISTANT-READONLY-SNAPSHOT-PLAN.md`: AXValue modifiability
+is required boolean metadata, not a read filter or input authority. Keep the
+fixed pane, bounded range reads, byte/deadline/stability limits, private storage
+and zero input/send operations. Preserve old source/builds and every stopped
+ledger. Qualify one read and one post-disable refusal in a new two-request ledger,
+stopping on first unexpected failure. No model sees an unqualified candidate.
+Continue preparing the qualified app-opening primitive for the existing task/chat
+path; no main merge, live deployment, new package/model or external send.
+
 **Local app-opening checkpoint — 8 November 2026:** The daily installed 32K
 Qwen made two actual native Ollama requests total. Notes' first host verification
 failed despite a correct intent; preserve `dea4f5f5`. The corrected main-queue

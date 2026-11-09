@@ -12,7 +12,12 @@ ROOT = Path(__file__).resolve().parents[1]
 IDENTITY = "dev.agenticrag.aether.desktop-trial"
 
 
-def build(output: Path, read_boundary: Path | None = None) -> dict[str, object]:
+def build(
+    output: Path,
+    read_boundary: Path | None = None,
+    *,
+    source_name: str = "ReadProbeDynamic.swift",
+) -> dict[str, object]:
     boundary: bytes | None = None
     if read_boundary is not None:
         # Import the installed Pydantic contract without importing/launching macOS APIs.
@@ -41,7 +46,9 @@ def build(output: Path, read_boundary: Path | None = None) -> dict[str, object]:
         "LSMinimumSystemVersion": "13.0",
     }
     (bundle / "Contents/Info.plist").write_bytes(plistlib.dumps(info))
-    source = ROOT / "tools/mac_desktop" / ("ReadProbeDynamic.swift" if boundary else "Probe.swift")
+    if source_name not in {"ReadProbeDynamic.swift", "ReadOnlySnapshot.swift"}:
+        raise ValueError("Choose a fixed reader source.")
+    source = ROOT / "tools/mac_desktop" / (source_name if boundary else "Probe.swift")
     if boundary:
         resources = bundle / "Contents/Resources"
         resources.mkdir()
