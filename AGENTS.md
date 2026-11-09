@@ -1,5 +1,41 @@
 # AGENTS.md — rules for coding agents in this repo
 
+**Computer-use continuation — 8 November 2026 (app opening):** Under Jake's
+direction to keep going until local-AI computer use works, qualify the first
+already-planned AS2 operation independently of private Messages reading. Follow
+`docs/ASSISTANT-APP-OPEN-PLAN.md`: at most two requests using the installed daily
+32K profile and native Ollama adapter, fixed Notes/Messages allowlist, exact
+foreground verification, unchanged user settings and shared capacity. No retries,
+new packages/models, private reads, inputs/sends, or live integration. Reader
+qualification remains required before a Messages reply task; opening an app is
+not evidence that reading/replying or general screen control works.
+
+**User delegation — 8 November 2026 (permission repair):** Jake asked Codex to
+take over the computer to add the revealed helper. Use the bundled Computer Use
+skill for System Settings/Finder only; add the exact unchanged AS1-B build-02
+and change only its own access entry. This supersedes manual-only setup for this
+operation, not the private read boundary or external-send gate. The original B1
+batch stopped after its second request refused permission; retain both receipts
+and do not spend its unused slot. With the exact app now visibly enabled and
+Jake's selected-self-conversation/empty-composer confirmation retained, run a
+corrected two-request scope in `native-b1-permission-fix`: one bounded read, then
+one refusal after switching only this helper off. Same sealed build/source,
+no automatic retry; stop on any unexpected failure. No raw private text in
+tools/Git, SDK inspection of Messages, model use of candidates, or send.
+
+**User direction — 8 November 2026 (computer-use pilot):** Jake said “Just keep
+going until the ability for computer use with local ai is possible” after the
+prepared AS1-B report and three-request trial proposal. Proceed with that exact
+AS1-B1 scope and continue implementation toward a working isolated local-AI
+pilot, retaining checkpoint evidence without requesting routine continuation
+approval again. Manual OS permission/selection/revocation facts still require
+Jake's action; never infer them from elapsed time or an old confirmation. Keep
+the declared native/model budgets, privacy/identity/resource gates and retained
+failures. This does not grant sending, broad inbox reads, new dependencies or
+models, screenshots, main merge or deployment. Exact external sends still need
+approval of recipient and text. The sealed AS1-B1 build remains the reviewed
+build-02; no native text access precedes its permission-identity/window setup.
+
 **AS1-B preparation closeout — 5 November 2026:** The separate candidate passes
 full checks (897 Python / 156 frontend / 969 contrast pairs; assistant coverage
 91.2%), 112 focused Python cases, 31 compiled offline checks, six synthetic

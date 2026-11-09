@@ -28,7 +28,11 @@ named Aether Desktop Trial identity, but ad-hoc permission survival after a
 rebuild is unqualified; the actual new build needs manual permission review.
 No input/sending, open-app operation, screenshot or Messages database access.
 
-## Proposed AS1-B1 native scope — approval required after preparation
+## AS1-B1 native scope — authorized 8 November
+
+Jake directed Codex to keep going until local-AI computer use is possible after
+reviewing this prepared trial proposal. Proceed within the scope below; the
+manual permission, selected-window and revocation confirmations remain required.
 
 At most **three** one-shot requests, each with a 15-second host deadline,
 12-second independent helper watchdog and three-second AX read budget. No retry;
@@ -110,3 +114,28 @@ data for compiled reader tests. Run full application checks and focused assistan
 browser/API regression checks; retain the previous full browser matrix separately.
 Freeze candidate source/build before asking for native approval. Report H4 with
 the unexecuted native scope and remaining identity/reading gaps.
+
+## 8 November permission repair and bounded follow-up
+
+Original B1 consumed two requests: the expected initial permission refusal and
+an unexpected refusal after Jake's enable/selection confirmation. No text was
+collected. That batch is stopped; its unused request is not reused. The two
+ad-hoc builds have different designated requirements; the previous TCC entry's
+path was not inspected, so attributing the failure to that entry remains an
+inference. No TCC database edits or resets are allowed.
+
+Jake then explicitly delegated adding the revealed app using computer control.
+System Settings showed no Aether entry. Codex selected the exact unchanged
+`build-02/Aether Desktop Trial.app` through the native Add dialog and observed its
+switch on. Other permission entries were unchanged. SDK access is limited to
+Settings/Finder; it is not used to inspect Messages or its screenshots. Jake's
+selected-self-thread/empty-composer confirmation precedes this Settings-only work;
+no intervening Messages navigation is performed by Codex.
+
+Corrected follow-up: at most two one-shot requests in a new fixed
+`native-b1-permission-fix` ledger. First, the same bounded candidate read under
+the existing caps and unchanged frozen build/source. Only if it passes, switch
+only Aether Desktop Trial off in Settings and make one fresh permission-refusal
+check. Same deadlines and first-unexpected-failure stopping; phase markers
+prevent repeats. Preserve original ledgers/results, report only sanitized
+counts/statuses, and keep candidates unqualified and out of model context.
